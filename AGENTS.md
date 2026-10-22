@@ -34,6 +34,11 @@ judgement.
    counting, file layout, templating) lives in the skill's `scripts/`, not in prose. Scripts are
    self-contained: standard-library Python 3 or POSIX shell, no install step, no network unless
    the task needs it, and runnable on macOS, Linux and in Claude Code on the web.
+   - **Test-driven.** Write a failing test before each behaviour. Tests use the standard-library
+     `unittest` module and live beside the script as `scripts/test_<script>.py`.
+   - **Documented.** Each script has a module docstring saying what it does, and every command
+     has `--help` text covering its arguments, output and exit codes. `SKILL.md` names each
+     command Claude should run and when.
 7. **Fix with evidence, not rules.** A bug report becomes a failing eval case first, then the
    smallest change that makes it pass. Skills carry no incident logs, rationalization tables or
    red-flag lists: lessons live in evals, where they are checked, not in prose, where they
@@ -54,7 +59,7 @@ judgement.
 skills/
   <name>/
     SKILL.md
-    scripts/           # optional, deterministic helpers
+    scripts/           # optional, deterministic helpers and their tests
     references/        # optional, loaded on demand
     assets/            # optional, templates and static files
     evals/<case>/      # required, one folder per test case
@@ -68,6 +73,8 @@ Nothing else belongs at the root without a reason recorded in the change that ad
 
 - Work on a branch and land changes through a pull request.
 - Before opening a PR, run `claude plugin validate . --strict` and fix every finding.
+- Run the script tests for each skill you changed:
+  `python3 -m unittest discover -s skills/<name>/scripts`. All must pass.
 - Run the evals for each skill you changed:
   `claude plugin eval . --eval-dir skills --case '<name>-*'`. Evals are billed model runs: run
   the ones you touched, never the whole suite unprompted.
