@@ -1,0 +1,9 @@
+{
+  "name": "sdlc",
+  "version": "0.1.0",
+  "description": "Small, independent, evaluated skills for the software development lifecycle.",
+  "author": {
+    "name": "Michael Marconi"
+  },
+  "repository": "https://github.com/michaelmarconi/sdlc"
+}

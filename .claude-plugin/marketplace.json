@@ -1,0 +1,12 @@
+{
+  "name": "sdlc",
+  "description": "Marketplace for the sdlc plugin.",
+  "owner": { "name": "Michael Marconi" },
+  "plugins": [
+    {
+      "name": "sdlc",
+      "source": ".",
+      "description": "Small, independent, evaluated skills for the software development lifecycle."
+    }
+  ]
+}
