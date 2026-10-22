@@ -71,13 +71,13 @@ Nothing else belongs at the root without a reason recorded in the change that ad
 
 ## Workflow
 
-- Work on a branch and land changes through a pull request.
-- Before opening a PR, run `claude plugin validate . --strict` and fix every finding.
+- Work on a branch and merge it to main once every check below passes. No pull requests needed.
+- Before merging, run `claude plugin validate . --strict` and fix every finding.
 - Run the script tests for each skill you changed:
   `python3 -m unittest discover -s skills/<name>/scripts`. All must pass.
 - Run the evals for each skill you changed:
   `claude plugin eval . --eval-dir skills --case '<name>-*'`. Evals are billed model runs: run
   the ones you touched, never the whole suite unprompted.
-- Bump `version` in `.claude-plugin/plugin.json` (semver) in any PR that changes what users
+- Bump `version` in `.claude-plugin/plugin.json` (semver) in any change that alters what users
   receive. Installed copies only update when the version string changes.
-- Add a skill to the table in `README.md` in the same PR that adds it.
+- Add a skill to the table in `README.md` in the same change that adds it.
