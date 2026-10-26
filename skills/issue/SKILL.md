@@ -48,40 +48,45 @@ full and word for word. It reads everything else it needs itself. It reports pas
 each rubric check with evidence, other findings, and anything that needs the person.
 
 Fix every finding you can and run the reviewer again, for up to ${user_config.review_rounds}
-reviews in all, counting the first (3 if no number appears here). A draft is filed only after a
-passing review. If the last review still fails, show the person the draft and the report, say
-what is still failing, and ask how they want it changed; each change they make gets one more
-review.
+reviews in all, counting the first (3 if no number appears here). If the last review still
+fails, show the person the draft and the report, say what is still failing, and ask how they
+want it changed; each change they make gets one more review. A failing draft is filed only if
+the person, with the report in front of them, says to file it anyway: it is their information to
+share.
 
 ## File
 
 Run `python3 "${CLAUDE_SKILL_DIR}/scripts/issue.py" account` to learn how it would be filed:
-`gh <login>` means as that GitHub account, `link` means they submit it in their browser. Show the
-person the draft exactly as it would be filed, the reviewer's final report, and the account it
-will appear under (their name is public on the issue, which matters if it is a work account),
-and ask whether to file it. File only on their clear yes to that draft: an issue on a public repository
-can't be taken back, so a yes given before they have seen the draft doesn't count. If they
-change it, review the changed draft before asking again. If they bring back a draft and say yes
-to it, that is a yes to that draft: review it, and file it if the review passes.
+`gh <login>` means with the GitHub CLI as that account, `link` means they submit it in their
+browser. Show the person the draft exactly as it would be filed, the reviewer's final report,
+and, for `gh <login>`, that it will appear under that account, since their name is public on the
+issue and it may be a work account. Then ask whether to file it.
+
+File only on their clear yes to that draft: an issue on a public repository can't be taken back,
+so a yes given before they have seen the draft and the account doesn't count. If they change
+the draft, review it again before asking again. If they bring back a draft and say yes to it,
+review it; if it passes and they want a link, give them the link, and otherwise tell them the
+account and ask once more.
 
 On their yes, pass the draft on standard input: the bare title alone on the first line, with no
 heading mark or "Title:", then the body. The quoted delimiter keeps the shell from expanding
-anything in the draft:
+anything in the draft. Use `--as <login>` with the account they agreed to, or `--link-only` for
+a link:
 
 ```
-python3 "${CLAUDE_SKILL_DIR}/scripts/issue.py" file --kind <bug|improvement> <<'SDLC_ISSUE_DRAFT'
+python3 "${CLAUDE_SKILL_DIR}/scripts/issue.py" file --kind <bug|improvement> --as <login> <<'SDLC_ISSUE_DRAFT'
 <title>
 
 <body>
 SDLC_ISSUE_DRAFT
 ```
 
-It files with the GitHub CLI when that is installed and signed in to github.com, and prints
-`filed <issue URL>`. Otherwise it prints `link <URL>`: give the person that link, which opens
-the issue already filled in for them to submit. Add `--link-only` if they would rather submit
-it themselves. Any other exit code comes with a message saying why; tell the person, and:
+It prints `filed <issue URL>`, or `link <URL>` for a link, or if the CLI has signed out since:
+give the person that link, which opens the issue already filled in for them to submit. Any other
+exit code comes with a message saying why; tell the person, and:
 
-- 2: the first line wasn't a bare title, or there was no body; fix the command and rerun it.
+- 2: the CLI is signed in as a different account, the first line wasn't a bare title, or there
+  was no body. For an account change, ask the person again; otherwise fix the command and rerun.
 - 3: the draft is too long. Offer a shorter draft, which is reviewed again.
 - 4: the CLI ran but failed, and may have filed it anyway. Give the person the CLI's message and
   the repository's issues page it names. Only once they have checked that the issue isn't there,
