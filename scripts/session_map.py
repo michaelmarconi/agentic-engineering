@@ -3,20 +3,32 @@
 
 Claude Code runs this as a SessionStart hook and adds whatever it prints to Claude's context.
 It prints the plugin's context/sdlc.md only when the project uses the lifecycle, that is, when
-it has docs/specs/, docs/plans/, docs/decisions/ or docs/brief.md. Anywhere else it prints
-nothing, so installing the plugin costs other projects nothing.
+it has docs/brief.md or a spec under docs/specs/ whose frontmatter has a lifecycle status.
+Anywhere else it prints nothing, so installing the plugin costs other projects nothing.
 """
 
 import argparse
 import os
 import sys
 
-MARKERS = ("docs/specs", "docs/plans", "docs/decisions", "docs/brief.md")
+from status_check import STATUSES, status_of
+
 MAP = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "context", "sdlc.md")
 
 
 def uses_lifecycle(project):
-    return any(os.path.exists(os.path.join(project, marker)) for marker in MARKERS)
+    if os.path.isfile(os.path.join(project, "docs", "brief.md")):
+        return True
+    for folder, _, files in os.walk(os.path.join(project, "docs", "specs")):
+        for name in files:
+            if name.endswith(".spec.md"):
+                try:
+                    with open(os.path.join(folder, name), encoding="utf-8") as f:
+                        if status_of(f.read()) in STATUSES:
+                            return True
+                except (OSError, UnicodeDecodeError):
+                    pass
+    return False
 
 
 def main(argv=None):

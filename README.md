@@ -31,7 +31,8 @@ The plugin gives Claude three kinds of help to work with these documents:
   building a plan or reviewing a document.
 - **Hooks:** small scripts Claude Code runs automatically at set moments. This plugin uses them
   to give Claude a summary of the lifecycle when a session starts in a repository that uses it,
-  and to refuse status changes Claude makes that the lifecycle does not allow. They need
+  and to refuse edits Claude makes to a document's status, or to an agreed document, that the
+  lifecycle does not allow. They need
   Python 3.
 
 Every document a skill writes is checked by a reviewer agent before you see it. Apart from the
@@ -99,7 +100,7 @@ A build agent carries out the plan, then four reviewer agents check the result i
   added? Once every requirement in the spec is, the spec is marked Built.
 - **ADRs:** is every accepted decision followed, not just the ones the plan touches?
 
-Findings go back to the build agent for up to n rounds (a plugin setting, 3 by default). A clean
+Findings go back to the build agent for up to n reviews in all (a plugin setting, 3 by default). A clean
 review merges the work into the main branch; if it won't converge, we stop and ask for help.
 
 ## Audit
@@ -115,7 +116,7 @@ the ADR.
 
 The rules the lifecycle follows, such as one decision per ADR, are kept in one short file,
 [context/sdlc.md](context/sdlc.md). The plugin gives that file to Claude at the start of every
-session in a repository that has any of the lifecycle's documents, so Claude knows how the
+session in a repository that has a brief or a spec, so Claude knows how the
 steps fit together even when you run only one of them.
 
 ## Install

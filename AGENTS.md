@@ -28,9 +28,9 @@ a rule names a number, it is a hard limit; everything else is judgement.
    - A reviewer agent at `agents/<name>-reviewer.md`, with read-only tools. It starts fresh,
      reads the rubric through `${CLAUDE_PLUGIN_ROOT}`, and reads only the files its own
      definition names. The skill passes it paths, never pasted content.
-   - The reviewer reports pass or fail for each check, with evidence, plus findings beyond the
-     rubric. The skill fixes what it can and asks again, for up to n rounds (the plugin setting
-     that `/build` also uses); after that it stops and asks the person, showing the report. Only
+   - The reviewer reports pass or fail for each check, with evidence for each failure, plus
+     findings beyond the rubric. The skill fixes what it can and asks again, for up to n reviews
+     in all, counting the first (the plugin setting that `/build` also uses); after that it stops and asks the person, showing the report. Only
      a decision the skill cannot make goes to the person.
    - The person gets the document and the final report.
 5. **Evaluated.** Every skill ships with evals under the plugin's `evals/`, in the case-folder

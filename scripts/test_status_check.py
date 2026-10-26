@@ -155,9 +155,30 @@ class Transitions(Workspace):
         self.put(spec())
         self.assertIsNone(self.edit("do X", "do Y"))
 
-    def test_edit_that_will_fail_is_left_to_the_tool(self):
-        self.put(spec("Built"))
+    def test_edit_that_cannot_be_matched_refused_on_lifecycle_spec(self):
+        self.put(spec("Built").replace("do X", "do ’X’"))
+        self.assertIn("exactly", self.edit("do 'X'", "do 'Y'"))
+
+    def test_edit_that_cannot_be_matched_allowed_on_other_files(self):
+        self.put("# Thing\n")
         self.assertIsNone(self.edit("not in the file", "whatever"))
+
+    def test_empty_file_filled_by_edit_checked(self):
+        self.put("")
+        self.assertIsNotNone(self.edit("", spec("Built")))
+
+    def test_new_file_by_multiedit_checked(self):
+        result = status_check.check(
+            {
+                "tool_name": "MultiEdit",
+                "tool_input": {"file_path": self.path, "edits": [{"old_string": "", "new_string": spec("Built")}]},
+            }
+        )
+        self.assertIsNotNone(result)
+
+    def test_second_status_line_refused(self):
+        self.put(spec())
+        self.assertIn("one", self.edit("status: Draft", "status: Draft\nstatus: Ready to build"))
 
     def test_replace_all(self):
         self.put(spec("Ready to build", rule="X SHALL X."))

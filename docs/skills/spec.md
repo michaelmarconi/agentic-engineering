@@ -64,7 +64,8 @@ stateDiagram-v2
 ```
 
 - **Draft:** being shaped.
-- **Ready to build:** you have said it is done, and Open questions is empty.
+- **Ready to build:** you have said it is done, Open questions is empty, and the review has
+  passed.
 - **Built:** the last [`/build`](../../README.md#build) review found every requirement in the
   spec verified, however many plans it took to build them.
 
@@ -99,7 +100,8 @@ Run `/spec` and tell it what you want to do:
 
 `docs/specs/<capability>.spec.md`, named for the capability. Specs start flat; when there are
 enough to need it, group them into folders of your choosing. The plugin finds specs anywhere
-under `docs/specs/` and gives folders no meaning.
+under `docs/specs/` and gives folders no meaning. Move a spec with `git mv`, which keeps its
+status; the hook would see a spec written in a new place as a new spec and require Draft.
 
 [^ears]: Mavin, Wilkinson, Harwood and Novak, "Easy Approach to Requirements Syntax (EARS)",
     17th IEEE International Requirements Engineering Conference, 2009,

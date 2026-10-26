@@ -10,7 +10,7 @@
     "review_rounds": {
       "type": "number",
       "title": "Review rounds",
-      "description": "How many times a skill or /build may fix findings and ask its reviewer again before stopping to ask you.",
+      "description": "How many reviews a skill or /build may run on one piece of work, counting the first, before stopping to ask you.",
       "default": 3,
       "min": 1,
       "max": 10

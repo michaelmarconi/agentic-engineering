@@ -1,5 +1,5 @@
 ---
-# Change status only through /sdlc:spec and /sdlc:build. A hand edit skips the lifecycle checks.
+# Change status only through the sdlc plugin's skills. A hand edit skips the lifecycle checks.
 status: Draft
 ---
 

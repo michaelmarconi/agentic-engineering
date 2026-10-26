@@ -36,12 +36,11 @@ answered. When the person names how something should be built (a library, a serv
 database, a design), keep the behaviour it serves and leave the choice out of every section,
 even when they state it as settled: the spec should still hold if the choice changes. If it is
 already decided, suggest recording it as an ADR (architecture decision record); if not, make it
-an open question. When
+an open question, and once it is settled, remove the question and suggest the ADR. When
 an unknown can only be settled by trying something, suggest a spike: a throwaway experiment.
 
-Write each requirement as one rule in an EARS pattern using SHALL, then scenarios that each pin
-down a concrete case the rule alone leaves open: a boundary, an error, an example with real
-values. End it with how we will know it holds, by a method that can really be carried out.
+Write each requirement as rubric checks 5 to 8 describe: one EARS rule, scenarios that add
+concrete cases, and a Verified by line.
 
 ## Status
 
@@ -62,9 +61,9 @@ reads everything else it needs itself. It reports pass or fail for each rubric c
 evidence, other findings, and anything that needs the person.
 
 Fix every finding you can and run the reviewer again, for up to ${user_config.review_rounds}
-rounds in all (3 if no number appears here). A finding only the person can settle, such as what a rule should be, goes to
-them as a question rather than a fix you invent. If the last round still fails, stop and show
-the person the report.
+reviews in all, counting the first (3 if no number appears here). A finding only the person can
+settle, such as what a rule should be, goes to them as a question rather than a fix you invent.
+If the last review still fails, stop and show the person the report.
 
 Finish by giving the person the spec's path and the reviewer's final report. Leave committing to
 them.

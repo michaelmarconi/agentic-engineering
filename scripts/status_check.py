@@ -71,22 +71,21 @@ def has_open_questions(text):
 
 
 def after_edit(tool, tool_input, before):
-    """Return the file's text after the edit, or None if the tool will fail on its own."""
+    """Return the file's text after the edit, or None if it cannot be worked out."""
     if tool == "Write":
         return tool_input.get("content", "")
-    if before is None:
-        if tool == "Edit" and tool_input.get("old_string") == "":
-            return tool_input.get("new_string", "")
-        return None
     if tool == "Edit":
         edits = [tool_input]
     elif tool == "MultiEdit":
         edits = tool_input.get("edits", [])
     else:
         return None
-    text = before
+    text = before or ""
     for edit in edits:
         old, new = edit.get("old_string", ""), edit.get("new_string", "")
+        if old == "" and text == "":
+            text = new
+            continue
         if not old or old not in text:
             return None
         text = text.replace(old, new) if edit.get("replace_all") else text.replace(old, new, 1)
@@ -103,15 +102,22 @@ def check(payload):
     if os.path.exists(path):
         with open(path, encoding="utf-8") as f:
             before = f.read()
+    old = status_of(before) if before is not None else None
+    name = os.path.basename(path)
     after = after_edit(payload.get("tool_name"), tool_input, before)
     if after is None:
+        if old in STATUSES:
+            return (
+                f"{name}: could not match this edit against the spec exactly, so its status rules "
+                "cannot be checked. Read the file again and copy old_string from it exactly."
+            )
         return None
 
     new = status_of(after)
-    old = status_of(before) if before is not None else None
-    name = os.path.basename(path)
     if old not in STATUSES and new not in STATUSES:
         return None
+    if sum(line.startswith("status:") for line in frontmatter(after) or []) > 1:
+        return f"{name}: the frontmatter has more than one `status:` line; keep one."
     if new not in STATUSES:
         found = f"'{new}'" if new else "none"
         return (
@@ -119,7 +125,10 @@ def check(payload):
             f"(found {found})."
         )
     if old not in STATUSES and new != "Draft":
-        return f"{name}: a new spec starts as Draft; it was written as {new}."
+        return (
+            f"{name}: a new spec starts as Draft; it was written as {new}. To move or rename a "
+            "spec, use a shell command such as `git mv`, which keeps its status."
+        )
     if new == old:
         if new != "Draft" and without_status(after) != without_status(before):
             return (

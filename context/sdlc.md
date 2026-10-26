@@ -1,5 +1,6 @@
 This repo follows the sdlc plugin's lifecycle. Use its skills, invoked as /sdlc:<name>, for
-each step.
+each step that has one; some steps' skills are not built yet, and only those Claude Code lists
+exist.
 
 Steps: /brief (whole product), then /spec (one capability). /spike settles an unknown by
 experiment when needed: a fact goes back into the spec, a choice becomes an ADR. /adr records one

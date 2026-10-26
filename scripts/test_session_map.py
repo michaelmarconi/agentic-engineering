@@ -23,17 +23,24 @@ class SessionMap(unittest.TestCase):
         done = self.run_map()
         self.assertEqual((done.returncode, done.stdout), (0, ""))
 
-    def test_prints_map_when_a_lifecycle_folder_exists(self):
+    def put(self, relative, text=""):
+        path = os.path.join(self.tmp.name, relative)
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        with open(path, "w") as f:
+            f.write(text)
+
+    def test_silent_with_folders_other_projects_also_use(self):
+        for folder in ["docs/specs", "docs/plans", "docs/decisions"]:
+            os.makedirs(os.path.join(self.tmp.name, folder))
+        self.put("docs/specs/login.spec.md", "# Login\n")
+        self.assertEqual(self.run_map().stdout, "")
+
+    def test_prints_map_when_a_spec_has_a_lifecycle_status(self):
         with open(MAP) as f:
             expected = f.read()
-        for marker in ["docs/specs", "docs/plans", "docs/decisions"]:
-            with self.subTest(marker=marker):
-                path = os.path.join(self.tmp.name, marker)
-                os.makedirs(path)
-                done = self.run_map()
-                self.assertEqual(done.returncode, 0)
-                self.assertEqual(done.stdout, expected)
-                os.rmdir(path)
+        self.put("docs/specs/billing/invoice.spec.md", "---\nstatus: Draft\n---\n# Invoice\n")
+        done = self.run_map()
+        self.assertEqual((done.returncode, done.stdout), (0, expected))
 
     def test_prints_map_when_brief_exists(self):
         os.makedirs(os.path.join(self.tmp.name, "docs"))
