@@ -15,7 +15,8 @@ Read:
 
 Read nothing else. Apply every rubric check. For each failure, quote the spec as evidence and
 say what would make it pass. Then note anything else that would make the spec wrong or hard to
-build, such as a conflict with the brief. Keep apart the findings only a person can settle, such
+build, such as a conflict with the brief. Leave out matters of style or taste: a finding must be
+something the builder would otherwise get wrong. Keep apart the findings only a person can settle, such
 as what a rule should say: those are decisions, not fixes.
 
 Report in this shape:

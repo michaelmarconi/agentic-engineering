@@ -35,8 +35,9 @@ Never fill a gap with a guess. An unknown goes into Open questions, worded so it
 answered. When the person names how something should be built (a library, a service, a named bucket or
 database, a design), keep the behaviour it serves and leave the choice out of every section,
 even when they state it as settled: the spec should still hold if the choice changes. If it is
-already decided, suggest recording it with `/sdlc:adr`; if not, make it an open question. When
-an unknown can only be settled by trying something, suggest `/sdlc:spike`.
+already decided, suggest recording it as an ADR (architecture decision record); if not, make it
+an open question. When
+an unknown can only be settled by trying something, suggest a spike: a throwaway experiment.
 
 Write each requirement as one rule in an EARS pattern using SHALL, then scenarios that each pin
 down a concrete case the rule alone leaves open: a boundary, an error, an example with real
@@ -48,10 +49,10 @@ The `status:` frontmatter says how far the spec is: Draft, Ready to build or Bui
 
 - Write new and changed specs as Draft. Changing a spec that is Ready to build or Built returns
   it to Draft, because what was agreed or built no longer matches.
-- Set Ready to build only when the person asks for it and the spec has no open questions
-  (rubric check 9). If questions
-  remain, say which and leave the spec as Draft.
-- Never set Built. Only `/sdlc:build` does, once its review finds every requirement verified.
+- Set Ready to build only when the person asks for it, the spec has no open questions (rubric
+  check 9), and the review below has passed. If questions remain, say which and leave the spec
+  as Draft.
+- Never set Built. Only the build step does, once its review finds every requirement verified.
 
 ## Review
 

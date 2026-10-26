@@ -1,6 +1,7 @@
 ---
-type: file_exists
-path: "docs/specs/**"
-exists: false
+type: regex
+target: files
+pattern: "docs/specs/"
+match: not_contains
 weight: 1
 ---
