@@ -55,14 +55,18 @@ review.
 
 ## File
 
-Show the person the draft exactly as it would be filed, and the reviewer's final report, and ask
-whether to file it. File only on their clear yes to that draft: an issue on a public repository
+Run `python3 "${CLAUDE_SKILL_DIR}/scripts/issue.py" account` to learn how it would be filed:
+`gh <login>` means as that GitHub account, `link` means they submit it in their browser. Show the
+person the draft exactly as it would be filed, the reviewer's final report, and the account it
+will appear under (their name is public on the issue, which matters if it is a work account),
+and ask whether to file it. File only on their clear yes to that draft: an issue on a public repository
 can't be taken back, so a yes given before they have seen the draft doesn't count. If they
 change it, review the changed draft before asking again. If they bring back a draft and say yes
 to it, that is a yes to that draft: review it, and file it if the review passes.
 
-On their yes, pass the draft on standard input, title on the first line, then the body. The
-quoted delimiter keeps the shell from expanding anything in the draft:
+On their yes, pass the draft on standard input: the bare title alone on the first line, with no
+heading mark or "Title:", then the body. The quoted delimiter keeps the shell from expanding
+anything in the draft:
 
 ```
 python3 "${CLAUDE_SKILL_DIR}/scripts/issue.py" file --kind <bug|improvement> <<'SDLC_ISSUE_DRAFT'
@@ -77,8 +81,8 @@ It files with the GitHub CLI when that is installed and signed in to github.com,
 the issue already filled in for them to submit. Add `--link-only` if they would rather submit
 it themselves. Any other exit code comes with a message saying why; tell the person, and:
 
-- 2: the draft reached the script without a title line or body; fix the command and rerun it.
-- 3: the draft is too long for a link. Offer a shorter draft, which is reviewed again.
+- 2: the first line wasn't a bare title, or there was no body; fix the command and rerun it.
+- 3: the draft is too long. Offer a shorter draft, which is reviewed again.
 - 4: the CLI ran but failed, and may have filed it anyway. Give the person the CLI's message and
   the repository's issues page it names. Only once they have checked that the issue isn't there,
   rerun with `--link-only`.

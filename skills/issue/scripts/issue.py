@@ -6,6 +6,7 @@ The repository is read from the `repository` field of the plugin's
 the `labels` of its template in `.github/ISSUE_TEMPLATE/`.
 
 Commands:
+  account   Say whether `file` would use gh, and as which github.com account.
   context   Print the Context lines for an issue: plugin version, Claude Code version, OS.
   file      File an issue whose draft (title line, then body) is read from standard input.
             Uses the GitHub CLI (`gh`) when it is installed and signed in to github.com;
@@ -28,6 +29,8 @@ KINDS = ("bug", "improvement")
 
 # GitHub answers 414 URI Too Long somewhere above this; it does not publish the limit.
 MAX_URL = 8000
+# GitHub's documented limit on an issue body.
+MAX_BODY = 65536
 
 
 def run(args, input=None):
@@ -53,7 +56,7 @@ def read_manifest(root):
 def template_labels(root, kind):
     """Return the labels set in the frontmatter of the kind's template in .github/ISSUE_TEMPLATE/."""
     path = os.path.join(root, ".github", "ISSUE_TEMPLATE", kind + ".md")
-    with open(path, encoding="utf-8") as f:
+    with open(path, encoding="utf-8-sig") as f:
         lines = f.read().splitlines()
     if not lines or lines[0].strip() != "---" or "---" not in [l.strip() for l in lines[1:]]:
         raise ValueError("the %s template has no frontmatter" % kind)
@@ -61,7 +64,7 @@ def template_labels(root, kind):
     labels = []
     for i, line in enumerate(frontmatter):
         if line.startswith("labels:"):
-            value = line[len("labels:"):].strip()
+            value = line[len("labels:"):].split(" #")[0].strip()
             if value:
                 labels = value.strip("[]").split(",")
             else:
@@ -69,7 +72,7 @@ def template_labels(root, kind):
                     if not item.lstrip().startswith("- "):
                         break
                     labels.append(item.lstrip()[2:])
-    labels = [label.strip().strip("'\"") for label in labels]
+    labels = [label.split(" #")[0].strip().strip("'\"") for label in labels]
     labels = [label for label in labels if label]
     if not labels:
         raise ValueError("the %s template sets no label" % kind)
@@ -163,20 +166,42 @@ def gh_filed(slug, title, body, labels):
 
 
 def parse_draft(text):
-    """Split a draft into its title (the first line) and body (the rest)."""
-    lines = text.replace("\r\n", "\n").strip("\n").split("\n")
-    while lines and re.match(r"kind:\s", lines[0], re.IGNORECASE):
-        lines = lines[1:]
-    title, body = (lines[0], "\n".join(lines[1:])) if lines else ("", "")
-    title = re.sub(r"^(#+\s+|title:\s*)", "", title.strip(), flags=re.IGNORECASE)
-    return title.strip(), body.strip("\n") + "\n"
+    """Split a draft into its title (the first line) and body (the rest).
+
+    The first line must be the bare title. A line that looks like a heading or a label, such as
+    "# T", "Title: T" or "**Title:** T", gives an empty title rather than a guess, because the
+    title is filed publicly as written.
+    """
+    lines = text.lstrip("\ufeff").replace("\r\n", "\n").split("\n")
+    title, body = lines[0].strip(), "\n".join(lines[1:]).strip("\n")
+    if re.match(r"(#+\s|\*\*|title\s*:|kind\s*:)", title, re.IGNORECASE):
+        title = ""
+    return title, body + "\n"
+
+
+def account():
+    """Return the github.com login gh would file as, or None if gh can't file."""
+    if not shutil.which("gh"):
+        return None
+    try:
+        if run(["gh", "auth", "status", "--hostname", "github.com"]).returncode != 0:
+            return None
+        result = run(["gh", "api", "--hostname", "github.com", "user", "--jq", ".login"])
+    except (OSError, subprocess.SubprocessError):
+        return None
+    return result.stdout.strip() if result.returncode == 0 and result.stdout.strip() else None
 
 
 def file_issue(root, kind, draft, link_only=False):
     title, body = parse_draft(draft)
     if not title or not body.strip():
-        print("issue.py: the draft needs a title line and a body", file=sys.stderr)
+        print("issue.py: the draft needs the bare title on its first line, then a body",
+              file=sys.stderr)
         return 2
+    if len(body) > MAX_BODY:
+        print("issue.py: the body is longer than GitHub allows (%d characters, limit %d)"
+              % (len(body), MAX_BODY), file=sys.stderr)
+        return 3
     slug = repo_slug(read_manifest(root).get("repository"))
     labels = template_labels(root, kind)
     if not link_only:
@@ -202,6 +227,13 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     commands = parser.add_subparsers(dest="command", required=True)
     commands.add_parser(
+        "account",
+        help="say how `file` would file the issue",
+        description="Print \"gh <login>\" if `file` would file with gh as that github.com "
+                    "account, or \"link\" if it would give a link to submit in the browser. "
+                    "Exit code 0.",
+    )
+    commands.add_parser(
         "context",
         help="print the Context lines for an issue",
         description="Print Markdown list lines naming the plugin version, the Claude Code "
@@ -216,9 +248,10 @@ def main(argv=None):
                     "\"filed <issue URL>\" if gh filed it, or \"link <URL>\" for the person to "
                     "open and submit; gh's error, if it failed, goes to standard error. Exit "
                     "codes: 0 done; 1 the plugin's manifest or issue templates can't be read, or name "
-                    "no GitHub repository or label; 2 bad arguments, a draft with no title or "
-                    "body, or a draft that isn't UTF-8; 3 gh wasn't used (missing, signed out "
-                    "or --link-only) and the issue is too long for a link; 4 gh ran but its result is "
+                    "no GitHub repository or label; 2 bad arguments, a draft whose first line "
+                    "isn't a bare title or with no body, or a draft that isn't UTF-8; 3 too "
+                    "long: the body is over GitHub's 65,536 characters, or gh wasn't used "
+                    "(missing, signed out or --link-only) and the issue is too long for a link; 4 gh ran but its result is "
                     "unknown (it failed, timed out or printed no URL) and it may have filed the "
                     "issue, so check the repository's issues before trying again.",
     )
@@ -231,6 +264,10 @@ def main(argv=None):
         root = plugin_root()
         if args.command == "context":
             sys.stdout.write(context(root))
+            return 0
+        if args.command == "account":
+            login = account()
+            print("gh " + login if login else "link")
             return 0
         try:
             draft = sys.stdin.buffer.read().decode("utf-8")

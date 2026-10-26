@@ -105,6 +105,15 @@ class LinkTest(unittest.TestCase):
         self.assertEqual(self.labels("labels:\n  - bug\n  - triage\nabout: x\n"),
                          ["bug", "triage"])
 
+    def test_comment_and_byte_order_mark(self):
+        self.assertEqual(self.labels("labels: bug  # triage later\n"), ["bug"])
+        with tempfile.TemporaryDirectory() as root:
+            path = os.path.join(root, ".github", "ISSUE_TEMPLATE")
+            os.makedirs(path)
+            with open(os.path.join(path, "bug.md"), "w", encoding="utf-8-sig") as f:
+                f.write("---\nlabels: bug\n---\n")
+            self.assertEqual(issue.template_labels(root, "bug"), ["bug"])
+
     def test_no_label_is_an_error(self):
         for frontmatter in ("labels: []\n", 'labels: ""\n', ""):
             with self.assertRaises(ValueError):
@@ -164,16 +173,17 @@ class ParseDraftTest(unittest.TestCase):
     def test_windows_line_endings(self):
         self.assertEqual(issue.parse_draft("T\r\n\r\nbody\r\n"), ("T", "body\n"))
 
-    def test_heading_or_label_prefix_dropped(self):
-        self.assertEqual(issue.parse_draft("# A title\n\nb")[0], "A title")
-        self.assertEqual(issue.parse_draft("Title: A title\n\nb")[0], "A title")
+    def test_heading_or_label_line_is_no_title(self):
+        for first in ("# A title", "Title: A title", "**Title:** A title", "Kind: bug", "",
+                      "\ufeffKind: bug"):
+            self.assertEqual(issue.parse_draft(first + "\n\nbody")[0], "", first)
 
-    def test_hash_without_space_kept(self):
+    def test_hash_without_space_is_a_title(self):
         self.assertEqual(issue.parse_draft("#include paths break /spec\n\nb")[0],
                          "#include paths break /spec")
 
-    def test_leading_kind_line_skipped(self):
-        self.assertEqual(issue.parse_draft("Kind: bug\nTitle: T\n\nbody"), ("T", "body\n"))
+    def test_byte_order_mark_dropped(self):
+        self.assertEqual(issue.parse_draft("\ufeffT\n\nb"), ("T", "b\n"))
 
 
 class FileTest(unittest.TestCase):
@@ -258,10 +268,42 @@ class FileTest(unittest.TestCase):
         self.assertEqual(code, 3)
         self.assertEqual(out, "")
 
+    def test_body_over_github_limit_refused_before_gh(self):
+        code, out, calls, _ = self.file(draft="T\n\n" + "x" * (issue.MAX_BODY + 1))
+        self.assertEqual(code, 3)
+        self.assertEqual(calls, [])
+
     def test_missing_body_refused(self):
         code, _, calls, _ = self.file(draft="Only a title\n")
         self.assertEqual(code, 2)
         self.assertEqual(calls, [])
+
+
+class AccountTest(unittest.TestCase):
+    def account(self, gh=True, auth=0, login="jane"):
+        def fake_run(args, input=None):
+            if args[:3] == ["gh", "auth", "status"]:
+                return done(auth)
+            self.assertEqual(args[:2], ["gh", "api"])
+            return done(0, login + "\n")
+
+        with mock.patch.object(issue, "run", side_effect=fake_run), \
+                mock.patch.object(issue.shutil, "which", return_value="/bin/gh" if gh else None):
+            return issue.account()
+
+    def test_login_when_signed_in(self):
+        self.assertEqual(self.account(), "jane")
+
+    def test_none_without_gh_or_sign_in(self):
+        self.assertIsNone(self.account(gh=False))
+        self.assertIsNone(self.account(auth=1))
+
+    def test_main_prints_route(self):
+        for login, line in (("jane", "gh jane\n"), (None, "link\n")):
+            with mock.patch.object(issue, "account", return_value=login), \
+                    mock.patch("sys.stdout", io.StringIO()) as out:
+                self.assertEqual(issue.main(["account"]), 0)
+            self.assertEqual(out.getvalue(), line)
 
 
 class MainTest(unittest.TestCase):

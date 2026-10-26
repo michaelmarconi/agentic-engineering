@@ -70,7 +70,11 @@ You see the draft exactly as it would be filed, with the reviewer's report. Noth
 until you say yes. Then `/issue` files it with the GitHub command-line tool,
 [`gh`](https://cli.github.com/), if that is installed and signed in. Otherwise it gives you a
 link that opens GitHub's new-issue page already filled in[^query], and you press Submit. Ask for
-the link if you would rather submit it yourself.
+the link if you would rather submit it yourself. Either way the issue appears under your GitHub
+account, so `/issue` tells you which account before you say yes.
+
+GitHub only applies labels, such as `bug`, for people allowed to label the repository's issues,
+so the maintainer labels other issues when they read them.
 
 [^templates]: GitHub Docs, [Configuring issue templates for your repository](https://docs.github.com/en/communities/using-templates-to-encourage-useful-issues-and-pull-requests/configuring-issue-templates-for-your-repository).
     The templates live in this repository's `.github/ISSUE_TEMPLATE/`, so issues filed by hand
