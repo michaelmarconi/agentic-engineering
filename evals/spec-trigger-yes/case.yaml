@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: spec-trigger-yes
+expected_outcome: |
+  The spec skill is invoked to write the bulk delete spec.
