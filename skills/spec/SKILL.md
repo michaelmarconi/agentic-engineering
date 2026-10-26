@@ -48,7 +48,8 @@ The `status:` frontmatter says how far the spec is: Draft, Ready to build or Bui
 
 - Write new and changed specs as Draft. Changing a spec that is Ready to build or Built returns
   it to Draft, because what was agreed or built no longer matches.
-- Set Ready to build only when the person asks for it and Open questions is empty. If questions
+- Set Ready to build only when the person asks for it and Open questions is empty or says only
+  "None." If questions
   remain, say which and leave the spec as Draft.
 - Never set Built. Only `/sdlc:build` does, once its review finds every requirement verified.
 

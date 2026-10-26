@@ -1,6 +1,6 @@
 ---
 type: tool_used
 tool: Skill
-input_match: "spec"
+input_match: "sdlc:spec"
 weight: 1
 ---

@@ -1,6 +1,6 @@
 ---
 type: regex
-pattern: spec-reviewer
 target: trace
+pattern: "subagent_type[^,]{0,8}sdlc:spec-reviewer"
 weight: 1
 ---
