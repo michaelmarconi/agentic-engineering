@@ -142,6 +142,12 @@ class OsNameTest(unittest.TestCase):
                                                 "ID": "ubuntu", "VERSION_ID": "24.04"}):
             self.assertEqual(issue.os_name(), "Linux ubuntu 24.04")
 
+    def test_linux_unknown_distribution_not_named(self):
+        with mock.patch.object(issue.platform, "system", return_value="Linux"), \
+                mock.patch.object(issue.platform, "freedesktop_os_release", create=True,
+                                  return_value={"ID": "acmecorp-linux", "VERSION_ID": "7"}):
+            self.assertEqual(issue.os_name(), "Linux")
+
     def test_linux_without_os_release(self):
         with mock.patch.object(issue.platform, "system", return_value="Linux"), \
                 mock.patch.object(issue.platform, "freedesktop_os_release", create=True,
@@ -161,12 +167,14 @@ class ParseDraftTest(unittest.TestCase):
 
     def test_heading_or_label_line_is_no_title(self):
         for first in ("# A title", "Title: A title", "**Title:** A title", "*Title:* A title",
-                      "> A title", "Subject: A title", "Kind: bug", "", "\ufeffKind: bug"):
+                      "__A title__", "> A title", "Subject: A title", "Kind: bug", "",
+                      "\ufeffKind: bug"):
             self.assertEqual(issue.parse_draft(first + "\n\nbody")[0], "", first)
 
-    def test_title_may_start_with_a_command(self):
-        self.assertEqual(issue.parse_draft("/spec names a library\n\nb")[0],
-                         "/spec names a library")
+    def test_titles_starting_with_symbols_kept(self):
+        for title in ("/spec names a library", "*.spec.md files in subfolders are ignored",
+                      "_private names leak", "#include paths break /spec"):
+            self.assertEqual(issue.parse_draft(title + "\n\nb")[0], title)
 
     def test_byte_order_mark_dropped(self):
         self.assertEqual(issue.parse_draft("\ufeffT\n\nb"), ("T", "b\n"))
@@ -238,7 +246,7 @@ class FileTest(unittest.TestCase):
         self.assertEqual(code, 0)
         self.assertTrue(out.startswith("link https://github.com/acme/tools/issues/new?"))
         self.assertEqual(calls, [])
-        self.assertIn("no longer signed in", err)
+        self.assertIn("couldn't confirm", err)
 
     def test_link_only_never_runs_gh(self):
         code, out, calls, _ = self.file(login=None)
@@ -253,6 +261,12 @@ class FileTest(unittest.TestCase):
         self.assertEqual(out, "")
         self.assertIn("connection reset", err)
         self.assertIn("https://github.com/acme/tools/issues", err)
+
+    def test_link_when_github_refuses(self):
+        code, out, _, err = self.file(create=done(1, "", "HTTP 403: Resource not accessible"))
+        self.assertEqual(code, 0)
+        self.assertTrue(out.startswith("link "))
+        self.assertIn("refused", err)
 
     def test_unsure_when_gh_times_out(self):
         code, out, _, _ = self.file(create=subprocess.TimeoutExpired("gh", 60))

@@ -27,6 +27,11 @@ from urllib.parse import urlencode
 
 KINDS = ("bug", "improvement")
 
+# Linux distributions named in Context; any other ID may be an organisation's own build.
+DISTRIBUTIONS = {"alpine", "amzn", "arch", "centos", "debian", "fedora", "linuxmint", "nixos",
+                 "opensuse-leap", "opensuse-tumbleweed", "pop", "rhel", "rocky", "almalinux",
+                 "ubuntu"}
+
 # GitHub answers 414 URI Too Long somewhere above this; it does not publish the limit.
 MAX_URL = 8000
 # GitHub's limits on an issue's title and body.
@@ -50,7 +55,7 @@ def plugin_root():
 
 
 def read_manifest(root):
-    with open(os.path.join(root, ".claude-plugin", "plugin.json")) as f:
+    with open(os.path.join(root, ".claude-plugin", "plugin.json"), encoding="utf-8") as f:
         return json.load(f)
 
 
@@ -96,12 +101,14 @@ def os_name():
     if system == "Darwin":
         return ("macOS " + platform.mac_ver()[0]).strip()
     if system == "Linux":
-        # ID and VERSION_ID, not PRETTY_NAME, which organisations rename after themselves.
+        # Only a well-known distribution's ID and version: organisations rebrand the rest.
         try:
             release = platform.freedesktop_os_release()
         except (OSError, AttributeError):
             return "Linux"
-        return " ".join(["Linux", release.get("ID", ""), release.get("VERSION_ID", "")]).strip()
+        if release.get("ID") not in DISTRIBUTIONS:
+            return "Linux"
+        return " ".join(["Linux", release["ID"], release.get("VERSION_ID", "")]).strip()
     return system or "unknown"
 
 
@@ -122,7 +129,7 @@ def can_label(slug):
     """Say whether the gh account may label the repository's issues; GitHub refuses others."""
     try:
         result = run(["gh", "api", "--hostname", "github.com", "repos/" + slug,
-                      "--jq", ".permissions.triage"])
+                      "--jq", ".permissions | (.push or .triage)"])
     except (OSError, ValueError, subprocess.SubprocessError):
         return False
     return result.returncode == 0 and result.stdout.strip() == "true"
@@ -146,6 +153,11 @@ def gh_filed(slug, title, body, labels):
     except subprocess.TimeoutExpired:
         raise Unsure("gh timed out")
     if result.returncode != 0:
+        # GitHub answers a request it refused, such as one without permission, with HTTP 4xx
+        # and creates nothing; any other failure leaves it unknown.
+        if re.search(r"\bHTTP 4\d\d\b", result.stderr):
+            print("issue.py: GitHub refused the issue: " + result.stderr.strip(), file=sys.stderr)
+            return None
         raise Unsure("gh failed: " + result.stderr.strip())
     urls = [line for line in result.stdout.split() if line.startswith("https://")]
     if not urls:
@@ -162,7 +174,8 @@ def parse_draft(text):
     """
     lines = text.lstrip("\ufeff").replace("\r\n", "\n").split("\n")
     title, body = lines[0].strip(), "\n".join(lines[1:]).strip("\n")
-    if re.match(r"([#*_>]|(title|subject|kind)\s*:)", title, re.IGNORECASE):
+    if re.match(r"(#+\s|>\s|\*\*|__|\*\w+\s*:\*|(title|subject|kind)\s*:)", title,
+                re.IGNORECASE):
         title = ""
     return title, body + "\n"
 
@@ -198,7 +211,8 @@ def file_issue(root, kind, draft, login=None):
                   % (current, login), file=sys.stderr)
             return 2
         if not current:
-            print("issue.py: gh is no longer signed in to github.com", file=sys.stderr)
+            print("issue.py: gh couldn't confirm its github.com account (signed out or "
+                  "unreachable)", file=sys.stderr)
         else:
             try:
                 url = gh_filed(slug, title, body, labels)
@@ -248,7 +262,7 @@ def main(argv=None):
                     "body, or a draft that isn't UTF-8; 3 too long: over GitHub's 256-character "
                     "title or 65,536-character body, or gh wasn't used and the issue is too "
                     "long for a link; 4 gh ran but its result is "
-                    "unknown (it failed, timed out or printed no URL) and it may have filed the "
+                    "unknown (it failed without GitHub refusing it, timed out or printed no URL) and it may have filed the "
                     "issue, so check the repository's issues before trying again.",
     )
     filer.add_argument("--kind", required=True, choices=KINDS,

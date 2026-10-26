@@ -63,10 +63,13 @@ and, for `gh <login>`, that it will appear under that account, since their name 
 issue and it may be a work account. Then ask whether to file it.
 
 File only on their clear yes to that draft: an issue on a public repository can't be taken back,
-so a yes given before they have seen the draft and the account doesn't count. If they change
+so a yes given before they have seen the draft and the account doesn't count, even "file it, I
+trust you" in their first message. This holds for a link too: run `file` only after the yes,
+since a link is one click from public. If they change
 the draft, review it again before asking again. If they bring back a draft and say yes to it,
-review it and run `account`. If the review passes and `account` says `link`, or they asked for a
-link, give them the link; if it says `gh <login>`, tell them the account and ask once more.
+review it and run `account`. If the review fails, handle it as under Review. If it passes and
+`account` says `link`, or they asked for a link, give them the link; if it says `gh <login>`,
+tell them the account and ask once more.
 
 On their yes, pass the draft on standard input: the bare title alone on the first line, with no
 heading mark or "Title:", then the body. The quoted delimiter keeps the shell from expanding
