@@ -8,9 +8,8 @@ itself.
 Commands:
   context   Print the Context lines for an issue: plugin version, Claude Code version, OS.
   file      File an issue whose draft (title line, then body) is read from standard input.
-            Uses the GitHub CLI (`gh`) when it is installed; if it is missing or refuses,
-            for instance because it is signed out, prints a link that opens GitHub's
-            new-issue page already filled in.
+            Uses the GitHub CLI (`gh`) when it is installed and signed in to github.com;
+            otherwise prints a link that opens GitHub's new-issue page already filled in.
 
 Run `issue.py <command> --help` for each command's arguments, output and exit codes.
 """
@@ -25,14 +24,15 @@ import subprocess
 import sys
 from urllib.parse import urlencode
 
-LABELS = {"bug": "bug", "improvement": "enhancement"}
+KINDS = ("bug", "improvement")
 
 # GitHub answers 414 URI Too Long somewhere above this; it does not publish the limit.
 MAX_URL = 8000
 
 
 def run(args, input=None):
-    return subprocess.run(args, input=input, capture_output=True, text=True, timeout=60)
+    return subprocess.run(args, input=input, capture_output=True, text=True, encoding="utf-8",
+                          errors="replace", timeout=60)
 
 
 def plugin_root():
@@ -48,6 +48,15 @@ def plugin_root():
 def read_manifest(root):
     with open(os.path.join(root, ".claude-plugin", "plugin.json")) as f:
         return json.load(f)
+
+
+def template_label(root, kind):
+    """Return the label that the kind's issue template in .github/ISSUE_TEMPLATE/ applies."""
+    with open(os.path.join(root, ".github", "ISSUE_TEMPLATE", kind + ".md"), encoding="utf-8") as f:
+        match = re.search(r"^labels:\s*\[?\s*([^,\]\n]+?)\s*[\],]?\s*$", f.read(), re.MULTILINE)
+    if not match:
+        raise ValueError("the %s template sets no label" % kind)
+    return match.group(1).strip("'\"")
 
 
 def repo_slug(repository):
@@ -84,7 +93,9 @@ def os_name():
             return "Linux"
         return release.get("PRETTY_NAME") or release.get("NAME") or "Linux"
     if system == "Windows":
-        return "Windows " + platform.release()
+        # Windows 11 reports release "10" before Python 3.12; its builds start at 22000.
+        build = platform.version().split(".")[-1]
+        return "Windows 11" if build.isdigit() and int(build) >= 22000 else "Windows " + platform.release()
     return system or "unknown"
 
 
@@ -102,8 +113,20 @@ class Unsure(Exception):
 
 
 def gh_filed(slug, title, body, label):
-    """File with gh. Return the issue URL, or None if gh is missing or refused; raise Unsure."""
+    """File with gh. Return the issue URL, or None if gh can't try; raise Unsure if it tried.
+
+    Only a failure before the issue is sent, such as gh missing or signed out of github.com,
+    is safe to follow with a link: once `gh issue create` has run, it may have filed the issue
+    even when it reports an error.
+    """
     if not shutil.which("gh"):
+        return None
+    try:
+        status = run(["gh", "auth", "status", "--hostname", "github.com"])
+    except (OSError, subprocess.SubprocessError):
+        return None
+    if status.returncode != 0:
+        print("issue.py: gh is not signed in to github.com", file=sys.stderr)
         return None
     args = ["gh", "issue", "create", "--repo", "github.com/" + slug, "--title", title,
             "--label", label, "--body-file", "-"]
@@ -114,8 +137,7 @@ def gh_filed(slug, title, body, label):
     except subprocess.TimeoutExpired:
         raise Unsure("gh timed out")
     if result.returncode != 0:
-        print("issue.py: gh could not file the issue: " + result.stderr.strip(), file=sys.stderr)
-        return None
+        raise Unsure("gh failed: " + result.stderr.strip())
     urls = [line for line in result.stdout.split() if line.startswith("https://")]
     if not urls:
         raise Unsure("gh succeeded but printed no issue URL")
@@ -124,7 +146,8 @@ def gh_filed(slug, title, body, label):
 
 def parse_draft(text):
     """Split a draft into its title (the first line) and body (the rest)."""
-    title, _, body = text.lstrip("\n").partition("\n")
+    title, _, body = text.replace("\r\n", "\n").lstrip("\n").partition("\n")
+    title = re.sub(r"^(#+\s*|title:\s*)", "", title.strip(), flags=re.IGNORECASE)
     return title.strip(), body.strip("\n") + "\n"
 
 
@@ -134,7 +157,7 @@ def file_issue(root, kind, draft, link_only=False):
         print("issue.py: the draft needs a title line and a body", file=sys.stderr)
         return 2
     slug = repo_slug(read_manifest(root).get("repository"))
-    label = LABELS[kind]
+    label = template_label(root, kind)
     if not link_only:
         try:
             url = gh_filed(slug, title, body, label)
@@ -171,13 +194,15 @@ def main(argv=None):
                     "the title on the first line, then the body. Prints one line: "
                     "\"filed <issue URL>\" if gh filed it, or \"link <URL>\" for the person to "
                     "open and submit; gh's error, if it failed, goes to standard error. Exit "
-                    "codes: 0 done; 1 the plugin manifest can't be read or has no GitHub "
-                    "repository; 2 bad arguments, or no title or body; 3 gh didn't file it and "
-                    "the issue is too long for a link; 4 gh may have filed it (timed out or "
-                    "printed no URL), so check the repository's issues before trying again.",
+                    "codes: 0 done; 1 the plugin's manifest or issue templates can't be read, or name "
+                    "no GitHub repository or label; 2 bad arguments, a draft with no title or "
+                    "body, or a draft that isn't UTF-8; 3 gh wasn't used (missing or signed "
+                    "out) and the issue is too long for a link; 4 gh ran but its result is "
+                    "unknown (it failed, timed out or printed no URL) and it may have filed the "
+                    "issue, so check the repository's issues before trying again.",
     )
-    filer.add_argument("--kind", required=True, choices=sorted(LABELS),
-                       help="bug or improvement; sets the label (bug or enhancement)")
+    filer.add_argument("--kind", required=True, choices=KINDS,
+                       help="bug or improvement; the label is the one that kind's template sets")
     filer.add_argument("--link-only", action="store_true",
                        help="never run gh; always print the link")
     args = parser.parse_args(argv)
@@ -186,7 +211,12 @@ def main(argv=None):
         if args.command == "context":
             sys.stdout.write(context(root))
             return 0
-        return file_issue(root, args.kind, sys.stdin.read(), args.link_only)
+        try:
+            draft = sys.stdin.buffer.read().decode("utf-8")
+        except UnicodeDecodeError:
+            print("issue.py: the draft is not UTF-8 text", file=sys.stderr)
+            return 2
+        return file_issue(root, args.kind, draft, args.link_only)
     except (OSError, ValueError) as error:
         print("issue.py: " + str(error), file=sys.stderr)
         return 1

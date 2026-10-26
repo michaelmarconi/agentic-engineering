@@ -21,6 +21,14 @@ def make_plugin(root, repository="https://github.com/acme/tools", version="1.2.3
         manifest["repository"] = repository
     with open(os.path.join(root, ".claude-plugin", "plugin.json"), "w") as f:
         json.dump(manifest, f)
+    os.makedirs(os.path.join(root, ".github", "ISSUE_TEMPLATE"))
+    for kind, label in (("bug", "bug"), ("improvement", "[enhancement]")):
+        with open(os.path.join(root, ".github", "ISSUE_TEMPLATE", kind + ".md"), "w") as f:
+            f.write("---\nname: %s\nlabels: %s\n---\n\n## Context\n" % (kind, label))
+
+
+def stdin_bytes(data):
+    return io.TextIOWrapper(io.BytesIO(data), encoding="utf-8")
 
 
 def done(returncode=0, stdout="", stderr=""):
@@ -71,8 +79,16 @@ class LinkTest(unittest.TestCase):
         self.assertEqual(query["body"], ["Body & more"])
         self.assertEqual(query["labels"], ["bug"])
 
-    def test_label_for_each_kind(self):
-        self.assertEqual(issue.LABELS, {"bug": "bug", "improvement": "enhancement"})
+    def test_label_comes_from_template(self):
+        with tempfile.TemporaryDirectory() as root:
+            make_plugin(root)
+            self.assertEqual(issue.template_label(root, "bug"), "bug")
+            self.assertEqual(issue.template_label(root, "improvement"), "enhancement")
+
+    def test_plugin_templates_set_labels(self):
+        root = issue.plugin_root()
+        self.assertEqual(issue.template_label(root, "bug"), "bug")
+        self.assertEqual(issue.template_label(root, "improvement"), "enhancement")
 
 
 class ContextTest(unittest.TestCase):
@@ -104,6 +120,12 @@ class OsNameTest(unittest.TestCase):
                                   return_value={"PRETTY_NAME": "Ubuntu 24.04 LTS"}):
             self.assertEqual(issue.os_name(), "Ubuntu 24.04 LTS")
 
+    def test_windows_11_despite_release_10(self):
+        with mock.patch.object(issue.platform, "system", return_value="Windows"), \
+                mock.patch.object(issue.platform, "release", return_value="10"), \
+                mock.patch.object(issue.platform, "version", return_value="10.0.22631"):
+            self.assertEqual(issue.os_name(), "Windows 11")
+
     def test_linux_without_os_release(self):
         with mock.patch.object(issue.platform, "system", return_value="Linux"), \
                 mock.patch.object(issue.platform, "freedesktop_os_release", create=True,
@@ -118,6 +140,13 @@ class ParseDraftTest(unittest.TestCase):
             ("A `title` with $HOME", "## What happened\nIt broke.\n"),
         )
 
+    def test_windows_line_endings(self):
+        self.assertEqual(issue.parse_draft("T\r\n\r\nbody\r\n"), ("T", "body\n"))
+
+    def test_heading_or_label_prefix_dropped(self):
+        self.assertEqual(issue.parse_draft("# A title\n\nb")[0], "A title")
+        self.assertEqual(issue.parse_draft("Title: A title\n\nb")[0], "A title")
+
 
 class FileTest(unittest.TestCase):
     def setUp(self):
@@ -128,12 +157,15 @@ class FileTest(unittest.TestCase):
     def tearDown(self):
         self.tmp.cleanup()
 
-    def file(self, *, gh=True, create=None, link_only=False,
+    def file(self, *, gh=True, auth=0, create=None, link_only=False,
              draft="A title\n\n## What happened\n"):
         calls = []
 
         def fake_run(args, input=None):
             calls.append((args, input))
+            if args[:3] == ["gh", "auth", "status"]:
+                self.assertEqual(args[3:], ["--hostname", "github.com"])
+                return done(auth)
             if isinstance(create, BaseException):
                 raise create
             return create or done(0, "Creating issue\nhttps://github.com/acme/tools/issues/7\n")
@@ -163,11 +195,19 @@ class FileTest(unittest.TestCase):
         self.assertTrue(out.startswith("link https://github.com/acme/tools/issues/new?"))
         self.assertEqual(calls, [])
 
-    def test_link_and_reason_when_gh_refuses(self):
-        code, out, _, err = self.file(create=done(4, "", "not logged in"))
+    def test_link_when_gh_signed_out(self):
+        code, out, calls, err = self.file(auth=1)
         self.assertEqual(code, 0)
         self.assertTrue(out.startswith("link "))
-        self.assertIn("not logged in", err)
+        self.assertEqual(len(calls), 1)
+        self.assertIn("not signed in", err)
+
+    def test_unsure_when_gh_create_fails(self):
+        # gh may report an error after GitHub created the issue, so a link could duplicate it.
+        code, out, _, err = self.file(create=done(1, "", "connection reset"))
+        self.assertEqual(code, 4)
+        self.assertEqual(out, "")
+        self.assertIn("connection reset", err)
 
     def test_unsure_when_gh_times_out(self):
         code, out, _, err = self.file(create=subprocess.TimeoutExpired("gh", 60))
@@ -199,14 +239,19 @@ class FileTest(unittest.TestCase):
 class MainTest(unittest.TestCase):
     def test_file_reads_draft_from_stdin(self):
         with mock.patch.object(issue, "file_issue", return_value=0) as file_issue, \
-                mock.patch("sys.stdin", io.StringIO("T\n\nthe body")):
+                mock.patch("sys.stdin", stdin_bytes("T\n\nthe body".encode())):
             code = issue.main(["file", "--kind", "improvement", "--link-only"])
         self.assertEqual(code, 0)
         self.assertEqual(file_issue.call_args.args[1:], ("improvement", "T\n\nthe body", True))
 
+    def test_non_utf8_draft_is_usage_error(self):
+        with mock.patch("sys.stdin", stdin_bytes(b"T\n\n\xff\xfe")), \
+                mock.patch("sys.stderr", io.StringIO()):
+            self.assertEqual(issue.main(["file", "--kind", "bug"]), 2)
+
     def test_bad_repository_exits_1(self):
         with mock.patch.object(issue, "file_issue", side_effect=ValueError("not GitHub")), \
-                mock.patch("sys.stdin", io.StringIO("T\n\nb")), \
+                mock.patch("sys.stdin", stdin_bytes(b"T\n\nb")), \
                 mock.patch("sys.stderr", io.StringIO()) as err:
             code = issue.main(["file", "--kind", "bug"])
         self.assertEqual(code, 1)

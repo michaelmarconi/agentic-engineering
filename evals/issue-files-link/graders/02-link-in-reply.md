@@ -1,5 +1,5 @@
 ---
 type: regex
-pattern: "https://github\\.com/michaelmarconi/sdlc/issues/new\\?"
+pattern: "https://github\\.com/[^/\\s]+/[^/\\s]+/issues/new\\?"
 weight: 1
 ---
