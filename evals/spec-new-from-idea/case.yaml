@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: spec-new-from-idea
+expected_outcome: |
+  A new spec at docs/specs/ for password reset, with status Draft, the six sections, requirements as EARS rules with boundary scenarios around 24 hours and Verified by lines, and unknowns listed as open questions rather than guessed.

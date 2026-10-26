@@ -33,7 +33,7 @@ a rule names a number, it is a hard limit; everything else is judgement.
      that `/build` also uses); after that it stops and asks the person, showing the report. Only
      a decision the skill cannot make goes to the person.
    - The person gets the document and the final report.
-5. **Evaluated.** Every skill ships with evals under `skills/<name>/evals/`, in the case-folder
+5. **Evaluated.** Every skill ships with evals under the plugin's `evals/`, in the case-folder
    layout that skill-creator writes and `claude plugin eval` runs. Write the rubric first, then
    the evals: each rubric check is also an eval assertion, so one rubric both tests the skill and
    reviews its output. Case folder names start with the skill's name (`<name>-<what-it-checks>`)
@@ -44,9 +44,11 @@ a rule names a number, it is a hard limit; everything else is judgement.
      that passes either way tests nothing.
 6. **Built with skill-creator.** Create, change and tune skills, and their descriptions, with
    Anthropic's `skill-creator` skill, following its draft, eval, review and iterate loop.
-7. **Deterministic where possible.** Anything a program can do reliably (parsing, validation,
-   counting, file layout, templating) lives in a script, not in prose: in the skill's `scripts/`,
-   or the plugin's `scripts/` when a hook runs it. Scripts are
+7. **Deterministic where it earns its place.** Use a script only when it must be exact every
+   time, as with the status rules, or when evals show Claude getting the job wrong or wasting
+   effort on it. Otherwise leave it to Claude and the reviewer, whose judgement copes with cases
+   a script can't foresee. A script lives in the skill's `scripts/`, or the plugin's `scripts/`
+   when a hook runs it. Scripts are
    self-contained: standard-library Python 3 or POSIX shell, no install step, no network unless
    the task needs it, and runnable on macOS, Linux and in Claude Code on the web.
    - **Test-driven.** Write a failing test before each behaviour. Tests use the standard-library
@@ -79,7 +81,8 @@ skills/
     scripts/           # optional, deterministic helpers and their tests
     references/        # rubric.md (required for skills that write documents), others on demand
     assets/            # optional, templates and static files
-    evals/<case>/      # required, one folder per test case
+evals/
+  <name>-<case>/       # required, one folder per test case, run by `claude plugin eval`
 agents/
   <name>-reviewer.md   # one reviewer per skill that writes documents
 hooks/
@@ -103,7 +106,7 @@ Nothing else belongs at the root without a reason recorded in the change that ad
   `python3 -m unittest discover -s skills/<name>/scripts`, and for the plugin's own scripts if
   you changed them: `python3 -m unittest discover -s scripts`. All must pass.
 - Run the evals for each skill you changed:
-  `claude plugin eval . --eval-dir skills --case '<name>-*'`. Evals are billed model runs: run
+  `claude plugin eval . --case '<name>-*'`, adding `--scaffold` for cases with input files. Evals are billed model runs: run
   the ones you touched, never the whole suite unprompted.
 - Bump `version` in `.claude-plugin/plugin.json` (semver) in any change that alters what users
   receive. Installed copies only update when the version string changes.
