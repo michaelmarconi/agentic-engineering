@@ -79,11 +79,15 @@ class NewSpec(Workspace):
     def test_new_ready_refused(self):
         self.assertIn("Draft", self.write(spec("Ready to build")))
 
-    def test_missing_status_refused(self):
-        self.assertIn("status", self.write("# Thing\n"))
+    def test_file_without_lifecycle_status_left_alone(self):
+        self.assertIsNone(self.write("# Thing\n"))
+        self.assertIsNone(self.write(spec("Approved")))
 
-    def test_unknown_status_refused(self):
-        self.assertIn("Approved", self.write(spec("Approved")))
+    def test_new_spec_created_by_edit_checked(self):
+        self.assertIsNotNone(self.edit("", spec("Built")))
+
+    def test_byte_order_mark(self):
+        self.assertIsNone(self.write("\ufeff" + spec()))
 
     def test_other_files_ignored(self):
         other = os.path.join(self.tmp.name, "docs", "notes.md")
@@ -95,6 +99,26 @@ class NewSpec(Workspace):
 
 
 class Transitions(Workspace):
+    def test_losing_status_refused(self):
+        self.put(spec())
+        self.assertIn("status", self.edit("status: Draft\n", ""))
+
+    def test_unknown_status_refused(self):
+        self.put(spec())
+        self.assertIn("Approved", self.edit("status: Draft", "status: Approved"))
+
+    def test_spec_without_status_cannot_skip_draft(self):
+        self.put("# Thing\n")
+        self.assertIn("Draft", self.write(spec("Ready to build")))
+
+    def test_legacy_file_edit_allowed(self):
+        self.put("# Thing\n")
+        self.assertIsNone(self.edit("Thing", "Other"))
+
+    def test_status_like_body_line_counts_as_change(self):
+        self.put(spec("Built", rule="status: 404"))
+        self.assertIn("Draft", self.edit("status: 404", "status: 410"))
+
     def test_draft_to_ready_without_questions_allowed(self):
         self.put(spec())
         self.assertIsNone(self.edit("status: Draft", "status: Ready to build"))

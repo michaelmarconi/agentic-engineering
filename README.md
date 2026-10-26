@@ -30,8 +30,9 @@ The plugin gives Claude three kinds of help to work with these documents:
   only the tools they need, so their work is not swayed by your conversation. A skill hands them work such as
   building a plan or reviewing a document.
 - **Hooks:** small scripts Claude Code runs automatically at set moments. This plugin uses them
-  to give Claude a summary of the lifecycle when a session starts, and to refuse status changes
-  Claude makes that the lifecycle does not allow.
+  to give Claude a summary of the lifecycle when a session starts in a repository that uses it,
+  and to refuse status changes Claude makes that the lifecycle does not allow. They need
+  Python 3.
 
 Every document a skill writes is checked by a reviewer agent before you see it. Apart from the
 documents, the plugin adds nothing to your repository, unless you choose to install it for
@@ -114,7 +115,8 @@ the ADR.
 
 The rules the lifecycle follows, such as one decision per ADR, are kept in one short file,
 [context/sdlc.md](context/sdlc.md). The plugin gives that file to Claude at the start of every
-session, so Claude knows how the steps fit together even when you run only one of them.
+session in a repository that has any of the lifecycle's documents, so Claude knows how the
+steps fit together even when you run only one of them.
 
 ## Install
 

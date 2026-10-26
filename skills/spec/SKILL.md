@@ -48,7 +48,8 @@ values. End it with how we will know it holds, by a method that can really be ca
 The `status:` frontmatter says how far the spec is: Draft, Ready to build or Built.
 
 - Write new and changed specs as Draft. Changing a spec that is Ready to build or Built returns
-  it to Draft, because what was agreed or built no longer matches.
+  it to Draft, because what was agreed or built no longer matches: set the status to Draft
+  first, as a plugin hook refuses any other change to such a spec.
 - Set Ready to build only when the person asks for it, the spec has no open questions (rubric
   check 9), and the review below has passed. If questions remain, say which and leave the spec
   as Draft.

@@ -77,11 +77,12 @@ Three things keep specs in this shape:
   list of pass-or-fail checks: the sections are all there, each requirement has one EARS rule, its scenarios add real
   cases, and Verified by names a method. `/spec` fixes what the reviewer finds and you get the
   spec with the final report.
-- **Status.** A hook checks every edit Claude makes to a spec and refuses one the lifecycle
-  does not allow: a new spec that is not Draft, Ready to build while Open questions is not
-  empty, Built set by anything but `/build` (which sets it after its own review passes), or a
-  change to a Ready to build or Built spec that does not return it to Draft. Plans will get the
-  same kind of check when `/plan` is built.
+- **Status.** A hook checks each edit Claude makes to a spec with its file-editing tools and
+  refuses one the lifecycle does not allow: a new spec that is not Draft, Ready to build while
+  Open questions is not empty, setting Built, or a change to a Ready to build or Built spec that
+  does not return it to Draft. Built is refused for now because only `/build` may set it, after
+  its own review passes, and `/build` is not built yet. Plans will get the same kind of check
+  when `/plan` is built.
 - **Audit.** [`/audit`](../../README.md#audit) finds specs and code that no longer agree, such
   as after a spec was edited by hand, which the hook does not see.
 

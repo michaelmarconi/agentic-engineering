@@ -41,7 +41,8 @@ a rule names a number, it is a hard limit; everything else is judgement.
    - One case per distinct behaviour the skill promises.
    - Trigger cases for the description: prompts that should and should not invoke it.
    - Each case must pass with the skill and fail, or score clearly worse, without it. A case
-     that passes either way tests nothing.
+     that passes either way tests nothing. Cases that should not trigger the skill are the
+     exception: they pass without it by design.
 6. **Built with skill-creator.** Create, change and tune skills, and their descriptions, with
    Anthropic's `skill-creator` skill, following its draft, eval, review and iterate loop.
 7. **Deterministic where it earns its place.** Use a script only when it must be exact every

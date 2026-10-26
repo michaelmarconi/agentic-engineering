@@ -18,7 +18,8 @@ Principles:
 - One decision per ADR. An accepted ADR is never edited, only superseded whole.
 - Accepted ADRs and the code are the design; there is no separate design document.
 - Every spec, ADR and plan carries its own status. A plan holds no state that would be lost when it is deleted.
-- Only legal status moves are allowed, and only /build sets Built. A plugin hook refuses the rest.
+- Only legal status moves are allowed, and only /build sets Built. A plugin hook refuses illegal
+  spec status changes made with Claude's file-editing tools.
 - A spec is Built when /build's spec reviewer finds every requirement in the whole spec verified,
   not just the plan's part. /audit repeats that judgement later.
 - A plan is Ready to build only when each spec it touches is Ready to build or Built, and each

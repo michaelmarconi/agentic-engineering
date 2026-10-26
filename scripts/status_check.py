@@ -5,14 +5,16 @@ Claude Code runs this as a PreToolUse hook on Write, Edit and MultiEdit. It read
 JSON from stdin and, for any file under docs/specs/ named *.spec.md, works out what the file
 would contain after the edit and compares it with what is on disk now. It refuses:
 
-- a status that is missing, or not Draft, Ready to build or Built;
-- a new spec that is not Draft;
-- setting Built, which only the build step does;
+- a spec that had a lifecycle status (Draft, Ready to build or Built) losing it;
+- a spec that had none being given any status but Draft, so new specs start as Draft;
+- setting Built: only the build step may, and it does not exist yet;
 - Ready to build or Built to anything but Draft;
 - Ready to build while the Open questions section is not empty or "None.";
 - a change to a Ready to build or Built spec that does not return it to Draft.
 
-Edits made outside Claude's Write and Edit tools, such as by hand, are not seen.
+A file that has no lifecycle status before or after the edit is left alone, so a project that
+keeps other files under docs/specs/ is not affected. Edits made any other way, by hand or through
+a shell command, are not seen.
 """
 
 import argparse
@@ -31,7 +33,7 @@ def is_spec(path):
 
 
 def frontmatter(text):
-    lines = text.splitlines()
+    lines = text.lstrip("\ufeff").splitlines()
     if not lines or lines[0].strip() != "---":
         return None
     for end, line in enumerate(lines[1:], start=1):
@@ -49,7 +51,9 @@ def status_of(text):
 
 
 def without_status(text):
-    return [line for line in text.splitlines() if not line.startswith("status:")]
+    lines = text.lstrip("\ufeff").splitlines()
+    end = len(frontmatter(text) or []) + 1
+    return [line for i, line in enumerate(lines) if i > end or not line.startswith("status:")]
 
 
 def has_open_questions(text):
@@ -71,6 +75,8 @@ def after_edit(tool, tool_input, before):
     if tool == "Write":
         return tool_input.get("content", "")
     if before is None:
+        if tool == "Edit" and tool_input.get("old_string") == "":
+            return tool_input.get("new_string", "")
         return None
     if tool == "Edit":
         edits = [tool_input]
@@ -104,13 +110,15 @@ def check(payload):
     new = status_of(after)
     old = status_of(before) if before is not None else None
     name = os.path.basename(path)
+    if old not in STATUSES and new not in STATUSES:
+        return None
     if new not in STATUSES:
         found = f"'{new}'" if new else "none"
         return (
             f"{name}: the spec needs `status:` frontmatter set to Draft, Ready to build or Built "
             f"(found {found})."
         )
-    if before is None and new != "Draft":
+    if old not in STATUSES and new != "Draft":
         return f"{name}: a new spec starts as Draft; it was written as {new}."
     if new == old:
         if new != "Draft" and without_status(after) != without_status(before):
@@ -120,7 +128,10 @@ def check(payload):
             )
         return None
     if new == "Built":
-        return f"{name}: only the build step sets Built, once its review finds every requirement verified."
+        return (
+            f"{name}: only the build step sets Built, once its review finds every requirement "
+            "verified. Leave the status as it is."
+        )
     if old in ("Ready to build", "Built") and new != "Draft":
         return f"{name}: a {old} spec can only go back to Draft, not to {new}."
     if new == "Ready to build" and has_open_questions(after):
