@@ -1,7 +1,6 @@
 ---
 type: llm
-focus: trace
+focus: last_message
 weight: 1
 ---
-
-The final answer explains that the spec can't be Ready to build yet and names at least one of the spec's open questions.
+The reply explains that the spec can't be marked ready to build while it has open questions, and names at least one of them.

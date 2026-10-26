@@ -23,20 +23,24 @@ If `docs/brief.md` exists, read it so the spec fits the product.
 
 ## Shape it with the person
 
-Ask one question at a time, and play back what you have understood as you go. If the person
+Ask one question at a time, and play back what you have understood as you go. Settle each
+answer before moving on: if the person answers part of what you asked, take that part and ask
+again about the rest, because silence is not agreement; if they ask what you think, recommend
+something and wait for them to accept it. If the person
 would rather not be interviewed, draft from what they have said. Read whatever they point you
 to, such as code, tickets or notes, and research what you need to: that is part of writing a
 spec.
 
 Never fill a gap with a guess. An unknown goes into Open questions, worded so it can be
-answered. When the person states a technical choice (a library, a store, a design), keep the
-behaviour it serves and leave the choice out: either it is already decided, in which case
-suggest recording it with `/sdlc:adr`, or it is not, in which case it is an open question. When
+answered. When the person names how something should be built (a library, a service, a named bucket or
+database, a design), keep the behaviour it serves and leave the choice out of every section,
+even when they state it as settled: the spec should still hold if the choice changes. If it is
+already decided, suggest recording it with `/sdlc:adr`; if not, make it an open question. When
 an unknown can only be settled by trying something, suggest `/sdlc:spike`.
 
 Write each requirement as one rule in an EARS pattern using SHALL, then scenarios that each pin
 down a concrete case the rule alone leaves open: a boundary, an error, an example with real
-values. End it with how we will know it holds.
+values. End it with how we will know it holds, by a method that can really be carried out.
 
 ## Status
 

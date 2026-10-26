@@ -1,7 +1,6 @@
 ---
 type: llm
-focus: trace
+focus: { source: file, path: docs/specs/sales-report-export.spec.md }
 weight: 1
 ---
-
-No requirement or scenario in the spec requires the S3 bucket reports-prod; storage is described by behaviour (for example that finance can download the file) if at all.
+No requirement, scenario or constraint requires the S3 bucket reports-prod or S3; where the file is kept is described by behaviour, if at all.

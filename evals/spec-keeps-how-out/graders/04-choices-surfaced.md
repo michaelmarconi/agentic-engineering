@@ -3,5 +3,4 @@ type: llm
 focus: trace
 weight: 1
 ---
-
-The spec or the final answer raises pandas and/or S3 as technical choices, either as open questions or as a suggestion to record them as ADRs.
+The spec or Claude's final reply raises pandas and/or S3 as technical choices to settle separately, as open questions or as decisions to record in an ADR.

@@ -1,7 +1,6 @@
 ---
 type: llm
-focus: trace
+focus: { source: file, path: docs/specs/bulk-invite.spec.md }
 weight: 1
 ---
-
-docs/specs/bulk-invite.spec.md still has status Draft at the end.
+The frontmatter status is still Draft.

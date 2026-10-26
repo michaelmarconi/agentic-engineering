@@ -1,7 +1,6 @@
 ---
 type: llm
-focus: trace
+focus: { source: file, path: docs/specs/password-reset.spec.md }
 weight: 1
 ---
-
-The spec's frontmatter sets status to Draft.
+The frontmatter sets status to Draft.

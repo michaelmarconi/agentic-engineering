@@ -1,7 +1,5 @@
 ---
-type: llm
-focus: trace
+type: file_exists
+path: docs/specs/sales-report-export.spec.md
 weight: 1
 ---
-
-A new spec file for the monthly sales report export exists under docs/specs/ with status Draft.

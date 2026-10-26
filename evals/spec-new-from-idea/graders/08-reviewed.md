@@ -1,7 +1,6 @@
 ---
-type: llm
-focus: trace
+type: regex
+pattern: spec-reviewer
+target: trace
 weight: 1
 ---
-
-The spec-reviewer agent was run on the spec before the final answer, and the final answer includes or summarises its report.

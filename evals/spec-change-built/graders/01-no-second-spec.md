@@ -1,0 +1,6 @@
+---
+type: file_exists
+path: "docs/specs/**"
+exists: false
+weight: 1
+---
