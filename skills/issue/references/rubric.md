@@ -21,8 +21,10 @@ checking, and quotes the draft as evidence for every failure.
    skill, agent or hook involved (or says none is known), and describes any lifecycle documents
    involved by kind and status, such as "a Ready to build spec with two requirements".
 6. **Reproducible.** A bug's Steps to reproduce let someone without the person's repository
-   produce the same behaviour: a starting state built from stand-ins, the request made, and
-   what then happens.
+   produce the same behaviour: a starting state built from stand-ins, the exact request to make,
+   and what then happens. When the original request isn't known, the steps give a concrete
+   request that should reproduce it and say it is a reconstruction; "mention a technology in
+   the request" is not a request.
 7. **Concrete.** What happened and what was expected (or what got in the way and what would be
    better) are stated separately and concretely enough to tell whether a fix works. "It was
    confusing" fails unless it says what was confusing and where.
