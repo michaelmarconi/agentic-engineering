@@ -36,7 +36,8 @@ link to that address if it belongs to an account.
 - WHEN someone requests a reset for priya@example.com
 - THEN a reset link is emailed to priya@example.com
 
-Verified by: an integration test of the request flow.
+Verified by: an integration test of the request flow, using a stand-in mail service that records
+outgoing messages.
 
 ### Requirement: Reset links expire
 

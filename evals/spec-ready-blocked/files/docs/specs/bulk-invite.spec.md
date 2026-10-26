@@ -34,7 +34,8 @@ valid address that is not already a member.
 - WHEN an admin submits tom@example.com and ana@example.com
 - THEN only ana@example.com receives an invitation
 
-Verified by: an integration test of the invite flow.
+Verified by: an integration test of the invite flow, using a stand-in mail service that records
+outgoing invitations.
 
 ## Constraints
 

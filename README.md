@@ -1,6 +1,6 @@
 # Software Development Lifecycle (SDLC)
 
-*In development: the lifecycle is being designed and its skills are not built yet.*
+*In development: `/spec` is built; the other skills are still being designed.*
 
 A software development lifecycle is the path work takes from an idea for a product to working
 code. This repository defines one, and packages it as a plugin for
@@ -149,7 +149,7 @@ To update automatically, run `/plugin`, open **Marketplaces**, select `sdlc` and
 
 | Skill | What it does |
 | --- | --- |
-| _None yet_ | |
+| [`/spec`](docs/skills/spec.md) | Writes or changes a spec with you, and has it reviewed before you see it |
 
 ## Contributing
 

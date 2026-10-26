@@ -48,8 +48,8 @@ The `status:` frontmatter says how far the spec is: Draft, Ready to build or Bui
 
 - Write new and changed specs as Draft. Changing a spec that is Ready to build or Built returns
   it to Draft, because what was agreed or built no longer matches.
-- Set Ready to build only when the person asks for it and Open questions is empty or says only
-  "None." If questions
+- Set Ready to build only when the person asks for it and the spec has no open questions
+  (rubric check 9). If questions
   remain, say which and leave the spec as Draft.
 - Never set Built. Only `/sdlc:build` does, once its review finds every requirement verified.
 
@@ -60,7 +60,7 @@ reads everything else it needs itself. It reports pass or fail for each rubric c
 evidence, other findings, and anything that needs the person.
 
 Fix every finding you can and run the reviewer again, for up to ${user_config.review_rounds}
-rounds in all. A finding only the person can settle, such as what a rule should be, goes to
+rounds in all (3 if no number appears here). A finding only the person can settle, such as what a rule should be, goes to
 them as a question rather than a fix you invent. If the last round still fails, stop and show
 the person the report.
 

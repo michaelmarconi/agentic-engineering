@@ -35,4 +35,6 @@ Needs a person:
 - <a decision, with the options>
 ```
 
-The result is PASS only when every check passes and nothing is left under Other findings.
+The result is PASS only when every check passes and nothing is left under Other findings. A
+decision under Needs a person does not by itself make the result FAIL, since only the person can
+settle it.

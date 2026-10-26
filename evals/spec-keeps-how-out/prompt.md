@@ -5,4 +5,4 @@ timeout_seconds: 900
 allowed_tools: [Read, Glob, Grep, Skill, Write, Edit, Agent]
 ---
 
-Write a spec called sales-report-export for exporting a monthly sales report as CSV. Use pandas to build the file and drop it in our S3 bucket reports-prod, then email finance a link. Just draft it, no questions.
+Write a spec, saved as docs/specs/sales-report-export.spec.md, for exporting a monthly sales report as CSV. Use pandas to build the file and drop it in our S3 bucket reports-prod, then email finance a link. Just draft it, no questions.

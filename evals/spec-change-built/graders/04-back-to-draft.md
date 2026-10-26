@@ -1,6 +1,7 @@
 ---
-type: llm
-focus: { source: file, path: docs/specs/password-reset.spec.md }
+type: regex
+target: { source: file, path: docs/specs/password-reset.spec.md }
+pattern: "^status: Draft\\s*$"
+flags: m
 weight: 1
 ---
-The frontmatter status is Draft, not Built.
