@@ -31,9 +31,8 @@ The plugin gives Claude three kinds of help to work with these documents:
   building a plan or reviewing a document.
 - **Hooks:** small scripts Claude Code runs automatically at set moments. This plugin uses them
   to give Claude a summary of the lifecycle when a session starts in a repository that uses it,
-  and to refuse edits Claude makes to a document's status, or to an agreed document, that the
-  lifecycle does not allow. They need
-  Python 3.
+  and to refuse spec edits Claude makes that the lifecycle does not allow, such as an illegal
+  status change. They need Python 3.
 
 Every document a skill writes is checked by a reviewer agent before you see it. Apart from the
 documents, the plugin adds nothing to your repository, unless you choose to install it for

@@ -5,6 +5,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from unittest import mock
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 SCRIPT = os.path.join(HERE, "status_check.py")
@@ -28,6 +29,9 @@ class Workspace(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
         self.addCleanup(self.tmp.cleanup)
+        patcher = mock.patch.dict(os.environ, {"CLAUDE_PROJECT_DIR": self.tmp.name})
+        patcher.start()
+        self.addCleanup(patcher.stop)
         self.path = os.path.join(self.tmp.name, "docs", "specs", "thing.spec.md")
 
     def put(self, text):
@@ -65,6 +69,9 @@ class Parsing(unittest.TestCase):
         for body in ["", "None.", "None", "- None.", "_None._"]:
             self.assertFalse(status_check.has_open_questions(spec(questions=body)), body)
 
+    def test_footnotes_after_open_questions_ignored(self):
+        self.assertFalse(status_check.has_open_questions(spec() + "\n[^1]: A source.\n"))
+
     def test_open_questions_present(self):
         self.assertTrue(status_check.has_open_questions(spec(questions="- Who approves?")))
 
@@ -92,6 +99,16 @@ class NewSpec(Workspace):
     def test_other_files_ignored(self):
         other = os.path.join(self.tmp.name, "docs", "notes.md")
         self.assertIsNone(self.write("anything", path=other))
+
+    def test_docs_specs_outside_project_root_ignored(self):
+        nested = os.path.join(self.tmp.name, "evals", "case", "docs", "specs", "thing.spec.md")
+        self.assertIsNone(self.write(spec("Built"), path=nested))
+
+    def test_unreadable_spec_refused(self):
+        self.put("")
+        with open(self.path, "wb") as f:
+            f.write(b"status: \xe9\n")
+        self.assertIn("could not read", self.edit("a", "b"))
 
     def test_spec_in_subfolder_checked(self):
         sub = os.path.join(self.tmp.name, "docs", "specs", "billing", "invoice.spec.md")

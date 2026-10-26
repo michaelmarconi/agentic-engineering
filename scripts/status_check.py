@@ -2,7 +2,8 @@
 """Refuse spec status changes the lifecycle does not allow.
 
 Claude Code runs this as a PreToolUse hook on Write, Edit and MultiEdit. It reads the hook's
-JSON from stdin and, for any file under docs/specs/ named *.spec.md, works out what the file
+JSON from stdin and, for a *.spec.md under the project's docs/specs/ (the project being
+$CLAUDE_PROJECT_DIR, or the current directory if unset), works out what the file
 would contain after the edit and compares it with what is on disk now. It refuses:
 
 - a spec that had a lifecycle status (Draft, Ready to build or Built) losing it;
@@ -20,16 +21,20 @@ a shell command, are not seen.
 import argparse
 import json
 import os
+import re
 import sys
 
 STATUSES = ("Draft", "Ready to build", "Built")
 EMPTY_ANSWERS = {"", "none", "none."}
+FOOTNOTE = re.compile(r"^\[[^\]]+\]:")
 
 
 def is_spec(path):
-    parts = os.path.normpath(path).split(os.sep)
-    in_specs = any(a == "docs" and b == "specs" for a, b in zip(parts, parts[1:]))
-    return in_specs and parts[-1].endswith(".spec.md")
+    """True for a *.spec.md under docs/specs/ in the project ($CLAUDE_PROJECT_DIR or cwd)."""
+    project = os.environ.get("CLAUDE_PROJECT_DIR") or os.getcwd()
+    relative = os.path.relpath(os.path.abspath(path), os.path.abspath(project))
+    parts = os.path.normpath(relative).split(os.sep)
+    return parts[:2] == ["docs", "specs"] and parts[-1].endswith(".spec.md")
 
 
 def frontmatter(text):
@@ -64,6 +69,8 @@ def has_open_questions(text):
     for line in lines[starts[0] + 1:]:
         if line.startswith("# ") or line.startswith("## "):
             break
+        if FOOTNOTE.match(line):
+            continue
         answer = line.strip().lstrip("-*").strip().strip("_*").strip().lower()
         if answer not in EMPTY_ANSWERS:
             return True
@@ -100,8 +107,11 @@ def check(payload):
         return None
     before = None
     if os.path.exists(path):
-        with open(path, encoding="utf-8") as f:
-            before = f.read()
+        try:
+            with open(path, encoding="utf-8") as f:
+                before = f.read()
+        except (OSError, UnicodeDecodeError) as error:
+            return f"{os.path.basename(path)}: could not read the spec to check its status ({error})."
     old = status_of(before) if before is not None else None
     name = os.path.basename(path)
     after = after_edit(payload.get("tool_name"), tool_input, before)
@@ -126,8 +136,8 @@ def check(payload):
         )
     if old not in STATUSES and new != "Draft":
         return (
-            f"{name}: a new spec starts as Draft; it was written as {new}. To move or rename a "
-            "spec, use a shell command such as `git mv`, which keeps its status."
+            f"{name}: a new spec must be written as Draft, not {new}. If you are moving an "
+            "existing spec, move it with `git mv`, which keeps its status."
         )
     if new == old:
         if new != "Draft" and without_status(after) != without_status(before):
