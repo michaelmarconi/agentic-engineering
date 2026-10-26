@@ -6,7 +6,8 @@ checking, and quotes the spec as evidence for every failure.
 1. **Shape.** The spec has `status:` frontmatter set to Draft, Ready to build or Built, and the sections
    Problem, Goal, Scope, Requirements, Constraints and Open questions, in that order.
 2. **One specific story.** Problem names who is stuck and what happens to them today, as one
-   concrete situation rather than a general complaint, and does not mention the solution.
+   concrete situation rather than a general complaint, and does not mention the solution, not
+   even in passing, such as the file format, screen or button it will use.
 3. **Out of scope is named.** Scope says what is out, not only what is in.
 4. **What, not how.** Nothing in the spec chooses a technology, library, data structure or
    design. Such a choice belongs in an ADR, and a choice still to make is an open question.

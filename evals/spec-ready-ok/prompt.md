@@ -5,6 +5,6 @@ timeout_seconds: 900
 allowed_tools: [Read, Glob, Grep, Skill, Write, Edit, Agent]
 ---
 
-The display name spec is finished. Please mark it ready to build.
+The unread count spec is finished. Please mark it ready to build.
 
-Input files: docs/specs/display-name.spec.md
+Input files: docs/specs/unread-count.spec.md

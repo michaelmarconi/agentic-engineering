@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: spec-flags-contradiction
+expected_outcome: |
+  A new "remember me" spec is written as Draft, but the skill notices that staying signed in for 30 days contradicts the existing shared-computers spec's 30-minute idle rule and raises it with the person instead of settling it silently.
+context:
+  scaffold_script: place-files.sh
