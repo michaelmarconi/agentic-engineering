@@ -12,9 +12,11 @@ checking, and quotes the draft as evidence for every failure.
 3. **One problem.** The issue reports one problem or one improvement. Two unrelated ones are two
    issues.
 4. **Redacted.** Nothing identifies the person's project, organisation, people or code: no
-   names, product names, paths, URLs, identifiers or text taken from their repository, and no
-   secrets. Each is replaced with a plain stand-in such as "a web app" or `docs/specs/example.spec.md`.
-   A file from the plugin itself, such as one of its skills, may be named.
+   names, product names, paths, URLs, hosts, identifiers, secrets or sentences taken from their
+   repository. Each is replaced with a plain stand-in such as "a web app" or
+   `docs/specs/example.spec.md`. Ordinary words and short phrases that would describe many
+   projects, such as "nightly sync" or "password reset", are not leaks, and neither are the
+   plugin's own files and well-known public technologies.
 5. **Context.** Context gives the plugin version, the Claude Code version and the OS, names the
    skill, agent or hook involved (or says none is known), and describes any lifecycle documents
    involved by kind and status, such as "a Ready to build spec with two requirements".

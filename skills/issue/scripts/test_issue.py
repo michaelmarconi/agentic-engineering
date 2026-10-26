@@ -79,18 +79,44 @@ class ContextTest(unittest.TestCase):
     def test_lists_versions(self):
         with tempfile.TemporaryDirectory() as root:
             make_plugin(root)
-            with mock.patch.object(issue, "run", return_value=done(0, "2.1.0 (Claude Code)\n")):
+            with mock.patch.object(issue, "run", return_value=done(0, "2.1.0 (Claude Code)\n")), \
+                    mock.patch.object(issue, "os_name", return_value="macOS 15.1"):
                 text = issue.context(root)
-        self.assertIn("- Plugin: sdlc 1.2.3", text)
-        self.assertIn("- Claude Code: 2.1.0 (Claude Code)", text)
-        self.assertIn("- OS: ", text)
+        self.assertEqual(
+            text, "- Plugin: sdlc 1.2.3\n- Claude Code: 2.1.0 (Claude Code)\n- OS: macOS 15.1\n"
+        )
 
     def test_claude_version_unknown_when_missing(self):
-        with tempfile.TemporaryDirectory() as root:
-            make_plugin(root)
-            with mock.patch.object(issue, "run", side_effect=OSError):
-                text = issue.context(root)
-        self.assertIn("- Claude Code: unknown", text)
+        with mock.patch.object(issue, "run", side_effect=OSError):
+            self.assertEqual(issue.claude_version(), "unknown")
+
+
+class OsNameTest(unittest.TestCase):
+    def test_macos_by_product_version(self):
+        with mock.patch.object(issue.platform, "system", return_value="Darwin"), \
+                mock.patch.object(issue.platform, "mac_ver", return_value=("15.1", "", "")):
+            self.assertEqual(issue.os_name(), "macOS 15.1")
+
+    def test_linux_by_distribution_not_kernel(self):
+        with mock.patch.object(issue.platform, "system", return_value="Linux"), \
+                mock.patch.object(issue.platform, "release", return_value="5.15-acmecorp"), \
+                mock.patch.object(issue.platform, "freedesktop_os_release", create=True,
+                                  return_value={"PRETTY_NAME": "Ubuntu 24.04 LTS"}):
+            self.assertEqual(issue.os_name(), "Ubuntu 24.04 LTS")
+
+    def test_linux_without_os_release(self):
+        with mock.patch.object(issue.platform, "system", return_value="Linux"), \
+                mock.patch.object(issue.platform, "freedesktop_os_release", create=True,
+                                  side_effect=OSError):
+            self.assertEqual(issue.os_name(), "Linux")
+
+
+class ParseDraftTest(unittest.TestCase):
+    def test_first_line_is_title(self):
+        self.assertEqual(
+            issue.parse_draft("A `title` with $HOME\n\n## What happened\nIt broke.\n"),
+            ("A `title` with $HOME", "## What happened\nIt broke.\n"),
+        )
 
 
 class FileTest(unittest.TestCase):
@@ -102,79 +128,93 @@ class FileTest(unittest.TestCase):
     def tearDown(self):
         self.tmp.cleanup()
 
-    def file(self, *, gh=True, auth=0, create=None, link_only=False, body="## What happened\n"):
+    def file(self, *, gh=True, create=None, link_only=False,
+             draft="A title\n\n## What happened\n"):
         calls = []
 
         def fake_run(args, input=None):
             calls.append((args, input))
-            if args[:3] == ["gh", "auth", "status"]:
-                return done(auth)
-            if args[:3] == ["gh", "issue", "create"]:
-                return create or done(0, "https://github.com/acme/tools/issues/7\n")
-            raise AssertionError(args)
+            if isinstance(create, BaseException):
+                raise create
+            return create or done(0, "Creating issue\nhttps://github.com/acme/tools/issues/7\n")
 
-        out = io.StringIO()
+        out, err = io.StringIO(), io.StringIO()
         with mock.patch.object(issue, "run", side_effect=fake_run), \
                 mock.patch.object(issue.shutil, "which", return_value="/bin/gh" if gh else None), \
-                mock.patch("sys.stdout", out):
-            code = issue.file_issue(self.root, "bug", "A title", body, link_only)
-        return code, out.getvalue(), calls
+                mock.patch("sys.stdout", out), mock.patch("sys.stderr", err):
+            code = issue.file_issue(self.root, "bug", draft, link_only)
+        return code, out.getvalue(), calls, err.getvalue()
 
-    def test_files_with_gh_when_signed_in(self):
-        code, out, calls = self.file()
+    def test_files_with_gh_on_github_com(self):
+        code, out, calls, _ = self.file()
         self.assertEqual(code, 0)
         self.assertEqual(out, "filed https://github.com/acme/tools/issues/7\n")
         args, stdin = calls[-1]
         self.assertEqual(
             args,
-            ["gh", "issue", "create", "--repo", "acme/tools", "--title", "A title",
+            ["gh", "issue", "create", "--repo", "github.com/acme/tools", "--title", "A title",
              "--label", "bug", "--body-file", "-"],
         )
         self.assertEqual(stdin, "## What happened\n")
 
     def test_link_when_gh_missing(self):
-        code, out, calls = self.file(gh=False)
+        code, out, calls, _ = self.file(gh=False)
         self.assertEqual(code, 0)
         self.assertTrue(out.startswith("link https://github.com/acme/tools/issues/new?"))
         self.assertEqual(calls, [])
 
-    def test_link_when_gh_signed_out(self):
-        code, out, calls = self.file(auth=1)
-        self.assertTrue(out.startswith("link "))
-        self.assertEqual(len(calls), 1)
-
-    def test_link_when_gh_create_fails(self):
-        code, out, _ = self.file(create=done(1, "", "label not found"))
+    def test_link_and_reason_when_gh_refuses(self):
+        code, out, _, err = self.file(create=done(4, "", "not logged in"))
         self.assertEqual(code, 0)
         self.assertTrue(out.startswith("link "))
+        self.assertIn("not logged in", err)
+
+    def test_unsure_when_gh_times_out(self):
+        code, out, _, err = self.file(create=subprocess.TimeoutExpired("gh", 60))
+        self.assertEqual(code, 4)
+        self.assertEqual(out, "")
+        self.assertIn("https://github.com/acme/tools/issues", err)
+
+    def test_unsure_when_gh_prints_no_url(self):
+        code, out, _, _ = self.file(create=done(0, ""))
+        self.assertEqual(code, 4)
+        self.assertEqual(out, "")
 
     def test_link_only_never_runs_gh(self):
-        code, out, calls = self.file(link_only=True)
+        code, out, calls, _ = self.file(link_only=True)
         self.assertTrue(out.startswith("link "))
         self.assertEqual(calls, [])
 
     def test_too_long_for_link(self):
-        code, out, _ = self.file(gh=False, body="x" * issue.MAX_URL)
+        code, out, _, _ = self.file(gh=False, draft="T\n\n" + "x" * issue.MAX_URL)
         self.assertEqual(code, 3)
         self.assertEqual(out, "")
 
-    def test_empty_body_refused(self):
-        code, _, calls = self.file(body="  \n")
+    def test_missing_body_refused(self):
+        code, _, calls, _ = self.file(draft="Only a title\n")
         self.assertEqual(code, 2)
         self.assertEqual(calls, [])
 
 
 class MainTest(unittest.TestCase):
-    def test_file_reads_body_from_stdin(self):
+    def test_file_reads_draft_from_stdin(self):
         with mock.patch.object(issue, "file_issue", return_value=0) as file_issue, \
-                mock.patch("sys.stdin", io.StringIO("the body")):
-            code = issue.main(["file", "--kind", "improvement", "--title", "T", "--link-only"])
+                mock.patch("sys.stdin", io.StringIO("T\n\nthe body")):
+            code = issue.main(["file", "--kind", "improvement", "--link-only"])
         self.assertEqual(code, 0)
-        self.assertEqual(file_issue.call_args.args[1:], ("improvement", "T", "the body", True))
+        self.assertEqual(file_issue.call_args.args[1:], ("improvement", "T\n\nthe body", True))
+
+    def test_bad_repository_exits_1(self):
+        with mock.patch.object(issue, "file_issue", side_effect=ValueError("not GitHub")), \
+                mock.patch("sys.stdin", io.StringIO("T\n\nb")), \
+                mock.patch("sys.stderr", io.StringIO()) as err:
+            code = issue.main(["file", "--kind", "bug"])
+        self.assertEqual(code, 1)
+        self.assertIn("not GitHub", err.getvalue())
 
     def test_unknown_kind_is_usage_error(self):
         with self.assertRaises(SystemExit) as raised, mock.patch("sys.stderr", io.StringIO()):
-            issue.main(["file", "--kind", "question", "--title", "T"])
+            issue.main(["file", "--kind", "question"])
         self.assertEqual(raised.exception.code, 2)
 
 

@@ -48,8 +48,9 @@ full and word for word. It reads everything else it needs itself. It reports pas
 each rubric check with evidence, other findings, and anything that needs the person.
 
 Fix every finding you can and run the reviewer again, for up to ${user_config.review_rounds}
-reviews in all, counting the first (3 if no number appears here). If the last review still
-fails, show the person the report with the draft.
+reviews in all, counting the first (3 if no number appears here). A draft is filed only after a
+passing review. If the last review still fails, show the person the draft and the report, say
+what is still failing, and ask how they want it changed; their changed draft is reviewed again.
 
 ## File
 
@@ -58,16 +59,24 @@ whether to file it. File only on their clear yes in reply to that draft: an issu
 repository can't be taken back. If they change it, review the changed draft before asking
 again.
 
-On their yes, pass the body on standard input:
+On their yes, pass the draft on standard input, title on the first line, then the body. The
+quoted delimiter keeps the shell from expanding anything in the draft:
 
 ```
-python3 ${CLAUDE_SKILL_DIR}/scripts/issue.py file --kind <bug|improvement> --title "<title>" <<'EOF'
+python3 ${CLAUDE_SKILL_DIR}/scripts/issue.py file --kind <bug|improvement> <<'SDLC_ISSUE_DRAFT'
+<title>
+
 <body>
-EOF
+SDLC_ISSUE_DRAFT
 ```
 
 It files with the GitHub CLI when that is installed and signed in, and prints
 `filed <issue URL>`. Otherwise it prints `link <URL>`: give the person that link, which opens
-the issue already filled in for them to submit. Add `--link-only` if they would rather submit
-it themselves. Exit code 3 means the body is too long for a link and there is no CLI; shorten
-it, review it again and retry.
+the issue already filled in for them to submit, and tell them why the CLI didn't file it if the
+script said. Add `--link-only` if they would rather submit it themselves. Other exit codes:
+
+- 3: the CLI didn't file it and the draft is too long for a link. Offer a shorter draft, which
+  is reviewed again.
+- 4: the CLI may have filed it. Don't retry; give the person the repository's issues page it
+  names to check.
+- 1: the plugin's manifest names no GitHub repository. Tell the person; there is nowhere to file.

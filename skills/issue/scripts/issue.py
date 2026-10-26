@@ -7,9 +7,10 @@ itself.
 
 Commands:
   context   Print the Context lines for an issue: plugin version, Claude Code version, OS.
-  file      File an issue whose body is read from standard input. Uses the GitHub CLI
-            (`gh`) when it is installed and signed in; otherwise, or if `gh` fails, prints a
-            link that opens GitHub's new-issue page already filled in.
+  file      File an issue whose draft (title line, then body) is read from standard input.
+            Uses the GitHub CLI (`gh`) when it is installed; if it is missing or refuses,
+            for instance because it is signed out, prints a link that opens GitHub's
+            new-issue page already filled in.
 
 Run `issue.py <command> --help` for each command's arguments, output and exit codes.
 """
@@ -71,38 +72,76 @@ def claude_version():
     return result.stdout.strip() if result.returncode == 0 and result.stdout.strip() else "unknown"
 
 
+def os_name():
+    """Name the OS by product and version, never the kernel build, which can identify a host."""
+    system = platform.system()
+    if system == "Darwin":
+        return ("macOS " + platform.mac_ver()[0]).strip()
+    if system == "Linux":
+        try:
+            release = platform.freedesktop_os_release()
+        except (OSError, AttributeError):
+            return "Linux"
+        return release.get("PRETTY_NAME") or release.get("NAME") or "Linux"
+    if system == "Windows":
+        return "Windows " + platform.release()
+    return system or "unknown"
+
+
 def context(root):
     manifest = read_manifest(root)
     return "\n".join([
         "- Plugin: %s %s" % (manifest.get("name", "sdlc"), manifest.get("version", "unknown")),
         "- Claude Code: " + claude_version(),
-        "- OS: %s %s" % (platform.system(), platform.release()),
+        "- OS: " + os_name(),
     ]) + "\n"
 
 
+class Unsure(Exception):
+    """gh may have filed the issue, so offering a link could file it twice."""
+
+
 def gh_filed(slug, title, body, label):
-    """Try to file with gh; return the new issue's URL, or None if gh can't."""
+    """File with gh. Return the issue URL, or None if gh is missing or refused; raise Unsure."""
     if not shutil.which("gh"):
         return None
+    args = ["gh", "issue", "create", "--repo", "github.com/" + slug, "--title", title,
+            "--label", label, "--body-file", "-"]
     try:
-        if run(["gh", "auth", "status"]).returncode != 0:
-            return None
-        result = run(["gh", "issue", "create", "--repo", slug, "--title", title,
-                      "--label", label, "--body-file", "-"], input=body)
-    except (OSError, subprocess.SubprocessError):
+        result = run(args, input=body)
+    except OSError:
         return None
-    lines = result.stdout.strip().splitlines()
-    return lines[-1] if result.returncode == 0 and lines else None
+    except subprocess.TimeoutExpired:
+        raise Unsure("gh timed out")
+    if result.returncode != 0:
+        print("issue.py: gh could not file the issue: " + result.stderr.strip(), file=sys.stderr)
+        return None
+    urls = [line for line in result.stdout.split() if line.startswith("https://")]
+    if not urls:
+        raise Unsure("gh succeeded but printed no issue URL")
+    return urls[-1]
 
 
-def file_issue(root, kind, title, body, link_only=False):
-    if not title.strip() or not body.strip():
-        print("issue.py: the title and body must not be empty", file=sys.stderr)
+def parse_draft(text):
+    """Split a draft into its title (the first line) and body (the rest)."""
+    title, _, body = text.lstrip("\n").partition("\n")
+    return title.strip(), body.strip("\n") + "\n"
+
+
+def file_issue(root, kind, draft, link_only=False):
+    title, body = parse_draft(draft)
+    if not title or not body.strip():
+        print("issue.py: the draft needs a title line and a body", file=sys.stderr)
         return 2
     slug = repo_slug(read_manifest(root).get("repository"))
     label = LABELS[kind]
     if not link_only:
-        url = gh_filed(slug, title, body, label)
+        try:
+            url = gh_filed(slug, title, body, label)
+        except Unsure as reason:
+            print("issue.py: %s; check https://github.com/%s/issues before filing again"
+                  % (reason, slug), file=sys.stderr)
+            return 4
         if url:
             print("filed " + url)
             return 0
@@ -122,28 +161,35 @@ def main(argv=None):
         "context",
         help="print the Context lines for an issue",
         description="Print Markdown list lines naming the plugin version, the Claude Code "
-                    "version (\"unknown\" if `claude` can't be run) and the OS. Exit code 0.",
+                    "version (\"unknown\" if `claude` can't be run) and the OS by name and "
+                    "version. Exit codes: 0 done, 1 the plugin manifest can't be read.",
     )
     filer = commands.add_parser(
         "file",
-        help="file an issue, body on standard input",
-        description="File an issue on the plugin's repository with the body read from "
-                    "standard input. Prints one line: \"filed <issue URL>\" if gh filed it, or "
-                    "\"link <URL>\" for the person to open and submit. Exit codes: 0 done, "
-                    "2 bad arguments or empty title/body, 3 no gh and the issue is too long "
-                    "for a link.",
+        help="file an issue, draft on standard input",
+        description="File an issue on the plugin's repository. Standard input holds the draft: "
+                    "the title on the first line, then the body. Prints one line: "
+                    "\"filed <issue URL>\" if gh filed it, or \"link <URL>\" for the person to "
+                    "open and submit; gh's error, if it failed, goes to standard error. Exit "
+                    "codes: 0 done; 1 the plugin manifest can't be read or has no GitHub "
+                    "repository; 2 bad arguments, or no title or body; 3 gh didn't file it and "
+                    "the issue is too long for a link; 4 gh may have filed it (timed out or "
+                    "printed no URL), so check the repository's issues before trying again.",
     )
     filer.add_argument("--kind", required=True, choices=sorted(LABELS),
                        help="bug or improvement; sets the label (bug or enhancement)")
-    filer.add_argument("--title", required=True, help="the issue title")
     filer.add_argument("--link-only", action="store_true",
                        help="never run gh; always print the link")
     args = parser.parse_args(argv)
-    root = plugin_root()
-    if args.command == "context":
-        sys.stdout.write(context(root))
-        return 0
-    return file_issue(root, args.kind, args.title, sys.stdin.read(), args.link_only)
+    try:
+        root = plugin_root()
+        if args.command == "context":
+            sys.stdout.write(context(root))
+            return 0
+        return file_issue(root, args.kind, sys.stdin.read(), args.link_only)
+    except (OSError, ValueError) as error:
+        print("issue.py: " + str(error), file=sys.stderr)
+        return 1
 
 
 if __name__ == "__main__":
