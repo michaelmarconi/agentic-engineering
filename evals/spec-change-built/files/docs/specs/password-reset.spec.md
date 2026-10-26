@@ -1,5 +1,4 @@
 ---
-# Change status only through /sdlc:spec and /sdlc:build. A hand edit skips the lifecycle checks.
 status: Built
 ---
 
