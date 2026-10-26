@@ -28,7 +28,7 @@ in order.
 For the versions in Context, run:
 
 ```
-python3 ${CLAUDE_SKILL_DIR}/scripts/issue.py context
+python3 "${CLAUDE_SKILL_DIR}/scripts/issue.py" context
 ```
 
 ## Draft
@@ -65,7 +65,7 @@ On their yes, pass the draft on standard input, title on the first line, then th
 quoted delimiter keeps the shell from expanding anything in the draft:
 
 ```
-python3 ${CLAUDE_SKILL_DIR}/scripts/issue.py file --kind <bug|improvement> <<'SDLC_ISSUE_DRAFT'
+python3 "${CLAUDE_SKILL_DIR}/scripts/issue.py" file --kind <bug|improvement> <<'SDLC_ISSUE_DRAFT'
 <title>
 
 <body>
@@ -79,6 +79,7 @@ it themselves. Any other exit code comes with a message saying why; tell the per
 
 - 2: the draft reached the script without a title line or body; fix the command and rerun it.
 - 3: the draft is too long for a link. Offer a shorter draft, which is reviewed again.
-- 4: the CLI may have filed it. Don't retry; give the person the repository's issues page the
-  message names, to check.
+- 4: the CLI ran but failed, and may have filed it anyway. Give the person the CLI's message and
+  the repository's issues page it names. Only once they have checked that the issue isn't there,
+  rerun with `--link-only`.
 - 1: the plugin's own files are missing or broken, so there is nowhere to file.

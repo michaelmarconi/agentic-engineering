@@ -70,7 +70,7 @@ class ManifestTest(unittest.TestCase):
 
 class LinkTest(unittest.TestCase):
     def test_carries_title_body_and_label(self):
-        url = issue.new_issue_link("acme/tools", "Spec skill names a library", "Body & more", "bug")
+        url = issue.new_issue_link("acme/tools", "Spec skill names a library", "Body & more", ["bug"])
         parsed = urlparse(url)
         self.assertEqual(parsed.netloc, "github.com")
         self.assertEqual(parsed.path, "/acme/tools/issues/new")
@@ -79,16 +79,36 @@ class LinkTest(unittest.TestCase):
         self.assertEqual(query["body"], ["Body & more"])
         self.assertEqual(query["labels"], ["bug"])
 
-    def test_label_comes_from_template(self):
+    def test_labels_come_from_template(self):
         with tempfile.TemporaryDirectory() as root:
             make_plugin(root)
-            self.assertEqual(issue.template_label(root, "bug"), "bug")
-            self.assertEqual(issue.template_label(root, "improvement"), "enhancement")
+            self.assertEqual(issue.template_labels(root, "bug"), ["bug"])
+            self.assertEqual(issue.template_labels(root, "improvement"), ["enhancement"])
 
     def test_plugin_templates_set_labels(self):
         root = issue.plugin_root()
-        self.assertEqual(issue.template_label(root, "bug"), "bug")
-        self.assertEqual(issue.template_label(root, "improvement"), "enhancement")
+        self.assertEqual(issue.template_labels(root, "bug"), ["bug"])
+        self.assertEqual(issue.template_labels(root, "improvement"), ["enhancement"])
+
+    def labels(self, frontmatter, body=""):
+        with tempfile.TemporaryDirectory() as root:
+            path = os.path.join(root, ".github", "ISSUE_TEMPLATE")
+            os.makedirs(path)
+            with open(os.path.join(path, "bug.md"), "w") as f:
+                f.write("---\nname: Bug\n" + frontmatter + "---\n" + body)
+            return issue.template_labels(root, "bug")
+
+    def test_label_forms(self):
+        self.assertEqual(self.labels("labels: [bug, 'triage']\n"), ["bug", "triage"])
+        self.assertEqual(self.labels("labels: bug, triage\n"), ["bug", "triage"])
+        self.assertEqual(self.labels('labels: "bug"\n'), ["bug"])
+        self.assertEqual(self.labels("labels:\n  - bug\n  - triage\nabout: x\n"),
+                         ["bug", "triage"])
+
+    def test_no_label_is_an_error(self):
+        for frontmatter in ("labels: []\n", 'labels: ""\n', ""):
+            with self.assertRaises(ValueError):
+                self.labels(frontmatter, "labels: bug\n")
 
 
 class ContextTest(unittest.TestCase):
@@ -117,8 +137,9 @@ class OsNameTest(unittest.TestCase):
         with mock.patch.object(issue.platform, "system", return_value="Linux"), \
                 mock.patch.object(issue.platform, "release", return_value="5.15-acmecorp"), \
                 mock.patch.object(issue.platform, "freedesktop_os_release", create=True,
-                                  return_value={"PRETTY_NAME": "Ubuntu 24.04 LTS"}):
-            self.assertEqual(issue.os_name(), "Ubuntu 24.04 LTS")
+                                  return_value={"PRETTY_NAME": "Acme Workstation",
+                                                "ID": "ubuntu", "VERSION_ID": "24.04"}):
+            self.assertEqual(issue.os_name(), "Linux ubuntu 24.04")
 
     def test_windows_11_despite_release_10(self):
         with mock.patch.object(issue.platform, "system", return_value="Windows"), \
@@ -146,6 +167,13 @@ class ParseDraftTest(unittest.TestCase):
     def test_heading_or_label_prefix_dropped(self):
         self.assertEqual(issue.parse_draft("# A title\n\nb")[0], "A title")
         self.assertEqual(issue.parse_draft("Title: A title\n\nb")[0], "A title")
+
+    def test_hash_without_space_kept(self):
+        self.assertEqual(issue.parse_draft("#include paths break /spec\n\nb")[0],
+                         "#include paths break /spec")
+
+    def test_leading_kind_line_skipped(self):
+        self.assertEqual(issue.parse_draft("Kind: bug\nTitle: T\n\nbody"), ("T", "body\n"))
 
 
 class FileTest(unittest.TestCase):

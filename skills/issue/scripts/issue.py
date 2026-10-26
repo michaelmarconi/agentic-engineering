@@ -2,8 +2,8 @@
 """Gather context for, and file, an issue against the sdlc plugin's own repository.
 
 The repository is read from the `repository` field of the plugin's
-`.claude-plugin/plugin.json`, found by walking up from this script, so a fork files against
-itself.
+`.claude-plugin/plugin.json`, found by walking up from this script, and each kind's label from
+the `labels` of its template in `.github/ISSUE_TEMPLATE/`.
 
 Commands:
   context   Print the Context lines for an issue: plugin version, Claude Code version, OS.
@@ -50,13 +50,30 @@ def read_manifest(root):
         return json.load(f)
 
 
-def template_label(root, kind):
-    """Return the label that the kind's issue template in .github/ISSUE_TEMPLATE/ applies."""
-    with open(os.path.join(root, ".github", "ISSUE_TEMPLATE", kind + ".md"), encoding="utf-8") as f:
-        match = re.search(r"^labels:\s*\[?\s*([^,\]\n]+?)\s*[\],]?\s*$", f.read(), re.MULTILINE)
-    if not match:
+def template_labels(root, kind):
+    """Return the labels set in the frontmatter of the kind's template in .github/ISSUE_TEMPLATE/."""
+    path = os.path.join(root, ".github", "ISSUE_TEMPLATE", kind + ".md")
+    with open(path, encoding="utf-8") as f:
+        lines = f.read().splitlines()
+    if not lines or lines[0].strip() != "---" or "---" not in [l.strip() for l in lines[1:]]:
+        raise ValueError("the %s template has no frontmatter" % kind)
+    frontmatter = lines[1:1 + [l.strip() for l in lines[1:]].index("---")]
+    labels = []
+    for i, line in enumerate(frontmatter):
+        if line.startswith("labels:"):
+            value = line[len("labels:"):].strip()
+            if value:
+                labels = value.strip("[]").split(",")
+            else:
+                for item in frontmatter[i + 1:]:
+                    if not item.lstrip().startswith("- "):
+                        break
+                    labels.append(item.lstrip()[2:])
+    labels = [label.strip().strip("'\"") for label in labels]
+    labels = [label for label in labels if label]
+    if not labels:
         raise ValueError("the %s template sets no label" % kind)
-    return match.group(1).strip("'\"")
+    return labels
 
 
 def repo_slug(repository):
@@ -68,8 +85,8 @@ def repo_slug(repository):
     return match.group(1) + "/" + match.group(2)
 
 
-def new_issue_link(slug, title, body, label):
-    query = urlencode({"title": title, "body": body, "labels": label})
+def new_issue_link(slug, title, body, labels):
+    query = urlencode({"title": title, "body": body, "labels": ",".join(labels)})
     return "https://github.com/%s/issues/new?%s" % (slug, query)
 
 
@@ -87,11 +104,12 @@ def os_name():
     if system == "Darwin":
         return ("macOS " + platform.mac_ver()[0]).strip()
     if system == "Linux":
+        # ID and VERSION_ID, not PRETTY_NAME, which organisations rename after themselves.
         try:
             release = platform.freedesktop_os_release()
         except (OSError, AttributeError):
             return "Linux"
-        return release.get("PRETTY_NAME") or release.get("NAME") or "Linux"
+        return " ".join(["Linux", release.get("ID", ""), release.get("VERSION_ID", "")]).strip()
     if system == "Windows":
         # Windows 11 reports release "10" before Python 3.12; its builds start at 22000.
         build = platform.version().split(".")[-1]
@@ -112,7 +130,7 @@ class Unsure(Exception):
     """gh may have filed the issue, so offering a link could file it twice."""
 
 
-def gh_filed(slug, title, body, label):
+def gh_filed(slug, title, body, labels):
     """File with gh. Return the issue URL, or None if gh can't try; raise Unsure if it tried.
 
     Only a failure before the issue is sent, such as gh missing or signed out of github.com,
@@ -129,7 +147,7 @@ def gh_filed(slug, title, body, label):
         print("issue.py: gh is not signed in to github.com", file=sys.stderr)
         return None
     args = ["gh", "issue", "create", "--repo", "github.com/" + slug, "--title", title,
-            "--label", label, "--body-file", "-"]
+            "--label", ",".join(labels), "--body-file", "-"]
     try:
         result = run(args, input=body)
     except OSError:
@@ -146,8 +164,11 @@ def gh_filed(slug, title, body, label):
 
 def parse_draft(text):
     """Split a draft into its title (the first line) and body (the rest)."""
-    title, _, body = text.replace("\r\n", "\n").lstrip("\n").partition("\n")
-    title = re.sub(r"^(#+\s*|title:\s*)", "", title.strip(), flags=re.IGNORECASE)
+    lines = text.replace("\r\n", "\n").strip("\n").split("\n")
+    while lines and re.match(r"kind:\s", lines[0], re.IGNORECASE):
+        lines = lines[1:]
+    title, body = (lines[0], "\n".join(lines[1:])) if lines else ("", "")
+    title = re.sub(r"^(#+\s+|title:\s*)", "", title.strip(), flags=re.IGNORECASE)
     return title.strip(), body.strip("\n") + "\n"
 
 
@@ -157,10 +178,10 @@ def file_issue(root, kind, draft, link_only=False):
         print("issue.py: the draft needs a title line and a body", file=sys.stderr)
         return 2
     slug = repo_slug(read_manifest(root).get("repository"))
-    label = template_label(root, kind)
+    labels = template_labels(root, kind)
     if not link_only:
         try:
-            url = gh_filed(slug, title, body, label)
+            url = gh_filed(slug, title, body, labels)
         except Unsure as reason:
             print("issue.py: %s; check https://github.com/%s/issues before filing again"
                   % (reason, slug), file=sys.stderr)
@@ -168,7 +189,7 @@ def file_issue(root, kind, draft, link_only=False):
         if url:
             print("filed " + url)
             return 0
-    link = new_issue_link(slug, title, body, label)
+    link = new_issue_link(slug, title, body, labels)
     if len(link) > MAX_URL:
         print("issue.py: the issue is too long to fit in a link (%d characters, limit %d); "
               "shorten the body" % (len(link), MAX_URL), file=sys.stderr)
@@ -196,13 +217,13 @@ def main(argv=None):
                     "open and submit; gh's error, if it failed, goes to standard error. Exit "
                     "codes: 0 done; 1 the plugin's manifest or issue templates can't be read, or name "
                     "no GitHub repository or label; 2 bad arguments, a draft with no title or "
-                    "body, or a draft that isn't UTF-8; 3 gh wasn't used (missing or signed "
-                    "out) and the issue is too long for a link; 4 gh ran but its result is "
+                    "body, or a draft that isn't UTF-8; 3 gh wasn't used (missing, signed out "
+                    "or --link-only) and the issue is too long for a link; 4 gh ran but its result is "
                     "unknown (it failed, timed out or printed no URL) and it may have filed the "
                     "issue, so check the repository's issues before trying again.",
     )
     filer.add_argument("--kind", required=True, choices=KINDS,
-                       help="bug or improvement; the label is the one that kind's template sets")
+                       help="bug or improvement; the labels are those that kind's template sets")
     filer.add_argument("--link-only", action="store_true",
                        help="never run gh; always print the link")
     args = parser.parse_args(argv)
