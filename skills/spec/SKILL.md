@@ -50,10 +50,11 @@ The `status:` frontmatter says how far the spec is: Draft, Ready to build or Bui
   it to Draft, because what was agreed or built no longer matches: set the status to Draft
   first, as a plugin hook refuses any other change to such a spec.
 - Set Ready to build only when the person asks for it, the spec has no open questions (rubric
-  check 9), and the review below has passed on the spec as it stands; make it your last edit,
-  after that review. A question is settled only by an answer that goes into the spec: moving
-  it to another section, or noting that someone will decide later, leaves it open. If
-  questions remain, say which and leave the spec as Draft.
+  check 9), nothing is left under the review's Needs a person, and the review below has passed
+  on the spec as it stands; make it your last edit, after that review. A question is settled
+  only by an answer that goes into the spec: moving it to another section, or noting that
+  someone will decide later, leaves it open. If questions remain, say which and leave the spec
+  as Draft.
 - Never set Built. Only the build step does, once its review finds every requirement verified.
 
 ## Review
@@ -68,6 +69,9 @@ every round of fixes, so the report the person gets is about the spec as it now 
 finding only the person can settle, such as what a rule should be, goes to them as a question
 rather than a fix you invent. If the last review still fails, stop and show the person the
 report.
+
+The reviewer's Suggestions are behaviour the spec does not cover yet; pass them on to the person
+as options to add, and do not hold the spec back for them.
 
 Finish by giving the person the spec's path and the reviewer's final report. Leave committing to
 them.

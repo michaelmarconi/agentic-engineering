@@ -3,4 +3,4 @@ type: llm
 focus: { source: file, path: docs/specs/invoice-export.spec.md }
 weight: 1
 ---
-The words "fast", "quickly" and "professional" no longer appear in any rule, scenario or constraint without a measure; each was either given a measure, removed, or turned into an open question.
+Outside the Open questions section, the words "fast", "quickly" and "professional" no longer appear without a measure; each was given a measure, removed, or turned into an open question. Quoting them inside Open questions is fine.
