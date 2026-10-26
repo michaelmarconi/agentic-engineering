@@ -103,6 +103,14 @@ class LinkTest(unittest.TestCase):
         self.assertEqual(self.labels("labels: bug, triage\n"), ["bug", "triage"])
         self.assertEqual(self.labels('labels: "bug"\n'), ["bug"])
 
+    def test_windows_line_endings_and_byte_order_mark(self):
+        with tempfile.TemporaryDirectory() as root:
+            path = os.path.join(root, ".github", "ISSUE_TEMPLATE")
+            os.makedirs(path)
+            with open(os.path.join(path, "bug.md"), "w", encoding="utf-8-sig", newline="") as f:
+                f.write("---\r\nlabels: bug\r\n---")
+            self.assertEqual(issue.template_labels(root, "bug"), ["bug"])
+
     def test_comment_after_label(self):
         self.assertEqual(self.labels("labels: bug  # triage later\n"), ["bug"])
 
@@ -167,13 +175,14 @@ class ParseDraftTest(unittest.TestCase):
 
     def test_heading_or_label_line_is_no_title(self):
         for first in ("# A title", "Title: A title", "**Title:** A title", "*Title:* A title",
-                      "__A title__", "> A title", "Subject: A title", "Kind: bug", "",
-                      "\ufeffKind: bug"):
+                      "> A title", "Subject: A title", "Kind: bug", "Bug: A title",
+                      "[Bug] A title", "", "\ufeffKind: bug"):
             self.assertEqual(issue.parse_draft(first + "\n\nbody")[0], "", first)
 
     def test_titles_starting_with_symbols_kept(self):
         for title in ("/spec names a library", "*.spec.md files in subfolders are ignored",
-                      "_private names leak", "#include paths break /spec"):
+                      "_private names leak", "__init__.py files are read as specs",
+                      "#include paths break /spec"):
             self.assertEqual(issue.parse_draft(title + "\n\nb")[0], title)
 
     def test_byte_order_mark_dropped(self):
@@ -189,7 +198,7 @@ class FileTest(unittest.TestCase):
     def tearDown(self):
         self.tmp.cleanup()
 
-    def file(self, *, signed_in="jane", create=None, login="jane", labeller=True,
+    def file(self, *, signed_in="jane", create=None, login="jane",
              draft="A title\n\n## What happened\n"):
         calls = []
 
@@ -197,76 +206,67 @@ class FileTest(unittest.TestCase):
             calls.append((args, input))
             if isinstance(create, BaseException):
                 raise create
-            return create or done(0, "Creating issue\nhttps://github.com/acme/tools/issues/7\n")
+            return create or done(0, "https://github.com/acme/tools/issues/7\n")
 
         out, err = io.StringIO(), io.StringIO()
         with mock.patch.object(issue, "run", side_effect=fake_run), \
                 mock.patch.object(issue, "gh_login", return_value=signed_in) as gh_login, \
-                mock.patch.object(issue, "can_label", return_value=labeller), \
                 mock.patch("sys.stdout", out), mock.patch("sys.stderr", err):
             code = issue.file_issue(self.root, "bug", draft, login)
         self.gh_login_called = gh_login.called
         return code, out.getvalue(), calls, err.getvalue()
 
-    def test_files_with_gh_on_github_com(self):
+    def test_files_through_rest_api_on_github_com(self):
         code, out, calls, _ = self.file()
         self.assertEqual(code, 0)
         self.assertEqual(out, "filed https://github.com/acme/tools/issues/7\n")
         args, stdin = calls[-1]
         self.assertEqual(
             args,
-            ["gh", "issue", "create", "--repo", "github.com/acme/tools", "--title", "A title",
-             "--label", "bug", "--body-file", "-"],
+            ["gh", "api", "--hostname", "github.com", "--method", "POST",
+             "repos/acme/tools/issues", "--input", "-", "--jq", ".html_url"],
         )
-        self.assertEqual(stdin, "## What happened\n")
+        self.assertEqual(json.loads(stdin),
+                         {"title": "A title", "body": "## What happened\n", "labels": ["bug"]})
 
-    def test_no_label_when_account_may_not_label(self):
-        _, _, calls, _ = self.file(labeller=False)
-        self.assertNotIn("--label", calls[-1][0])
+    def test_refuses_another_account(self):
+        code, out, calls, err = self.file(signed_in="jane-work")
+        self.assertEqual((code, out, calls), (2, "", []))
+        self.assertIn("jane-work", err)
 
     def test_login_case_ignored(self):
         code, out, _, _ = self.file(signed_in="Jane")
         self.assertEqual(code, 0)
         self.assertTrue(out.startswith("filed "))
 
-    def test_link_when_gh_cannot_start(self):
-        code, out, _, err = self.file(create=OSError("gh not found"))
-        self.assertEqual(code, 0)
-        self.assertTrue(out.startswith("link "))
-        self.assertIn("gh not found", err)
-
-    def test_refuses_another_account(self):
-        code, out, calls, err = self.file(signed_in="jane-work")
-        self.assertEqual(code, 2)
-        self.assertEqual((out, calls), ("", []))
-        self.assertIn("jane-work", err)
-
-    def test_link_when_gh_no_longer_signed_in(self):
+    def test_nothing_filed_when_gh_signed_out(self):
+        # A link would submit as whoever the browser is signed in as, not the agreed account.
         code, out, calls, err = self.file(signed_in=None)
-        self.assertEqual(code, 0)
-        self.assertTrue(out.startswith("link https://github.com/acme/tools/issues/new?"))
-        self.assertEqual(calls, [])
+        self.assertEqual((code, out, calls), (5, "", []))
         self.assertIn("couldn't confirm", err)
+
+    def test_nothing_filed_when_github_refuses(self):
+        code, out, _, err = self.file(create=done(1, "", "gh: Resource not accessible (HTTP 403)"))
+        self.assertEqual((code, out), (5, ""))
+        self.assertIn("refused", err)
+
+    def test_nothing_filed_when_gh_cannot_start(self):
+        code, out, _, err = self.file(create=OSError("gh not found"))
+        self.assertEqual((code, out), (5, ""))
+        self.assertIn("gh not found", err)
 
     def test_link_only_never_runs_gh(self):
         code, out, calls, _ = self.file(login=None)
-        self.assertTrue(out.startswith("link "))
+        self.assertTrue(out.startswith("link https://github.com/acme/tools/issues/new?"))
         self.assertEqual(calls, [])
         self.assertFalse(self.gh_login_called)
 
-    def test_unsure_when_gh_create_fails(self):
-        # gh may report an error after GitHub created the issue, so a link could duplicate it.
+    def test_unsure_when_gh_fails_without_refusal(self):
+        # gh may report an error after GitHub created the issue, so a retry could duplicate it.
         code, out, _, err = self.file(create=done(1, "", "connection reset"))
-        self.assertEqual(code, 4)
-        self.assertEqual(out, "")
+        self.assertEqual((code, out), (4, ""))
         self.assertIn("connection reset", err)
         self.assertIn("https://github.com/acme/tools/issues", err)
-
-    def test_link_when_github_refuses(self):
-        code, out, _, err = self.file(create=done(1, "", "HTTP 403: Resource not accessible"))
-        self.assertEqual(code, 0)
-        self.assertTrue(out.startswith("link "))
-        self.assertIn("refused", err)
 
     def test_unsure_when_gh_times_out(self):
         code, out, _, _ = self.file(create=subprocess.TimeoutExpired("gh", 60))
@@ -285,20 +285,13 @@ class FileTest(unittest.TestCase):
             code, out, calls, _ = self.file(draft=draft)
             self.assertEqual((code, calls), (3, []))
 
+    def test_body_at_github_limit_accepted(self):
+        code, _, _, _ = self.file(draft="T\n\n" + "x" * issue.MAX_BODY)
+        self.assertEqual(code, 0)
+
     def test_missing_body_refused(self):
         code, _, calls, _ = self.file(draft="Only a title\n")
         self.assertEqual((code, calls), (2, []))
-
-
-class CanLabelTest(unittest.TestCase):
-    def test_triage_permission(self):
-        for stdout, expected in (("true\n", True), ("false\n", False)):
-            with mock.patch.object(issue, "run", return_value=done(0, stdout)):
-                self.assertEqual(issue.can_label("acme/tools"), expected)
-
-    def test_no_when_api_fails(self):
-        with mock.patch.object(issue, "run", return_value=done(1, "", "404")):
-            self.assertFalse(issue.can_label("acme/tools"))
 
 
 class GhLoginTest(unittest.TestCase):
@@ -334,6 +327,17 @@ class MainTest(unittest.TestCase):
             code = issue.main(["file", "--kind", "improvement", "--as", "jane"])
         self.assertEqual(code, 0)
         self.assertEqual(file_issue.call_args.args[1:], ("improvement", "T\n\nthe body", "jane"))
+
+    def test_empty_login_is_usage_error(self):
+        with self.assertRaises(SystemExit) as raised, mock.patch("sys.stderr", io.StringIO()):
+            issue.main(["file", "--kind", "bug", "--as", ""])
+        self.assertEqual(raised.exception.code, 2)
+
+    def test_account_needs_no_manifest(self):
+        with mock.patch.object(issue, "plugin_root", side_effect=FileNotFoundError), \
+                mock.patch.object(issue, "gh_login", return_value=None), \
+                mock.patch("sys.stdout", io.StringIO()):
+            self.assertEqual(issue.main(["account"]), 0)
 
     def test_file_needs_a_route(self):
         with self.assertRaises(SystemExit) as raised, mock.patch("sys.stderr", io.StringIO()):

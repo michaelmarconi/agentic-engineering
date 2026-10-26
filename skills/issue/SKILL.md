@@ -68,8 +68,9 @@ trust you" in their first message. This holds for a link too: run `file` only af
 since a link is one click from public. If they change
 the draft, review it again before asking again. If they bring back a draft and say yes to it,
 review it and run `account`. If the review fails, handle it as under Review. If it passes and
-`account` says `link`, or they asked for a link, give them the link; if it says `gh <login>`,
-tell them the account and ask once more.
+`account` says `link`, or they asked for a link, give them the link without asking again,
+since they submit it themselves; if it says `gh <login>`, tell them the account and ask once
+more.
 
 On their yes, pass the draft on standard input: the bare title alone on the first line, with no
 heading mark or "Title:", then the body. The quoted delimiter keeps the shell from expanding
@@ -84,9 +85,9 @@ python3 "${CLAUDE_SKILL_DIR}/scripts/issue.py" file --kind <bug|improvement> --a
 SDLC_ISSUE_DRAFT
 ```
 
-It prints `filed <issue URL>`, or `link <URL>` for a link, or if the CLI has signed out since:
-give the person that link, which opens the issue already filled in for them to submit. Any other
-exit code comes with a message saying why; tell the person, and:
+It prints `filed <issue URL>`, or with `--link-only`, `link <URL>`: give the person that link,
+which opens the issue already filled in for them to submit. Any other exit code comes with a
+message saying why; tell the person, and:
 
 - 2: the CLI is signed in as a different account, the first line wasn't a bare title, or there
   was no body. For an account change, ask the person again; otherwise fix the command and rerun.
@@ -94,4 +95,6 @@ exit code comes with a message saying why; tell the person, and:
 - 4: the CLI ran but failed, and may have filed it anyway. Give the person the CLI's message and
   the repository's issues page it names. Only once they have checked that the issue isn't there,
   run the same command again, or use `--link-only` if the CLI keeps failing.
+- 5: nothing was filed: the CLI couldn't confirm its account or GitHub refused the issue.
+  Offer the link instead, which they submit under whichever account their browser uses.
 - 1: the plugin's own files are missing or broken, so there is nowhere to file.

@@ -9,8 +9,8 @@ Commands:
   account   Say whether `file` would use gh, and as which github.com account.
   context   Print the Context lines for an issue: plugin version, Claude Code version, OS.
   file      File an issue whose draft (title line, then body) is read from standard input,
-            with the GitHub CLI (`gh`) as the account `account` named, or else print a link
-            that opens GitHub's new-issue page already filled in.
+            with the GitHub CLI (`gh`) as the account `account` named, or print a link that
+            opens GitHub's new-issue page already filled in.
 
 Run `issue.py <command> --help` for each command's arguments, output and exit codes.
 """
@@ -62,8 +62,9 @@ def read_manifest(root):
 def template_labels(root, kind):
     """Return the labels on the `labels:` line of the kind's template in .github/ISSUE_TEMPLATE/."""
     path = os.path.join(root, ".github", "ISSUE_TEMPLATE", kind + ".md")
-    with open(path, encoding="utf-8") as f:
-        match = re.match(r"---\n(.*?)\n---\n", f.read(), re.DOTALL)
+    with open(path, encoding="utf-8-sig") as f:
+        text = f.read().replace("\r\n", "\n")
+    match = re.match(r"---\n(.*?)\n---(\n|$)", text, re.DOTALL)
     line = re.search(r"^labels:(.*)$", match.group(1), re.MULTILINE) if match else None
     value = line.group(1).split(" #")[0] if line else ""
     labels = [label.strip(" '\"") for label in value.strip(" []").split(",")]
@@ -125,44 +126,34 @@ class Unsure(Exception):
     """gh may have filed the issue, so offering a link could file it twice."""
 
 
-def can_label(slug):
-    """Say whether the gh account may label the repository's issues; GitHub refuses others."""
-    try:
-        result = run(["gh", "api", "--hostname", "github.com", "repos/" + slug,
-                      "--jq", ".permissions | (.push or .triage)"])
-    except (OSError, ValueError, subprocess.SubprocessError):
-        return False
-    return result.returncode == 0 and result.stdout.strip() == "true"
+class Refused(Exception):
+    """GitHub refused the issue, or gh couldn't send it: nothing was filed."""
 
 
 def gh_filed(slug, title, body, labels):
-    """File with gh and return the issue's URL, or None if gh couldn't start; raise Unsure.
+    """File through GitHub's REST API with gh and return the issue's URL.
 
-    Once `gh issue create` has run it may have filed the issue even when it reports an error,
-    so a failure then must not be followed by a link.
+    GitHub drops the labels of anyone not allowed to set them. Raise Refused when nothing was
+    filed, and Unsure when the issue may have been filed despite the error.
     """
-    args = ["gh", "issue", "create", "--repo", "github.com/" + slug, "--title", title,
-            "--body-file", "-"]
-    if can_label(slug):
-        args[-2:-2] = ["--label", ",".join(labels)]
+    args = ["gh", "api", "--hostname", "github.com", "--method", "POST",
+            "repos/%s/issues" % slug, "--input", "-", "--jq", ".html_url"]
+    payload = json.dumps({"title": title, "body": body, "labels": labels})
     try:
-        result = run(args, input=body)
+        result = run(args, input=payload)
     except (OSError, ValueError) as error:
-        print("issue.py: gh could not start: %s" % error, file=sys.stderr)
-        return None
+        raise Refused("gh could not start: %s" % error)
     except subprocess.TimeoutExpired:
         raise Unsure("gh timed out")
     if result.returncode != 0:
-        # GitHub answers a request it refused, such as one without permission, with HTTP 4xx
-        # and creates nothing; any other failure leaves it unknown.
-        if re.search(r"\bHTTP 4\d\d\b", result.stderr):
-            print("issue.py: GitHub refused the issue: " + result.stderr.strip(), file=sys.stderr)
-            return None
+        # A refused request, such as one without permission, gets HTTP 4xx and creates nothing.
+        if re.search(r"\(HTTP 4\d\d\)", result.stderr):
+            raise Refused("GitHub refused the issue: " + result.stderr.strip())
         raise Unsure("gh failed: " + result.stderr.strip())
-    urls = [line for line in result.stdout.split() if line.startswith("https://")]
-    if not urls:
+    url = result.stdout.strip()
+    if not url.startswith("https://"):
         raise Unsure("gh succeeded but printed no issue URL")
-    return urls[-1]
+    return url
 
 
 def parse_draft(text):
@@ -174,8 +165,8 @@ def parse_draft(text):
     """
     lines = text.lstrip("\ufeff").replace("\r\n", "\n").split("\n")
     title, body = lines[0].strip(), "\n".join(lines[1:]).strip("\n")
-    if re.match(r"(#+\s|>\s|\*\*|__|\*\w+\s*:\*|(title|subject|kind)\s*:)", title,
-                re.IGNORECASE):
+    if re.match(r"(#+\s|>\s|\*\*\w+\s*:|\*\w+\s*:\*|\[\w+\]|"
+                r"(title|subject|kind|issue|bug|improvement)\s*:)", title, re.IGNORECASE):
         title = ""
     return title, body + "\n"
 
@@ -192,37 +183,39 @@ def gh_login():
 
 
 def file_issue(root, kind, draft, login=None):
-    """File the draft with gh as `login`, or print a link when login is None or gh can't."""
+    """File the draft with gh as `login`, or print a link when login is None."""
     title, body = parse_draft(draft)
     if not title or not body.strip():
         print("issue.py: the draft needs the bare title on its first line, then a body",
               file=sys.stderr)
         return 2
-    if len(title) > MAX_TITLE or len(body) > MAX_BODY:
+    if len(title) > MAX_TITLE or len(body.rstrip("\n")) > MAX_BODY:
         print("issue.py: longer than GitHub allows (title %d characters, limit %d; body %d, "
               "limit %d)" % (len(title), MAX_TITLE, len(body), MAX_BODY), file=sys.stderr)
         return 3
     slug = repo_slug(read_manifest(root).get("repository"))
     labels = template_labels(root, kind)
-    if login:
+    if login is not None:
         current = gh_login()
-        if current and current.lower() != login.lower():
+        if not current:
+            print("issue.py: gh couldn't confirm its github.com account (signed out or "
+                  "unreachable); nothing was filed", file=sys.stderr)
+            return 5
+        if current.lower() != login.lower():
             print("issue.py: gh would file as %s, not %s; tell the person before filing"
                   % (current, login), file=sys.stderr)
             return 2
-        if not current:
-            print("issue.py: gh couldn't confirm its github.com account (signed out or "
-                  "unreachable)", file=sys.stderr)
-        else:
-            try:
-                url = gh_filed(slug, title, body, labels)
-            except Unsure as reason:
-                print("issue.py: %s; check https://github.com/%s/issues before filing again"
-                      % (reason, slug), file=sys.stderr)
-                return 4
-            if url:
-                print("filed " + url)
-                return 0
+        try:
+            url = gh_filed(slug, title, body, labels)
+        except Refused as reason:
+            print("issue.py: %s; nothing was filed" % reason, file=sys.stderr)
+            return 5
+        except Unsure as reason:
+            print("issue.py: %s; check https://github.com/%s/issues before filing again"
+                  % (reason, slug), file=sys.stderr)
+            return 4
+        print("filed " + url)
+        return 0
     link = new_issue_link(slug, title, body, labels)
     if len(link) > MAX_URL:
         print("issue.py: the issue is too long to fit in a link (%d characters, limit %d); "
@@ -253,17 +246,17 @@ def main(argv=None):
         "file",
         help="file an issue, draft on standard input",
         description="File an issue on the plugin's repository. Standard input holds the draft: "
-                    "the title on the first line, then the body. Prints one line: "
-                    "\"filed <issue URL>\" if gh filed it, or \"link <URL>\" for the person to "
-                    "open and submit, with any reason gh wasn't used on standard error. Exit "
-                    "codes: 0 done; 1 the plugin's manifest or issue templates can't be read, or name "
-                    "no GitHub repository or label; 2 bad arguments, gh signed in as another "
-                    "account than --as, a draft whose first line isn't a bare title or with no "
-                    "body, or a draft that isn't UTF-8; 3 too long: over GitHub's 256-character "
-                    "title or 65,536-character body, or gh wasn't used and the issue is too "
-                    "long for a link; 4 gh ran but its result is "
-                    "unknown (it failed without GitHub refusing it, timed out or printed no URL) and it may have filed the "
-                    "issue, so check the repository's issues before trying again.",
+                    "the title on the first line, then the body. With --as, files it with gh "
+                    "and prints \"filed <issue URL>\"; with --link-only, prints \"link <URL>\" "
+                    "for the person to open and submit. Exit codes: 0 done; 1 the plugin's "
+                    "manifest or issue templates can't be read, or name no GitHub repository or "
+                    "label; 2 bad arguments, gh signed in as another account than --as, a draft "
+                    "whose first line isn't a bare title or with no body, or a draft that isn't "
+                    "UTF-8; 3 too long: over GitHub's 256-character title or 65,536-character "
+                    "body, or too long for a link; 4 gh's result is unknown (it failed without "
+                    "GitHub refusing, timed out or printed no URL) and it may have filed the "
+                    "issue, so check the repository's issues before trying again; 5 nothing was "
+                    "filed: gh couldn't confirm its account or start, or GitHub refused it.",
     )
     filer.add_argument("--kind", required=True, choices=KINDS,
                        help="bug or improvement; the labels are those that kind's template sets")
@@ -274,14 +267,16 @@ def main(argv=None):
     route.add_argument("--link-only", action="store_true",
                        help="never run gh; always print the link")
     args = parser.parse_args(argv)
+    if args.command == "account":
+        login = gh_login()
+        print("gh " + login if login else "link")
+        return 0
+    if args.command == "file" and args.login is not None and not args.login.strip():
+        parser.error("--as needs a GitHub login")
     try:
         root = plugin_root()
         if args.command == "context":
             sys.stdout.write(context(root))
-            return 0
-        if args.command == "account":
-            login = gh_login()
-            print("gh " + login if login else "link")
             return 0
         try:
             draft = sys.stdin.buffer.read().decode("utf-8")
