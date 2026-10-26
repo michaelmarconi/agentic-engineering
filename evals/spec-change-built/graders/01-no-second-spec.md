@@ -1,8 +1,8 @@
 ---
 type: regex
 target: trace
-pattern: "docs/specs/(?!password-reset\\.spec\\.md)[\\w./-]*\\.spec\\.md"
+pattern: '"name":"Write","input":\{"file_path":"[^"]*(?<!/docs/specs/password-reset\.spec\.md)"'
 match: not_contains
 weight: 1
 ---
-No spec other than password-reset.spec.md is named anywhere in the run, so no second spec was written.
+No Write went to any file but the existing spec, so no second spec was created anywhere.

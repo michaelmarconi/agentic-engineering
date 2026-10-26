@@ -1,8 +1,8 @@
 ---
-type: regex
-target: trace
-pattern: '"file_path":"[^"]*docs/specs/(?!auth/password-reset\.spec\.md")[^"]*\.spec\.md"'
-match: not_contains
+type: tool_used
+tool: Write
+min: 0
+max: 0
 weight: 1
 ---
-No tool touched a spec file other than the existing auth/password-reset.spec.md.
+Nothing new is written: the existing spec already covers the request.
