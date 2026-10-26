@@ -60,7 +60,8 @@ def template_labels(root, kind):
     with open(path, encoding="utf-8") as f:
         match = re.match(r"---\n(.*?)\n---\n", f.read(), re.DOTALL)
     line = re.search(r"^labels:(.*)$", match.group(1), re.MULTILINE) if match else None
-    labels = [label.strip(" '\"") for label in line.group(1).strip(" []").split(",")] if line else []
+    value = line.group(1).split(" #")[0] if line else ""
+    labels = [label.strip(" '\"") for label in value.strip(" []").split(",")]
     labels = [label for label in labels if label]
     if not labels:
         raise ValueError("the %s template sets no label" % kind)
@@ -117,16 +118,31 @@ class Unsure(Exception):
     """gh may have filed the issue, so offering a link could file it twice."""
 
 
+def can_label(slug):
+    """Say whether the gh account may label the repository's issues; GitHub refuses others."""
+    try:
+        result = run(["gh", "api", "--hostname", "github.com", "repos/" + slug,
+                      "--jq", ".permissions.triage"])
+    except (OSError, ValueError, subprocess.SubprocessError):
+        return False
+    return result.returncode == 0 and result.stdout.strip() == "true"
+
+
 def gh_filed(slug, title, body, labels):
-    """File with gh and return the issue's URL; raise Unsure if gh fails.
+    """File with gh and return the issue's URL, or None if gh couldn't start; raise Unsure.
 
     Once `gh issue create` has run it may have filed the issue even when it reports an error,
-    so a failure here must not be followed by a link.
+    so a failure then must not be followed by a link.
     """
     args = ["gh", "issue", "create", "--repo", "github.com/" + slug, "--title", title,
-            "--label", ",".join(labels), "--body-file", "-"]
+            "--body-file", "-"]
+    if can_label(slug):
+        args[-2:-2] = ["--label", ",".join(labels)]
     try:
         result = run(args, input=body)
+    except (OSError, ValueError) as error:
+        print("issue.py: gh could not start: %s" % error, file=sys.stderr)
+        return None
     except subprocess.TimeoutExpired:
         raise Unsure("gh timed out")
     if result.returncode != 0:
@@ -140,13 +156,13 @@ def gh_filed(slug, title, body, labels):
 def parse_draft(text):
     """Split a draft into its title (the first line) and body (the rest).
 
-    The first line must be the bare title. A line that looks like a heading or a label, such as
+    The first line must be the bare title. A line that starts with Markdown or a label, such as
     "# T", "Title: T" or "**Title:** T", gives an empty title rather than a guess, because the
     title is filed publicly as written.
     """
     lines = text.lstrip("\ufeff").replace("\r\n", "\n").split("\n")
     title, body = lines[0].strip(), "\n".join(lines[1:]).strip("\n")
-    if re.match(r"(#+\s|\*\*|title\s*:|kind\s*:)", title, re.IGNORECASE):
+    if re.match(r"([#*_>]|(title|subject|kind)\s*:)", title, re.IGNORECASE):
         title = ""
     return title, body + "\n"
 
@@ -156,8 +172,6 @@ def gh_login():
     if not shutil.which("gh"):
         return None
     try:
-        if run(["gh", "auth", "status", "--hostname", "github.com"]).returncode != 0:
-            return None
         result = run(["gh", "api", "--hostname", "github.com", "user", "--jq", ".login"])
     except (OSError, subprocess.SubprocessError):
         return None
@@ -179,20 +193,22 @@ def file_issue(root, kind, draft, login=None):
     labels = template_labels(root, kind)
     if login:
         current = gh_login()
-        if current and current != login:
+        if current and current.lower() != login.lower():
             print("issue.py: gh would file as %s, not %s; tell the person before filing"
                   % (current, login), file=sys.stderr)
             return 2
-        if current:
+        if not current:
+            print("issue.py: gh is no longer signed in to github.com", file=sys.stderr)
+        else:
             try:
                 url = gh_filed(slug, title, body, labels)
             except Unsure as reason:
                 print("issue.py: %s; check https://github.com/%s/issues before filing again"
                       % (reason, slug), file=sys.stderr)
                 return 4
-            print("filed " + url)
-            return 0
-        print("issue.py: gh is no longer signed in to github.com", file=sys.stderr)
+            if url:
+                print("filed " + url)
+                return 0
     link = new_issue_link(slug, title, body, labels)
     if len(link) > MAX_URL:
         print("issue.py: the issue is too long to fit in a link (%d characters, limit %d); "

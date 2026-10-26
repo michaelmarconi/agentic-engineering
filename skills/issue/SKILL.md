@@ -65,8 +65,8 @@ issue and it may be a work account. Then ask whether to file it.
 File only on their clear yes to that draft: an issue on a public repository can't be taken back,
 so a yes given before they have seen the draft and the account doesn't count. If they change
 the draft, review it again before asking again. If they bring back a draft and say yes to it,
-review it; if it passes and they want a link, give them the link, and otherwise tell them the
-account and ask once more.
+review it and run `account`. If the review passes and `account` says `link`, or they asked for a
+link, give them the link; if it says `gh <login>`, tell them the account and ask once more.
 
 On their yes, pass the draft on standard input: the bare title alone on the first line, with no
 heading mark or "Title:", then the body. The quoted delimiter keeps the shell from expanding
@@ -90,5 +90,5 @@ exit code comes with a message saying why; tell the person, and:
 - 3: the draft is too long. Offer a shorter draft, which is reviewed again.
 - 4: the CLI ran but failed, and may have filed it anyway. Give the person the CLI's message and
   the repository's issues page it names. Only once they have checked that the issue isn't there,
-  rerun with `--link-only`.
+  run the same command again, or use `--link-only` if the CLI keeps failing.
 - 1: the plugin's own files are missing or broken, so there is nowhere to file.

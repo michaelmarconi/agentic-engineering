@@ -1,0 +1,7 @@
+schema_version: "1.1"
+name: issue-files-approved
+expected_outcome: |
+  The person brings back a reviewed draft and says to file it. Before filing, the skill checks
+  which route and GitHub account would be used. With no signed-in GitHub CLI it gives the
+  pre-filled link; with one, it names the account and asks once more. It never files under an
+  account the person hasn't been shown.

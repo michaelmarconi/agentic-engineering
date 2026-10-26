@@ -1,6 +1,6 @@
 # Software Development Lifecycle (SDLC)
 
-*In development: `/spec` is built; the other skills are still being designed.*
+*In development: `/spec` and `/issue` are built; the other skills are still being designed.*
 
 A software development lifecycle is the path work takes from an idea for a product to working
 code. This repository defines one, and packages it as a plugin for
