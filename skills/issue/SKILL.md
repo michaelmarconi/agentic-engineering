@@ -89,8 +89,8 @@ It prints `filed <issue URL>`, or with `--link-only`, `link <URL>`: give the per
 which opens the issue already filled in for them to submit. Any other exit code comes with a
 message saying why; tell the person, and:
 
-- 2: the CLI is signed in as a different account, the first line wasn't a bare title, or there
-  was no body. For an account change, ask the person again; otherwise fix the command and rerun.
+- 2: the first line wasn't a bare title, or there was no body; fix the command and rerun it.
+- 6: the CLI is now signed in as a different account; nothing was filed. Ask the person again.
 - 3: the draft is too long. Offer a shorter draft, which is reviewed again.
 - 4: the CLI ran but failed, and may have filed it anyway. Give the person the CLI's message and
   the repository's issues page it names. Only once they have checked that the issue isn't there,

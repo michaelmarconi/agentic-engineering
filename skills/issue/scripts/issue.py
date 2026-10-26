@@ -146,8 +146,10 @@ def gh_filed(slug, title, body, labels):
     except subprocess.TimeoutExpired:
         raise Unsure("gh timed out")
     if result.returncode != 0:
-        # A refused request, such as one without permission, gets HTTP 4xx and creates nothing.
-        if re.search(r"\(HTTP 4\d\d\)", result.stderr):
+        # A refused request, such as one without permission, gets HTTP 4xx and creates nothing,
+        # as does one that never reached GitHub.
+        if re.search(r"\(HTTP 4\d\d\)|no such host|connection refused|dial tcp",
+                     result.stderr, re.IGNORECASE):
             raise Refused("GitHub refused the issue: " + result.stderr.strip())
         raise Unsure("gh failed: " + result.stderr.strip())
     url = result.stdout.strip()
@@ -159,16 +161,17 @@ def gh_filed(slug, title, body, labels):
 def parse_draft(text):
     """Split a draft into its title (the first line) and body (the rest).
 
-    The first line must be the bare title. A line that starts with Markdown or a label, such as
-    "# T", "Title: T" or "**Title:** T", gives an empty title rather than a guess, because the
-    title is filed publicly as written.
+    The first line must be the bare title. One that starts with Markdown or a label, such as
+    "# T", "**Title:** T", "[Bug] T" or "Title: T", gives an empty title rather than a guess,
+    because the title is filed publicly as written.
     """
     lines = text.lstrip("\ufeff").replace("\r\n", "\n").split("\n")
     title, body = lines[0].strip(), "\n".join(lines[1:]).strip("\n")
-    if re.match(r"(#+\s|>\s|\*\*\w+\s*:|\*\w+\s*:\*|\[\w+\]|"
-                r"(title|subject|kind|issue|bug|improvement)\s*:)", title, re.IGNORECASE):
+    if (not re.match(r"[\w/`.]|\*\.", title) or "**" in title
+            or re.match(r"(title|subject|kind|issue|bug|improvement)\s*[:\-]", title,
+                        re.IGNORECASE)):
         title = ""
-    return title, body + "\n"
+    return title, body
 
 
 def gh_login():
@@ -189,7 +192,7 @@ def file_issue(root, kind, draft, login=None):
         print("issue.py: the draft needs the bare title on its first line, then a body",
               file=sys.stderr)
         return 2
-    if len(title) > MAX_TITLE or len(body.rstrip("\n")) > MAX_BODY:
+    if len(title) > MAX_TITLE or len(body) > MAX_BODY:
         print("issue.py: longer than GitHub allows (title %d characters, limit %d; body %d, "
               "limit %d)" % (len(title), MAX_TITLE, len(body), MAX_BODY), file=sys.stderr)
         return 3
@@ -201,10 +204,10 @@ def file_issue(root, kind, draft, login=None):
             print("issue.py: gh couldn't confirm its github.com account (signed out or "
                   "unreachable); nothing was filed", file=sys.stderr)
             return 5
-        if current.lower() != login.lower():
+        if current.lower() != login.strip().lower():
             print("issue.py: gh would file as %s, not %s; tell the person before filing"
                   % (current, login), file=sys.stderr)
-            return 2
+            return 6
         try:
             url = gh_filed(slug, title, body, labels)
         except Refused as reason:
@@ -250,20 +253,21 @@ def main(argv=None):
                     "and prints \"filed <issue URL>\"; with --link-only, prints \"link <URL>\" "
                     "for the person to open and submit. Exit codes: 0 done; 1 the plugin's "
                     "manifest or issue templates can't be read, or name no GitHub repository or "
-                    "label; 2 bad arguments, gh signed in as another account than --as, a draft "
+                    "label; 2 bad arguments, a draft "
                     "whose first line isn't a bare title or with no body, or a draft that isn't "
                     "UTF-8; 3 too long: over GitHub's 256-character title or 65,536-character "
                     "body, or too long for a link; 4 gh's result is unknown (it failed without "
                     "GitHub refusing, timed out or printed no URL) and it may have filed the "
                     "issue, so check the repository's issues before trying again; 5 nothing was "
-                    "filed: gh couldn't confirm its account or start, or GitHub refused it.",
+                    "filed: gh couldn't confirm its account or reach GitHub, or GitHub refused it; "
+                    "6 gh is signed in as another account than --as, and nothing was filed.",
     )
     filer.add_argument("--kind", required=True, choices=KINDS,
                        help="bug or improvement; the labels are those that kind's template sets")
     route = filer.add_mutually_exclusive_group(required=True)
     route.add_argument("--as", dest="login", metavar="LOGIN",
                        help="file with gh as this github.com account, the one `account` named; "
-                            "if gh is signed in as another account, exit 2 without filing")
+                            "if gh is signed in as another account, exit 6 without filing")
     route.add_argument("--link-only", action="store_true",
                        help="never run gh; always print the link")
     args = parser.parse_args(argv)

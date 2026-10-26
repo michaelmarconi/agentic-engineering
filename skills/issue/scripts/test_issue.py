@@ -167,26 +167,27 @@ class ParseDraftTest(unittest.TestCase):
     def test_first_line_is_title(self):
         self.assertEqual(
             issue.parse_draft("A `title` with $HOME\n\n## What happened\nIt broke.\n"),
-            ("A `title` with $HOME", "## What happened\nIt broke.\n"),
+            ("A `title` with $HOME", "## What happened\nIt broke."),
         )
 
     def test_windows_line_endings(self):
-        self.assertEqual(issue.parse_draft("T\r\n\r\nbody\r\n"), ("T", "body\n"))
+        self.assertEqual(issue.parse_draft("T\r\n\r\nbody\r\n"), ("T", "body"))
 
     def test_heading_or_label_line_is_no_title(self):
         for first in ("# A title", "Title: A title", "**Title:** A title", "*Title:* A title",
-                      "> A title", "Subject: A title", "Kind: bug", "Bug: A title",
+                      "**Title**: A title", "*Title*: A title", "## ", "> A title",
+                      "Subject: A title", "Kind: bug", "Bug: A title", "Title - A title",
                       "[Bug] A title", "", "\ufeffKind: bug"):
             self.assertEqual(issue.parse_draft(first + "\n\nbody")[0], "", first)
 
     def test_titles_starting_with_symbols_kept(self):
         for title in ("/spec names a library", "*.spec.md files in subfolders are ignored",
                       "_private names leak", "__init__.py files are read as specs",
-                      "#include paths break /spec"):
+                      "`status:` is ignored", ".spec.md suffix is required"):
             self.assertEqual(issue.parse_draft(title + "\n\nb")[0], title)
 
     def test_byte_order_mark_dropped(self):
-        self.assertEqual(issue.parse_draft("\ufeffT\n\nb"), ("T", "b\n"))
+        self.assertEqual(issue.parse_draft("\ufeffT\n\nb"), ("T", "b"))
 
 
 class FileTest(unittest.TestCase):
@@ -227,15 +228,15 @@ class FileTest(unittest.TestCase):
              "repos/acme/tools/issues", "--input", "-", "--jq", ".html_url"],
         )
         self.assertEqual(json.loads(stdin),
-                         {"title": "A title", "body": "## What happened\n", "labels": ["bug"]})
+                         {"title": "A title", "body": "## What happened", "labels": ["bug"]})
 
     def test_refuses_another_account(self):
         code, out, calls, err = self.file(signed_in="jane-work")
-        self.assertEqual((code, out, calls), (2, "", []))
+        self.assertEqual((code, out, calls), (6, "", []))
         self.assertIn("jane-work", err)
 
-    def test_login_case_ignored(self):
-        code, out, _, _ = self.file(signed_in="Jane")
+    def test_login_case_and_spaces_ignored(self):
+        code, out, _, _ = self.file(signed_in="Jane", login=" jane ")
         self.assertEqual(code, 0)
         self.assertTrue(out.startswith("filed "))
 
@@ -260,6 +261,10 @@ class FileTest(unittest.TestCase):
         self.assertTrue(out.startswith("link https://github.com/acme/tools/issues/new?"))
         self.assertEqual(calls, [])
         self.assertFalse(self.gh_login_called)
+
+    def test_nothing_filed_when_github_unreachable(self):
+        code, out, _, _ = self.file(create=done(1, "", "dial tcp: lookup api.github.com: no such host"))
+        self.assertEqual((code, out), (5, ""))
 
     def test_unsure_when_gh_fails_without_refusal(self):
         # gh may report an error after GitHub created the issue, so a retry could duplicate it.
