@@ -148,7 +148,7 @@ def gh_filed(slug, title, body, labels):
     if result.returncode != 0:
         # A refused request, such as one without permission, gets HTTP 4xx and creates nothing,
         # as does one that never reached GitHub.
-        if re.search(r"\(HTTP 4\d\d\)|no such host|connection refused|dial tcp",
+        if re.search(r"\(HTTP 4\d\d\)|no such host|connection refused|dial tcp|error connecting to",
                      result.stderr, re.IGNORECASE):
             raise Refused("GitHub refused the issue: " + result.stderr.strip())
         raise Unsure("gh failed: " + result.stderr.strip())
@@ -165,10 +165,10 @@ def parse_draft(text):
     "# T", "**Title:** T", "[Bug] T" or "Title: T", gives an empty title rather than a guess,
     because the title is filed publicly as written.
     """
-    lines = text.lstrip("\ufeff").replace("\r\n", "\n").split("\n")
+    lines = text.lstrip("\ufeff").replace("\r\n", "\n").lstrip("\n").split("\n")
     title, body = lines[0].strip(), "\n".join(lines[1:]).strip("\n")
-    if (not re.match(r"[\w/`.]|\*\.", title) or "**" in title
-            or re.match(r"(title|subject|kind|issue|bug|improvement)\s*[:\-]", title,
+    if (not re.match(r"[\w/`.\"'(]|\*\.", title) or "**" in title
+            or re.match(r"(title|subject|kind|issue|bug|improvement)\s*(:|\s-\s)", title,
                         re.IGNORECASE)):
         title = ""
     return title, body

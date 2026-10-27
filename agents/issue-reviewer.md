@@ -15,8 +15,10 @@ Read:
 - The template for the draft's kind: `${CLAUDE_PLUGIN_ROOT}/.github/ISSUE_TEMPLATE/bug.md` or
   `improvement.md`.
 - The current working directory, which is the person's repository, but only to check rubric
-  check 4: search it for the draft's names, paths, identifiers and distinctive phrases, since
-  anything found there is a leak. Don't read further into it than that needs.
+  check 4: search it for the draft's names, paths, identifiers and distinctive phrases. One found
+  there is a leak unless rubric check 4 allows it: the plugin's own words and paths, such as
+  "Ready to build" or `docs/specs/`, and ordinary words, turn up in any repository that uses the
+  lifecycle. Don't read further into it than that needs.
 
 Apply every rubric check. For each failure, quote the draft as evidence and say what would make
 it pass. Then note anything else that would stop a maintainer acting on the issue. Leave out

@@ -31,6 +31,9 @@ For the versions in Context, run:
 python3 "${CLAUDE_SKILL_DIR}/scripts/issue.py" context
 ```
 
+If you can't run it, read the plugin's version from `${CLAUDE_PLUGIN_ROOT}/.claude-plugin/plugin.json`
+and give the other versions as unknown.
+
 ## Draft
 
 Write the title and body in the template's shape, as rubric checks 1 to 8 describe. Redact as
@@ -43,18 +46,19 @@ plugin leaves nothing there but the lifecycle's own documents.
 
 ## Review
 
-Start the `sdlc:issue-reviewer` agent in the foreground, not in the background, and give it the
+The draft is reviewed up to ${user_config.review_rounds} times, counting the first. If no number
+appears in that sentence, the plugin's Review rounds setting has not been saved: run no review.
+Show the person the draft, say it is unreviewed and can't be filed yet, and ask them to run
+`/plugin configure sdlc@sdlc`, type a number next to Review rounds, choose Save configuration,
+run `/reload-plugins` and then ask you for the review. Never pick a number yourself.
+
+Otherwise, start the `sdlc:issue-reviewer` agent in the foreground, not in the background, and give it the
 kind and the draft, title and body, in full and word for word. It reads everything else it needs
 itself. Wait for its report before changing the draft, so the report matches the draft. It
 reports pass or fail for each rubric check with evidence, other findings, and anything that
 needs the person.
 
-Fix every finding you can and run the reviewer again, for up to ${user_config.review_rounds}
-reviews in all, counting the first. If no number appears in that sentence, the plugin's Review
-rounds setting has not been saved: show the person the draft, say it is unreviewed and can't be
-filed yet, and ask them to run `/plugin configure sdlc@sdlc`, type a number next to Review
-rounds, choose Save configuration, run `/reload-plugins` and then ask you for the review. Never
-pick a number yourself. If the last review still
+Fix every finding you can and run the reviewer again, until the limit. If the last review still
 fails, show the person the draft and the report, say what is still failing, and ask how they
 want it changed; each change they make gets one more review. A failing draft is filed only if
 the person, with the report in front of them, says to file it anyway: it is their information to

@@ -177,14 +177,20 @@ class ParseDraftTest(unittest.TestCase):
         for first in ("# A title", "Title: A title", "**Title:** A title", "*Title:* A title",
                       "**Title**: A title", "*Title*: A title", "## ", "> A title",
                       "Subject: A title", "Kind: bug", "Bug: A title", "Title - A title",
-                      "[Bug] A title", "", "\ufeffKind: bug"):
+                      "[Bug] A title", "\ufeffKind: bug"):
             self.assertEqual(issue.parse_draft(first + "\n\nbody")[0], "", first)
 
     def test_titles_starting_with_symbols_kept(self):
         for title in ("/spec names a library", "*.spec.md files in subfolders are ignored",
                       "_private names leak", "__init__.py files are read as specs",
-                      "`status:` is ignored", ".spec.md suffix is required"):
+                      "`status:` is ignored", ".spec.md suffix is required",
+                      "issue-reviewer passes a draft that quotes a path",
+                      '"Verified by: manual testing" passes /spec review',
+                      "(Minor) /spec repeats a question"):
             self.assertEqual(issue.parse_draft(title + "\n\nb")[0], title)
+
+    def test_leading_blank_lines_skipped(self):
+        self.assertEqual(issue.parse_draft("\n\nT\n\nb"), ("T", "b"))
 
     def test_byte_order_mark_dropped(self):
         self.assertEqual(issue.parse_draft("\ufeffT\n\nb"), ("T", "b"))
@@ -264,6 +270,10 @@ class FileTest(unittest.TestCase):
 
     def test_nothing_filed_when_github_unreachable(self):
         code, out, _, _ = self.file(create=done(1, "", "dial tcp: lookup api.github.com: no such host"))
+        self.assertEqual((code, out), (5, ""))
+
+    def test_nothing_filed_when_offline(self):
+        code, out, _, _ = self.file(create=done(1, "", "error connecting to api.github.com"))
         self.assertEqual((code, out), (5, ""))
 
     def test_unsure_when_gh_fails_without_refusal(self):
