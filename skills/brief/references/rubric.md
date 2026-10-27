@@ -35,4 +35,5 @@ checking, and quotes the brief as evidence for every failure.
    and every statement that links to a document in the repository says no more than that
    document does. Links outside the repository are not checked.
 10. **Plain words.** No unexplained jargon or acronym: a graduate new to the project could
-    follow every sentence.
+    follow every sentence. Spell out an acronym or explain a term where it first appears, title
+    included, or leave it out of the title.
