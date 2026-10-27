@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: brief-from-conversation
+expected_outcome: |
+  The brief is drafted from the conversation without an interview first. It uses the latest goal (under an hour, not 30 minutes), has no status, keeps Flutter and the 48-hour swap expiry out and tells the person where they go, and leaves the undecided question about agency nurses in Open questions.
+context:
+  scaffold_script: place-files.sh
