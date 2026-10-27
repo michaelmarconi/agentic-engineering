@@ -6,6 +6,13 @@ What changed in each version of the plugin, newest first. Versions follow
 past a major version: it says what you need to change in your documents. Until 1.0.0, any
 minor version may need such a change, and its entry says so.
 
+## [0.3.1] - 2026-10-27
+
+### Added
+
+- This changelog, so you can see what each version changed. The README's Update section points
+  to it.
+
 ## [0.3.0] - 2026-10-27
 
 ### Added
