@@ -7,7 +7,6 @@ import unittest
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 SCRIPT = os.path.join(HERE, "version_check.py")
-ROOT = os.path.join(HERE, "..")
 
 
 def changelog(*versions):
@@ -47,7 +46,7 @@ class VersionCheck(unittest.TestCase):
         self.assertEqual((done.returncode, done.stdout), (0, ""))
 
     def test_plugins_own_changelog_matches(self):
-        done = self.check(ROOT)
+        done = subprocess.run([sys.executable, SCRIPT], capture_output=True, text=True)
         self.assertEqual(done.returncode, 0, done.stdout)
 
     def test_bump_without_entry_fails(self):
@@ -69,6 +68,27 @@ class VersionCheck(unittest.TestCase):
         self.manifest("0.3.0")
         self.log(changelog("v0.4.0", "0.3.0"))
         self.assertFails("plugin.json is at 0.3.0 but the newest CHANGELOG.md entry is v0.4.0")
+
+    def test_unbracketed_newest_heading_is_not_skipped(self):
+        self.manifest("0.3.0")
+        self.log(changelog("0.3.0").replace("Intro.\n\n", "Intro.\n\n## 0.4.0 - 2026-10-28\n\n"))
+        self.assertFails("plugin.json is at 0.3.0 but the newest CHANGELOG.md entry is 0.4.0")
+
+    def test_heading_in_code_block_is_not_an_entry(self):
+        self.manifest("0.4.0")
+        self.log(changelog("0.4.0").replace("Intro.\n\n", "Intro.\n\n```\n## [9.9.9]\n```\n\n"))
+        self.assertEqual(self.check().returncode, 0)
+
+    def test_unreadable_changelog_fails(self):
+        self.manifest()
+        with open(os.path.join(self.tmp.name, "CHANGELOG.md"), "wb") as f:
+            f.write(b"## [0.4.0] \xff\n")
+        self.assertFails("CHANGELOG.md can't be read as UTF-8 text")
+
+    def test_falsy_non_string_version_fails(self):
+        self.manifest(0)
+        self.log(changelog("0"))
+        self.assertFails("plugin.json version is not a string")
 
     def test_malformed_manifest_fails(self):
         self.manifest()
