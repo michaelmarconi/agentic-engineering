@@ -162,8 +162,9 @@ Nothing else belongs at the root without a reason recorded in the change that ad
   what breaks.
 - Bump in the branch's last commit, after bringing main into the branch and just before merging,
   so branches never compete for the next number and the bump survives any way of merging. In
-  that commit, add an entry for the new version at the top of `CHANGELOG.md`, written for the
-  people who use the plugin: what they get, and for a major version what they must change.
+  that commit, add an entry headed `## [X.Y.Z] - YYYY-MM-DD` at the top of `CHANGELOG.md`,
+  written for the people who use the plugin: what they get, and for a major version what they
+  must change.
   `scripts/version_check.py` checks that the newest entry matches `plugin.json`; whether a
   change needed a bump at all is yours to judge.
 - Add a skill to the table in `README.md`, and give it a page under `docs/skills/`, in the same

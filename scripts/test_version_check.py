@@ -64,31 +64,20 @@ class VersionCheck(unittest.TestCase):
         self.log(changelog("0.4.0").replace("Intro.\n\n", "Intro.\n\n## [Unreleased]\n\n"))
         self.assertEqual(self.check().returncode, 0)
 
-    def test_mistyped_newest_heading_is_not_skipped(self):
-        self.manifest("0.3.0")
-        self.log(changelog("v0.4.0", "0.3.0"))
-        self.assertFails("plugin.json is at 0.3.0 but the newest CHANGELOG.md entry is v0.4.0")
-
-    def test_unbracketed_newest_heading_is_not_skipped(self):
-        self.manifest("0.3.0")
-        self.log(changelog("0.3.0").replace("Intro.\n\n", "Intro.\n\n## 0.4.0 - 2026-10-28\n\n"))
-        self.assertFails("plugin.json is at 0.3.0 but the newest CHANGELOG.md entry is 0.4.0")
-
-    def test_heading_in_code_block_is_not_an_entry(self):
-        self.manifest("0.4.0")
-        self.log(changelog("0.4.0").replace("Intro.\n\n", "Intro.\n\n```\n## [9.9.9]\n```\n\n"))
-        self.assertEqual(self.check().returncode, 0)
+    def test_malformed_newest_heading_fails(self):
+        for bad in ["## [v0.4.0] - 2026-10-28", "## 0.4.0 - 2026-10-28", "## []",
+                    "## [0.4.0 - 2026-10-28", "## [0.4] - 2026-10-28", "## [0.4.0]",
+                    "  ## [0.4.0] - 2026-10-28"]:
+            with self.subTest(bad=bad):
+                self.manifest("0.3.0")
+                self.log(changelog("0.3.0").replace("Intro.\n\n", f"Intro.\n\n{bad}\n\n"))
+                self.assertFails("the newest CHANGELOG.md heading must read")
 
     def test_unreadable_changelog_fails(self):
         self.manifest()
         with open(os.path.join(self.tmp.name, "CHANGELOG.md"), "wb") as f:
             f.write(b"## [0.4.0] \xff\n")
         self.assertFails("CHANGELOG.md can't be read as UTF-8 text")
-
-    def test_falsy_non_string_version_fails(self):
-        self.manifest(0)
-        self.log(changelog("0"))
-        self.assertFails("plugin.json version is not a string")
 
     def test_malformed_manifest_fails(self):
         self.manifest()
@@ -97,10 +86,12 @@ class VersionCheck(unittest.TestCase):
         self.log(changelog("0.4.0"))
         self.assertFails("plugin.json is not a JSON object")
 
-    def test_non_string_version_fails(self):
-        self.manifest(1)
-        self.log(changelog("1"))
-        self.assertFails("plugin.json version is not a string")
+    def test_version_must_be_semver(self):
+        for bad in [0, 1, "1", "v0.4.0", "0.4", "latest"]:
+            with self.subTest(bad=bad):
+                self.manifest(bad)
+                self.log(changelog("0.4.0"))
+                self.assertFails("plugin.json version must read X.Y.Z")
 
     def test_missing_changelog_fails(self):
         self.manifest()
@@ -124,6 +115,7 @@ class VersionCheck(unittest.TestCase):
         done = subprocess.run([sys.executable, SCRIPT, "--help"], capture_output=True, text=True)
         self.assertEqual(done.returncode, 0)
         self.assertIn("CHANGELOG.md", done.stdout)
+        self.assertIn("exits 1", done.stdout)
 
 
 if __name__ == "__main__":
