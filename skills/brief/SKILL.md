@@ -26,7 +26,8 @@ and read it only if they say yes.
 
 ## Shape it with the person
 
-Usually the person has already talked the product through. Draft from that; where the
+Usually the person has already talked the product through. Draft from that, carrying over every
+fact they gave that the brief's sections hold, such as who does what; where the
 conversation changed its mind, the latest word wins. Only when there is nothing to draw on, ask
 what they are building and for whom first.
 
