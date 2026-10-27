@@ -103,6 +103,10 @@ Run `/spec` and tell it what you want to do:
 - **Change:** edit a spec in place, including answering an open question.
 - **Ready:** mark a spec Ready to build.
 
+When the spec has open questions, `/spec` tells you how many there are and asks them one at a
+time; the rest wait in the spec's Open questions section. If you say you would rather not
+answer now, it leaves them there.
+
 ## Where specs live
 
 `docs/specs/<capability>.spec.md`, named for the capability. Specs start flat; when there are

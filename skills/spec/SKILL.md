@@ -77,7 +77,7 @@ The `status:` frontmatter says how far the spec is: Draft, Ready to build or Bui
   wait for their reply first; agreement given before they saw it does not count, even a request
   to fix small things and carry on. So never set Ready in the same reply as a change to the
   spec's content. If questions
-  remain, say which and leave the spec as Draft, even if the person says they do not matter:
+  remain, say how many, ask the first and leave the spec as Draft, even if the person says they do not matter:
   offer to settle them now instead.
 - Never set Built. Only the build step does, once its review finds every requirement verified.
 
@@ -104,5 +104,6 @@ person replies.
 Suggestions are optional behaviour the spec works without; pass them on to the person as
 options to add, and do not hold the spec back for them.
 
-Finish by giving the person the spec's path and the reviewer's final report. Leave committing to
-them.
+Finish by giving the person the spec's path and the reviewer's final report, but leave out the
+open questions and the decisions it lists for the person, including ones you added: give their
+count and ask the first, as above. Leave committing to them.

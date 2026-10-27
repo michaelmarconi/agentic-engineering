@@ -25,7 +25,7 @@ Out:
 
 ### Requirement: <Name>
 
-<One EARS rule using SHALL.>
+<One EARS rule, using SHALL once.>
 
 #### Scenario: <Name>
 - GIVEN <...>
