@@ -60,15 +60,27 @@ class VersionCheck(unittest.TestCase):
         self.log(changelog("0.4.0", "0.3.0"))
         self.assertFails("plugin.json is at 0.3.0 but the newest CHANGELOG.md entry is 0.4.0")
 
-    def test_only_the_newest_entry_counts(self):
-        self.manifest("0.3.0")
-        self.log(changelog("0.4.0", "0.3.0"))
-        self.assertEqual(self.check().returncode, 1)
-
     def test_unreleased_heading_is_not_an_entry(self):
         self.manifest("0.4.0")
-        self.log("# Changelog\n\n## [Unreleased]\n\n" + changelog("0.4.0")[len("# Changelog\n\n"):])
+        self.log(changelog("0.4.0").replace("Intro.\n\n", "Intro.\n\n## [Unreleased]\n\n"))
         self.assertEqual(self.check().returncode, 0)
+
+    def test_mistyped_newest_heading_is_not_skipped(self):
+        self.manifest("0.3.0")
+        self.log(changelog("v0.4.0", "0.3.0"))
+        self.assertFails("plugin.json is at 0.3.0 but the newest CHANGELOG.md entry is v0.4.0")
+
+    def test_malformed_manifest_fails(self):
+        self.manifest()
+        with open(os.path.join(self.tmp.name, ".claude-plugin", "plugin.json"), "w") as f:
+            f.write("{not json")
+        self.log(changelog("0.4.0"))
+        self.assertFails("plugin.json is not a JSON object")
+
+    def test_non_string_version_fails(self):
+        self.manifest(1)
+        self.log(changelog("1"))
+        self.assertFails("plugin.json version is not a string")
 
     def test_missing_changelog_fails(self):
         self.manifest()

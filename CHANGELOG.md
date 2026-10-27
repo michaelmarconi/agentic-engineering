@@ -3,7 +3,8 @@
 What changed in each version of the plugin, newest first. Versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html), and this file follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Read the entry before you update
-past a major version: it says what you need to change in your documents.
+past a major version: it says what you need to change in your documents. Until 1.0.0, any
+minor version may need such a change, and its entry says so.
 
 ## [0.3.0] - 2026-10-27
 

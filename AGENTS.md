@@ -160,8 +160,9 @@ Nothing else belongs at the root without a reason recorded in the change that ad
   lifecycle itself. Stay below 1.0.0 until someone other than the maintainer installs the
   plugin; until then a breaking change bumps the minor version, and its changelog entry says
   what breaks.
-- Bump when you merge, not on the branch, so branches never compete for the next number. In the
-  same merge, add an entry for the new version at the top of `CHANGELOG.md`, written for the
+- Bump in the branch's last commit, after bringing main into the branch and just before merging,
+  so branches never compete for the next number and the bump survives any way of merging. In
+  that commit, add an entry for the new version at the top of `CHANGELOG.md`, written for the
   people who use the plugin: what they get, and for a major version what they must change.
   `scripts/version_check.py` checks that the newest entry matches `plugin.json`; whether a
   change needed a bump at all is yours to judge.

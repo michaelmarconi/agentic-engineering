@@ -3,8 +3,9 @@
 as the Workflow section of AGENTS.md asks: a version bump and its changelog entry land together.
 
 An entry is a heading of the form `## [<version>]`, as Keep a Changelog writes them
-(https://keepachangelog.com/en/1.1.0/); `## [Unreleased]` is not an entry. Only the first entry
-counts, since the file lists the newest version first.
+(https://keepachangelog.com/en/1.1.0/); `## [Unreleased]` is not an entry, but any other
+bracketed level-2 heading is, so a mistyped one such as `## [v0.4.0]` fails rather than being
+skipped. Only the first entry counts, since the file lists the newest version first.
 
 Whether a change needed a bump at all is a judgement this script can't make.
 
@@ -20,7 +21,7 @@ import re
 import sys
 
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
-ENTRY = re.compile(r"^## \[(\d[^\]]*)\]", re.M)
+ENTRY = re.compile(r"^## \[([^\]]*)\]", re.M)
 
 
 def problems(root):
@@ -31,18 +32,29 @@ def problems(root):
     if not os.path.isfile(manifest):
         found.append("plugin.json is missing")
     else:
-        with open(manifest, encoding="utf-8") as f:
-            version = json.load(f).get("version")
-        if not version:
-            found.append("plugin.json has no version")
+        try:
+            with open(manifest, encoding="utf-8") as f:
+                fields = json.load(f)
+        except (OSError, ValueError):
+            fields = None
+        if not isinstance(fields, dict):
+            found.append("plugin.json is not a JSON object")
+        else:
+            version = fields.get("version")
+            if not version:
+                found.append("plugin.json has no version")
+            elif not isinstance(version, str):
+                found.append("plugin.json version is not a string")
+                version = None
     newest = None
     if not os.path.isfile(changelog):
         found.append("CHANGELOG.md is missing")
     else:
         with open(changelog, encoding="utf-8") as f:
-            match = ENTRY.search(f.read())
-        if match:
-            newest = match.group(1)
+            headings = ENTRY.findall(f.read())
+        entries = [h for h in headings if h.strip().lower() != "unreleased"]
+        if entries:
+            newest = entries[0]
         else:
             found.append("CHANGELOG.md has no version entry")
     if version and newest and version != newest:
