@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""Give Claude the lifecycle map at the start of a session, and report unsaved settings.
+"""Give Claude the lifecycle rules at the start of a session, and report unsaved settings.
 
-Claude Code runs this as a SessionStart hook. It gives Claude the plugin's context/sdlc.md only
+Claude Code runs this as a SessionStart hook. It gives Claude the plugin's docs/lifecycle.md only
 when the project uses the lifecycle, that is, when it has docs/brief.md or a spec under
 docs/specs/ whose frontmatter has a lifecycle status.
 
@@ -23,7 +23,7 @@ import sys
 from status_check import STATUSES, status_of
 
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
-MAP = os.path.join(ROOT, "context", "sdlc.md")
+MAP = os.path.join(ROOT, "docs", "lifecycle.md")
 MANIFEST = os.path.join(ROOT, ".claude-plugin", "plugin.json")
 
 

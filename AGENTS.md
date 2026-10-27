@@ -1,16 +1,18 @@
 # Agent instructions
 
 This repo is a Claude Code plugin that encodes a software development lifecycle. Read
-[README.md](README.md) for the lifecycle itself and [context/sdlc.md](context/sdlc.md) for its
-principles; this file holds the rules for building the plugin. They apply to every change. Where
-a rule names a number, it is a hard limit; everything else is judgement.
+[docs/lifecycle.md](docs/lifecycle.md) for the lifecycle itself. Claude gets that page at the
+start of every session in a repository that uses the lifecycle, so a change to it changes what
+Claude is told and needs the same care as a change to a skill. This file holds the rules for
+building the plugin. They apply to every change. Where a rule names a number, it is a hard limit;
+everything else is judgement.
 
 ## Principles
 
 1. **Independent in spirit.** The plugin is the unit of distribution, not the skill. A skill
    does one job and never invokes or assumes a prior run of another skill; it may use a document
    another skill produces when one is present, but must work when it is not. Skills may share
-   what the plugin provides: its agents, hooks, scripts and `context/sdlc.md`.
+   what the plugin provides: its agents, hooks, scripts and `docs/lifecycle.md`.
 2. **Small.** Every word earns its place. Write only what Claude would not do unaided, and say it
    once: no restating a rule in a summary, checklist or table.
 3. **Standard format.** Each skill is a folder that follows the
@@ -121,13 +123,12 @@ agents/
 hooks/
   hooks.json           # session map and status checks
 scripts/               # scripts the hooks run, the skill and version checks, and their tests
-context/
-  sdlc.md              # the map Claude gets at session start; the lifecycle's principles
 docs/
+  lifecycle.md         # the lifecycle rules, for people and for Claude at session start
   skills/<name>.md     # one page per skill, linked from README.md
 AGENTS.md              # this file
 CHANGELOG.md           # what each version changed, for the people who use the plugin
-README.md              # user-facing: the lifecycle, and how to install the plugin
+README.md              # user-facing: what the plugin is, its skills, and how to install it
 ```
 
 Nothing else belongs at the root without a reason recorded in the change that adds it.

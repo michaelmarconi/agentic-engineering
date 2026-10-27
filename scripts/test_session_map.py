@@ -7,7 +7,7 @@ import unittest
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 SCRIPT = os.path.join(HERE, "session_map.py")
-MAP = os.path.join(HERE, "..", "context", "sdlc.md")
+MAP = os.path.join(HERE, "..", "docs", "lifecycle.md")
 SAVED = {"CLAUDE_PLUGIN_OPTION_REVIEW_ROUNDS": "3"}
 
 

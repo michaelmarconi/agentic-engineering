@@ -11,7 +11,7 @@ A product has one brief, at `docs/brief.md`. It is edited in place, and git is i
 
 The brief holds only what is true of the whole product. How one capability behaves, such as a
 rule or a limit, belongs in that capability's [spec](spec.md), and a technical choice belongs in
-an [ADR](../../README.md#adr). Keeping each thing in one place means the documents cannot
+an [ADR](adr.md). Keeping each thing in one place means the documents cannot
 disagree. Specs read the brief to see whether they fit the product.
 
 Unlike the other documents, the brief has no status. A spec moves from Draft to Ready to build
@@ -64,7 +64,7 @@ be measured, nothing is guessed or chooses how to build it, and every statement 
 document in the repository says no more than that document does. The reviewer sees only the
 brief and the documents it links to, not your conversation, so it judges the page as a newcomer
 would. `/brief` fixes what the reviewer finds, once, and has the fixes confirmed (see
-[Reviews](../../README.md#review-process)); then you get the brief with the reports.
+[Review process](../lifecycle.md#review-process)); then you get the brief with the reports.
 
 The reviewer cannot tell whether the brief matches what you said, only what it links to, so read
 the draft before you rely on it.
