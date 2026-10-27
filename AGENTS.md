@@ -124,12 +124,13 @@ agents/
   <name>-reviewer.md   # one reviewer per skill that writes documents
 hooks/
   hooks.json           # session map and status checks
-scripts/               # scripts the hooks run, the skill check, and their tests
+scripts/               # scripts the hooks run, the skill and version checks, and their tests
 context/
   sdlc.md              # the map Claude gets at session start; the lifecycle's principles
 docs/
   skills/<name>.md     # one page per skill, linked from README.md
 AGENTS.md              # this file
+CHANGELOG.md           # what each version changed, for the people who use the plugin
 README.md              # user-facing: the lifecycle, and how to install the plugin
 ```
 
@@ -152,7 +153,17 @@ Nothing else belongs at the root without a reason recorded in the change that ad
   The supported models are those named in README.md; a change merges only if its cases pass
   on every one. Evals are billed model runs: run the ones you touched, never the whole suite
   unprompted.
-- Bump `version` in `.claude-plugin/plugin.json` (semver) in any change that alters what users
-  receive. Installed copies only update when the version string changes.
+- Bump `version` in `.claude-plugin/plugin.json` in any change that alters what users receive,
+  since installed copies only update when the version string changes. Follow
+  [Semantic Versioning](https://semver.org/spec/v2.0.0.html): patch for a fix, minor for a new
+  skill or new behaviour, major for a change that breaks documents people already have or the
+  lifecycle itself. Stay below 1.0.0 until someone other than the maintainer installs the
+  plugin; until then a breaking change bumps the minor version, and its changelog entry says
+  what breaks.
+- Bump when you merge, not on the branch, so branches never compete for the next number. In the
+  same merge, add an entry for the new version at the top of `CHANGELOG.md`, written for the
+  people who use the plugin: what they get, and for a major version what they must change.
+  `scripts/version_check.py` checks that the newest entry matches `plugin.json`; whether a
+  change needed a bump at all is yours to judge.
 - Add a skill to the table in `README.md`, and give it a page under `docs/skills/`, in the same
   change that adds it.

@@ -194,6 +194,11 @@ claude plugin update sdlc@sdlc
 To update automatically, run `/plugin`, open **Marketplaces**, select `sdlc` and choose
 **Enable auto-update**. New versions load on the next session or after `/reload-plugins`.
 
+Claude Code doesn't say what a new version changed, so [CHANGELOG.md](CHANGELOG.md) does. Read
+it before you update past a major version, for example from 1.x to 2.0: it says what you need to
+change in your documents. Until 1.0, any minor version may need such a change, and its entry
+says so.
+
 ## Skills
 
 | Skill | What it does |
