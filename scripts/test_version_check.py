@@ -67,11 +67,24 @@ class VersionCheck(unittest.TestCase):
     def test_malformed_newest_heading_fails(self):
         for bad in ["## [v0.4.0] - 2026-10-28", "## 0.4.0 - 2026-10-28", "## []",
                     "## [0.4.0 - 2026-10-28", "## [0.4] - 2026-10-28", "## [0.4.0]",
-                    "  ## [0.4.0] - 2026-10-28"]:
+                    "  ## [0.4.0] - 2026-10-28", "##[0.4.0] - 2026-10-28",
+                    "## [0.4.0] - 2026-13-45"]:
             with self.subTest(bad=bad):
                 self.manifest("0.3.0")
                 self.log(changelog("0.3.0").replace("Intro.\n\n", f"Intro.\n\n{bad}\n\n"))
                 self.assertFails("the newest CHANGELOG.md heading must read")
+
+    def test_trailing_spaces_on_heading_pass(self):
+        self.manifest("0.4.0")
+        self.log(changelog("0.4.0").replace("2026-10-27\n", "2026-10-27  \n", 1))
+        self.assertEqual(self.check().returncode, 0)
+
+    def test_non_utf8_manifest_fails(self):
+        self.manifest()
+        with open(os.path.join(self.tmp.name, ".claude-plugin", "plugin.json"), "wb") as f:
+            f.write(b'{"version": "0.4.0\xff"}')
+        self.log(changelog("0.4.0"))
+        self.assertFails("plugin.json can't be read as UTF-8 text")
 
     def test_newest_entry_must_be_newer_than_the_last(self):
         for order in [("0.3.0", "0.4.0"), ("0.4.0", "0.4.0"), ("0.4.0", "0.10.0")]:

@@ -79,10 +79,10 @@ a rule names a number, it is a hard limit; everything else is judgement.
    smallest change that makes it pass. Skills carry no incident logs, rationalization tables or
    red-flag lists: lessons live in evals, where they are checked, not in prose, where they
    accumulate. Issues raised with `/issue` follow the same path: turn the issue into a failing
-   case (starting from its proposed eval, if it has one), fix it with skill-creator, bump the
-   version as the Workflow section says and put `Fixes #<number>` in the commit message, so
-   GitHub closes the issue when the commit reaches main. An improvement to the lifecycle itself, rather than to one skill, is
-   specified with `/spec` first.
+   case (starting from its proposed eval, if it has one), fix it with skill-creator, put
+   `Fixes #<number>` in the fix's commit message, so GitHub closes the issue when the commit
+   reaches main, and bump the version as the Workflow section says. An improvement to the
+   lifecycle itself, rather than to one skill, is specified with `/spec` first.
 9. **Explain, don't shout.** Give the reason behind an instruction instead of stacking MUST and
    NEVER. Reserve those words for hard limits.
 10. **Safe by default.** A skill never commits, pushes, publishes, deletes or sends anything
