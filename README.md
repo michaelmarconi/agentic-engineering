@@ -120,7 +120,7 @@ steps fit together even when you run only one of them.
 
 ## Install
 
-Tested with Claude Code on Sonnet 5.5 and Opus 5.5.
+Tested with Claude Code on Sonnet 5.5 and Opus 5.5 (see [Models](#models)).
 
 In Claude Code:
 
@@ -138,6 +138,25 @@ claude plugin install sdlc@sdlc
 
 Add `--scope project` to the `install` command to share the plugin with everyone working in a
 repository.
+
+## Models
+
+Claude Code can run on different Claude models, and a skill that works well on one may behave
+differently on another. The plugin handles this in three ways.
+
+- **Skills use your model.** A skill (such as `/spec`) runs on whichever model your Claude Code
+  session uses, so you choose it, with `/model`, as you normally would.
+- **Reviewers use a fixed model.** Each skill hands its work to a reviewer, a separate Claude
+  that checks the document against a list of rules and reports what fails. Reviewers always run
+  on Sonnet, so the same document gets the same judgement whatever model your session uses. To
+  override it, set the environment variable `CLAUDE_CODE_SUBAGENT_MODEL` to a model name together
+  with `CLAUDE_CODE_SUBAGENT_MODEL_FORCE=1` (Claude Code 2.1.257 or later); note that this
+  changes every subagent, not just the reviewers. Results on other models are untested.
+- **Every change is tested on each supported model.** Each skill has evals: scripted
+  conversations whose results are checked automatically, some by simple text matching and some by
+  a second Claude acting as judge, always Sonnet. A change is released only if its evals pass
+  on Sonnet 5.5 and on Opus 5.5, the models listed under [Install](#install). When a new model
+  comes out, the evals are run on it before it is added to that list.
 
 ## Update
 
