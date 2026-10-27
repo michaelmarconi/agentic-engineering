@@ -54,7 +54,7 @@ Verified by: test that opens all 40 notifications and checks the bell shows no n
 ### Requirement: Opening a notification
 
 WHEN a person clicks a notification in the list that they have not opened before, the system
-SHALL record it as opened and update the bell icon to match, without the page being reloaded.
+SHALL count it as opened from then on.
 
 #### Scenario: First open
 - GIVEN the bell icon shows 3
@@ -72,8 +72,9 @@ SHALL record it as opened and update the bell icon to match, without the page be
 - WHEN Lena clicks a notification she opened yesterday
 - THEN the bell icon still shows 2
 
-Verified by: test that clicks unopened notifications from 3 down to none, then an already opened
-one, checking the bell after each click without reloading and once more after a reload.
+Verified by: test that clicks unopened notifications from 3 down to none and then an already
+opened one, checking the number on the bell after each click, without reloading and after a
+reload.
 
 ## Constraints
 

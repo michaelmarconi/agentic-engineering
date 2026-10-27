@@ -65,7 +65,7 @@ stateDiagram-v2
 
 - **Draft:** being shaped.
 - **Ready to build:** you have said it is done, Open questions is empty, and the review
-  (below) has passed.
+  (below) has passed with no decision left for you.
 - **Built:** the last [`/build`](../../README.md#build) review found every requirement in the
   spec verified, however many plans it took to build them.
 

@@ -16,12 +16,13 @@ Read:
 Read nothing else. Apply every rubric check. For each failure, quote the spec as evidence and
 say what would make it pass. Then note anything else that would make the spec wrong or hard to
 build, such as a conflict with the brief. Leave out matters of style or taste: a finding must be
-something the builder would otherwise get wrong. Keep apart the findings only a person can settle, such
-as what a rule should say: those are decisions, not fixes. A decision belongs under Needs a
-person only when the spec as written can be read two ways, so two builders following it would
-build different things. A question about behaviour the spec does not yet cover at all, such as
-a new edge case or feature, goes under Suggestions instead: the person may add it, but the spec
-does not need it to be built as written.
+something the builder would otherwise get wrong. Keep apart the findings only a person can settle:
+those are decisions, not fixes. Under Needs a person goes a decision about what the spec
+already says: a sentence two builders would read differently, a conflict, or something only the
+person can supply, such as the Problem's story or what a rule should be. Quote the sentence or
+section it is about. Behaviour that no sentence in the spec asks for, such as an extra case or
+feature, goes under Suggestions: the person may add it, but the spec can be built as written
+without it. If you cannot quote what a decision is about, it is a suggestion.
 
 Report in this shape:
 

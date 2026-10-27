@@ -31,8 +31,9 @@ would rather not be interviewed, draft from what they have said. Read whatever t
 to, such as code, tickets or notes, and research what you need to: that is part of writing a
 spec.
 
-Never fill a gap with a guess. An unknown goes into Open questions, worded so it can be
-answered. When the person names how something should be built (a library, a service, a named bucket or
+Never fill a gap with a guess, including the person and situation in the Problem: if the
+person has not told you who is stuck and how, say so in the Problem and ask in Open questions.
+An unknown goes into Open questions, worded so it can be answered. When the person names how something should be built (a library, a service, a named bucket or
 database, a design), keep the behaviour it serves and leave the choice out of every section,
 even when they state it as settled: the spec should still hold if the choice changes. If it is
 already decided, suggest recording it as an ADR (architecture decision record); if not, make it
@@ -51,27 +52,29 @@ The `status:` frontmatter says how far the spec is: Draft, Ready to build or Bui
   first, as a plugin hook refuses any other change to such a spec.
 - Set Ready to build only when the person asks for it, the spec has no open questions (rubric
   check 9), nothing is left under the review's Needs a person, and the review below has passed
-  on the spec as it stands; make it your last edit, after that review. A question is settled
-  only by an answer that goes into the spec: moving it to another section, or noting that
-  someone will decide later, leaves it open. If questions remain, say which and leave the spec
-  as Draft.
+  on the spec as it stands; make it your last edit, after that review. If the review led you to
+  change anything else in the spec, show the person what changed and set Ready to build only
+  once they agree, because Ready means they agreed to this text. An open question is settled
+  only by the person's answer, written into the spec: never remove or reword one without it,
+  and moving it to another section, or noting that someone will decide later, leaves it open.
+  If questions remain, say which and leave the spec as Draft.
 - Never set Built. Only the build step does, once its review finds every requirement verified.
 
 ## Review
 
 When the spec is written, start the `sdlc:spec-reviewer` agent and give it the spec's path; it
-reads everything else it needs itself. It reports pass or fail for each rubric check with
-evidence, other findings, and anything that needs the person.
+reads everything else it needs itself. Wait for its report before touching the spec again, so
+the report matches the spec. It reports pass or fail for each rubric check with evidence, other
+findings, decisions that need the person, and suggestions.
 
 Fix every finding you can and run the reviewer again, for up to ${user_config.review_rounds}
-reviews in all, counting the first (3 if no number appears here). Run the next review after
-every round of fixes, so the report the person gets is about the spec as it now stands. A
-finding only the person can settle, such as what a rule should be, goes to them as a question
-rather than a fix you invent. If the last review still fails, stop and show the person the
-report.
+reviews in all, counting the first (3 if no number appears here). After any edit, run the next
+review, even if a failure that needs the person remains, so the report the person gets is about
+the spec as it now stands. A decision under Needs a person goes to them as a question rather
+than a fix you invent. If the last review still fails, stop and show the person the report.
 
-The reviewer's Suggestions are behaviour the spec does not cover yet; pass them on to the person
-as options to add, and do not hold the spec back for them.
+Suggestions are optional behaviour the spec works without; pass them on to the person as
+options to add, and do not hold the spec back for them.
 
 Finish by giving the person the spec's path and the reviewer's final report. Leave committing to
 them.

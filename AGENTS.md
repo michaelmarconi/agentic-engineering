@@ -30,8 +30,9 @@ a rule names a number, it is a hard limit; everything else is judgement.
      definition names. The skill passes it paths, never pasted content.
    - The reviewer reports pass or fail for each check, with evidence for each failure, plus
      findings beyond the rubric. The skill fixes what it can and asks again, for up to n reviews
-     in all, counting the first (the plugin setting that `/build` also uses); after that it stops and asks the person, showing the report. Only
-     a decision the skill cannot make goes to the person.
+     in all, counting the first (the plugin setting that `/build` also uses); after that it
+     stops and asks the person, showing the report. Only a decision the skill cannot make goes
+     to the person, with optional suggestions passed on but never holding the document back.
    - The person gets the document and the final report.
 5. **Evaluated.** Every skill ships with evals under the plugin's `evals/`, in the case-folder
    layout that skill-creator writes and `claude plugin eval` runs. Write the rubric first, then
