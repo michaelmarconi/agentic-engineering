@@ -62,9 +62,38 @@ Convergence, not recall: why a reviewed and fixed spec keeps failing. From the r
 the causes are new edge cases on each pass (suggestions that read as failures), open questions the
 person must settle restated as blockers, and gaps the fixer's own edits create.
 
+## Second run: review, fix, confirm
+
+Arm **D** replaces repeated reviews with a fixed sequence: one full review, one fix, then a
+confirm check (`arms/confirm.md`) that asks only whether each fix landed and whether any edit broke
+something. Anything else it notices is a suggestion. If the confirm check fails, the run stops.
+
+This run also judges the spec each run **ends with** (`score_final.py`): a Sonnet judge per planted
+defect (still present, or handled by a fix or an open question), and an Opus judge, a different
+model from the Sonnet reviewer and fixer, counting problems the edits introduced.
+
+| Measure | A (today) | B (lenses) | C (Opus) | D (sequence) |
+|---|---|---|---|---|
+| Planted defects still in the final spec | 5/63 | 3/63 | 6/63 | 3/63 |
+| Problems introduced by edits, per run | 1.6 | 2.3 | 1.9 | 1.1 |
+| Runs ending in a pass | 17/30 | 9/30 | 13/30 | 26/30 |
+| Review cost per run (relative to A) | 1× ($0.24) | 4× ($0.96) | 2× ($0.50) | 0.6× ($0.15) |
+
+**D is as good as or better than every other arm on every measure, at the lowest cost.** It ends
+with as few planted defects as lenses, introduces the fewest new problems, and passes 26 of 30
+runs. Extra review rounds make things worse, not better: each round brings another fix, and each
+fix brings new problems.
+
+The confirm check is not perfect. D's final specs still carry about 1 problem per run that the
+edits introduced and the confirm check let through, by the Opus judge's count. Every arm has this;
+the fixer, not the reviewer, is now the weakest step. The Opus count is itself a judgement and
+includes small points, so read it as relative between arms.
+
 ## Reproduce
 
 ```
 python3 run.py --out results/<name> --runs 3 --jobs 10
 python3 score.py --out results/<name>
+python3 run.py --out results/<name> --arms D --runs 3 --jobs 10
+python3 score_final.py --out results/<name> --arms A,B,C,D
 ```

@@ -6,6 +6,7 @@ arm's review loop on it, saving every report and the cost of every Claude call:
   A  today's loop: the spec-reviewer agent on Sonnet, fix, review again, up to --cap reviews
   B  three lens reviewers in parallel, then a verifier, all Sonnet; same fix loop and cap
   C  today's loop with the reviewer on Opus
+  D  one full review, one fix, then a confirm check of the fixes (arms/confirm.md), no second review
 
 Usage: python3 run.py --out results/<name> [--arms A,B,C] [--cases seeded-01,clean-01] [--runs 3]
 """
@@ -114,7 +115,32 @@ ARMS = {
     "A": (review_single, "sonnet"),
     "B": (review_lenses, "sonnet"),
     "C": (review_single, "opus"),
+    "D": (review_single, "sonnet"),
 }
+
+
+def fix(ws, spec, log, report):
+    (ws / ".sdlc" / "report.md").write_text(report)
+    system = (ARMS_DIR / "fixer.md").read_text().replace("REPORT_PATH", ".sdlc/report.md") \
+        .replace("SPEC_PATH", spec).replace("RUBRIC_PATH", RUBRIC_IN_WS)
+    claude("Fix the spec as the review report says.", ws, "sonnet",
+           ["Read", "Edit", "Glob", "Grep"], system, log, "fixer", edit=True)
+
+
+def sequence(ws, spec, log, run_dir):
+    """Arm D: one full review, one fix, one confirm check; never a second review."""
+    report = review_single(ws, spec, "sonnet", log, 1, run_dir)
+    (run_dir / "round-1-report.md").write_text(report)
+    if passed(report):
+        return [report]
+    shutil.copy(ws / spec, ws / ".sdlc" / "before.md")
+    fix(ws, spec, log, report)
+    shutil.copy(ws / spec, run_dir / "spec-after-round-1.md")
+    system = (ARMS_DIR / "confirm.md").read_text().replace("RUBRIC_PATH", RUBRIC_IN_WS)
+    confirm = claude(f"Confirm the fixes to the spec at {spec}.", ws, "sonnet", READ_TOOLS,
+                     system, log, "confirm")
+    (run_dir / "round-2-confirm.md").write_text(confirm)
+    return [report, confirm]
 
 
 def run_one(out, case, arm, n, cap):
@@ -127,20 +153,18 @@ def run_one(out, case, arm, n, cap):
     ws, spec = workspace(case, run_dir)
     review, model = ARMS[arm]
     reports = []
-    for rnd in range(1, cap + 1):
+    if arm == "D":
+        reports = sequence(ws, spec, log, run_dir)
+    for rnd in range(1, cap + 1 if arm != "D" else 1):
         report = review(ws, spec, model, log, rnd, run_dir)
         (run_dir / f"round-{rnd}-report.md").write_text(report)
         reports.append(report)
         if passed(report) or rnd == cap:
             break
-        report_path = ws / ".sdlc" / "report.md"
-        report_path.write_text(report)
-        system = (ARMS_DIR / "fixer.md").read_text().replace("REPORT_PATH", ".sdlc/report.md") \
-            .replace("SPEC_PATH", spec).replace("RUBRIC_PATH", RUBRIC_IN_WS)
-        claude("Fix the spec as the review report says.", ws, "sonnet",
-               ["Read", "Edit", "Glob", "Grep"], system, log, "fixer", edit=True)
-        report_path.unlink()
+        fix(ws, spec, log, report)
+        (ws / ".sdlc" / "report.md").unlink()
         shutil.copy(ws / spec, run_dir / f"spec-after-round-{rnd}.md")
+    shutil.copy(ws / spec, run_dir / "final-spec.md")
     calls = [json.loads(line) for line in log.read_text().splitlines()]
     meta = {
         "case": case, "arm": arm, "run": n, "rounds": len(reports),

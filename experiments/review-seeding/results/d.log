@@ -1,0 +1,36 @@
+{"case": "seeded-02", "arm": "D", "run": 1, "rounds": 2, "final_pass": true, "cost_usd": 0.2008, "review_cost_usd": 0.1504, "calls": 3, "errors": 0}
+{"case": "clean-02", "arm": "D", "run": 1, "rounds": 2, "final_pass": true, "cost_usd": 0.1852, "review_cost_usd": 0.1325, "calls": 3, "errors": 0}
+{"case": "seeded-03", "arm": "D", "run": 1, "rounds": 2, "final_pass": true, "cost_usd": 0.2159, "review_cost_usd": 0.1485, "calls": 3, "errors": 0}
+{"case": "seeded-08", "arm": "D", "run": 1, "rounds": 2, "final_pass": true, "cost_usd": 0.2152, "review_cost_usd": 0.1581, "calls": 3, "errors": 0}
+{"case": "clean-01", "arm": "D", "run": 1, "rounds": 2, "final_pass": true, "cost_usd": 0.1861, "review_cost_usd": 0.1316, "calls": 3, "errors": 0}
+{"case": "seeded-07", "arm": "D", "run": 1, "rounds": 2, "final_pass": true, "cost_usd": 0.212, "review_cost_usd": 0.1489, "calls": 3, "errors": 0}
+{"case": "seeded-04", "arm": "D", "run": 1, "rounds": 2, "final_pass": true, "cost_usd": 0.2258, "review_cost_usd": 0.164, "calls": 3, "errors": 0}
+{"case": "seeded-06", "arm": "D", "run": 1, "rounds": 2, "final_pass": false, "cost_usd": 0.2321, "review_cost_usd": 0.1535, "calls": 3, "errors": 0}
+{"case": "seeded-01", "arm": "D", "run": 1, "rounds": 2, "final_pass": true, "cost_usd": 0.2252, "review_cost_usd": 0.1653, "calls": 3, "errors": 0}
+{"case": "seeded-05", "arm": "D", "run": 1, "rounds": 2, "final_pass": true, "cost_usd": 0.2598, "review_cost_usd": 0.1808, "calls": 3, "errors": 0}
+{"case": "clean-02", "arm": "D", "run": 2, "rounds": 2, "final_pass": true, "cost_usd": 0.1705, "review_cost_usd": 0.1426, "calls": 3, "errors": 0}
+{"case": "seeded-03", "arm": "D", "run": 2, "rounds": 2, "final_pass": true, "cost_usd": 0.1725, "review_cost_usd": 0.1257, "calls": 3, "errors": 0}
+{"case": "seeded-02", "arm": "D", "run": 2, "rounds": 2, "final_pass": true, "cost_usd": 0.1885, "review_cost_usd": 0.1266, "calls": 3, "errors": 0}
+{"case": "clean-01", "arm": "D", "run": 2, "rounds": 2, "final_pass": true, "cost_usd": 0.2326, "review_cost_usd": 0.1694, "calls": 3, "errors": 0}
+{"case": "seeded-04", "arm": "D", "run": 2, "rounds": 2, "final_pass": true, "cost_usd": 0.1976, "review_cost_usd": 0.1399, "calls": 3, "errors": 0}
+{"case": "seeded-06", "arm": "D", "run": 2, "rounds": 2, "final_pass": false, "cost_usd": 0.2298, "review_cost_usd": 0.1516, "calls": 3, "errors": 0}
+{"case": "seeded-08", "arm": "D", "run": 2, "rounds": 2, "final_pass": true, "cost_usd": 0.1875, "review_cost_usd": 0.1408, "calls": 3, "errors": 0}
+{"case": "seeded-05", "arm": "D", "run": 2, "rounds": 2, "final_pass": true, "cost_usd": 0.2281, "review_cost_usd": 0.1568, "calls": 3, "errors": 0}
+{"case": "seeded-07", "arm": "D", "run": 2, "rounds": 2, "final_pass": false, "cost_usd": 0.2689, "review_cost_usd": 0.1713, "calls": 3, "errors": 0}
+{"case": "seeded-01", "arm": "D", "run": 2, "rounds": 2, "final_pass": true, "cost_usd": 0.2962, "review_cost_usd": 0.2114, "calls": 3, "errors": 0}
+{"case": "clean-01", "arm": "D", "run": 3, "rounds": 2, "final_pass": true, "cost_usd": 0.164, "review_cost_usd": 0.1229, "calls": 3, "errors": 0}
+{"case": "clean-02", "arm": "D", "run": 3, "rounds": 2, "final_pass": true, "cost_usd": 0.1648, "review_cost_usd": 0.123, "calls": 3, "errors": 0}
+{"case": "seeded-03", "arm": "D", "run": 3, "rounds": 2, "final_pass": true, "cost_usd": 0.2006, "review_cost_usd": 0.1393, "calls": 3, "errors": 0}
+{"case": "seeded-04", "arm": "D", "run": 3, "rounds": 2, "final_pass": true, "cost_usd": 0.1944, "review_cost_usd": 0.1412, "calls": 3, "errors": 0}
+{"case": "seeded-01", "arm": "D", "run": 3, "rounds": 2, "final_pass": true, "cost_usd": 0.245, "review_cost_usd": 0.1656, "calls": 3, "errors": 0}
+{"case": "seeded-02", "arm": "D", "run": 3, "rounds": 2, "final_pass": true, "cost_usd": 0.194, "review_cost_usd": 0.1379, "calls": 3, "errors": 0}
+{"case": "seeded-08", "arm": "D", "run": 3, "rounds": 2, "final_pass": true, "cost_usd": 0.1776, "review_cost_usd": 0.1287, "calls": 3, "errors": 0}
+{"case": "seeded-06", "arm": "D", "run": 3, "rounds": 2, "final_pass": false, "cost_usd": 0.2056, "review_cost_usd": 0.1426, "calls": 3, "errors": 0}
+{"case": "seeded-07", "arm": "D", "run": 3, "rounds": 2, "final_pass": true, "cost_usd": 0.2373, "review_cost_usd": 0.1559, "calls": 3, "errors": 0}
+{"case": "seeded-05", "arm": "D", "run": 3, "rounds": 2, "final_pass": true, "cost_usd": 0.2674, "review_cost_usd": 0.1799, "calls": 3, "errors": 0}
+| Measure | A | B | C | D |
+|---|---|---|---|---|
+| Planted defects still in the final spec | 5/63 | 3/63 | 6/63 | 3/63 |
+| Problems introduced by edits, per run | 1.6 | 2.3 | 1.9 | 1.1 |
+| Runs ending in a pass | 17/30 | 9/30 | 13/30 | 26/30 |
+| Review cost per run, USD | 0.24 | 0.96 | 0.50 | 0.15 |
