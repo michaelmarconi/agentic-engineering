@@ -29,11 +29,13 @@ and from whatever they point you to, such as code, tickets or notes; research wh
 need, as that is part of writing a spec. Where the conversation changed its mind, the latest
 word wins. Only when there is nothing to draw on, ask about the idea first.
 
-Then ask about what the draft or the review leaves open, one question at a time, and play back
-what you have understood. Settle each answer before moving on: if the person answers part of
-what you asked, take that part and ask again about the rest, because silence is not agreement;
-if they ask what you think, recommend something and wait for them to accept it. If they would
-rather not answer now, leave the rest in Open questions.
+Then ask about what the draft or the review leaves open: say how many questions there are, ask
+only the first, and ask the next once it is settled, playing back what you have understood. If
+the person has said not to ask now, give the count and leave the questions in Open questions.
+Settle each answer before moving on: if the person answers part of what you asked, take that
+part and ask again about the rest, because silence is not agreement; if they ask what you think,
+recommend something and wait for them to accept it. If they would rather not answer now, leave
+the rest in Open questions.
 
 Never fill a gap with a guess, including the person and situation in the Problem: if the
 person has not told you who is stuck and how, write only what you were told, without adding a
