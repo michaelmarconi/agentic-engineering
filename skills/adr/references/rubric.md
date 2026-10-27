@@ -26,14 +26,14 @@ checking, and quotes the ADR as evidence for every failure.
    code that stores or reads session data", never as file paths, and how to check the code
    follows it: by test, demonstration, inspection or analysis. The method can really be carried
    out.
-9. **Supersede links agree.** An ADR that replaces another has `supersedes:` with that ADR's
+9. **Supersede fields agree.** An ADR that replaces another has `supersedes:` with that ADR's
    four-digit number; a Superseded ADR has `superseded-by:` with the four-digit number of its
    replacement. Each
    number exists in `docs/adrs/`, and an ADR is Superseded only when its replacement is
    Accepted, with both ends then naming each other. While the replacement is still Draft, the
    ADR it replaces stays Accepted with no `superseded-by:`; that passes.
-10. **Links.** The ADR links only to other ADRs, and names them by number. It does not link to,
-    or name by path or title, a spec, the brief or a plan, because those change while an ADR
-    does not, so the link would go stale.
+10. **References.** The ADR refers only to other ADRs, and names them by number. It does not
+    refer to a spec, the brief or a plan in any way: no hyperlink, path or title. Those change
+    while an ADR does not, so the reference would go stale.
 11. **No overlap.** No other Draft or Accepted ADR in `docs/adrs/` decides the same thing or
     contradicts this one, unless this one supersedes it.

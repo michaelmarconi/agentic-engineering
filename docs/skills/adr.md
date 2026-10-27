@@ -36,7 +36,7 @@ docs/adrs/
 Nothing is moved or deleted once decided, so each file's status says whether it still holds.
 Each title states the decision taken, so a listing of the folder reads as a summary of the
 design. ADRs refer to each other by number, never to specs, the brief or plans: those change
-while an ADR does not, so a link to them would go stale.
+while an ADR does not, so a reference to them would go stale.
 
 ## Anatomy
 
@@ -91,14 +91,14 @@ Run `/adr` and say what you want: record a decision, accept or reject one, or re
 - **Replacing a decision.** A new ADR names the one it replaces. The old one stays Accepted until
   you accept the new one; then it becomes Superseded. If you reject the new one, the old one
   stands.
-- **Leaves specs alone.** `/adr` never edits or links to a spec. If the decision answers a
+- **Leaves specs alone.** `/adr` never edits or refers to a spec. If the decision answers a
   spec's open question, it tells you, and `/spec` removes the question the next time you run it.
 
 ## Review
 
 Before you see an ADR, `/adr` has its reviewer agent check it against a short list of
 pass-or-fail checks: one decision, a title that states it, real options with reasons, good and
-bad consequences, a Confirmation that can really be carried out, links only to other ADRs, and
+bad consequences, a Confirmation that can really be carried out, references only to other ADRs, and
 no clash with another ADR. The reviewer sees only the ADRs, not your conversation, so it judges
 the page as a newcomer would. `/adr` fixes what the reviewer finds and has it checked again, up
 to the number of reviews in the Review rounds setting (see [Install](../../README.md#install));

@@ -6,4 +6,4 @@ flags: i
 match: not_contains
 weight: 1
 ---
-The ADR does not link to or name the spec.
+The ADR does not refer to the spec.

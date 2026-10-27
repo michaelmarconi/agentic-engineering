@@ -44,10 +44,10 @@ says, never by what it lacks, and do not list the questions or their topics. Ask
 the first is settled, playing back what you have understood. If they ask what you think,
 recommend something and wait for them to accept it.
 
-Context states the need in words. Never link to, or name by path or title, a spec, the brief or
-a plan, and never edit them, even when the person asks you to note the decision there: they
-change while an ADR does not, so the reference would go stale, and the lifecycle allows no
-links between them. Tell the person so. If the decision answers a spec's open question, say so
+Context states the need in words. Never refer to a spec, the brief or a plan in any way, by
+hyperlink, path or title, and never edit them, even when the person asks you to note the
+decision there: they change while an ADR does not, so the reference would go stale, and the
+lifecycle allows no references between them. Tell the person so. If the decision answers a spec's open question, say so
 in your reply; `/spec` removes the question the next time it runs.
 
 ## Status
