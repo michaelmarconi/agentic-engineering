@@ -79,11 +79,16 @@ def frontmatter(text):
     return None
 
 
+def is_key(line, *keys):
+    """True if the frontmatter line sets one of the keys, in any case, as `key:` or `key :`."""
+    return any(re.match(rf"{re.escape(key)}\s*:", line, re.IGNORECASE) for key in keys)
+
+
 def field(text, key):
-    """The value of a frontmatter key, matched in any case, without comment or quotes."""
+    """The value of a frontmatter key, without comment or quotes."""
     for line in frontmatter(text) or []:
-        if line.lower().startswith(key + ":"):
-            value = line[len(key) + 1:].split("#", 1)[0].strip()
+        if is_key(line, key):
+            value = line.split(":", 1)[1].split("#", 1)[0].strip()
             return value.strip("\"'")
     return None
 
@@ -93,11 +98,10 @@ def status_of(text):
 
 
 def without_status(text, also=()):
-    """The text's lines without its frontmatter status line, nor any line starting with `also`."""
+    """The text's lines without its frontmatter status line, nor any line setting a key in `also`."""
     lines = text.lstrip("\ufeff").splitlines()
     end = len(frontmatter(text) or []) + 1
-    keys = ("status:",) + tuple(also)
-    return [line for i, line in enumerate(lines) if i > end or not line.lower().startswith(keys)]
+    return [line for i, line in enumerate(lines) if i > end or not is_key(line, "status", *also)]
 
 
 def has_open_questions(text):
@@ -173,13 +177,15 @@ def check(payload):
         if kind == "ADR" and not before and new is not None:
             return f"{name}: a new ADR must be written as Draft, not '{new}'."
         return None
-    if sum(line.lower().startswith("status:") for line in frontmatter(after) or []) > 1:
+    if sum(is_key(line, "status") for line in frontmatter(after) or []) > 1:
         return f"{name}: the frontmatter has more than one `status:` line; keep one."
     if new not in statuses:
         found = f"'{new}'" if new else "none"
         allowed = ", ".join(statuses[:-1]) + " or " + statuses[-1]
         return f"{name}: the {kind} needs `status:` frontmatter set to {allowed} (found {found})."
     if old not in statuses and new != "Draft":
+        if old:
+            return f"{name}: '{old}' is not a lifecycle status; set the {kind} to Draft first."
         return f"{name}: a new {kind} must be written as Draft, not {new}. {NEW_HINT[kind]}"
     return rules(path, before, after, old, new)
 
@@ -217,10 +223,17 @@ def spec_rules(path, before, after, old, new):
 
 def replacement_problem(path, number):
     """Why the ADR numbered `number` cannot supersede the ADR at `path`, or None if it can."""
+    own = re.match(r"\d{4}(?=-)", os.path.basename(path))
+    if not own:
+        return "its file name does not start with its four-digit number"
+    if number == own.group():
+        return "an ADR cannot supersede itself"
     folder = os.path.dirname(os.path.abspath(path))
     matches = [n for n in sorted(os.listdir(folder)) if n.startswith(number + "-") and n.lower().endswith(".md")]
     if not matches:
         return f"there is no ADR {number} in this folder"
+    if len(matches) > 1:
+        return f"more than one ADR is numbered {number}; renumber one first"
     try:
         with open(os.path.join(folder, matches[0]), encoding="utf-8") as f:
             text = f.read()
@@ -228,7 +241,7 @@ def replacement_problem(path, number):
         return f"ADR {number} could not be read ({error})"
     if status_of(text) != "Accepted":
         return f"ADR {number} is not Accepted yet; the old ADR stays Accepted until the person accepts it"
-    if os.path.basename(path)[:4] not in re.split(r"[\s,]+", field(text, "supersedes") or ""):
+    if own.group() not in re.findall(r"\d{4}", field(text, "supersedes") or ""):
         return f"ADR {number} does not name this ADR in its `supersedes:` line"
     return None
 
@@ -252,9 +265,8 @@ def adr_rules(path, before, after, old, new):
             )
         return None
     if old == "Accepted" and new == "Superseded":
-        added = [line for line in frontmatter(after) or [] if line.lower().startswith("superseded-by:")]
-        had = [line for line in frontmatter(before) or [] if line.lower().startswith("superseded-by:")]
-        if len(added) != 1 or had:
+        added = [line for line in frontmatter(after) or [] if is_key(line, "superseded-by")]
+        if len(added) != 1 or field(before, "superseded-by") is not None:
             return (
                 f"{name}: setting Superseded must add one `superseded-by:` line naming the "
                 "four-digit number of the ADR that replaces it."
@@ -265,7 +277,7 @@ def adr_rules(path, before, after, old, new):
         problem = replacement_problem(path, number)
         if problem:
             return f"{name}: cannot set Superseded: {problem}."
-        if without_status(after, also=("superseded-by:",)) != without_status(before):
+        if without_status(after, also=("superseded-by",)) != without_status(before):
             return (
                 f"{name}: setting Superseded may only change the status and add `superseded-by:`; "
                 "the rest of a decided ADR is never edited."

@@ -68,8 +68,9 @@ abandons can be deleted.
 
 To supersede, the new ADR carries `supersedes: <NNNN>`, the old one's four-digit number, in its
 frontmatter. The old one stays Accepted until the person accepts the new one; then, in the same
-step, first set the new one to Accepted, then set the old one to Superseded and add
-`superseded-by: <NNNN>` beside it, naming the new one. That is the only edit an accepted ADR
+step, first set the new one to Accepted, and only once that edit is done, set the old one to
+Superseded and add `superseded-by: <NNNN>` beside it, naming the new one; a plugin hook checks the
+new one is Accepted on disk before it allows the second edit. That is the only edit an accepted ADR
 ever gets. If the new one is rejected, the old one stands.
 
 ## Review

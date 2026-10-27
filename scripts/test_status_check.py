@@ -363,6 +363,29 @@ class Adr(AdrWorkspace):
             f.write(adr("Accepted", extra="supersedes: 0001\n"))
         self.assertIsNone(self.edit("status: Accepted\n", "status: Superseded\nsuperseded-by: 0002\n"))
 
+    def test_replacement_supersedes_as_a_list(self):
+        self.put(adr("Accepted"))
+        self.put_replacement(supersedes='["0001"]')
+        self.assertIsNone(self.edit("status: Accepted\n", "status: Superseded\nsuperseded-by: 0002\n"))
+
+    def test_unknown_status_must_become_draft_first(self):
+        self.put(adr("Proposed"))
+        self.assertIn("Draft first", self.edit("status: Proposed", "status: Accepted"))
+
+    def test_space_before_colon_still_a_status(self):
+        self.assertIsNotNone(self.write(adr().replace("status: Draft", "status : Accepted")))
+
+    def test_two_adrs_with_the_replacement_number_refused(self):
+        self.put(adr("Accepted"))
+        self.put_replacement()
+        with open(os.path.join(self.tmp.name, "docs", "adrs", "0002-other.md"), "w") as f:
+            f.write(adr("Draft"))
+        self.assertIn("more than one", self.edit("status: Accepted\n", "status: Superseded\nsuperseded-by: 0002\n"))
+
+    def test_cannot_supersede_itself(self):
+        self.put(adr("Accepted", extra="supersedes: 0001\n"))
+        self.assertIsNotNone(self.edit("status: Accepted\n", "status: Superseded\nsuperseded-by: 0001\n"))
+
     def test_status_key_in_capitals_still_checked(self):
         self.assertIsNotNone(self.write(adr().replace("status: Draft", "Status: Accepted")))
 
