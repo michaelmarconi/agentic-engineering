@@ -97,6 +97,7 @@ skills/
     references/        # rubric.md (required for skills that write documents), others on demand
     assets/            # optional, templates and static files
 evals/
+  save_settings.py     # saves the plugin settings' defaults for each eval run
   <name>-<case>/       # required, one folder per test case, run by `claude plugin eval`
 agents/
   <name>-reviewer.md   # one reviewer per skill that writes documents
@@ -122,9 +123,9 @@ Nothing else belongs at the root without a reason recorded in the change that ad
   you changed them: `python3 -m unittest discover -s scripts`. All must pass.
 - Run the evals for each skill you changed, once per supported model, with Sonnet as judge:
   `claude plugin eval . --case '<name>-*' --model <model> --judge-model sonnet`, adding
-  `--scaffold` for cases with input files. Evals load the plugin as `sdlc@inline`, so save each
-  setting's suggested value for it once in `~/.claude/settings.json`, under
-  `"pluginConfigs": {"sdlc@inline": {"options": {"review_rounds": 3}}}`.
+  `--scaffold` for cases with input files. Every case needs a `place-files.sh` scaffold that runs
+  `evals/save_settings.py`, which saves each setting's default for the run as a person would;
+  without it, skills find no settings and stop.
   The supported models are those named in README.md; a change merges only if its cases pass
   on every one. Evals are billed model runs: run the ones you touched, never the whole suite
   unprompted.
