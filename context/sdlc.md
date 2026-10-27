@@ -10,21 +10,24 @@ finds drift (code and documents that disagree) at any time.
 Documents and statuses (the `status:` field in each document's frontmatter):
 - Brief, `docs/brief.md`: what the product is, for whom and why. No status; edited in place.
 - Spec, `docs/specs/**/<capability>.spec.md`: Draft → Ready to build → Built; a change returns it to Draft.
-- ADR, `docs/decisions/`: Proposed → Accepted or Rejected; Accepted → Superseded.
+- ADR, `docs/adrs/NNNN-<title>.md`, one flat folder: Draft → Accepted or Rejected; Accepted → Superseded.
 - Plan, `docs/plans/`: Draft → Ready to build; /build deletes it in the commit that merges its work.
 
 Principles:
 - The brief holds only what is true of the whole product; one capability's behaviour is its spec.
 - Specs say what the system does, never how. A technical choice is an ADR.
 - One living spec per capability, edited in place. Git is the history; a retired spec is deleted.
-- One decision per ADR. An accepted ADR is never edited, only superseded whole.
+- One decision per ADR. A decided ADR is never edited or moved; a new ADR supersedes it whole,
+  named by number in `supersedes:` and `superseded-by:`.
+- Only a person accepts or rejects an ADR, by explicit sign-off of its final, reviewed text.
+  No skill or agent does it for them.
 - Accepted ADRs and the code are the design; there is no separate design document.
 - Documents refer to one another only where neither end can go stale: a plan to the specs and
   ADRs it builds, and an ADR to the ADR it supersedes or that supersedes it. The brief, specs and
   ADRs never refer to one another in any way: no hyperlink, path or title.
 - Every spec, ADR and plan carries its own status. A plan holds no state that would be lost when it is deleted.
 - Only legal status moves are allowed, and only /build sets Built. A plugin hook refuses illegal
-  spec status changes made with Claude's file-editing tools.
+  spec and ADR status changes, and edits to decided ADRs, made with Claude's file-editing tools.
 - A spec is Built when /build's spec reviewer finds every requirement in the whole spec verified,
   not just the plan's part. /audit repeats that judgement later.
 - A plan is Ready to build only when each spec it touches is Ready to build or Built, and each

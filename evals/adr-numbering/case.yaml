@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: adr-numbering
+expected_outcome: |
+  Three ADRs exist, so the new one is written as 0004 with a title in lowercase words joined by hyphens, and the existing ADRs are not touched.
+context:
+  scaffold_script: place-files.sh

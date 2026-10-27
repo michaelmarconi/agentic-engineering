@@ -6,6 +6,26 @@ What changed in each version of the plugin, newest first. Versions follow
 past a major version: it says what you need to change in your documents. Until 1.0.0, any
 minor version may need such a change, and its entry says so.
 
+## [0.5.0] - 2026-10-27
+
+### Added
+
+- `/adr` records one technical decision as an ADR (architecture decision record) in
+  `docs/adrs/NNNN-<title>.md`, using the core of the MADR format: the context, the options
+  considered and why each lost, the decision, its good and bad consequences, and a Confirmation
+  saying what it applies to and how to check the code follows it. It drafts from your
+  conversation, writes one ADR per decision, and has each one reviewed before you see it.
+- ADRs move from Draft to Accepted or Rejected, and from Accepted to Superseded when a newer ADR
+  replaces them. Only you can accept or reject an ADR: `/adr` asks you once the reviewed text is
+  final.
+- The status hook now covers ADRs too: it refuses status changes the lifecycle does not allow,
+  and any edit to an ADR that is no longer a Draft, apart from marking it Superseded by an
+  accepted replacement.
+
+### Changed
+
+- ADRs live in `docs/adrs/`, not `docs/decisions/`, and start as Draft rather than Proposed.
+
 ## [0.4.1] - 2026-10-27
 
 ### Added
