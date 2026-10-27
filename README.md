@@ -1,6 +1,6 @@
 # Software Development Lifecycle (SDLC)
 
-*In development: `/spec` and `/issue` are built; the other skills are still being designed.*
+*In development: `/brief`, `/spec`, `/adr` and `/issue` are built; the other skills are still being designed.*
 
 A software development lifecycle is the path work takes from an idea for a product to working
 code. This repository defines one, and packages it as a plugin for
@@ -12,14 +12,16 @@ it with you in any repository you install it in.
 The lifecycle keeps its thinking in a few kinds of document, each a Markdown file in your
 repository:
 
-- **Brief:** what the product is, who it is for and why. One per product.
+- **Brief:** what the product is, who it is for and why. One per product, holding only what is
+  true of the whole product.
 - **Spec:** what one capability of the product should do, and how we will know it does. A
   product has many.
 - **ADR** (architecture decision record): one technical decision and why it was made. Once
   accepted it is never edited; a later decision supersedes it with a new ADR.
 - **Plan:** a piece of work that builds part of a spec or an ADR. It is deleted once built.
 
-Each document has a status, such as Draft or Ready to build, which says how far along it is.
+Each document except the brief has a status, such as Draft or Ready to build, which says how far
+along it is. The brief has none, because it is never built, only kept true.
 
 The plugin gives Claude three kinds of help to work with these documents:
 
@@ -32,7 +34,7 @@ The plugin gives Claude three kinds of help to work with these documents:
 - **Hooks:** small scripts Claude Code runs automatically at set moments. This plugin uses them
   to give Claude a summary of the lifecycle when a session starts in a repository that uses it,
   to remind you at the start of every session if a plugin setting is not saved yet (see
-  [Install](#install)), and to refuse spec edits Claude makes that the lifecycle does not allow, such as an illegal
+  [Install](#install)), and to refuse spec and ADR edits Claude makes that the lifecycle does not allow, such as an illegal
   status change. They need Python 3.
 
 Every document a skill writes is checked by a reviewer agent before you see it. Apart from the
@@ -57,7 +59,8 @@ flowchart LR
 
 ### [`/brief`](docs/skills/brief.md)
 
-Writes the brief with you. Every spec is written against it.
+Writes or changes the brief with you, from what you say and the documents you point it to. Every
+spec is written against it.
 
 ### [`/spec`](docs/skills/spec.md)
 
@@ -73,7 +76,7 @@ work.
 ### [`/adr`](docs/skills/adr.md)
 
 Records a technical decision with you, whether it came from a spike or straight from shaping a
-spec.
+spec: one decision per ADR, with the options it beat. Only you can accept or reject it.
 
 ### [`/plan`](docs/skills/plan.md)
 
@@ -194,10 +197,16 @@ claude plugin update sdlc@sdlc
 To update automatically, run `/plugin`, open **Marketplaces**, select `sdlc` and choose
 **Enable auto-update**. New versions load on the next session or after `/reload-plugins`.
 
+Claude Code doesn't say what a new version changed, so [CHANGELOG.md](CHANGELOG.md) does. Read
+it before you update past a major version, for example from 1.x to 2.0: it says what you need to
+change in your documents. Until 1.0, any minor version may need such a change, and its entry
+says so.
+
 ## Skills
 
 | Skill | What it does |
 | --- | --- |
+| [`/brief`](docs/skills/brief.md) | Writes or changes the product brief with you, and has it reviewed before you see it |
 | [`/spec`](docs/skills/spec.md) | Writes or changes a spec with you, and has it reviewed before you see it |
 | [`/issue`](docs/skills/issue.md) | Reports a bug or suggests an improvement in this plugin, with your project's details left out |
 

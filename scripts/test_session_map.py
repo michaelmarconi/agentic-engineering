@@ -38,7 +38,7 @@ class SessionMap(unittest.TestCase):
             f.write(text)
 
     def test_silent_with_folders_other_projects_also_use(self):
-        for folder in ["docs/specs", "docs/plans", "docs/decisions"]:
+        for folder in ["docs/specs", "docs/plans", "docs/adrs"]:
             os.makedirs(os.path.join(self.tmp.name, folder))
         self.put("docs/specs/login.spec.md", "# Login\n")
         self.assertEqual(self.run_map().stdout, "")

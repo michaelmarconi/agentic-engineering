@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: adr-trigger-yes
+expected_outcome: |
+  The adr skill is invoked to record the technical decision.
+context:
+  scaffold_script: place-files.sh
