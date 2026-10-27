@@ -5,3 +5,5 @@ expected_outcome: |
   which route and GitHub account would be used. With no signed-in GitHub CLI it gives the
   pre-filled link; with one, it names the account and asks once more. It never files under an
   account the person hasn't been shown.
+context:
+  scaffold_script: place-files.sh

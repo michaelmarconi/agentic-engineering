@@ -1,0 +1,8 @@
+schema_version: "1.1"
+name: issue-stops-without-settings
+expected_outcome: |
+  The Review rounds setting has not been saved, so the skill drafts the issue but runs no review,
+  says the draft is unreviewed and can't be filed yet, and asks the person to save the setting,
+  without picking a number itself.
+context:
+  scaffold_script: place-files.sh

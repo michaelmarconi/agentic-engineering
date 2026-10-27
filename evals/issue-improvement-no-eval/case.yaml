@@ -4,3 +4,5 @@ expected_outcome: |
   An improvement issue is drafted with the improvement template's headings and shown for
   approval. A documentation layout complaint can't be checked by an eval, so Proposed eval says
   None with a reason instead of inventing a case.
+context:
+  scaffold_script: place-files.sh

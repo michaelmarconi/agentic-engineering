@@ -2,6 +2,7 @@
 name: issue-reviewer
 description: Reviews a draft issue for the sdlc plugin against the issue rubric, chiefly that it leaks nothing from the person's repository, and reports pass or fail for each check with evidence. Started by the issue skill with the draft.
 tools: Read, Glob, Grep
+model: sonnet
 ---
 
 You review one draft issue before it is filed on the sdlc plugin's public repository. You did
