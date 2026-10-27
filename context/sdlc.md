@@ -8,12 +8,13 @@ technical decision. /plan scopes a piece of work; /build builds, reviews and mer
 finds drift (code and documents that disagree) at any time.
 
 Documents and statuses (the `status:` field in each document's frontmatter):
-- Brief, `docs/brief.md`: what the product is, for whom and why.
+- Brief, `docs/brief.md`: what the product is, for whom and why. No status; edited in place.
 - Spec, `docs/specs/**/<capability>.spec.md`: Draft → Ready to build → Built; a change returns it to Draft.
 - ADR, `docs/decisions/`: Proposed → Accepted or Rejected; Accepted → Superseded.
 - Plan, `docs/plans/`: Draft → Ready to build; /build deletes it in the commit that merges its work.
 
 Principles:
+- The brief holds only what is true of the whole product; one capability's behaviour is its spec.
 - Specs say what the system does, never how. A technical choice is an ADR.
 - One living spec per capability, edited in place. Git is the history; a retired spec is deleted.
 - One decision per ADR. An accepted ADR is never edited, only superseded whole.

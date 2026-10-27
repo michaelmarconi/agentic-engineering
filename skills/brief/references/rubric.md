@@ -29,7 +29,8 @@ checking, and quotes the brief as evidence for every failure.
    guesses, hedges ("probably", "we assume", "likely") or inline markers such as [A] or [?]: an
    assumption is an open question the person can confirm, such as "Is it right that support
    staff are the main users?". Open questions is empty or "None." only when nothing is unknown.
-9. **Links back it.** Every statement that links to a document in the repository says no more
-   than that document does. A link the reviewer cannot open is reported, not failed.
+9. **Links back it.** Each fact drawn from a document links to that document where it is stated,
+   and every statement that links to a document in the repository says no more than that
+   document does. A link the reviewer cannot open is reported, not failed.
 10. **Plain words.** No unexplained jargon or acronym: a graduate new to the project could
     follow every sentence.

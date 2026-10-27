@@ -12,7 +12,6 @@ Read:
 - The brief at the path you are given.
 - The rubric at `${CLAUDE_PLUGIN_ROOT}/skills/brief/references/rubric.md`.
 - Each document in the repository that the brief links to, for check 9.
-- The specs under `docs/specs/`, if any, to see whether the brief takes over what a spec holds.
 
 Read nothing else. Apply every rubric check. For each failure, quote the brief as evidence and
 say what would make it pass. Then note anything else that would mislead someone writing specs

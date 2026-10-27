@@ -1,8 +1,8 @@
 ---
 type: regex
 target: { source: file, path: docs/brief.md }
-pattern: '48'
+pattern: '\b48\b(?=[\s\S]*\n## Open questions)'
 match: not_contains
 weight: 1
 ---
-The 48-hour swap expiry, a rule for one capability, is not in the brief.
+Outside Open questions, the brief does not mention the 48-hour swap expiry, a rule for one capability.

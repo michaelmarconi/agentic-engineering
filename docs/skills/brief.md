@@ -1,3 +1,79 @@
 # `/brief`
 
-TODO: design the brief skill.
+`/brief` is the skill for writing and changing the product brief. It is one step of
+[the SDLC](../../README.md); read that page first for the documents, skills and agents it
+mentions.
+
+## What a brief is
+
+The brief says what the product is, who it is for, why it exists and how we will know it works.
+A product has one brief, at `docs/brief.md`. It is edited in place, and git is its history.
+
+The brief holds only what is true of the whole product. How one capability behaves, such as a
+rule or a limit, belongs in that capability's [spec](spec.md), and a technical choice belongs in
+an [ADR](../../README.md#adr). Keeping each thing in one place means the documents cannot
+disagree. Specs read the brief to see whether they fit the product.
+
+Unlike the other documents, the brief has no status. A spec moves from Draft to Ready to build
+to Built as the work moves on, but a brief is never built: it is only kept true.
+
+## Anatomy
+
+| Section | Holds |
+|---|---|
+| Title and summary | The product's name, then one sentence on what it is and why it exists |
+| Problem | Who has the problem, and what they do about it today[^shapeup] |
+| Who it's for | Each user or other person involved, their role, and how often they hit the problem |
+| Goals | What changes for the product as a whole, by how much, and how we will see it |
+| Out of scope | What the product will not be or do[^shapeup] |
+| Constraints | Hard limits on the whole product, such as a law, a deadline or a system it must work with |
+| Open questions | What is not known yet |
+
+The brief says only what you told `/brief` or showed it. Anything it does not know, or would
+otherwise have to assume, goes in Open questions, worded so you can answer or confirm it, such as
+"Is it right that support staff are the main users?". Where a fact comes from a document, the
+brief links to it.
+
+## Using `/brief`
+
+Run `/brief` and say what you want: a new brief, or a change to the one you have.
+
+- **Drafts from the conversation.** If you have already talked the product through, `/brief`
+  drafts from that, and where you changed your mind, the latest word wins. Only with nothing to go
+  on does it ask what you are building first.
+- **Reads only what you point to.** The brief records what you intend, which only you know, so
+  `/brief` reads the documents and links you give it, the existing brief and the documents that
+  brief links to, and nothing else. It does not search the
+  repository, its README or a connected service on its own, because what a repository holds today
+  can quietly pass for what the product is meant to be. If it thinks something would help, it asks
+  before reading it.
+- **Keeps later stages out.** When you mention how one capability behaves or how to build
+  something, `/brief` leaves it out of the brief and tells you where it goes: how a capability
+  behaves goes in its spec, a technical choice you have made goes in an ADR, and one you have not
+  made yet becomes an open question. A hard limit on the whole product, such as a law or a
+  deadline, stays in the brief as a constraint.
+- **One question at a time.** When the brief has open questions, `/brief` tells you how many
+  there are and asks them one at a time, playing back what it has understood.[^superpowers] The
+  rest wait in Open questions. If you would rather not answer now, it leaves them there.
+
+## Review
+
+Before you see the brief, `/brief` has its reviewer agent check it against a short list of
+pass-or-fail checks: the sections are all there, it speaks for the whole product, the goals can
+be measured, nothing is guessed or chooses how to build it, and every statement that links to a
+document says no more than that document does. The reviewer sees only the brief and the
+documents it links to, not your conversation, so it judges the page as a newcomer would.
+`/brief` fixes what the reviewer finds and has it checked again, up to the number of reviews in
+the Review rounds setting (see [Install](../../README.md#install)); then you get the brief with
+the final report. If that setting has not been saved, `/brief` stops before the first review and
+asks you to save it.
+
+The reviewer cannot tell whether the brief matches what you said, only what it links to, so read
+the draft before you rely on it.
+
+[^shapeup]: Ryan Singer, [Shape Up, chapter 6: Write the Pitch](https://basecamp.com/shapeup/1.5-chapter-06),
+    Basecamp, 2019. We take its problem told before any solution, and its no-gos, things
+    explicitly excluded, which become our Out of scope.
+[^superpowers]: Jesse Vincent, [obra/superpowers: brainstorming skill](https://github.com/obra/superpowers),
+    MIT licence. We take asking one question at a time and playing back what has been understood
+    before moving on.

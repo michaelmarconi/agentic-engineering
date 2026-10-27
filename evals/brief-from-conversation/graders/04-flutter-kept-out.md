@@ -1,8 +1,9 @@
 ---
 type: regex
 target: { source: file, path: docs/brief.md }
-pattern: '(?i)flutter'
+pattern: 'flutter(?=[\s\S]*\n## Open questions)'
+flags: i
 match: not_contains
 weight: 1
 ---
-Flutter, a technology choice, is not in the brief.
+Outside Open questions, the brief does not mention Flutter, a technology choice.
