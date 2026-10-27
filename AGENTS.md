@@ -19,6 +19,8 @@ a rule names a number, it is a hard limit; everything else is judgement.
    - `name`: 1–64 characters, lowercase letters, digits and single hyphens; matches the folder.
    - `description`: at most 1,024 characters; says what the skill does and when to use it.
    - Body under 500 lines and about 5,000 tokens.
+   - `scripts/skill_check.py` checks these limits on every skill, and its tests run it on this
+     plugin, so the script tests below fail on a skill that breaks one.
    - Optional `scripts/`, `references/` and `assets/`. References sit one level deep, and
      `SKILL.md` says when to read each one.
 4. **Reviewed.** Agents don't mark their own homework. Every skill that writes a document has
@@ -106,7 +108,7 @@ agents/
   <name>-reviewer.md   # one reviewer per skill that writes documents
 hooks/
   hooks.json           # session map and status checks
-scripts/               # plugin-wide scripts the hooks run, and their tests
+scripts/               # scripts the hooks run, the skill check, and their tests
 context/
   sdlc.md              # the map Claude gets at session start; the lifecycle's principles
 docs/
@@ -120,10 +122,11 @@ Nothing else belongs at the root without a reason recorded in the change that ad
 ## Workflow
 
 - Work on a branch and merge it to main once every check below passes. No pull requests needed.
-- Before merging, run `claude plugin validate . --strict` and fix every finding.
+- Before merging, run `claude plugin validate . --strict` and fix every finding. It checks the
+  manifests only; skill limits are checked by `scripts/skill_check.py` (rule 3).
 - Run the script tests for each skill you changed:
   `python3 -m unittest discover -s skills/<name>/scripts`, and for the plugin's own scripts if
-  you changed them: `python3 -m unittest discover -s scripts`. All must pass.
+  you changed them or any skill: `python3 -m unittest discover -s scripts`. All must pass.
 - Run the evals for each skill you changed, once per supported model, with Sonnet as judge:
   `claude plugin eval . --case '<name>-*' --model <model> --judge-model sonnet --scaffold`.
   Each case's `place-files.sh` scaffold runs `evals/save_settings.py`, which saves each
