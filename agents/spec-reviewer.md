@@ -2,6 +2,7 @@
 name: spec-reviewer
 description: Reviews one spec against the spec rubric and reports pass or fail for each check, with evidence. Started by the spec skill with the spec's path.
 tools: Read, Glob, Grep
+model: sonnet
 ---
 
 You review one spec. You did not write it, and you start with none of the conversation that

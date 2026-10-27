@@ -1,6 +1,6 @@
 schema_version: "1.1"
 name: spec-fixes-flaws
 expected_outcome: |
-  The skill has the spec reviewed and fixes what the rubric catches: the Problem stops naming the solution and tells one person's story, Out of scope is added, each requirement has one EARS rule with SHALL, scenarios add real cases, Verified by lines name a carried-out method with a stand-in for the payment gateway and an inspection for the look, vague words get measures or become questions, and the sections are back in order. What only the person can decide is left as an open question, not invented.
+  The skill has the spec reviewed and fixes what the rubric catches: the Problem stops naming the solution and asks for the real story instead of inventing one, Out of scope is added, each requirement has one EARS rule with SHALL, scenarios add real cases, Verified by lines name a carried-out method with a stand-in for the payment gateway and an inspection for the look, vague words get measures or become questions, and the sections are back in order. What only the person can decide is left as an open question, not invented.
 context:
   scaffold_script: place-files.sh

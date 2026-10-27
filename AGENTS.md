@@ -72,6 +72,10 @@ a rule names a number, it is a hard limit; everything else is judgement.
 11. **Generic.** Skills assume no particular language, framework, repo layout or host, beyond
     the lifecycle's own folders under `docs/`. Paths a skill writes to are stated in the skill
     and kept to a minimum.
+12. **Tested on named models.** Skills don't set a model or effort, so they run on whatever the
+    person's session uses. Reviewer agents set `model:` to a model alias (such as `sonnet`), so
+    the judgement that gates a document stays consistent. The README names the models the evals
+    pass on; when a model changes or one is added, rerun the evals on it before claiming it.
 
 ## Repository layout
 
@@ -109,9 +113,11 @@ Nothing else belongs at the root without a reason recorded in the change that ad
 - Run the script tests for each skill you changed:
   `python3 -m unittest discover -s skills/<name>/scripts`, and for the plugin's own scripts if
   you changed them: `python3 -m unittest discover -s scripts`. All must pass.
-- Run the evals for each skill you changed:
-  `claude plugin eval . --case '<name>-*'`, adding `--scaffold` for cases with input files. Evals are billed model runs: run
-  the ones you touched, never the whole suite unprompted.
+- Run the evals for each skill you changed, once per supported model, with Sonnet as judge:
+  `claude plugin eval . --case '<name>-*' --model <model> --judge-model sonnet`, adding
+  `--scaffold` for cases with input files. The supported models are those named in README.md;
+  a change merges only if its cases pass on every one. Evals are billed model runs: run the ones
+  you touched, never the whole suite unprompted.
 - Bump `version` in `.claude-plugin/plugin.json` (semver) in any change that alters what users
   receive. Installed copies only update when the version string changes.
 - Add a skill to the table in `README.md`, and give it a page under `docs/skills/`, in the same

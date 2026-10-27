@@ -140,6 +140,10 @@ class Transitions(Workspace):
         self.put(spec())
         self.assertIsNone(self.edit("status: Draft", "status: Ready to build"))
 
+    def test_draft_to_ready_with_other_changes_refused(self):
+        self.put(spec())
+        self.assertIn("on its own", self.write(spec("Ready to build", rule="The system SHALL do Y.")))
+
     def test_draft_to_ready_with_questions_refused(self):
         self.put(spec(questions="- Who approves?"))
         self.assertIn("open questions", self.edit("status: Draft", "status: Ready to build"))
@@ -215,7 +219,7 @@ class Transitions(Workspace):
                 },
             }
         )
-        self.assertIn("open questions", result)
+        self.assertIsNotNone(result)
 
 
 class Command(Workspace):

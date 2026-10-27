@@ -120,6 +120,8 @@ steps fit together even when you run only one of them.
 
 ## Install
 
+Tested with Claude Code on Sonnet 5.5 and Opus 5.5.
+
 In Claude Code:
 
 ```

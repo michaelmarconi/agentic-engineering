@@ -1,7 +1,8 @@
 ---
 type: regex
-target: { source: file, path: docs/specs/unread-count.spec.md }
-pattern: "SHALL count it as opened from then on\\.\\n\\n#### Scenario: First open"
+target: trace
+pattern: '("name":"Write","input":\{"file_path":"[^"]*unread-count\.spec\.md)|("file_path":"[^"]*unread-count\.spec\.md","old_string":"(?!status: ))'
+match: not_contains
 weight: 1
 ---
-The agreed requirement text was not rewritten on the way to Ready to build.
+The only edit to the spec was the status line, so Ready was set on the text the person handed over.

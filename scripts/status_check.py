@@ -10,7 +10,8 @@ would contain after the edit and compares it with what is on disk now. It refuse
 - a spec that had none being given any status but Draft, so new specs start as Draft;
 - setting Built: only the build step may, and it does not exist yet;
 - Ready to build or Built to anything but Draft;
-- Ready to build while the Open questions section is not empty or "None.";
+- Ready to build while the Open questions section is not empty or "None.", or in the same edit
+  as any other change;
 - a change to a Ready to build or Built spec that does not return it to Draft.
 
 A file that has no lifecycle status before or after the edit is left alone, so a project that
@@ -153,6 +154,11 @@ def check(payload):
         )
     if old in ("Ready to build", "Built") and new != "Draft":
         return f"{name}: a {old} spec can only go back to Draft, not to {new}."
+    if new == "Ready to build" and without_status(after) != without_status(before or ""):
+        return (
+            f"{name}: set Ready to build on its own, as the last edit after a passing review; "
+            "this edit also changes the spec's content."
+        )
     if new == "Ready to build" and has_open_questions(after):
         return (
             f"{name}: it still has open questions, so it cannot be Ready to build. Answer them "
