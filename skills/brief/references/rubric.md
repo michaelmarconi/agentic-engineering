@@ -22,8 +22,8 @@ checking, and quotes the brief as evidence for every failure.
    help desk". A vague goal ("make it easier") fails, unless Open questions asks for its measure.
 6. **Out of scope is named.** Out of scope lists at least one thing the product will not be or
    do. While the person has not said, a section that says so, with Open questions asking, passes.
-7. **What, not how.** Nothing chooses a technology, library, data structure or design, or cites
-   an ADR (architecture decision record): those belong in ADRs. Constraints holds only hard
+7. **What, not how.** Nothing chooses a technology, library, data structure or design: those
+   belong in ADRs (architecture decision records). Constraints holds only hard
    limits the person stated for the whole product, such as a law, a deadline or a system it
    must work with.
 8. **Nothing guessed.** The brief states only what the person said or showed. It carries no
@@ -37,3 +37,6 @@ checking, and quotes the brief as evidence for every failure.
 10. **Plain words.** No unexplained jargon or acronym: a graduate new to the project could
     follow every sentence. Spell out an acronym or explain a term where it first appears, title
     included, or leave it out of the title.
+11. **Links.** The brief does not link to or name a spec, an ADR or a plan, by link, path or
+    title: those can change or be deleted without the brief being touched. Links to source
+    material, as in check 9, are fine.

@@ -81,8 +81,10 @@ Three things keep specs in this shape:
 
 - **Review.** Before you see a spec, `/spec` has its reviewer agent check it against a short
   list of pass-or-fail checks: the sections are all there, each requirement has one EARS rule,
-  its scenarios add real cases, and Verified by names a method. `/spec` fixes what the reviewer
-  finds and has it checked again, up to the number of reviews in the Review rounds setting (see
+  its scenarios add real cases, Verified by names a method, and the spec links to and names no
+  other spec, nor the brief, an ADR or a plan, since those can change without the spec being
+  touched and the link would go stale. `/spec` fixes what the reviewer finds and has it checked
+  again, up to the number of reviews in the Review rounds setting (see
   [Install](../../README.md#install)), then you get the spec with the final report. If that
   setting has not been saved, `/spec` stops before the first review and asks you to save it.
 - **Status.** A hook checks each edit Claude makes to a spec with its file-editing tools and
