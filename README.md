@@ -100,6 +100,8 @@ flowchart LR
     Build --> Code[Code on the main branch]
     Code -.-> Audit
     Audit -.->|drift| Spec
+    Audit ~~~ Pad[" "]
+    style Pad fill:none,stroke:none
 ```
 
 Planning, from the brief to the plan, decides what to build and how. Building turns a plan into
@@ -171,6 +173,8 @@ flowchart LR
     Fix --> Confirm
     Confirm -->|passes| You
     Confirm -->|fails| Stop[Stop and show you]
+    Stop ~~~ Pad[" "]
+    style Pad fill:none,stroke:none
 ```
 
 1. **Review.** The reviewer checks the whole document and reports pass or fail for each check.
