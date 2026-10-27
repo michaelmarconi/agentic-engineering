@@ -79,10 +79,10 @@ a rule names a number, it is a hard limit; everything else is judgement.
    smallest change that makes it pass. Skills carry no incident logs, rationalization tables or
    red-flag lists: lessons live in evals, where they are checked, not in prose, where they
    accumulate. Issues raised with `/issue` follow the same path: turn the issue into a failing
-   case (starting from its proposed eval, if it has one), fix it with skill-creator, bump the
-   version and put `Fixes #<number>` in the commit message, so GitHub closes the issue when the
-   commit reaches main. An improvement to the lifecycle itself, rather than to one skill, is
-   specified with `/spec` first.
+   case (starting from its proposed eval, if it has one), fix it with skill-creator, put
+   `Fixes #<number>` in the fix's commit message, so GitHub closes the issue when the commit
+   reaches main, and bump the version as the Workflow section says. An improvement to the
+   lifecycle itself, rather than to one skill, is specified with `/spec` first.
 9. **Explain, don't shout.** Give the reason behind an instruction instead of stacking MUST and
    NEVER. Reserve those words for hard limits.
 10. **Safe by default.** A skill never commits, pushes, publishes, deletes or sends anything
@@ -124,12 +124,13 @@ agents/
   <name>-reviewer.md   # one reviewer per skill that writes documents
 hooks/
   hooks.json           # session map and status checks
-scripts/               # scripts the hooks run, the skill check, and their tests
+scripts/               # scripts the hooks run, the skill and version checks, and their tests
 context/
   sdlc.md              # the map Claude gets at session start; the lifecycle's principles
 docs/
   skills/<name>.md     # one page per skill, linked from README.md
 AGENTS.md              # this file
+CHANGELOG.md           # what each version changed, for the people who use the plugin
 README.md              # user-facing: the lifecycle, and how to install the plugin
 ```
 
@@ -152,7 +153,20 @@ Nothing else belongs at the root without a reason recorded in the change that ad
   The supported models are those named in README.md; a change merges only if its cases pass
   on every one. Evals are billed model runs: run the ones you touched, never the whole suite
   unprompted.
-- Bump `version` in `.claude-plugin/plugin.json` (semver) in any change that alters what users
-  receive. Installed copies only update when the version string changes.
+- Bump `version` in `.claude-plugin/plugin.json` in any change that alters what users receive,
+  since installed copies only update when the version string changes. Follow
+  [Semantic Versioning](https://semver.org/spec/v2.0.0.html): patch for a fix, minor for a new
+  skill or new behaviour, major for a change that breaks documents people already have or the
+  lifecycle itself. Stay below 1.0.0 until someone other than the maintainer installs the
+  plugin; until then a breaking change bumps the minor version, and its changelog entry says
+  what breaks.
+- Bump in the branch's last commit, after bringing main into the branch and just before merging,
+  so branches never compete for the next number and the bump survives any way of merging. In
+  that commit, add an entry headed `## [X.Y.Z] - YYYY-MM-DD` at the top of `CHANGELOG.md`,
+  written for the people who use the plugin: what they get, and for a major version what they
+  must change.
+  Run `python3 scripts/version_check.py` in that commit, whatever else the change touched: it
+  checks that the newest entry matches `plugin.json` and is newer than the entry below it;
+  whether a change needed a bump at all is yours to judge.
 - Add a skill to the table in `README.md`, and give it a page under `docs/skills/`, in the same
   change that adds it.
