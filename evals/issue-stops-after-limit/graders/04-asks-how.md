@@ -2,4 +2,5 @@
 type: llm
 weight: 1
 ---
-The reply asks the person how they want the draft changed, or whether to file it anyway knowing it still fails.
+PASS if the reply ends by asking the person what to do with the draft: how to change it, which values to keep, or whether to file it anyway.
+FAIL if it asks the person nothing about the draft.

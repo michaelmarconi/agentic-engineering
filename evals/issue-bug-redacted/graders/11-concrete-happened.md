@@ -1,5 +1,6 @@
 ---
-type: llm
+type: regex
+target: last_message
+pattern: "What happened[^\\n]*\\n(?=(?:(?!What I expected)[\\s\\S])*(Kafka|broker))(?=(?:(?!What I expected)[\\s\\S])*\\btopics?\\b)(?=(?:(?!What I expected)[\\s\\S])*\\bhosts?\\b)"
 weight: 1
 ---
-The draft's What happened section says a spec requirement named a technology, by name or as a kind such as "a message broker", together with a topic and a host.

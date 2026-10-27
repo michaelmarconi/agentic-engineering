@@ -22,8 +22,8 @@ turns out to be in their own project rather than in the plugin, say so and stop.
 
 Decide the kind: a **bug** when the plugin did something wrong, an **improvement** when it
 worked as designed but could work better. Read that kind's template,
-`${CLAUDE_PLUGIN_ROOT}/.github/ISSUE_TEMPLATE/bug.md` or `improvement.md`, and keep its headings
-in order.
+`${CLAUDE_PLUGIN_ROOT}/.github/ISSUE_TEMPLATE/bug.md` or `improvement.md`, and keep its headings,
+as Markdown headings, in order.
 
 For the versions in Context, run:
 
@@ -39,7 +39,9 @@ and give the other versions as unknown.
 Write the title and body in the template's shape, as rubric checks 1 to 8 describe. Redact as
 you write rather than after: describe the person's project only in general terms, rebuild any
 example from stand-ins, and quote nothing from their repository, not even a line that looks
-harmless. A maintainer needs the shape of the problem, not the person's content.
+harmless. A maintainer needs the shape of the problem, not the person's content. If the person
+asks to keep something you would redact, keep it and say why it is a risk: it is their
+information, so the reviewer's report and the decision are theirs, not yours.
 
 Keep the draft in the conversation. Never write it to a file in the person's repository: the
 plugin leaves nothing there but the lifecycle's own documents.
