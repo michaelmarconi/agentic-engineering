@@ -59,7 +59,9 @@ class SessionMap(unittest.TestCase):
 
     def test_unsaved_setting_is_reported_even_without_lifecycle_documents(self):
         out = self.output(settings={})
-        self.assertIn("Review rounds (suggested: 3)", out["systemMessage"])
+        self.assertIn("'Review rounds' config setting is not set", out["systemMessage"])
+        self.assertIn("set it (3 is suggested)", out["systemMessage"])
+        self.assertIn("/reload-plugins", out["systemMessage"])
         self.assertIn("/plugin configure sdlc@sdlc", out["systemMessage"])
         context = out["hookSpecificOutput"]["additionalContext"]
         self.assertIn(out["systemMessage"], context)

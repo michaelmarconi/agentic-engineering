@@ -60,14 +60,17 @@ def unsaved_settings(environ):
 
 
 def notice(unsaved):
-    settings = ", ".join(
-        f"{title} (suggested: {default})" if default is not None else title
-        for _, title, default in unsaved
-    )
-    return (f"The sdlc plugin has settings that are not saved yet: {settings}. A skill that needs "
-            "one does its work up to the step that uses it, then stops and asks you to save it. To save them, run /plugin configure sdlc@sdlc, type a value "
-            "next to each one, then choose Save configuration; the boxes start empty, so "
-            "leaving one empty saves nothing.")
+    names = " and ".join(f"'{title}'" for _, title, _ in unsaved)
+    if len(unsaved) == 1:
+        default = unsaved[0][2]
+        setting, it = "setting is", "it"
+        hint = f" ({default} is suggested)" if default is not None else ""
+    else:
+        setting, it = "settings are", "them"
+        hint = ", ".join(f"{title} {default}" for _, title, default in unsaved if default is not None)
+        hint = f" (suggested: {hint})" if hint else ""
+    return (f"sdlc: the {names} config {setting} not set. Run /plugin configure sdlc@sdlc to "
+            f"set {it}{hint}, then /reload-plugins to reload this plugin.")
 
 
 def main(argv=None):
