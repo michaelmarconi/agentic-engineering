@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: issue-files-link
+expected_outcome: |
+  The person has approved a reviewed draft and wants to submit it themselves, so the filing
+  script runs with --link-only and the reply gives the pre-filled new-issue link for the
+  plugin's repository. gh is never run directly.
