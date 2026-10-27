@@ -63,7 +63,7 @@ Before you see the draft, a reviewer agent checks it against
 [the issue rubric](../../skills/issue/references/rubric.md). Among other things, it searches
 your repository for every name and phrase in the draft, since anything found there is a leak.
 The skill fixes what the reviewer finds, once, and has the fixes confirmed (see
-[How it works](../../README.md#how-it-works)).
+[Reviews](../../README.md#reviews)).
 
 ## Filing
 

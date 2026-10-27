@@ -36,32 +36,9 @@ The plugin gives Claude three kinds of help to work with these documents:
   and to refuse spec and ADR edits Claude makes that the lifecycle does not allow, such as an illegal
   status change. They need Python 3.
 
-Every document a skill writes is reviewed before you see it, in the same fixed sequence:
-
-```mermaid
-flowchart LR
-    Write --> Review
-    Review -->|findings| Fix
-    Review -->|none| You
-    Fix --> Confirm
-    Confirm -->|passes| You
-    Confirm -->|fails| Stop[Stop and show you]
-```
-
-- **Review:** a reviewer agent checks the whole document against the skill's rubric, a short
-  list of pass-or-fail checks, and reports each failure with the check it breaks.
-- **Fix:** the skill fixes what it can, once. A choice only you can make becomes an open
-  question for you, never a guess.
-- **Confirm:** a reviewer agent checks only that each fix landed and that no edit broke
-  anything. Anything else it notices reaches you as a suggestion.
-- If the confirm check fails, the skill stops and shows you the report rather than trying again.
-
-There are no repeated rounds of review and fix. We measured this: one review finds nearly every
-problem, and each further round of fixes brings new ones
-([results](experiments/review-seeding/RESULTS.md)).
-
-Apart from the documents, the plugin adds nothing to your repository, unless you choose to install it for
-everyone working there (see [Install](#install)).
+Every document a skill writes is reviewed before you see it (see [Reviews](#reviews)). Apart
+from the documents, the plugin adds nothing to your repository, unless you choose to install it
+for everyone working there (see [Install](#install)).
 
 The work runs in two stages. Planning decides what to build and how, and ends with a plan.
 Building turns the plan into reviewed code on the main branch.
@@ -127,7 +104,7 @@ A build agent carries out the plan, then four reviewer agents check the result i
   added? Once every requirement in the spec is, the spec is marked Built.
 - **ADRs:** is every accepted decision followed, not just the ones the plan touches?
 
-Findings follow the same sequence as for documents: the build agent fixes them once, then a
+Findings follow the same sequence as for documents (see [Reviews](#reviews)): the build agent fixes them once, then a
 confirm check asks whether each fix landed and nothing broke. A clean review or a passing confirm
 merges the work into the main branch; a failing confirm stops and asks for help.
 
@@ -149,6 +126,44 @@ issue on this plugin's GitHub repository. It asks what happened and what you exp
 the versions involved, and leaves out anything that would identify your project. You see the
 draft before anything is filed. Each issue becomes a test the plugin must pass before the fix
 is released, so the same problem can't quietly come back.
+
+## Reviews
+
+Agents don't mark their own homework. The agent that writes a document can miss its own
+mistakes, so every document a skill writes is checked by a reviewer agent before you see it.
+The reviewer starts fresh, without your conversation, so it judges the page as a newcomer would.
+It checks the document against the skill's rubric: a short list of pass-or-fail checks, such as
+"each requirement has exactly one rule". The same rubric guides the skill while it writes.
+
+Every review follows the same fixed sequence:
+
+```mermaid
+flowchart LR
+    Write --> Review
+    Review -->|findings| Fix
+    Review -->|none| You
+    Fix --> Confirm
+    Confirm -->|passes| You
+    Confirm -->|fails| Stop[Stop and show you]
+```
+
+1. **Review.** The reviewer checks the whole document and reports pass or fail for each check.
+   For each failure it quotes the check and the words that break it.
+2. **Fix.** The skill fixes every finding it can, once. A choice only you can make becomes an
+   open question for you, never a guess.
+3. **Confirm.** A reviewer checks only that each fix landed and that no edit broke anything.
+   Anything else it notices reaches you as a suggestion, not a failure.
+4. **You.** You get the document with the reports. If the confirm check failed, the skill stops
+   there and shows you why, rather than trying again.
+
+A finding is one of three kinds. A **failure** breaks a check, and the skill fixes it. A
+**decision** is something only you can settle, such as which of two readings you meant; it goes
+to you as an open question. A **suggestion** is something you might want to add; it never holds
+a document back.
+
+There are no repeated rounds of review and fix. We measured this on specs with planted
+mistakes: one review finds nearly every one, and each further round of fixes brings new
+problems ([results](experiments/review-seeding/RESULTS.md)).
 
 ## Principles
 
