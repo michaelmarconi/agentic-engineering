@@ -1,6 +1,6 @@
 # Software Development Lifecycle (SDLC)
 
-*In development: `/spec` is built; the other skills are still being designed.*
+*In development: `/spec` and `/issue` are built; the other skills are still being designed.*
 
 A software development lifecycle is the path work takes from an idea for a product to working
 code. This repository defines one, and packages it as a plugin for
@@ -112,6 +112,16 @@ through this lifecycle. `/audit` runs the spec and ADR reviewers across the whol
 reports where they disagree; you choose whether to fix the code, reopen the spec, or supersede
 the ADR.
 
+## Feedback
+
+### [`/issue`](docs/skills/issue.md)
+
+When a skill gets something wrong, or the lifecycle gets in your way, `/issue` turns it into an
+issue on this plugin's GitHub repository. It asks what happened and what you expected, gathers
+the versions involved, and leaves out anything that would identify your project. You see the
+draft before anything is filed. Each issue becomes a test the plugin must pass before the fix
+is released, so the same problem can't quietly come back.
+
 ## Principles
 
 The rules the lifecycle follows, such as one decision per ADR, are kept in one short file,
@@ -189,6 +199,7 @@ To update automatically, run `/plugin`, open **Marketplaces**, select `sdlc` and
 | Skill | What it does |
 | --- | --- |
 | [`/spec`](docs/skills/spec.md) | Writes or changes a spec with you, and has it reviewed before you see it |
+| [`/issue`](docs/skills/issue.md) | Reports a bug or suggests an improvement in this plugin, with your project's details left out |
 
 ## Contributing
 

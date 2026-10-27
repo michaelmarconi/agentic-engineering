@@ -1,0 +1,7 @@
+schema_version: "1.1"
+name: issue-trigger-yes
+expected_outcome: |
+  The issue skill is invoked: the person wants to tell the plugin's makers about a fault in one
+  of its skills.
+context:
+  scaffold_script: place-files.sh

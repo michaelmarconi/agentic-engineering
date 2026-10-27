@@ -29,7 +29,9 @@ a rule names a number, it is a hard limit; everything else is judgement.
      or fail. The skill reads it while writing; the reviewer reads it while checking.
    - A reviewer agent at `agents/<name>-reviewer.md`, with read-only tools. It starts fresh,
      reads the rubric through `${CLAUDE_PLUGIN_ROOT}`, and reads only the files its own
-     definition names. The skill passes it paths, never pasted content.
+     definition names. The skill passes it paths, never pasted content, unless the document
+     must not be written to the working tree, as with `/issue`'s draft; then it passes the
+     document whole and word for word.
    - The reviewer reports pass or fail for each check, with evidence for each failure, plus
      findings beyond the rubric. The skill fixes what it can and asks again, for up to n reviews
      in all, counting the first (the `review_rounds` setting, which `/build` also uses); after that it
@@ -51,6 +53,14 @@ a rule names a number, it is a hard limit; everything else is judgement.
    - Prefer a regex or tool check to a judge. A judge grader checks one claim, and states any
      fact it needs, such as what an input file said, since it sees only what it is focused on;
      judges given several claims at once split their votes on the same output.
+   - **Never rely on timing.** No test or eval may depend on when something happens: no
+     sleeps, waits, retries or racing another process for the right order. A result that
+     depends on timing passes or fails by luck, so it proves nothing. If the only way to test
+     a behaviour is by timing, leave it untested and say so in the case or test file.
+   - **Known gap.** `claude plugin eval` can't run a case that grants Bash and also has a
+     plugin setting saved, since the sandbox settings it writes take the same file. So skill
+     steps that run a command after a setting is read, such as `/issue` filing, are covered by
+     their script's unit tests, and their evals stop just before the command.
 6. **Built with skill-creator.** Create, change and tune skills, and their descriptions, with
    Anthropic's `skill-creator` skill, following its draft, eval, review and iterate loop.
 7. **Deterministic where it earns its place.** Use a script only when it must be exact every
@@ -68,7 +78,11 @@ a rule names a number, it is a hard limit; everything else is judgement.
 8. **Fix with evidence, not rules.** A bug report becomes a failing eval case first, then the
    smallest change that makes it pass. Skills carry no incident logs, rationalization tables or
    red-flag lists: lessons live in evals, where they are checked, not in prose, where they
-   accumulate.
+   accumulate. Issues raised with `/issue` follow the same path: turn the issue into a failing
+   case (starting from its proposed eval, if it has one), fix it with skill-creator, bump the
+   version and put `Fixes #<number>` in the commit message, so GitHub closes the issue when the
+   commit reaches main. An improvement to the lifecycle itself, rather than to one skill, is
+   specified with `/spec` first.
 9. **Explain, don't shout.** Give the reason behind an instruction instead of stacking MUST and
    NEVER. Reserve those words for hard limits.
 10. **Safe by default.** A skill never commits, pushes, publishes, deletes or sends anything
@@ -92,6 +106,8 @@ a rule names a number, it is a hard limit; everything else is judgement.
 ## Repository layout
 
 ```
+.github/
+  ISSUE_TEMPLATE/      # bug and improvement templates; /issue reads them from the plugin
 .claude-plugin/
   plugin.json          # plugin manifest; version gates updates for users
   marketplace.json     # makes this repo installable as its own marketplace
