@@ -19,9 +19,9 @@ Principles:
 - One living spec per capability, edited in place. Git is the history; a retired spec is deleted.
 - One decision per ADR. An accepted ADR is never edited, only superseded whole.
 - Accepted ADRs and the code are the design; there is no separate design document.
-- Documents link only where neither end can go stale: a plan to the specs and ADRs it builds,
-  and an ADR to the ADR it supersedes or that supersedes it. The brief, specs and ADRs never
-  link to or name one another, by link, path or title.
+- Documents refer to one another only where neither end can go stale: a plan to the specs and
+  ADRs it builds, and an ADR to the ADR it supersedes or that supersedes it. The brief, specs and
+  ADRs never refer to one another in any way: no hyperlink, path or title.
 - Every spec, ADR and plan carries its own status. A plan holds no state that would be lost when it is deleted.
 - Only legal status moves are allowed, and only /build sets Built. A plugin hook refuses illegal
   spec status changes made with Claude's file-editing tools.

@@ -50,9 +50,10 @@ behaviour it serves and leave the choice out of every section, even when they st
 settled: the spec should still hold if the choice changes, and tell the person you left it out.
 If it is already decided, suggest recording it as an ADR (architecture decision record); if not,
 make it an open question. When an unknown can only be settled by trying something, suggest a
-spike: a throwaway experiment. When the person wants the spec to link to or name the brief,
-another spec, an ADR or a plan, leave it out (rubric check 11) and tell them why: that document
-can change or be deleted without this spec being touched, so the link would go stale.
+spike: a throwaway experiment. When the person wants the spec to refer to the brief, another
+spec, an ADR or a plan, by hyperlink, path or title, leave it out (rubric check 11) and tell them
+why: that document can change or be deleted without this spec being touched, so the reference
+would go stale.
 
 Add only behaviour the person asked for or agreed to. A case they have not covered, such as who
 may not use the feature, what happens on an error, or what happens when a rule's condition does

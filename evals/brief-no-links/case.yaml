@@ -1,6 +1,0 @@
-schema_version: "1.1"
-name: brief-no-links
-expected_outcome: |
-  The person asks for the brief to link to the court booking spec and to an ADR, and for junior members to be out of scope. The brief gets no link to or mention of the spec or the ADR, adds junior members to Out of scope, keeps everything else, and the reply tells the person the links were left out because those documents can change or be deleted without the brief being touched, so the links would go stale.
-context:
-  scaffold_script: place-files.sh

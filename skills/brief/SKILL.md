@@ -32,13 +32,13 @@ conversation changed its mind, the latest word wins. Only when there is nothing 
 what they are building and for whom first.
 
 Write only what they said or showed you, as rubric check 8 describes, and link each fact taken
-from a document to it, as check 9 does. When they want the brief to link to or name a spec, an
-ADR (architecture decision record) or a plan, leave it out (check 11) and tell them why: that
-document can change or be deleted without the brief being touched, so the link would go stale.
-When they mention something that
-belongs to a later stage (rubric checks 2 and 7), leave it out and tell them where it goes: how
-one capability behaves goes in its spec, so suggest `/spec`; a technology or design they have
-decided goes in an ADR, and one they have not becomes an open question.
+from a document to it, as check 9 does. When they want the brief to refer to a spec, an ADR
+(architecture decision record) or a plan, by hyperlink, path or title, leave it out (check 11)
+and tell them why: that document can change or be deleted without the brief being touched, so
+the reference would go stale. When they mention something that belongs to a later stage
+(rubric checks 2 and 7), leave it out and tell them where it goes: how one capability behaves
+goes in its spec, so suggest `/spec`; a technology or design they have decided goes in an ADR,
+and one they have not becomes an open question.
 
 Then ask about what the draft or the review leaves open: say how many questions there are and
 ask only the first, as one question rather than two joined together. The others wait in the

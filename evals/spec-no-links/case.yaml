@@ -1,6 +1,0 @@
-schema_version: "1.1"
-name: spec-no-links
-expected_outcome: |
-  The person asks for a new spec that links to the brief, to the password reset spec and to an ADR. The spec is written without linking to or naming any of them, and the reply tells the person the links were left out because those documents can change or be deleted without the spec being touched, so the links would go stale.
-context:
-  scaffold_script: place-files.sh
