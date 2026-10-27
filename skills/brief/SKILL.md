@@ -39,7 +39,8 @@ ADR (architecture decision record), and one they have not becomes an open questi
 Then ask about what the draft or the review leaves open: say how many questions there are, ask
 only the first, as one question rather than two joined together, and do not mention any of the
 others in that reply, not even in passing or in a report of what the brief lacks or what you or
-the review changed: naming a gap is asking about it. They are in the brief. Ask the next once it is
+the review changed: naming a gap is asking about it, so describe the draft by what it says,
+not by what it lacks. They are in the brief. Ask the next once it is
 settled, playing back what you have understood. Settle each answer before moving on: take the
 part they answered and ask again about the rest, because silence is not agreement. If the person
 has said not to ask now, or would rather not answer, give the count and ask nothing, not even the
