@@ -1,6 +1,6 @@
 # Software Development Lifecycle (SDLC)
 
-*In development: the lifecycle is being designed and its skills are not built yet.*
+*In development: `/spec` is built; the other skills are still being designed.*
 
 A software development lifecycle is the path work takes from an idea for a product to working
 code. This repository defines one, and packages it as a plugin for
@@ -30,8 +30,10 @@ The plugin gives Claude three kinds of help to work with these documents:
   only the tools they need, so their work is not swayed by your conversation. A skill hands them work such as
   building a plan or reviewing a document.
 - **Hooks:** small scripts Claude Code runs automatically at set moments. This plugin uses them
-  to give Claude a summary of the lifecycle when a session starts, and to refuse status changes
-  Claude makes that the lifecycle does not allow.
+  to give Claude a summary of the lifecycle when a session starts in a repository that uses it,
+  to remind you at the start of every session if a plugin setting is not saved yet (see
+  [Install](#install)), and to refuse spec edits Claude makes that the lifecycle does not allow, such as an illegal
+  status change. They need Python 3.
 
 Every document a skill writes is checked by a reviewer agent before you see it. Apart from the
 documents, the plugin adds nothing to your repository, unless you choose to install it for
@@ -98,8 +100,8 @@ A build agent carries out the plan, then four reviewer agents check the result i
   added? Once every requirement in the spec is, the spec is marked Built.
 - **ADRs:** is every accepted decision followed, not just the ones the plan touches?
 
-Findings go back to the build agent for up to n rounds (a plugin setting, 3 by default). A clean
-review merges the work into the main branch; if it won't converge, we stop and ask for help.
+Findings go back to the build agent for up to n reviews in all (the Review rounds setting,
+see [Install](#install)). A clean review merges the work into the main branch; if it won't converge, we stop and ask for help.
 
 ## Audit
 
@@ -114,9 +116,12 @@ the ADR.
 
 The rules the lifecycle follows, such as one decision per ADR, are kept in one short file,
 [context/sdlc.md](context/sdlc.md). The plugin gives that file to Claude at the start of every
-session, so Claude knows how the steps fit together even when you run only one of them.
+session in a repository that has a brief or a spec, so Claude knows how the
+steps fit together even when you run only one of them.
 
 ## Install
+
+Tested with Claude Code on Sonnet 5.5 and Opus 5.5 (see [Models](#models)).
 
 In Claude Code:
 
@@ -135,6 +140,40 @@ claude plugin install sdlc@sdlc
 Add `--scope project` to the `install` command to share the plugin with everyone working in a
 repository.
 
+Then save the plugin's settings. Claude Code does not fill them in for you, so until they are
+saved, skills that need them stop and ask, and every session starts with a reminder. The install
+shows a configure screen whose boxes start empty: pressing Enter there saves nothing, and Claude
+Code still reports the plugin as active. In Claude Code, run `/plugin configure sdlc@sdlc`, type
+a value next to each setting, choose **Save configuration**, then run `/reload-plugins`; from a terminal, add `--config <key>=<value>` to the `install` command. Each
+setting's description says what it does and suggests a value. Settings are saved in your own
+Claude Code settings, not in the repository, so you save them once per computer. If you added
+the marketplace under another name, use `sdlc@<that name>` in place of `sdlc@sdlc`. Claude Code's
+`/config` may list a setting with its suggested value before you have saved it; skills receive
+only a value you saved.
+
+| Setting | Key | What it does |
+| --- | --- | --- |
+| Review rounds | `review_rounds` | How many reviews a skill or `/build` may run on one piece of work, counting the first, before it stops and asks you |
+
+## Models
+
+Claude Code can run on different Claude models, and a skill that works well on one may behave
+differently on another. The plugin handles this in three ways.
+
+- **Skills use your model.** A skill (such as `/spec`) runs on whichever model your Claude Code
+  session uses, so you choose it, with `/model`, as you normally would.
+- **Reviewers use a fixed model.** Each skill hands its work to a reviewer, a separate Claude
+  that checks the document against a list of rules and reports what fails. Reviewers always run
+  on Sonnet, so the same document gets the same judgement whatever model your session uses. To
+  override it, set the environment variable `CLAUDE_CODE_SUBAGENT_MODEL` to a model name together
+  with `CLAUDE_CODE_SUBAGENT_MODEL_FORCE=1` (Claude Code 2.1.257 or later); note that this
+  changes every subagent, not just the reviewers. Results on other models are untested.
+- **Every change is tested on each supported model.** Each skill has evals: scripted
+  conversations whose results are checked automatically, some by simple text matching and some by
+  a second Claude acting as judge, always Sonnet. A change is released only if its evals pass
+  on Sonnet 5.5 and on Opus 5.5, the models listed under [Install](#install). When a new model
+  comes out, the evals are run on it before it is added to that list.
+
 ## Update
 
 ```bash
@@ -149,7 +188,7 @@ To update automatically, run `/plugin`, open **Marketplaces**, select `sdlc` and
 
 | Skill | What it does |
 | --- | --- |
-| _None yet_ | |
+| [`/spec`](docs/skills/spec.md) | Writes or changes a spec with you, and has it reviewed before you see it |
 
 ## Contributing
 

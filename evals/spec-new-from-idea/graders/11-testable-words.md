@@ -1,0 +1,7 @@
+---
+type: llm
+focus: { source: file, path: docs/specs/password-reset.spec.md }
+weight: 1
+---
+
+No rule, scenario or constraint relies on an unmeasured vague word such as "fast", "secure", "user-friendly" or "as appropriate".

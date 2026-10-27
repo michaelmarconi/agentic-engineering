@@ -1,9 +1,19 @@
 {
   "name": "sdlc",
-  "version": "0.1.1",
+  "version": "0.2.1",
   "description": "Small, independent, evaluated skills for the software development lifecycle.",
   "author": {
     "name": "Michael Marconi"
   },
-  "repository": "https://github.com/michaelmarconi/sdlc"
+  "repository": "https://github.com/michaelmarconi/sdlc",
+  "userConfig": {
+    "review_rounds": {
+      "type": "number",
+      "title": "Review rounds",
+      "description": "How many reviews a skill or /build may run on one piece of work, counting the first, before stopping to ask you. Suggested: 3.",
+      "default": 3,
+      "min": 1,
+      "max": 10
+    }
+  }
 }

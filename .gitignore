@@ -1,4 +1,4 @@
 # claude plugin eval output
-skills/results/
 **/evals/results/
 .DS_Store
+__pycache__/

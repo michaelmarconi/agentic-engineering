@@ -1,5 +1,6 @@
 This repo follows the sdlc plugin's lifecycle. Use its skills, invoked as /sdlc:<name>, for
-each step.
+each step that has one; some steps' skills are not built yet, and only those Claude Code lists
+exist.
 
 Steps: /brief (whole product), then /spec (one capability). /spike settles an unknown by
 experiment when needed: a fact goes back into the spec, a choice becomes an ADR. /adr records one
@@ -18,11 +19,14 @@ Principles:
 - One decision per ADR. An accepted ADR is never edited, only superseded whole.
 - Accepted ADRs and the code are the design; there is no separate design document.
 - Every spec, ADR and plan carries its own status. A plan holds no state that would be lost when it is deleted.
-- Only legal status moves are allowed, and only /build sets Built. A plugin hook refuses the rest.
+- Only legal status moves are allowed, and only /build sets Built. A plugin hook refuses illegal
+  spec status changes made with Claude's file-editing tools.
 - A spec is Built when /build's spec reviewer finds every requirement in the whole spec verified,
   not just the plan's part. /audit repeats that judgement later.
 - A plan is Ready to build only when each spec it touches is Ready to build or Built, and each
   ADR it touches is Accepted.
 - Every document a skill writes is reviewed by that skill's reviewer agent before a person sees
-  it. Findings are fixed for up to n rounds (a plugin setting, 3 by default); only decisions go to the person.
+  it. Findings are fixed and the work reviewed again, for up to n reviews in all counting the
+  first (the plugin's Review rounds setting); only decisions go to the person, and optional
+  suggestions never hold a document back.
 - Drift is a finding, not a status: report it with a suggested way back.

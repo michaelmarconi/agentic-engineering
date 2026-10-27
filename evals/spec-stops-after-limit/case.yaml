@@ -1,0 +1,7 @@
+schema_version: "1.1"
+name: spec-stops-after-limit
+expected_outcome: |
+  The new archive spec contradicts the existing data-retention spec, which only the person can resolve, so the review keeps failing. The skill runs the reviewer at most three times, then stops, shows the report and asks the person for the decision instead of carrying on or changing the other spec.
+context:
+  scaffold_script: place-files.sh
+# place-files.sh saves Review rounds as 3, because grader 01 counts reviews against that number.

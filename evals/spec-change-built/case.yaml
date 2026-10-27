@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: spec-change-built
+expected_outcome: |
+  The existing password reset spec is edited in place: the rule and its boundary scenarios move to 1 hour, the status goes from Built back to Draft, and no second spec is created.
+context:
+  scaffold_script: place-files.sh

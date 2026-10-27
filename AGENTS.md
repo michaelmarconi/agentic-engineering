@@ -19,6 +19,8 @@ a rule names a number, it is a hard limit; everything else is judgement.
    - `name`: 1–64 characters, lowercase letters, digits and single hyphens; matches the folder.
    - `description`: at most 1,024 characters; says what the skill does and when to use it.
    - Body under 500 lines and about 5,000 tokens.
+   - `scripts/skill_check.py` checks these limits on every skill, and its tests run it on this
+     plugin, so the script tests below fail on a skill that breaks one.
    - Optional `scripts/`, `references/` and `assets/`. References sit one level deep, and
      `SKILL.md` says when to read each one.
 4. **Reviewed.** Agents don't mark their own homework. Every skill that writes a document has
@@ -28,12 +30,13 @@ a rule names a number, it is a hard limit; everything else is judgement.
    - A reviewer agent at `agents/<name>-reviewer.md`, with read-only tools. It starts fresh,
      reads the rubric through `${CLAUDE_PLUGIN_ROOT}`, and reads only the files its own
      definition names. The skill passes it paths, never pasted content.
-   - The reviewer reports pass or fail for each check, with evidence, plus findings beyond the
-     rubric. The skill fixes what it can and asks again, for up to n rounds (the plugin setting
-     that `/build` also uses); after that it stops and asks the person, showing the report. Only
-     a decision the skill cannot make goes to the person.
+   - The reviewer reports pass or fail for each check, with evidence for each failure, plus
+     findings beyond the rubric. The skill fixes what it can and asks again, for up to n reviews
+     in all, counting the first (the `review_rounds` setting, which `/build` also uses); after that it
+     stops and asks the person, showing the report. Only a decision the skill cannot make goes
+     to the person, with optional suggestions passed on but never holding the document back.
    - The person gets the document and the final report.
-5. **Evaluated.** Every skill ships with evals under `skills/<name>/evals/`, in the case-folder
+5. **Evaluated.** Every skill ships with evals under the plugin's `evals/`, in the case-folder
    layout that skill-creator writes and `claude plugin eval` runs. Write the rubric first, then
    the evals: each rubric check is also an eval assertion, so one rubric both tests the skill and
    reviews its output. Case folder names start with the skill's name (`<name>-<what-it-checks>`)
@@ -41,12 +44,20 @@ a rule names a number, it is a hard limit; everything else is judgement.
    - One case per distinct behaviour the skill promises.
    - Trigger cases for the description: prompts that should and should not invoke it.
    - Each case must pass with the skill and fail, or score clearly worse, without it. A case
-     that passes either way tests nothing.
+     that passes either way tests nothing. Two kinds of case are the exception: cases that
+     should not trigger the skill, which pass without it by design, and guard cases for a
+     rubric check Claude already meets unaided, which catch a change that breaks it. Name the
+     guard's reason in its case.yaml.
+   - Prefer a regex or tool check to a judge. A judge grader checks one claim, and states any
+     fact it needs, such as what an input file said, since it sees only what it is focused on;
+     judges given several claims at once split their votes on the same output.
 6. **Built with skill-creator.** Create, change and tune skills, and their descriptions, with
    Anthropic's `skill-creator` skill, following its draft, eval, review and iterate loop.
-7. **Deterministic where possible.** Anything a program can do reliably (parsing, validation,
-   counting, file layout, templating) lives in a script, not in prose: in the skill's `scripts/`,
-   or the plugin's `scripts/` when a hook runs it. Scripts are
+7. **Deterministic where it earns its place.** Use a script only when it must be exact every
+   time, as with the status rules, or when evals show Claude getting the job wrong or wasting
+   effort on it. Otherwise leave it to Claude and the reviewer, whose judgement copes with cases
+   a script can't foresee. A script lives in the skill's `scripts/`, or the plugin's `scripts/`
+   when a hook runs it. Scripts are
    self-contained: standard-library Python 3 or POSIX shell, no install step, no network unless
    the task needs it, and runnable on macOS, Linux and in Claude Code on the web.
    - **Test-driven.** Write a failing test before each behaviour. Tests use the standard-library
@@ -66,6 +77,17 @@ a rule names a number, it is a hard limit; everything else is judgement.
 11. **Generic.** Skills assume no particular language, framework, repo layout or host, beyond
     the lifecycle's own folders under `docs/`. Paths a skill writes to are stated in the skill
     and kept to a minimum.
+12. **Tested on named models.** Skills don't set a model or effort, so they run on whatever the
+    person's session uses. Reviewer agents set `model:` to a model alias (such as `sonnet`), so
+    the judgement that gates a document stays consistent. The README names the models the evals
+    pass on; when a model changes or one is added, rerun the evals on it before claiming it.
+13. **Settings are saved, never guessed.** A value a person may want to change, such as how many
+    reviews to run, is a `userConfig` setting in `.claude-plugin/plugin.json`, and its default
+    lives only there, as `default` and as "Suggested: <value>." at the end of its description,
+    since the configure screen shows the description but not the default. Claude Code passes
+    only saved values to skills and hooks, so no skill, agent or document states a default.
+    The session-start hook reports any unsaved setting, and a skill that finds no value stops
+    and asks the person to save it. The README's Install section lists every setting.
 
 ## Repository layout
 
@@ -79,12 +101,14 @@ skills/
     scripts/           # optional, deterministic helpers and their tests
     references/        # rubric.md (required for skills that write documents), others on demand
     assets/            # optional, templates and static files
-    evals/<case>/      # required, one folder per test case
+evals/
+  save_settings.py     # saves the plugin settings' defaults for each eval run
+  <name>-<case>/       # required, one folder per test case, run by `claude plugin eval`
 agents/
   <name>-reviewer.md   # one reviewer per skill that writes documents
 hooks/
   hooks.json           # session map and status checks
-scripts/               # plugin-wide scripts the hooks run, and their tests
+scripts/               # scripts the hooks run, the skill check, and their tests
 context/
   sdlc.md              # the map Claude gets at session start; the lifecycle's principles
 docs/
@@ -98,13 +122,20 @@ Nothing else belongs at the root without a reason recorded in the change that ad
 ## Workflow
 
 - Work on a branch and merge it to main once every check below passes. No pull requests needed.
-- Before merging, run `claude plugin validate . --strict` and fix every finding.
+- Before merging, run `claude plugin validate . --strict` and fix every finding. It checks the
+  manifests only; skill limits are checked by `scripts/skill_check.py` (rule 3).
 - Run the script tests for each skill you changed:
   `python3 -m unittest discover -s skills/<name>/scripts`, and for the plugin's own scripts if
-  you changed them: `python3 -m unittest discover -s scripts`. All must pass.
-- Run the evals for each skill you changed:
-  `claude plugin eval . --eval-dir skills --case '<name>-*'`. Evals are billed model runs: run
-  the ones you touched, never the whole suite unprompted.
+  you changed them or any skill: `python3 -m unittest discover -s scripts`. All must pass.
+- Run the evals for each skill you changed, once per supported model, with Sonnet as judge:
+  `claude plugin eval . --case '<name>-*' --model <model> --judge-model sonnet --scaffold`.
+  Each case's `place-files.sh` scaffold runs `evals/save_settings.py`, which saves each
+  setting's default for the run as a person would; without it, skills find no settings and
+  stop. Only a case that tests that stop leaves it out, and a case whose graders depend on a
+  setting's value passes that value to the script.
+  The supported models are those named in README.md; a change merges only if its cases pass
+  on every one. Evals are billed model runs: run the ones you touched, never the whole suite
+  unprompted.
 - Bump `version` in `.claude-plugin/plugin.json` (semver) in any change that alters what users
   receive. Installed copies only update when the version string changes.
 - Add a skill to the table in `README.md`, and give it a page under `docs/skills/`, in the same
