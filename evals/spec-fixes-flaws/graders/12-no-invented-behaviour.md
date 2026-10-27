@@ -1,16 +1,12 @@
 ---
-type: llm
-focus: { source: file, path: docs/specs/invoice-export.spec.md }
+type: regex
+target: { source: file, path: docs/specs/invoice-export.spec.md }
+pattern: '^(?:- (?:THEN|AND)\b.*\b(?:no|not|without)\b.*\bstamp\b|(?:- (?:THEN|AND)\b|.*\bSHALL\b).*\b(?:unpaid|not (?:yet )?paid|partly|partial|permission|not allowed|may not|cannot|error|fails?|failed|limit|refus\w*)\b)'
+flags: mi
+match: not_contains
 weight: 1
 ---
-No requirement or scenario adds behaviour beyond what the original spec described. The original
-described only this behaviour: a finance user exports one invoice as a PDF; the PDF includes the
-invoice number, the customer's name and the total, and looks professional; when an invoice has
-been paid, its PDF shows a "PAID" stamp with the payment date (the original's example invoice
-was paid in full); the export is fast. A scenario's outcome must follow from its rule: an
-outcome the rule does not state or clearly imply is new behaviour, while one it implies, such as
-the PDF being of the invoice asked for and no other, is not. Concrete example values, a scenario
-for an unpaid invoice that only checks a PDF is produced, Scope lists, and how a requirement is
-verified are not new behaviour. New behaviour, which must appear only as open questions,
-includes who may not export, error handling, limits, and what happens when a rule's condition
-does not hold, such as an unpaid or partly paid invoice showing no stamp or something else.
+No rule or scenario outcome adds behaviour the original never described: what an unpaid or
+partly paid invoice shows, who may not export, errors, failures or limits. These belong in Open
+questions. A regex rather than a judge, because judges split their votes on this check for the
+same correct spec.
