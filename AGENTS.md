@@ -46,6 +46,9 @@ a rule names a number, it is a hard limit; everything else is judgement.
      should not trigger the skill, which pass without it by design, and guard cases for a
      rubric check Claude already meets unaided, which catch a change that breaks it. Name the
      guard's reason in its case.yaml.
+   - Prefer a regex or tool check to a judge. A judge grader checks one claim, and states any
+     fact it needs, such as what an input file said, since it sees only what it is focused on;
+     judges given several claims at once split their votes on the same output.
 6. **Built with skill-creator.** Create, change and tune skills, and their descriptions, with
    Anthropic's `skill-creator` skill, following its draft, eval, review and iterate loop.
 7. **Deterministic where it earns its place.** Use a script only when it must be exact every

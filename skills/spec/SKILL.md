@@ -36,7 +36,9 @@ rather not answer now, leave the rest in Open questions.
 
 Never fill a gap with a guess, including the person and situation in the Problem: if the
 person has not told you who is stuck and how, write only what you were told, without adding a
-purpose or detail of your own, say the rest is not known yet and ask in Open questions.
+purpose or detail of your own, say the rest is not known yet and ask in Open questions. Use
+only people the person named, anywhere in the spec; scenario values such as
+`user@example.com` need no name.
 An unknown goes into Open questions, worded so it can be answered. When the person names how
 something should be built (a library, a service, a named bucket or database, a design), keep
 the behaviour it serves and leave the choice out of every section, even when they state it as
