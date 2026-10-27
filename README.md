@@ -55,6 +55,11 @@ repository:
 Each document except the brief has a status, such as Draft or Ready to build, which says how far
 along it is.
 
+One rule matters when you edit documents by hand: the brief, specs and ADRs never refer to each
+other, whether by hyperlink, path or title, because either end can change or be deleted without
+the other being touched, and the reference quietly goes stale. Only a plan, which is deleted
+once built, refers to the specs and ADRs it builds, and an ADR refers to the one it replaces.
+
 The plugin gives Claude three kinds of help to work with these documents:
 
 - **Skills:** instructions Claude follows for one step, which you run as a slash command such as

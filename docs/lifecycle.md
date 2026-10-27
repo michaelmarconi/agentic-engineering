@@ -67,6 +67,11 @@ flowchart LR
   each naming the other by number in its `supersedes:` and `superseded-by:` fields.
 - **Only a person decides an ADR.** A person accepts or rejects it by explicitly signing off its
   final, reviewed text. No skill or agent does it for them.
+- **References never go stale.** Documents refer to one another only where neither end can go
+  stale: a plan to the specs and ADRs it builds, since it is deleted once built, and an ADR to the
+  ADR it supersedes or that supersedes it. The brief, specs and ADRs never refer to one another in
+  any way, whether by hyperlink, path or title, because either end can change or be deleted
+  without the other being touched, and the reference would quietly go stale.
 - **No separate design document.** Accepted ADRs and the code are the design.
 - **Every document carries its own status.** A plan holds nothing that would be lost when it is
   deleted.

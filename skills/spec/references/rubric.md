@@ -36,3 +36,7 @@ checking, and quotes the spec as evidence for every failure.
    Open questions section is empty or says only "None."
 10. **No overlap.** No other spec under `docs/specs/` covers the same capability or contradicts a
     requirement here.
+11. **References.** The spec does not refer to the brief, another spec, an ADR or a plan in any
+    way: no hyperlink, path or title. Those can change or be deleted without this spec being
+    touched, so the reference would go stale. Links to other material, such as a standard or a
+    research note, are fine.
