@@ -6,6 +6,25 @@ What changed in each version of the plugin, newest first. Versions follow
 past a major version: it says what you need to change in your documents. Until 1.0.0, any
 minor version may need such a change, and its entry says so.
 
+## [0.6.0] - 2026-10-27
+
+### Added
+
+- A new rule for the whole lifecycle: documents refer to one another only where neither end can
+  go stale. A plan refers to the specs and ADRs it builds, and an ADR to the ADR it supersedes or
+  that supersedes it. The brief, specs and ADRs never refer to one another in any way, whether
+  by hyperlink, path or title, because either end can change or be deleted without the other
+  being touched. The README and the summary Claude gets at the start of each session say so.
+- The spec and brief rubrics have a References check, so their reviewers flag any such
+  reference. When you ask `/spec` or `/brief` to add one, it leaves it out and tells you why.
+  The brief still links to source material, such as a survey, as before.
+
+### Changed
+
+- A spec or brief you already have that refers to another lifecycle document now fails review
+  the next time `/spec` or `/brief` changes it, which removes the reference. Nothing else in
+  your documents needs to change.
+
 ## [0.5.0] - 2026-10-27
 
 ### Added

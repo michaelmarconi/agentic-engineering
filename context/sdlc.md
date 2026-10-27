@@ -22,6 +22,9 @@ Principles:
 - Only a person accepts or rejects an ADR, by explicit sign-off of its final, reviewed text.
   No skill or agent does it for them.
 - Accepted ADRs and the code are the design; there is no separate design document.
+- Documents refer to one another only where neither end can go stale: a plan to the specs and
+  ADRs it builds, and an ADR to the ADR it supersedes or that supersedes it. The brief, specs and
+  ADRs never refer to one another in any way: no hyperlink, path or title.
 - Every spec, ADR and plan carries its own status. A plan holds no state that would be lost when it is deleted.
 - Only legal status moves are allowed, and only /build sets Built. A plugin hook refuses illegal
   spec and ADR status changes, and edits to decided ADRs, made with Claude's file-editing tools.

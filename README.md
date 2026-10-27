@@ -132,6 +132,11 @@ The rules the lifecycle follows, such as one decision per ADR, are kept in one s
 session in a repository that has a brief or a spec, so Claude knows how the
 steps fit together even when you run only one of them.
 
+One rule matters when you edit documents by hand: the brief, specs and ADRs never refer to each
+other, whether by hyperlink, path or title, because either end can change or be deleted without
+the other being touched, and the reference quietly goes stale. Only a plan, which is deleted
+once built, refers to the specs and ADRs it builds, and an ADR refers to the one it replaces.
+
 ## Install
 
 Tested with Claude Code on Sonnet 5.5 and Opus 5.5 (see [Models](#models)).
