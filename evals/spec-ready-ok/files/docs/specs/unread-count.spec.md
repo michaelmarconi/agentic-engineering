@@ -24,6 +24,7 @@ Out:
 - Marking all notifications as opened at once
 - Notifications sent by email
 - Updating the number in other open tabs or on other devices before their next page load
+- Where clicking a notification takes the person
 
 ## Requirements
 
@@ -71,7 +72,7 @@ shows 2 after a reload, then clicks an already opened one and checks it still sh
 ### Requirement: Update the count on click
 
 WHEN a person clicks a notification in the list, the system SHALL update the number on the bell
-icon without the page being reloaded.
+icon of the page they are on without reloading it.
 
 #### Scenario: One fewer
 - GIVEN the bell icon shows 3

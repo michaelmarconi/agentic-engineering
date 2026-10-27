@@ -30,13 +30,13 @@ need, as that is part of writing a spec. Where the conversation changed its mind
 word wins. Only when there is nothing to draw on, ask about the idea first.
 
 Then ask about what the draft or the review leaves open: say how many questions there are, ask
-only the first, without listing or summarising the others, not even as topics (they are in the
-spec), and ask the next once it is settled, playing back what you have understood. If the person
-has said not to ask now, give the count and leave the questions in Open questions. Settle each
-answer before moving on: if the person answers part of what you asked, take that part and ask
-again about the rest, because silence is not agreement; if they ask what you think, recommend
-something and wait for them to accept it. If they would rather not answer now, leave the rest in
-Open questions.
+only the first, and do not mention any of the others anywhere in that reply, not even in passing
+or in a report of what you or the review changed (they are in the spec); ask the next once it is
+settled, playing back what you have understood. If the person has said not to ask now, give the
+count and leave the questions in Open questions. Settle each answer before moving on: if the
+person answers part of what you asked, take that part and ask again about the rest, because
+silence is not agreement; if they ask what you think, recommend something and wait for them to
+accept it. If they would rather not answer now, leave the rest in Open questions.
 
 Never fill a gap with a guess, including the person and situation in the Problem: if the
 person has not told you who is stuck and how, write only what you were told, without adding a
@@ -104,6 +104,6 @@ person replies.
 Suggestions are optional behaviour the spec works without; pass them on to the person as
 options to add, and do not hold the spec back for them.
 
-Finish by giving the person the spec's path and the reviewer's final report, but leave out the
-open questions and the decisions it lists for the person, including ones you added: give their
-count and ask the first, as above. Leave committing to them.
+Finish by giving the person the spec's path and the reviewer's final report, except the open
+questions and the decisions it lists for the person, including ones you added: give their count
+and ask the first, as above. Leave committing to them.

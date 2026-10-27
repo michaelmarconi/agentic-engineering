@@ -3,5 +3,4 @@ type: llm
 focus: { source: file, path: docs/specs/invoice-export.spec.md }
 weight: 1
 ---
-The Problem section states that the specific situation has not been given yet, and Open
-questions asks who is stuck and what happens to them today.
+Open questions asks what happens today to the people who are stuck and what goes wrong for them.
