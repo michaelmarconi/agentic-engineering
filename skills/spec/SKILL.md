@@ -78,7 +78,10 @@ the report matches the spec. It reports pass or fail for each rubric check with 
 findings, decisions that need the person, and suggestions.
 
 Fix every finding you can and run the reviewer again, for up to ${user_config.review_rounds}
-reviews in all, counting the first (3 if no number appears here). After any edit to the spec's
+reviews in all, counting the first. If no number appears in that sentence, the plugin's Review
+rounds setting has not been saved: before the first review, stop and ask the person to run
+`/plugin configure sdlc@sdlc`, type a number next to Review rounds and choose Save
+configuration, then ask again. Never pick a number yourself. After any edit to the spec's
 content, run the next review, even if a failure that needs the person remains, so the report
 the person gets is about the spec as it now stands; after the last review, edit no further. A
 decision under Needs a person goes to them as a question rather than a fix you invent. If the

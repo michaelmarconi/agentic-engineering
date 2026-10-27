@@ -1,3 +1,4 @@
+import json
 import os
 import subprocess
 import sys
@@ -7,6 +8,7 @@ import unittest
 HERE = os.path.dirname(os.path.abspath(__file__))
 SCRIPT = os.path.join(HERE, "session_map.py")
 MAP = os.path.join(HERE, "..", "context", "sdlc.md")
+SAVED = {"CLAUDE_PLUGIN_OPTION_REVIEW_ROUNDS": "3"}
 
 
 class SessionMap(unittest.TestCase):
@@ -14,9 +16,15 @@ class SessionMap(unittest.TestCase):
         self.tmp = tempfile.TemporaryDirectory()
         self.addCleanup(self.tmp.cleanup)
 
-    def run_map(self, *args):
-        env = dict(os.environ, CLAUDE_PROJECT_DIR=self.tmp.name)
+    def run_map(self, *args, settings=SAVED):
+        env = {k: v for k, v in os.environ.items() if not k.startswith("CLAUDE_PLUGIN_OPTION_")}
+        env.update(settings, CLAUDE_PROJECT_DIR=self.tmp.name)
         return subprocess.run([sys.executable, SCRIPT, *args], capture_output=True, text=True, env=env)
+
+    def output(self, **kwargs):
+        done = self.run_map(**kwargs)
+        self.assertEqual(done.returncode, 0)
+        return json.loads(done.stdout)
 
     def test_silent_in_repo_without_lifecycle_documents(self):
         os.makedirs(os.path.join(self.tmp.name, "docs"))
@@ -39,13 +47,34 @@ class SessionMap(unittest.TestCase):
         with open(MAP) as f:
             expected = f.read()
         self.put("docs/specs/billing/invoice.spec.md", "---\nstatus: Draft\n---\n# Invoice\n")
-        done = self.run_map()
-        self.assertEqual((done.returncode, done.stdout), (0, expected))
+        out = self.output()
+        self.assertEqual(out["hookSpecificOutput"]["hookEventName"], "SessionStart")
+        self.assertEqual(out["hookSpecificOutput"]["additionalContext"], expected)
+        self.assertNotIn("systemMessage", out)
 
     def test_prints_map_when_brief_exists(self):
         os.makedirs(os.path.join(self.tmp.name, "docs"))
         open(os.path.join(self.tmp.name, "docs", "brief.md"), "w").close()
-        self.assertIn("/sdlc:", self.run_map().stdout)
+        self.assertIn("/sdlc:", self.output()["hookSpecificOutput"]["additionalContext"])
+
+    def test_unsaved_setting_is_reported_even_without_lifecycle_documents(self):
+        out = self.output(settings={})
+        self.assertIn("Review rounds (suggested: 3)", out["systemMessage"])
+        self.assertIn("/plugin configure sdlc@sdlc", out["systemMessage"])
+        context = out["hookSpecificOutput"]["additionalContext"]
+        self.assertIn(out["systemMessage"], context)
+        self.assertNotIn("/sdlc:spec", context)
+
+    def test_unsaved_setting_is_reported_with_the_map(self):
+        self.put("docs/brief.md")
+        context = self.output(settings={})["hookSpecificOutput"]["additionalContext"]
+        with open(MAP) as f:
+            self.assertTrue(context.startswith(f.read()))
+        self.assertIn("Review rounds", context)
+
+    def test_empty_value_counts_as_unsaved(self):
+        out = self.output(settings={"CLAUDE_PLUGIN_OPTION_REVIEW_ROUNDS": ""})
+        self.assertIn("Review rounds", out["systemMessage"])
 
     def test_help(self):
         done = self.run_map("--help")

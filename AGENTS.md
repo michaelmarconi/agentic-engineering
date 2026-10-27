@@ -30,7 +30,7 @@ a rule names a number, it is a hard limit; everything else is judgement.
      definition names. The skill passes it paths, never pasted content.
    - The reviewer reports pass or fail for each check, with evidence for each failure, plus
      findings beyond the rubric. The skill fixes what it can and asks again, for up to n reviews
-     in all, counting the first (the plugin setting that `/build` also uses); after that it
+     in all, counting the first (the `review_rounds` setting, which `/build` also uses); after that it
      stops and asks the person, showing the report. Only a decision the skill cannot make goes
      to the person, with optional suggestions passed on but never holding the document back.
    - The person gets the document and the final report.
@@ -76,6 +76,13 @@ a rule names a number, it is a hard limit; everything else is judgement.
     person's session uses. Reviewer agents set `model:` to a model alias (such as `sonnet`), so
     the judgement that gates a document stays consistent. The README names the models the evals
     pass on; when a model changes or one is added, rerun the evals on it before claiming it.
+13. **Settings are saved, never guessed.** A value a person may want to change, such as how many
+    reviews to run, is a `userConfig` setting in `.claude-plugin/plugin.json`, and its default
+    lives only there, as `default` and as "Suggested: <value>." at the end of its description,
+    since the configure screen shows the description but not the default. Claude Code passes
+    only saved values to skills and hooks, so no skill, agent or document states a default.
+    The session-start hook reports any unsaved setting, and a skill that finds no value stops
+    and asks the person to save it. The README's Install section lists every setting.
 
 ## Repository layout
 
@@ -115,9 +122,12 @@ Nothing else belongs at the root without a reason recorded in the change that ad
   you changed them: `python3 -m unittest discover -s scripts`. All must pass.
 - Run the evals for each skill you changed, once per supported model, with Sonnet as judge:
   `claude plugin eval . --case '<name>-*' --model <model> --judge-model sonnet`, adding
-  `--scaffold` for cases with input files. The supported models are those named in README.md;
-  a change merges only if its cases pass on every one. Evals are billed model runs: run the ones
-  you touched, never the whole suite unprompted.
+  `--scaffold` for cases with input files. Evals load the plugin as `sdlc@inline`, so save each
+  setting's suggested value for it once in `~/.claude/settings.json`, under
+  `"pluginConfigs": {"sdlc@inline": {"options": {"review_rounds": 3}}}`.
+  The supported models are those named in README.md; a change merges only if its cases pass
+  on every one. Evals are billed model runs: run the ones you touched, never the whole suite
+  unprompted.
 - Bump `version` in `.claude-plugin/plugin.json` (semver) in any change that alters what users
   receive. Installed copies only update when the version string changes.
 - Add a skill to the table in `README.md`, and give it a page under `docs/skills/`, in the same

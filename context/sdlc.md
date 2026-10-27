@@ -27,6 +27,6 @@ Principles:
   ADR it touches is Accepted.
 - Every document a skill writes is reviewed by that skill's reviewer agent before a person sees
   it. Findings are fixed and the work reviewed again, for up to n reviews in all counting the
-  first (a plugin setting, 3 by default); only decisions go to the person, and optional
+  first (the plugin's Review rounds setting); only decisions go to the person, and optional
   suggestions never hold a document back.
 - Drift is a finding, not a status: report it with a suggested way back.

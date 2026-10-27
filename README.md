@@ -99,8 +99,8 @@ A build agent carries out the plan, then four reviewer agents check the result i
   added? Once every requirement in the spec is, the spec is marked Built.
 - **ADRs:** is every accepted decision followed, not just the ones the plan touches?
 
-Findings go back to the build agent for up to n reviews in all (a plugin setting, 3 by default). A clean
-review merges the work into the main branch; if it won't converge, we stop and ask for help.
+Findings go back to the build agent for up to n reviews in all (the Review rounds setting,
+see [Install](#install)). A clean review merges the work into the main branch; if it won't converge, we stop and ask for help.
 
 ## Audit
 
@@ -138,6 +138,17 @@ claude plugin install sdlc@sdlc
 
 Add `--scope project` to the `install` command to share the plugin with everyone working in a
 repository.
+
+Then save the plugin's settings. Claude Code does not fill them in for you, so until they are
+saved, skills that need them stop and ask, and every session starts with a reminder. In Claude
+Code, run `/plugin configure sdlc@sdlc`, type a value next to each setting and choose **Save
+configuration**; from a terminal, add `--config <key>=<value>` to the `install` command. Each
+setting's description says what it does and suggests a value. Settings are saved in your own
+Claude Code settings, not in the repository, so you save them once per computer.
+
+| Setting | Key | What it does |
+| --- | --- | --- |
+| Review rounds | `review_rounds` | How many reviews a skill may run on one document, counting the first, before it stops and asks you |
 
 ## Models
 
