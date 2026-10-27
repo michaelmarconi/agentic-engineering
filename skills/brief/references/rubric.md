@@ -28,7 +28,8 @@ checking, and quotes the brief as evidence for every failure.
 8. **Nothing guessed.** The brief states only what the person said or showed. It carries no
    guesses, hedges ("probably", "we assume", "likely") or inline markers such as [A] or [?]: an
    assumption is an open question the person can confirm, such as "Is it right that support
-   staff are the main users?". Open questions is empty or "None." only when nothing is unknown.
+   staff are the main users?". Each open question asks one thing. Open questions is empty or
+   "None." only when nothing is unknown.
 9. **Links back it.** Each fact drawn from a document links to that document where it is stated,
    and every statement that links to a document in the repository says no more than that
    document does. A link the reviewer cannot open is reported, not failed.
