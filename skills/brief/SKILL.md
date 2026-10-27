@@ -38,11 +38,12 @@ ADR (architecture decision record), and one they have not becomes an open questi
 
 Then ask about what the draft or the review leaves open: say how many questions there are, ask
 only the first, as one question rather than two joined together, and do not mention any of the
-others in that reply, not even in passing; they are in the brief. Ask the next once it is
+others in that reply, not even in passing or in a report of what the brief lacks or what you or
+the review changed: naming a gap is asking about it. They are in the brief. Ask the next once it is
 settled, playing back what you have understood. Settle each answer before moving on: take the
 part they answered and ask again about the rest, because silence is not agreement. If the person
-has said not to ask now, or would rather not answer, give the count, ask nothing and leave the
-questions in Open questions. An open question goes only when their answer is written into the
+has said not to ask now, or would rather not answer, give the count and ask nothing, not even the
+first; the questions wait in Open questions. An open question goes only when their answer is written into the
 brief.
 
 ## Review
@@ -58,7 +59,8 @@ tell the person the brief is unreviewed, and ask them to run `/plugin configure 
 a number next to Review rounds, choose Save configuration, run `/reload-plugins` and then ask you
 for the review. Never pick a number yourself. After any edit to the brief, run the next review,
 so the report the person gets is about the brief as it now stands; after the last review, edit no
-further. A finding under Needs a person goes to them as a question rather than a fix you invent.
+further. A finding under Needs a person goes into Open questions, and to them as a question, rather
+than a fix you invent.
 If the last review still fails, stop and show the person the report. The count starts again when
 the person replies.
 
