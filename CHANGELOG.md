@@ -52,9 +52,8 @@ minor version may need such a change, and its entry says so.
   before reading anything else. It gives the number of open questions and asks them one at a
   time, and it explains every acronym the first time it appears, title included.
 - A brief reviewer checks the draft against the brief rubric before you see it. Where the
-  brief links a document in your repo, the reviewer also checks the brief against it. Like
-  `/spec`, `/brief` stops after the number of reviews set in Review rounds and leaves any
-  remaining decisions to you.
+  brief links a document in your repo, the reviewer also checks the brief against it. Any
+  remaining decisions are left to you.
 
 ## [0.3.0] - 2026-10-27
 
@@ -86,12 +85,8 @@ minor version may need such a change, and its entry says so.
 - Spec statuses: Draft, Ready to build and Built. A spec becomes Ready to build only once you
   have seen its final text, it has no open questions and its review has passed. Built is
   reserved for `/build`, which isn't released yet.
-- The Review rounds setting: how many reviews a skill runs on one piece of work, counting the
-  first, before it stops to ask you. Suggested: 3.
 - A session-start hook that gives Claude a short map of the lifecycle, only in repos that use
-  it, and reminds you in every session while a setting is unsaved. Claude Code doesn't apply a
-  setting's default for you, so a skill that finds no saved value stops before reviewing
-  rather than guessing.
+  it.
 - A hook that refuses spec edits making a status change the lifecycle doesn't allow, such as
   skipping Draft or setting Ready to build while open questions remain.
 

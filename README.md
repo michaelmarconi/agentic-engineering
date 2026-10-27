@@ -33,12 +33,34 @@ The plugin gives Claude three kinds of help to work with these documents:
   building a plan or reviewing a document.
 - **Hooks:** small scripts Claude Code runs automatically at set moments. This plugin uses them
   to give Claude a summary of the lifecycle when a session starts in a repository that uses it,
-  to remind you at the start of every session if a plugin setting is not saved yet (see
-  [Install](#install)), and to refuse spec and ADR edits Claude makes that the lifecycle does not allow, such as an illegal
+  and to refuse spec and ADR edits Claude makes that the lifecycle does not allow, such as an illegal
   status change. They need Python 3.
 
-Every document a skill writes is checked by a reviewer agent before you see it. Apart from the
-documents, the plugin adds nothing to your repository, unless you choose to install it for
+Every document a skill writes is reviewed before you see it, in the same fixed sequence:
+
+```mermaid
+flowchart LR
+    Write --> Review
+    Review -->|findings| Fix
+    Review -->|none| You
+    Fix --> Confirm
+    Confirm -->|passes| You
+    Confirm -->|fails| Stop[Stop and show you]
+```
+
+- **Review:** a reviewer agent checks the whole document against the skill's rubric, a short
+  list of pass-or-fail checks, and reports each failure with the check it breaks.
+- **Fix:** the skill fixes what it can, once. A choice only you can make becomes an open
+  question for you, never a guess.
+- **Confirm:** a reviewer agent checks only that each fix landed and that no edit broke
+  anything. Anything else it notices reaches you as a suggestion.
+- If the confirm check fails, the skill stops and shows you the report rather than trying again.
+
+There are no repeated rounds of review and fix. We measured this: one review finds nearly every
+problem, and each further round of fixes brings new ones
+([results](experiments/review-seeding/RESULTS.md)).
+
+Apart from the documents, the plugin adds nothing to your repository, unless you choose to install it for
 everyone working there (see [Install](#install)).
 
 The work runs in two stages. Planning decides what to build and how, and ends with a plan.
@@ -88,9 +110,11 @@ Scopes a piece of work against the specs and ADRs it delivers.
 flowchart LR
     Plan --> Build
     Build --> Review["<b>Review</b><br/>code, security,<br/>spec, ADRs"]
-    Review -->|findings, up to n rounds| Build
+    Review -->|findings| Fix
     Review -->|clean| Merge
-    Review -->|won't converge| Help[Ask for help]
+    Fix --> Confirm
+    Confirm -->|passes| Merge
+    Confirm -->|fails| Help[Ask for help]
 ```
 
 ### [`/build`](docs/skills/build.md)
@@ -103,8 +127,9 @@ A build agent carries out the plan, then four reviewer agents check the result i
   added? Once every requirement in the spec is, the spec is marked Built.
 - **ADRs:** is every accepted decision followed, not just the ones the plan touches?
 
-Findings go back to the build agent for up to n reviews in all (the Review rounds setting,
-see [Install](#install)). A clean review merges the work into the main branch; if it won't converge, we stop and ask for help.
+Findings follow the same sequence as for documents: the build agent fixes them once, then a
+confirm check asks whether each fix landed and nothing broke. A clean review or a passing confirm
+merges the work into the main branch; a failing confirm stops and asks for help.
 
 ## Audit
 
@@ -152,21 +177,6 @@ claude plugin install sdlc@sdlc
 
 Add `--scope project` to the `install` command to share the plugin with everyone working in a
 repository.
-
-Then save the plugin's settings. Claude Code does not fill them in for you, so until they are
-saved, skills that need them stop and ask, and every session starts with a reminder. The install
-shows a configure screen whose boxes start empty: pressing Enter there saves nothing, and Claude
-Code still reports the plugin as active. In Claude Code, run `/plugin configure sdlc@sdlc`, type
-a value next to each setting, choose **Save configuration**, then run `/reload-plugins`; from a terminal, add `--config <key>=<value>` to the `install` command. Each
-setting's description says what it does and suggests a value. Settings are saved in your own
-Claude Code settings, not in the repository, so you save them once per computer. If you added
-the marketplace under another name, use `sdlc@<that name>` in place of `sdlc@sdlc`. Claude Code's
-`/config` may list a setting with its suggested value before you have saved it; skills receive
-only a value you saved.
-
-| Setting | Key | What it does |
-| --- | --- | --- |
-| Review rounds | `review_rounds` | How many reviews a skill or `/build` may run on one piece of work, counting the first, before it stops and asks you |
 
 ## Models
 

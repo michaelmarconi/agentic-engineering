@@ -63,10 +63,8 @@ pass-or-fail checks: the sections are all there, it speaks for the whole product
 be measured, nothing is guessed or chooses how to build it, and every statement that links to a
 document in the repository says no more than that document does. The reviewer sees only the
 brief and the documents it links to, not your conversation, so it judges the page as a newcomer
-would. `/brief` fixes what the reviewer finds and has it checked again, up to the number of
-reviews in the Review rounds setting (see [Install](../../README.md#install)); then you get the
-brief with the final report. If that setting has not been saved, `/brief` stops before the first
-review and asks you to save it.
+would. `/brief` fixes what the reviewer finds, once, and has the fixes confirmed (see
+[How it works](../../README.md#how-it-works)); then you get the brief with the reports.
 
 The reviewer cannot tell whether the brief matches what you said, only what it links to, so read
 the draft before you rely on it.

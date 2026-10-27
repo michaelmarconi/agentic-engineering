@@ -32,11 +32,15 @@ a rule names a number, it is a hard limit; everything else is judgement.
      definition names. The skill passes it paths, never pasted content, unless the document
      must not be written to the working tree, as with `/issue`'s draft; then it passes the
      document whole and word for word.
-   - The reviewer reports pass or fail for each check, with evidence for each failure, plus
-     findings beyond the rubric. The skill fixes what it can and asks again, for up to n reviews
-     in all, counting the first (the `review_rounds` setting, which `/build` also uses); after that it
-     stops and asks the person, showing the report. Only a decision the skill cannot make goes
-     to the person, with optional suggestions passed on but never holding the document back.
+   - The reviewer reports pass or fail for each check, quoting the check's text with the
+     evidence for each failure, plus findings beyond the rubric. The skill fixes what it can,
+     once. A confirm check then answers only whether each fix landed and whether any edit broke
+     something; anything else it notices is a suggestion. If the confirm fails, the skill stops
+     and shows the person the report. There is never a second full review: one review finds
+     nearly everything, and each further round of fixes adds new problems
+     (`experiments/review-seeding/RESULTS.md`). `/build` follows the same sequence. Only a
+     decision the skill cannot make goes to the person, with optional suggestions passed on but
+     never holding the document back.
    - The person gets the document and the final report.
 5. **Evaluated.** Every skill ships with evals under the plugin's `evals/`, in the case-folder
    layout that skill-creator writes and `claude plugin eval` runs. Write the rubric first, then
@@ -95,14 +99,6 @@ a rule names a number, it is a hard limit; everything else is judgement.
     person's session uses. Reviewer agents set `model:` to a model alias (such as `sonnet`), so
     the judgement that gates a document stays consistent. The README names the models the evals
     pass on; when a model changes or one is added, rerun the evals on it before claiming it.
-13. **Settings are saved, never guessed.** A value a person may want to change, such as how many
-    reviews to run, is a `userConfig` setting in `.claude-plugin/plugin.json`, and its default
-    lives only there, as `default` and as "Suggested: <value>." at the end of its description,
-    since the configure screen shows the description but not the default. Claude Code passes
-    only saved values to skills and hooks, so no skill, agent or document states a default.
-    The session-start hook reports any unsaved setting, and a skill that finds no value stops
-    and asks the person to save it. The README's Install section lists every setting.
-
 ## Repository layout
 
 ```

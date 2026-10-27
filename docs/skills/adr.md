@@ -100,10 +100,9 @@ Before you see an ADR, `/adr` has its reviewer agent check it against a short li
 pass-or-fail checks: one decision, a title that states it, real options with reasons, good and
 bad consequences, a Confirmation that can really be carried out, references only to other ADRs, and
 no clash with another ADR. The reviewer sees only the ADRs, not your conversation, so it judges
-the page as a newcomer would. `/adr` fixes what the reviewer finds and has it checked again, up
-to the number of reviews in the Review rounds setting (see [Install](../../README.md#install));
-then you get the ADR with the final report. If that setting has not been saved, `/adr` stops
-before the first review and asks you to save it.
+the page as a newcomer would. `/adr` fixes what the reviewer finds, once, and
+has the fixes confirmed (see [How it works](../../README.md#how-it-works)); then you get the ADR
+with the reports.
 
 [^nygard]: Michael Nygard, [Documenting Architecture Decisions](https://cognitect.com/blog/2011/11/15/documenting-architecture-decisions),
     2011. We take one decision per record, and keeping a reversed decision marked as superseded.

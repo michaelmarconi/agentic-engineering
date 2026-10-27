@@ -30,7 +30,7 @@ Principles:
 - A plan is Ready to build only when each spec it touches is Ready to build or Built, and each
   ADR it touches is Accepted.
 - Every document a skill writes is reviewed by that skill's reviewer agent before a person sees
-  it. Findings are fixed and the work reviewed again, for up to n reviews in all counting the
-  first (the plugin's Review rounds setting); only decisions go to the person, and optional
-  suggestions never hold a document back.
+  it, in a fixed sequence: one review, one fix, one confirm check that each fix landed and no edit
+  broke anything. A failed confirm stops and goes to the person; never review again. Only
+  decisions go to the person, and optional suggestions never hold a document back.
 - Drift is a finding, not a status: report it with a suggested way back.
