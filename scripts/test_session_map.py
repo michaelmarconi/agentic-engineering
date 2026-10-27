@@ -76,6 +76,20 @@ class SessionMap(unittest.TestCase):
         out = self.output(settings={"CLAUDE_PLUGIN_OPTION_REVIEW_ROUNDS": ""})
         self.assertIn("Review rounds", out["systemMessage"])
 
+    def test_malformed_manifest_reports_nothing(self):
+        sys.path.insert(0, HERE)
+        import session_map
+        manifest = os.path.join(self.tmp.name, "plugin.json")
+        self.addCleanup(setattr, session_map, "MANIFEST", session_map.MANIFEST)
+        session_map.MANIFEST = manifest
+        for text in ["[]", '"x"', "{}", '{"userConfig": null}', '{"userConfig": []}',
+                     '{"userConfig": {"review_rounds": 3}}', "not json"]:
+            with open(manifest, "w") as f:
+                f.write(text)
+            self.assertEqual(session_map.unsaved_settings({}), [], text)
+        os.remove(manifest)
+        self.assertEqual(session_map.unsaved_settings({}), [])
+
     def test_help(self):
         done = self.run_map("--help")
         self.assertEqual(done.returncode, 0)

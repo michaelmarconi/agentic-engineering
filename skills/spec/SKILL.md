@@ -86,9 +86,10 @@ findings, decisions that need the person, and suggestions.
 
 Fix every finding you can and run the reviewer again, for up to ${user_config.review_rounds}
 reviews in all, counting the first. If no number appears in that sentence, the plugin's Review
-rounds setting has not been saved: before the first review, stop and ask the person to run
-`/plugin configure sdlc@sdlc`, type a number next to Review rounds and choose Save
-configuration, then ask again. Never pick a number yourself. After any edit to the spec's
+rounds setting has not been saved: write the spec as usual, then stop before the first review,
+tell the person the spec is unreviewed, and ask them to run `/plugin configure sdlc@sdlc`, type a
+number next to Review rounds, choose Save configuration and then ask you for the review. Never
+pick a number yourself. After any edit to the spec's
 content, run the next review, even if a failure that needs the person remains, so the report
 the person gets is about the spec as it now stands; after the last review, edit no further. A
 decision under Needs a person goes to them as a question rather than a fix you invent. If the

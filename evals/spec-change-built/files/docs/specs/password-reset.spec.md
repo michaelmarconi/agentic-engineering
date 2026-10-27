@@ -40,7 +40,8 @@ outgoing messages.
 
 ### Requirement: Reset links expire
 
-IF a reset link is more than 24 hours old, THEN the system SHALL reject it.
+WHEN a person opens a reset link, the system SHALL let them set a new password if the link is
+at most 24 hours old, and reject the link otherwise.
 
 #### Scenario: Link used just before expiry
 - GIVEN a reset link issued 23 hours 59 minutes ago
@@ -50,7 +51,7 @@ IF a reset link is more than 24 hours old, THEN the system SHALL reject it.
 #### Scenario: Link used just after expiry
 - GIVEN a reset link issued 24 hours 1 minute ago
 - WHEN the person opens it
-- THEN the system rejects it and offers to send a new one
+- THEN the system rejects the link
 
 Verified by: unit tests for both scenarios.
 

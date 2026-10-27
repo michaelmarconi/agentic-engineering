@@ -125,10 +125,11 @@ Nothing else belongs at the root without a reason recorded in the change that ad
   `python3 -m unittest discover -s skills/<name>/scripts`, and for the plugin's own scripts if
   you changed them: `python3 -m unittest discover -s scripts`. All must pass.
 - Run the evals for each skill you changed, once per supported model, with Sonnet as judge:
-  `claude plugin eval . --case '<name>-*' --model <model> --judge-model sonnet`, adding
-  `--scaffold` for cases with input files. Every case needs a `place-files.sh` scaffold that runs
-  `evals/save_settings.py`, which saves each setting's default for the run as a person would;
-  without it, skills find no settings and stop.
+  `claude plugin eval . --case '<name>-*' --model <model> --judge-model sonnet --scaffold`.
+  Each case's `place-files.sh` scaffold runs `evals/save_settings.py`, which saves each
+  setting's default for the run as a person would; without it, skills find no settings and
+  stop. Only a case that tests that stop leaves it out, and a case whose graders depend on a
+  setting's value passes that value to the script.
   The supported models are those named in README.md; a change merges only if its cases pass
   on every one. Evals are billed model runs: run the ones you touched, never the whole suite
   unprompted.

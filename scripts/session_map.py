@@ -11,7 +11,8 @@ applies the declared default, so a setting nobody saved leaves skills without a 
 unsaved setting is reported in every session, in every project, until it is saved, both to the
 person and to Claude.
 
-With nothing to report it prints nothing, so installing the plugin costs other projects nothing.
+With nothing to report it prints nothing, so once its settings are saved, installing the plugin
+costs other projects nothing.
 """
 
 import argparse
@@ -48,10 +49,13 @@ def unsaved_settings(environ):
             manifest = json.load(f)
     except (OSError, ValueError):
         return []
+    options = manifest.get("userConfig") if isinstance(manifest, dict) else None
+    if not isinstance(options, dict):
+        return []
     return [
         (key, option.get("title", key), option.get("default"))
-        for key, option in manifest.get("userConfig", {}).items()
-        if not environ.get("CLAUDE_PLUGIN_OPTION_" + key.upper())
+        for key, option in options.items()
+        if isinstance(option, dict) and not environ.get("CLAUDE_PLUGIN_OPTION_" + key.upper())
     ]
 
 
@@ -60,8 +64,8 @@ def notice(unsaved):
         f"{title} (suggested: {default})" if default is not None else title
         for _, title, default in unsaved
     )
-    return (f"The sdlc plugin has settings that are not saved yet: {settings}. Skills that need "
-            "them will stop and ask. To save them, run /plugin configure sdlc@sdlc, type a value "
+    return (f"The sdlc plugin has settings that are not saved yet: {settings}. A skill that needs "
+            "one does its work up to the step that uses it, then stops and asks you to save it. To save them, run /plugin configure sdlc@sdlc, type a value "
             "next to each one, then choose Save configuration; the boxes start empty, so "
             "leaving one empty saves nothing.")
 
@@ -91,8 +95,7 @@ def main(argv=None):
     unsaved = unsaved_settings(os.environ)
     if unsaved:
         output["systemMessage"] = notice(unsaved)
-        context.append(output["systemMessage"] + " If the person asks for one of these skills "
-                       "before saving them, tell them so first.")
+        context.append(output["systemMessage"])
     if context:
         output["hookSpecificOutput"] = {
             "hookEventName": "SessionStart",

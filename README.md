@@ -31,7 +31,8 @@ The plugin gives Claude three kinds of help to work with these documents:
   building a plan or reviewing a document.
 - **Hooks:** small scripts Claude Code runs automatically at set moments. This plugin uses them
   to give Claude a summary of the lifecycle when a session starts in a repository that uses it,
-  and to refuse spec edits Claude makes that the lifecycle does not allow, such as an illegal
+  to remind you at the start of every session if a plugin setting is not saved yet (see
+  [Install](#install)), and to refuse spec edits Claude makes that the lifecycle does not allow, such as an illegal
   status change. They need Python 3.
 
 Every document a skill writes is checked by a reviewer agent before you see it. Apart from the
@@ -144,11 +145,12 @@ saved, skills that need them stop and ask, and every session starts with a remin
 Code, run `/plugin configure sdlc@sdlc`, type a value next to each setting and choose **Save
 configuration**; from a terminal, add `--config <key>=<value>` to the `install` command. Each
 setting's description says what it does and suggests a value. Settings are saved in your own
-Claude Code settings, not in the repository, so you save them once per computer.
+Claude Code settings, not in the repository, so you save them once per computer. If you added
+the marketplace under another name, use `sdlc@<that name>` in place of `sdlc@sdlc`.
 
 | Setting | Key | What it does |
 | --- | --- | --- |
-| Review rounds | `review_rounds` | How many reviews a skill may run on one document, counting the first, before it stops and asks you |
+| Review rounds | `review_rounds` | How many reviews a skill or `/build` may run on one piece of work, counting the first, before it stops and asks you |
 
 ## Models
 
