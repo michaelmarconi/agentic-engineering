@@ -30,7 +30,8 @@ need, as that is part of writing a spec. Where the conversation changed its mind
 word wins. Only when there is nothing to draw on, ask about the idea first.
 
 Then ask about what the draft or the review leaves open: say how many questions there are, ask
-only the first, and do not mention any of the others anywhere in that reply, not even in passing
+only the first (a conflict with another spec, or a decision the review says needs the person,
+comes first), and do not mention any of the others anywhere in that reply, not even in passing
 or in a report of what you or the review changed (they are in the spec); ask the next once it is
 settled, playing back what you have understood. If the person has said not to ask now, give the
 count and leave the questions in Open questions. Settle each answer before moving on: if the

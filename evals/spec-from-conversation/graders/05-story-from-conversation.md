@@ -1,6 +1,7 @@
 ---
-type: llm
-focus: { source: file, path: docs/specs/invite-expiry.spec.md }
+type: regex
+target: { source: file, path: docs/specs/invite-expiry.spec.md }
+pattern: "## Problem\\s(?:(?!\\n## )[\\s\\S])*\\bSam\\b(?:(?!\\n## )[\\s\\S])*\\bleft\\b"
 weight: 1
 ---
-The Problem section says that Sam, who had left the company, joined the workspace with an old invite.
+The Problem tells Sam's story from the conversation: Sam had left the company.
