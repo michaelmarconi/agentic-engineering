@@ -1,6 +1,6 @@
 # Software Development Lifecycle (SDLC)
 
-*In development: `/brief`, `/spec` and `/issue` are built; the other skills are still being designed.*
+*In development: `/brief`, `/spec`, `/adr` and `/issue` are built; the other skills are still being designed.*
 
 A software development lifecycle is the path work takes from an idea for a product to working
 code. This repository defines one, and packages it as a plugin for
@@ -34,7 +34,7 @@ The plugin gives Claude three kinds of help to work with these documents:
 - **Hooks:** small scripts Claude Code runs automatically at set moments. This plugin uses them
   to give Claude a summary of the lifecycle when a session starts in a repository that uses it,
   to remind you at the start of every session if a plugin setting is not saved yet (see
-  [Install](#install)), and to refuse spec edits Claude makes that the lifecycle does not allow, such as an illegal
+  [Install](#install)), and to refuse spec and ADR edits Claude makes that the lifecycle does not allow, such as an illegal
   status change. They need Python 3.
 
 Every document a skill writes is checked by a reviewer agent before you see it. Apart from the
@@ -76,7 +76,7 @@ work.
 ### [`/adr`](docs/skills/adr.md)
 
 Records a technical decision with you, whether it came from a spike or straight from shaping a
-spec.
+spec: one decision per ADR, with the options it beat. Only you can accept or reject it.
 
 ### [`/plan`](docs/skills/plan.md)
 

@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: adr-supersede
+expected_outcome: |
+  The person accepts the replacement ADR. It becomes Accepted, and in the same step the old ADR becomes Superseded with superseded-by naming 0002, its text otherwise untouched.
+context:
+  scaffold_script: place-files.sh

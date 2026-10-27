@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
-"""Refuse spec status changes the lifecycle does not allow.
+"""Refuse spec and ADR status changes the lifecycle does not allow.
 
 Claude Code runs this as a PreToolUse hook on Write, Edit and MultiEdit. It reads the hook's
-JSON from stdin and, for a *.spec.md under the project's docs/specs/ (the project being
-$CLAUDE_PROJECT_DIR, or the current directory if unset), works out what the file
-would contain after the edit and compares it with what is on disk now. It refuses:
+JSON from stdin and, for a *.spec.md under the project's docs/specs/ or a *.md directly under
+its docs/adrs/ (the project being $CLAUDE_PROJECT_DIR, or the current directory if unset),
+works out what the file would contain after the edit and compares it with what is on disk now.
+For a spec it refuses:
 
 - a spec that had a lifecycle status (Draft, Ready to build or Built) losing it;
 - a spec that had none being given any status but Draft, so new specs start as Draft;
@@ -13,6 +14,17 @@ would contain after the edit and compares it with what is on disk now. It refuse
 - Ready to build while the Open questions section is not empty or "None.", or in the same edit
   as any other change;
 - a change to a Ready to build or Built spec that does not return it to Draft.
+
+For an ADR (architecture decision record) it refuses:
+
+- an ADR that had a status (Draft, Accepted, Rejected or Superseded) losing it;
+- a new ADR with any status but Draft;
+- Accepted or Rejected, except from Draft and as an edit that changes nothing else;
+- Superseded, except from Accepted with a `superseded-by:` line added and nothing else changed;
+- any other change to an Accepted, Rejected or Superseded ADR, since a decided ADR is never
+  edited, only superseded by a new one.
+
+Whether a person really accepted an ADR is beyond a hook; the skill asks them.
 
 A file that has no lifecycle status before or after the edit is left alone, so a project that
 keeps other files under docs/specs/ is not affected. Edits made any other way, by hand or through
@@ -26,16 +38,28 @@ import re
 import sys
 
 STATUSES = ("Draft", "Ready to build", "Built")
+ADR_STATUSES = ("Draft", "Accepted", "Rejected", "Superseded")
 EMPTY_ANSWERS = {"", "none", "none."}
 FOOTNOTE = re.compile(r"^\[[^\]]+\]:")
 
 
-def is_spec(path):
-    """True for a *.spec.md under docs/specs/ in the project ($CLAUDE_PROJECT_DIR or cwd)."""
+def project_parts(path):
+    """The path's parts relative to the project ($CLAUDE_PROJECT_DIR or cwd)."""
     project = os.environ.get("CLAUDE_PROJECT_DIR") or os.getcwd()
     relative = os.path.relpath(os.path.abspath(path), os.path.abspath(project))
-    parts = os.path.normpath(relative).split(os.sep)
+    return os.path.normpath(relative).split(os.sep)
+
+
+def is_spec(path):
+    """True for a *.spec.md under docs/specs/ in the project."""
+    parts = project_parts(path)
     return parts[:2] == ["docs", "specs"] and parts[-1].endswith(".spec.md")
+
+
+def is_adr(path):
+    """True for a *.md directly under docs/adrs/ in the project."""
+    parts = project_parts(path)
+    return len(parts) == 3 and parts[:2] == ["docs", "adrs"] and parts[-1].endswith(".md")
 
 
 def frontmatter(text):
@@ -56,10 +80,12 @@ def status_of(text):
     return None
 
 
-def without_status(text):
+def without_status(text, also=()):
+    """The text's lines without its frontmatter status line, nor any line starting with `also`."""
     lines = text.lstrip("\ufeff").splitlines()
     end = len(frontmatter(text) or []) + 1
-    return [line for i, line in enumerate(lines) if i > end or not line.startswith("status:")]
+    keys = ("status:",) + tuple(also)
+    return [line for i, line in enumerate(lines) if i > end or not line.startswith(keys)]
 
 
 def has_open_questions(text):
@@ -104,7 +130,13 @@ def check(payload):
     """Return the reason to refuse the tool call, or None to allow it."""
     tool_input = payload.get("tool_input") or {}
     path = tool_input.get("file_path", "")
-    if not path or not is_spec(path):
+    if not path:
+        return None
+    if is_spec(path):
+        kind, statuses, rules = "spec", STATUSES, spec_rules
+    elif is_adr(path):
+        kind, statuses, rules = "ADR", ADR_STATUSES, adr_rules
+    else:
         return None
     before = None
     if os.path.exists(path):
@@ -112,18 +144,21 @@ def check(payload):
             with open(path, encoding="utf-8") as f:
                 before = f.read()
         except (OSError, UnicodeDecodeError) as error:
-            return f"{os.path.basename(path)}: could not read the spec to check its status ({error})."
+            return f"{os.path.basename(path)}: could not read the {kind} to check its status ({error})."
     old = status_of(before) if before is not None else None
     name = os.path.basename(path)
     after = after_edit(payload.get("tool_name"), tool_input, before)
     if after is None:
-        if old in STATUSES:
+        if old in statuses:
             return (
-                f"{name}: could not match this edit against the spec exactly, so its status rules "
+                f"{name}: could not match this edit against the {kind} exactly, so its status rules "
                 "cannot be checked. Read the file again and copy old_string from it exactly."
             )
         return None
+    return rules(name, before, after, old)
 
+
+def spec_rules(name, before, after, old):
     new = status_of(after)
     if old not in STATUSES and new not in STATUSES:
         return None
@@ -165,6 +200,59 @@ def check(payload):
             "with the person, or leave the spec as Draft."
         )
     return None
+
+
+def adr_rules(name, before, after, old):
+    new = status_of(after)
+    if old not in ADR_STATUSES and new not in ADR_STATUSES:
+        return None
+    if sum(line.startswith("status:") for line in frontmatter(after) or []) > 1:
+        return f"{name}: the frontmatter has more than one `status:` line; keep one."
+    if new not in ADR_STATUSES:
+        found = f"'{new}'" if new else "none"
+        return (
+            f"{name}: the ADR needs `status:` frontmatter set to Draft, Accepted, Rejected or "
+            f"Superseded (found {found})."
+        )
+    if old not in ADR_STATUSES and new != "Draft":
+        return (
+            f"{name}: a new ADR must be written as Draft, not {new}. Only the person accepts or "
+            "rejects a decision, once they have seen it reviewed."
+        )
+    if old not in ADR_STATUSES:
+        return None
+    if new == old:
+        if new != "Draft" and without_status(after) != without_status(before):
+            return (
+                f"{name}: this ADR is {old}, and a decided ADR is never edited. To change the "
+                "decision, write a new Draft ADR that supersedes it."
+            )
+        return None
+    if old == "Draft" and new in ("Accepted", "Rejected"):
+        if without_status(after) != without_status(before):
+            return (
+                f"{name}: set {new} on its own, as the last edit after a passing review and the "
+                "person's sign-off; this edit also changes the ADR's content."
+            )
+        return None
+    if old == "Accepted" and new == "Superseded":
+        added = [line for line in frontmatter(after) or [] if line.startswith("superseded-by:")]
+        had = [line for line in frontmatter(before) or [] if line.startswith("superseded-by:")]
+        if len(added) != 1 or had or not added[0][len("superseded-by:"):].strip():
+            return (
+                f"{name}: setting Superseded must add one `superseded-by:` line naming the number "
+                "of the ADR that replaces it."
+            )
+        if without_status(after, also=("superseded-by:",)) != without_status(before):
+            return (
+                f"{name}: setting Superseded may only change the status and add `superseded-by:`; "
+                "the rest of a decided ADR is never edited."
+            )
+        return None
+    return (
+        f"{name}: an ADR cannot go from {old} to {new}. Draft becomes Accepted or Rejected; "
+        "Accepted becomes Superseded; nothing else changes."
+    )
 
 
 def main(argv=None):

@@ -222,6 +222,118 @@ class Transitions(Workspace):
         self.assertIsNotNone(result)
 
 
+def adr(status="Draft", extra="", body="Chosen option: Redis, because it is fast enough."):
+    return (
+        "---\n"
+        f"status: {status}\n"
+        "date: 2026-10-27\n"
+        f"{extra}"
+        "---\n\n# Store sessions in Redis\n\n## Context and Problem Statement\n\nC\n\n"
+        "## Considered Options\n\n- Redis\n- Postgres: slower\n\n"
+        f"## Decision Outcome\n\n{body}\n"
+    )
+
+
+class AdrWorkspace(Workspace):
+    def setUp(self):
+        super().setUp()
+        self.path = os.path.join(self.tmp.name, "docs", "adrs", "0001-store-sessions-in-redis.md")
+
+
+class Adr(AdrWorkspace):
+    def test_new_draft_allowed(self):
+        self.assertIsNone(self.write(adr()))
+
+    def test_new_accepted_refused(self):
+        self.assertIn("Draft", self.write(adr("Accepted")))
+
+    def test_proposed_is_not_a_status(self):
+        self.put(adr())
+        self.assertIn("Proposed", self.edit("status: Draft", "status: Proposed"))
+
+    def test_losing_status_refused(self):
+        self.put(adr())
+        self.assertIn("status", self.edit("status: Draft\n", ""))
+
+    def test_draft_edit_allowed(self):
+        self.put(adr())
+        self.assertIsNone(self.edit("fast enough", "fast and cheap enough"))
+
+    def test_draft_to_accepted_alone_allowed(self):
+        self.put(adr())
+        self.assertIsNone(self.edit("status: Draft", "status: Accepted"))
+
+    def test_draft_to_rejected_alone_allowed(self):
+        self.put(adr())
+        self.assertIsNone(self.edit("status: Draft", "status: Rejected"))
+
+    def test_accepting_with_other_changes_refused(self):
+        self.put(adr())
+        self.assertIn("on its own", self.write(adr("Accepted", body="Chosen option: Postgres.")))
+
+    def test_draft_to_superseded_refused(self):
+        self.put(adr())
+        self.assertIsNotNone(self.edit("status: Draft", "status: Superseded"))
+
+    def test_accepted_is_immutable(self):
+        self.put(adr("Accepted"))
+        self.assertIn("supersede", self.edit("fast enough", "fast and cheap enough"))
+
+    def test_rejected_is_immutable(self):
+        self.put(adr("Rejected"))
+        self.assertIsNotNone(self.edit("fast enough", "fast and cheap enough"))
+
+    def test_accepted_back_to_draft_refused(self):
+        self.put(adr("Accepted"))
+        self.assertIsNotNone(self.edit("status: Accepted", "status: Draft"))
+
+    def test_accepted_to_rejected_refused(self):
+        self.put(adr("Accepted"))
+        self.assertIsNotNone(self.edit("status: Accepted", "status: Rejected"))
+
+    def test_rejected_cannot_be_accepted(self):
+        self.put(adr("Rejected"))
+        self.assertIsNotNone(self.edit("status: Rejected", "status: Accepted"))
+
+    def test_superseding_with_link_allowed(self):
+        self.put(adr("Accepted"))
+        self.assertIsNone(self.edit("status: Accepted\n", "status: Superseded\nsuperseded-by: 0002\n"))
+
+    def test_superseding_without_link_refused(self):
+        self.put(adr("Accepted"))
+        self.assertIn("superseded-by", self.edit("status: Accepted", "status: Superseded"))
+
+    def test_superseding_with_other_changes_refused(self):
+        self.put(adr("Accepted"))
+        self.assertIsNotNone(
+            self.write(adr("Superseded", extra="superseded-by: 0002\n", body="Chosen option: Postgres."))
+        )
+
+    def test_superseded_is_final(self):
+        self.put(adr("Superseded", extra="superseded-by: 0002\n"))
+        self.assertIsNotNone(self.edit("superseded-by: 0002", "superseded-by: 0003"))
+        self.assertIsNotNone(self.edit("status: Superseded", "status: Accepted"))
+
+    def test_rewriting_accepted_unchanged_allowed(self):
+        self.put(adr("Accepted"))
+        self.assertIsNone(self.write(adr("Accepted")))
+
+    def test_new_draft_with_supersedes_allowed(self):
+        self.assertIsNone(self.write(adr(extra="supersedes: 0001\n")))
+
+    def test_file_without_status_left_alone(self):
+        readme = os.path.join(self.tmp.name, "docs", "adrs", "README.md")
+        self.assertIsNone(self.write("# Decisions\n", path=readme))
+
+    def test_spec_statuses_do_not_apply(self):
+        self.put(adr())
+        self.assertIn("Ready to build", self.edit("status: Draft", "status: Ready to build"))
+
+    def test_nested_docs_adrs_ignored(self):
+        nested = os.path.join(self.tmp.name, "evals", "case", "docs", "adrs", "0001-x.md")
+        self.assertIsNone(self.write(adr("Accepted"), path=nested))
+
+
 class Command(Workspace):
     def run_hook(self, payload):
         return subprocess.run(
