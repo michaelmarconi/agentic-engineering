@@ -1,7 +1,7 @@
 ---
 type: regex
 target: { source: file, path: docs/brief.md }
-pattern: '\]\(|docs/|\.spec\.md|decisions/|0001|postgres'
+pattern: '\]\(|docs/|\.spec\.md|adrs/|0001|postgres'
 flags: i
 match: not_contains
 weight: 1
