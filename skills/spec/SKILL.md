@@ -30,12 +30,13 @@ need, as that is part of writing a spec. Where the conversation changed its mind
 word wins. Only when there is nothing to draw on, ask about the idea first.
 
 Then ask about what the draft or the review leaves open: say how many questions there are, ask
-only the first, without listing the others (they are in the spec), and ask the next once it is
-settled, playing back what you have understood. If the person has said not to ask now, give the
-count and leave the questions in Open questions. Settle each answer before moving on: if the
-person answers part of what you asked, take that part and ask again about the rest, because
-silence is not agreement; if they ask what you think, recommend something and wait for them to
-accept it. If they would rather not answer now, leave the rest in Open questions.
+only the first, without listing or summarising the others, not even as topics (they are in the
+spec), and ask the next once it is settled, playing back what you have understood. If the person
+has said not to ask now, give the count and leave the questions in Open questions. Settle each
+answer before moving on: if the person answers part of what you asked, take that part and ask
+again about the rest, because silence is not agreement; if they ask what you think, recommend
+something and wait for them to accept it. If they would rather not answer now, leave the rest in
+Open questions.
 
 Never fill a gap with a guess, including the person and situation in the Problem: if the
 person has not told you who is stuck and how, write only what you were told, without adding a
@@ -93,9 +94,8 @@ reviews in all, counting the first. If no number appears in that sentence, the p
 rounds setting has not been saved: write the spec as usual, then stop before the first review,
 tell the person the spec is unreviewed, and ask them to run `/plugin configure sdlc@sdlc`, type a
 number next to Review rounds, choose Save configuration, run `/reload-plugins` and then ask you
-for the review. Never
-pick a number yourself. After any edit to the spec's
-content, run the next review, even if a failure that needs the person remains, so the report
+for the review. Never pick a number yourself. After any edit to the spec's content, even
+adding an open question the review raised, run the next review, even if a failure that needs the person remains, so the report
 the person gets is about the spec as it now stands; after the last review, edit no further. A
 decision under Needs a person goes to them as a question rather than a fix you invent. If the
 last review still fails, stop and show the person the report. The count starts again when the

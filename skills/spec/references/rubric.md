@@ -19,8 +19,10 @@ checking, and quotes the spec as evidence for every failure.
 6. **Scenarios add cases.** Each requirement has at least one `#### Scenario:` in
    Given/When/Then, and each scenario pins down a concrete case, such as a boundary or an
    example with real values. Where a rule has a limit, such as a time or a count, scenarios sit
-   just on each side of it, and a rule states the outcome on both sides. Example values name no
-   made-up person: use generic ones such as `user@example.com`. A scenario that only restates
+   just on each side of it, and the spec's rules state the outcome on both sides (one rule may
+   cover both, as in "SHALL accept the link if it is at most 24 hours old, and reject it
+   otherwise"). Example values name no person except people the person named: otherwise use
+   generic ones such as `user@example.com`. A scenario that only restates
    the rule fails. So does one whose outcome no rule in the spec states, such as what happens on
    an error or when a rule's condition does not hold: until the person decides that case, it is
    an open question, or a rule is widened to state it.
