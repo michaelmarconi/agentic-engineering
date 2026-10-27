@@ -88,7 +88,7 @@ steps fit together even when you run only one of them.
 Each step of the lifecycle has a skill. In the order you would use them:
 
 ```mermaid
-flowchart TD
+flowchart LR
     Brief --> Spec
     Spec -->|unknowns| Spike
     Spike -->|facts| Spec
@@ -164,7 +164,7 @@ It checks the document against the skill's rubric: a short list of pass-or-fail 
 Every review follows the same fixed sequence:
 
 ```mermaid
-flowchart TD
+flowchart LR
     Write --> Review
     Review -->|findings| Fix
     Review -->|none| You
