@@ -53,28 +53,38 @@ Verified by: test.
 
 ### Requirement: Opening a notification
 
-WHEN a person clicks a notification in the list that they have not opened before, the system
-SHALL count it as opened from then on.
+WHEN a person clicks a notification in the list, the system SHALL count it as opened.
 
 #### Scenario: First open
+- GIVEN Lena has 3 notifications she has not opened
+- WHEN she clicks one of them in the list and then loads any page
+- THEN the bell icon shows 2
+
+#### Scenario: Opening one already opened
+- GIVEN Lena has 2 notifications she has not opened
+- WHEN she clicks a notification she opened yesterday and then loads any page
+- THEN the bell icon still shows 2
+
+Verified by: test that starts with 3 unopened notifications, clicks one and checks the bell
+shows 2 after a reload, then clicks an already opened one and checks it still shows 2.
+
+### Requirement: Update the count on click
+
+WHEN a person clicks a notification in the list, the system SHALL update the number on the bell
+icon without the page being reloaded.
+
+#### Scenario: One fewer
 - GIVEN the bell icon shows 3
 - WHEN Lena clicks one of her unopened notifications in the list
 - THEN the bell icon shows 2 without the page being reloaded
-- AND it still shows 2 after the page is reloaded
 
 #### Scenario: Last unopened
 - GIVEN the bell icon shows 1
 - WHEN Lena clicks her last unopened notification in the list
 - THEN the bell icon shows no number without the page being reloaded
 
-#### Scenario: Opening one already opened
-- GIVEN the bell icon shows 2
-- WHEN Lena clicks a notification she opened yesterday
-- THEN the bell icon still shows 2
-
-Verified by: test that starts with 3 unopened notifications, clicks one (checks 2), clicks an
-already opened one (checks still 2), then clicks the other two (checks 1, then no number),
-checking the bell after each click both without reloading and after a reload.
+Verified by: test that starts with 2 unopened notifications, clicks them one at a time without
+reloading, and checks the bell shows 1 and then no number.
 
 ## Constraints
 
