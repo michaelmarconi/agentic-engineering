@@ -70,8 +70,8 @@ shows 2 after a reload, then clicks an already opened one and checks it still sh
 
 ### Requirement: Update the count on click
 
-WHEN a person clicks a notification in the list, the system SHALL update the number on the bell
-icon without the page being reloaded.
+WHEN a person clicks a notification in the list that they have not opened, the system SHALL
+update the number on the bell icon without the page being reloaded.
 
 #### Scenario: One fewer
 - GIVEN the bell icon shows 3
@@ -88,7 +88,7 @@ reloading, and checks the bell shows 1 and then no number.
 
 ## Constraints
 
-- Clicking a notification in the list shows it in place: the person stays on the same page.
+- Clicking a notification in the list keeps the person on the same page.
 
 ## Open questions
 

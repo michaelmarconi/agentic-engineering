@@ -45,11 +45,12 @@ purpose or detail of your own, say the rest is not known yet and ask in Open que
 only people the person named, anywhere in the spec; scenario values such as
 `user@example.com` need no name.
 An unknown goes into Open questions, worded so it can be answered. When the person names how
-something should be built (a library, a service, a named bucket or database, a design), keep
-the behaviour it serves and leave the choice out of every section, even when they state it as
-settled: the spec should still hold if the choice changes. If it is already decided, suggest
-recording it as an ADR (architecture decision record); if not, make it an open question. When
-an unknown can only be settled by trying something, suggest a spike: a throwaway experiment.
+something should be built (a library, a service, a named bucket or database, a design), keep the
+behaviour it serves and leave the choice out of every section, even when they state it as
+settled: the spec should still hold if the choice changes, and tell the person you left it out.
+If it is already decided, suggest recording it as an ADR (architecture decision record); if not,
+make it an open question. When an unknown can only be settled by trying something, suggest a
+spike: a throwaway experiment.
 
 Add only behaviour the person asked for or agreed to. A case they have not covered, such as who
 may not use the feature, what happens on an error, or what happens when a rule's condition does
