@@ -80,8 +80,8 @@ a rule names a number, it is a hard limit; everything else is judgement.
    red-flag lists: lessons live in evals, where they are checked, not in prose, where they
    accumulate. Issues raised with `/issue` follow the same path: turn the issue into a failing
    case (starting from its proposed eval, if it has one), fix it with skill-creator, bump the
-   version and put `Fixes #<number>` in the commit message, so GitHub closes the issue when the
-   commit reaches main. An improvement to the lifecycle itself, rather than to one skill, is
+   version as the Workflow section says and put `Fixes #<number>` in the commit message, so
+   GitHub closes the issue when the commit reaches main. An improvement to the lifecycle itself, rather than to one skill, is
    specified with `/spec` first.
 9. **Explain, don't shout.** Give the reason behind an instruction instead of stacking MUST and
    NEVER. Reserve those words for hard limits.
@@ -165,7 +165,8 @@ Nothing else belongs at the root without a reason recorded in the change that ad
   that commit, add an entry headed `## [X.Y.Z] - YYYY-MM-DD` at the top of `CHANGELOG.md`,
   written for the people who use the plugin: what they get, and for a major version what they
   must change.
-  `scripts/version_check.py` checks that the newest entry matches `plugin.json`; whether a
-  change needed a bump at all is yours to judge.
+  Run `python3 scripts/version_check.py` in that commit, whatever else the change touched: it
+  checks that the newest entry matches `plugin.json` and is newer than the entry below it;
+  whether a change needed a bump at all is yours to judge.
 - Add a skill to the table in `README.md`, and give it a page under `docs/skills/`, in the same
   change that adds it.

@@ -73,6 +73,18 @@ class VersionCheck(unittest.TestCase):
                 self.log(changelog("0.3.0").replace("Intro.\n\n", f"Intro.\n\n{bad}\n\n"))
                 self.assertFails("the newest CHANGELOG.md heading must read")
 
+    def test_newest_entry_must_be_newer_than_the_last(self):
+        for order in [("0.3.0", "0.4.0"), ("0.4.0", "0.4.0"), ("0.4.0", "0.10.0")]:
+            with self.subTest(order=order):
+                self.manifest(order[0])
+                self.log(changelog(*order))
+                self.assertFails("must be newer than the one below it")
+
+    def test_numeric_not_lexical_order(self):
+        self.manifest("0.10.0")
+        self.log(changelog("0.10.0", "0.9.0"))
+        self.assertEqual(self.check().returncode, 0)
+
     def test_unreadable_changelog_fails(self):
         self.manifest()
         with open(os.path.join(self.tmp.name, "CHANGELOG.md"), "wb") as f:
@@ -87,7 +99,7 @@ class VersionCheck(unittest.TestCase):
         self.assertFails("plugin.json is not a JSON object")
 
     def test_version_must_be_semver(self):
-        for bad in [0, 1, "1", "v0.4.0", "0.4", "latest"]:
+        for bad in [0, 1, "1", "v0.4.0", "0.4", "latest", "0.04.0", "\u0660.4.0"]:
             with self.subTest(bad=bad):
                 self.manifest(bad)
                 self.log(changelog("0.4.0"))
