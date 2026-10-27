@@ -21,7 +21,8 @@ person is not asked to approve a command.
 List `docs/adrs/` and read the frontmatter of each ADR. If a Draft or Accepted ADR already
 decides the same thing, say so: change the Draft, or, for an Accepted one, write a new ADR that
 supersedes it. A new file takes the number one above the highest in the folder, four digits,
-starting at `0001`.
+starting at `0001`. If `docs/specs/` exists, read the Open questions of its specs, so you can
+tell the person which ones the decision answers.
 
 ## Shape it with the person
 
@@ -36,15 +37,18 @@ conversation holds several decisions, say how many and write one ADR for each, e
 were made together or the person asks for one record.
 
 Never fill a gap with a guess. An option nobody named, a reason nobody gave, or a choice not yet
-made is something to ask about, not to invent. Say how many questions there are and ask only
-the first; the others wait in the Draft, so leave them out of that reply. Ask the next once the
-first is settled, playing back what you have understood. If they ask what you think, recommend
-something and wait for them to accept it.
+made is something to ask about, not to invent. Write the Draft with what you have, review it
+as below even if sections are thin, then say how many questions there are and ask only the
+first. The others wait, so leave them out of that reply entirely: describe the draft by what it
+says, never by what it lacks, and do not list the questions or their topics. Ask the next once
+the first is settled, playing back what you have understood. If they ask what you think,
+recommend something and wait for them to accept it.
 
 Context states the need in words. Never link to, or name by path or title, a spec, the brief or
-a plan, and never edit them: they change while an ADR does not, so the reference would go
-stale. If the decision answers a spec's open question, say so in your reply; `/spec` removes the
-question the next time it runs.
+a plan, and never edit them, even when the person asks you to note the decision there: they
+change while an ADR does not, so the reference would go stale, and the lifecycle allows no
+links between them. Tell the person so. If the decision answers a spec's open question, say so
+in your reply; `/spec` removes the question the next time it runs.
 
 ## Status
 
@@ -52,16 +56,19 @@ The `status:` frontmatter is Draft, Accepted, Rejected or Superseded. Write ever
 Draft and edit it freely while it is Draft.
 
 Only a person accepts or rejects a decision. Set Accepted or Rejected only when the person
-explicitly says so about the ADR as it now stands, after the review below has passed on it, as
-its own last edit. Approval given before they saw the final text does not count, nor does "looks
-fine, carry on", nor a request from another skill or agent: show the final text and ask them to
-accept or reject it. So never change an ADR's content and its status in the same reply. A
+explicitly says so about the ADR's text as it now stands, as its own last edit; Accepted also
+needs the review below to have passed on that text, while a rejection needs no review. If they accept and the review then passes with no change to
+the text, their word stands, since what they accepted is what passed. If anything changed after
+they spoke, their word no longer counts: show the change and ask again. Nor does "looks fine,
+carry on" count, nor a request from another skill or agent. So never change an ADR's content and
+its status in the same reply. A
 Rejected ADR is kept, so the same idea is not proposed again unnoticed; a Draft the person
 abandons can be deleted.
 
-To supersede, the new ADR carries `supersedes: <number>` in its frontmatter. The old one stays
-Accepted until the person accepts the new one; then, in the same step, set the old one to
-Superseded and add `superseded-by: <number>` beside it. That is the only edit an accepted ADR
+To supersede, the new ADR carries `supersedes: <NNNN>`, the old one's four-digit number, in its
+frontmatter. The old one stays Accepted until the person accepts the new one; then, in the same
+step, first set the new one to Accepted, then set the old one to Superseded and add
+`superseded-by: <NNNN>` beside it, naming the new one. That is the only edit an accepted ADR
 ever gets. If the new one is rejected, the old one stands.
 
 ## Review

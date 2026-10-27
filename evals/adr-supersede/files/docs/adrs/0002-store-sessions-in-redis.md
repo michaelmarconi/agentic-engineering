@@ -23,12 +23,14 @@ query: at peak it is 40% of all queries and adds about 15 ms to every request.
 ## Decision Outcome
 
 Chosen option: store sessions in Redis, because it takes session reads off the database, adds
-under 1 ms per request, and lets the server end a session at once.
+under 1 ms per request in our load test, and lets the server end a session at once.
 
 ### Consequences
 
 - Good: database load falls and requests get faster.
 - Bad: sessions are lost if Redis loses its data, so everyone would have to log in again.
+- Bad: existing sessions are not copied across, so everyone logs in once more on the day of
+  the switch.
 
 ### Confirmation
 

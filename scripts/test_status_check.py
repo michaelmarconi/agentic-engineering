@@ -295,12 +295,65 @@ class Adr(AdrWorkspace):
         self.put(adr("Rejected"))
         self.assertIsNotNone(self.edit("status: Rejected", "status: Accepted"))
 
+    def put_replacement(self, status="Accepted", supersedes="0001", number="0002"):
+        path = os.path.join(self.tmp.name, "docs", "adrs", f"{number}-store-sessions-elsewhere.md")
+        with open(path, "w") as f:
+            f.write(adr(status, extra=f"supersedes: {supersedes}\n"))
+
     def test_superseding_with_link_allowed(self):
         self.put(adr("Accepted"))
+        self.put_replacement()
         self.assertIsNone(self.edit("status: Accepted\n", "status: Superseded\nsuperseded-by: 0002\n"))
+
+    def test_superseding_needs_a_four_digit_number(self):
+        self.put(adr("Accepted"))
+        self.put_replacement()
+        self.assertIn("four-digit", self.edit("status: Accepted\n", "status: Superseded\nsuperseded-by: 2\n"))
+
+    def test_superseding_needs_an_existing_replacement(self):
+        self.put(adr("Accepted"))
+        self.assertIn("0003", self.edit("status: Accepted\n", "status: Superseded\nsuperseded-by: 0003\n"))
+
+    def test_superseding_needs_an_accepted_replacement(self):
+        self.put(adr("Accepted"))
+        self.put_replacement(status="Draft")
+        self.assertIn("Accepted", self.edit("status: Accepted\n", "status: Superseded\nsuperseded-by: 0002\n"))
+
+    def test_replacement_must_name_this_adr(self):
+        self.put(adr("Accepted"))
+        self.put_replacement(supersedes="0005")
+        self.assertIn("supersedes", self.edit("status: Accepted\n", "status: Superseded\nsuperseded-by: 0002\n"))
+
+    def test_quoted_number_and_status_accepted(self):
+        self.put(adr("Accepted"))
+        self.put_replacement(supersedes='"0001"')
+        self.assertIsNone(self.edit("status: Accepted\n", 'status: "Superseded"\nsuperseded-by: "0002"\n'))
+
+    def test_byte_order_mark_and_crlf(self):
+        self.put("\ufeff" + adr("Accepted").replace("\n", "\r\n"))
+        self.assertIsNotNone(self.edit("fast enough", "fast and cheap enough"))
+
+    def test_multiedit_accept_with_change_refused(self):
+        self.put(adr())
+        result = status_check.check({"tool_name": "MultiEdit", "tool_input": {"file_path": self.path, "edits": [
+            {"old_string": "status: Draft", "new_string": "status: Accepted"},
+            {"old_string": "fast enough", "new_string": "cheap"}]}})
+        self.assertIsNotNone(result)
+
+    def test_replace_all_on_accepted_refused(self):
+        self.put(adr("Accepted"))
+        self.assertIsNotNone(self.edit("Redis", "Valkey", replace_all=True))
+
+    def test_status_key_in_capitals_still_checked(self):
+        self.assertIsNotNone(self.write(adr().replace("status: Draft", "Status: Accepted")))
+
+    def test_subfolder_and_capitals_still_checked(self):
+        for rel in (("docs", "adrs", "old", "0009-x.md"), ("docs", "ADRs", "0009-x.md")):
+            self.assertIsNotNone(self.write(adr("Accepted"), path=os.path.join(self.tmp.name, *rel)), rel)
 
     def test_superseding_without_link_refused(self):
         self.put(adr("Accepted"))
+        self.put_replacement()
         self.assertIn("superseded-by", self.edit("status: Accepted", "status: Superseded"))
 
     def test_superseding_with_other_changes_refused(self):

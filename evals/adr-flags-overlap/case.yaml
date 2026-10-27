@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: adr-flags-overlap
+expected_outcome: |
+  An accepted ADR already decides where sessions are stored. Asked to record a different session store, the skill does not write a second, conflicting decision: it records the new one as superseding 0002 or asks the person whether it should.
+context:
+  scaffold_script: place-files.sh

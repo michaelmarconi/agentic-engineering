@@ -2,8 +2,8 @@
 """Refuse spec and ADR status changes the lifecycle does not allow.
 
 Claude Code runs this as a PreToolUse hook on Write, Edit and MultiEdit. It reads the hook's
-JSON from stdin and, for a *.spec.md under the project's docs/specs/ or a *.md directly under
-its docs/adrs/ (the project being $CLAUDE_PROJECT_DIR, or the current directory if unset),
+JSON from stdin and, for a *.spec.md under the project's docs/specs/ or a *.md under its
+docs/adrs/ (the project being $CLAUDE_PROJECT_DIR, or the current directory if unset),
 works out what the file would contain after the edit and compares it with what is on disk now.
 For a spec it refuses:
 
@@ -20,7 +20,9 @@ For an ADR (architecture decision record) it refuses:
 - an ADR that had a status (Draft, Accepted, Rejected or Superseded) losing it;
 - a new ADR with any status but Draft;
 - Accepted or Rejected, except from Draft and as an edit that changes nothing else;
-- Superseded, except from Accepted with a `superseded-by:` line added and nothing else changed;
+- Superseded, except from Accepted with a `superseded-by:` line added and nothing else changed,
+  naming the four-digit number of an Accepted ADR in the same folder whose `supersedes:` names
+  this one;
 - any other change to an Accepted, Rejected or Superseded ADR, since a decided ADR is never
   edited, only superseded by a new one.
 
@@ -57,9 +59,9 @@ def is_spec(path):
 
 
 def is_adr(path):
-    """True for a *.md directly under docs/adrs/ in the project."""
+    """True for a *.md anywhere under docs/adrs/ in the project, whatever the folders' case."""
     parts = project_parts(path)
-    return len(parts) == 3 and parts[:2] == ["docs", "adrs"] and parts[-1].endswith(".md")
+    return [part.lower() for part in parts[:2]] == ["docs", "adrs"] and parts[-1].lower().endswith(".md")
 
 
 def frontmatter(text):
@@ -72,12 +74,17 @@ def frontmatter(text):
     return None
 
 
-def status_of(text):
+def field(text, key):
+    """The value of a frontmatter key, matched in any case, without comment or quotes."""
     for line in frontmatter(text) or []:
-        if line.startswith("status:"):
-            value = line[len("status:"):].split("#", 1)[0].strip()
+        if line.lower().startswith(key + ":"):
+            value = line[len(key) + 1:].split("#", 1)[0].strip()
             return value.strip("\"'")
     return None
+
+
+def status_of(text):
+    return field(text, "status")
 
 
 def without_status(text, also=()):
@@ -85,7 +92,7 @@ def without_status(text, also=()):
     lines = text.lstrip("\ufeff").splitlines()
     end = len(frontmatter(text) or []) + 1
     keys = ("status:",) + tuple(also)
-    return [line for i, line in enumerate(lines) if i > end or not line.startswith(keys)]
+    return [line for i, line in enumerate(lines) if i > end or not line.lower().startswith(keys)]
 
 
 def has_open_questions(text):
@@ -155,14 +162,15 @@ def check(payload):
                 "cannot be checked. Read the file again and copy old_string from it exactly."
             )
         return None
-    return rules(name, before, after, old)
+    return rules(path, before, after, old)
 
 
-def spec_rules(name, before, after, old):
+def spec_rules(path, before, after, old):
+    name = os.path.basename(path)
     new = status_of(after)
     if old not in STATUSES and new not in STATUSES:
         return None
-    if sum(line.startswith("status:") for line in frontmatter(after) or []) > 1:
+    if sum(line.lower().startswith("status:") for line in frontmatter(after) or []) > 1:
         return f"{name}: the frontmatter has more than one `status:` line; keep one."
     if new not in STATUSES:
         found = f"'{new}'" if new else "none"
@@ -202,11 +210,30 @@ def spec_rules(name, before, after, old):
     return None
 
 
-def adr_rules(name, before, after, old):
+def replacement_problem(path, number):
+    """Why the ADR numbered `number` cannot supersede the ADR at `path`, or None if it can."""
+    folder = os.path.dirname(os.path.abspath(path))
+    matches = [n for n in sorted(os.listdir(folder)) if n.startswith(number + "-") and n.endswith(".md")]
+    if not matches:
+        return f"there is no ADR {number} in this folder"
+    try:
+        with open(os.path.join(folder, matches[0]), encoding="utf-8") as f:
+            text = f.read()
+    except (OSError, UnicodeDecodeError) as error:
+        return f"ADR {number} could not be read ({error})"
+    if status_of(text) != "Accepted":
+        return f"ADR {number} is not Accepted yet; the old ADR stays Accepted until the person accepts it"
+    if field(text, "supersedes") != os.path.basename(path)[:4]:
+        return f"ADR {number} does not name this ADR in its `supersedes:` line"
+    return None
+
+
+def adr_rules(path, before, after, old):
+    name = os.path.basename(path)
     new = status_of(after)
     if old not in ADR_STATUSES and new not in ADR_STATUSES:
         return None
-    if sum(line.startswith("status:") for line in frontmatter(after) or []) > 1:
+    if sum(line.lower().startswith("status:") for line in frontmatter(after) or []) > 1:
         return f"{name}: the frontmatter has more than one `status:` line; keep one."
     if new not in ADR_STATUSES:
         found = f"'{new}'" if new else "none"
@@ -236,13 +263,19 @@ def adr_rules(name, before, after, old):
             )
         return None
     if old == "Accepted" and new == "Superseded":
-        added = [line for line in frontmatter(after) or [] if line.startswith("superseded-by:")]
-        had = [line for line in frontmatter(before) or [] if line.startswith("superseded-by:")]
-        if len(added) != 1 or had or not added[0][len("superseded-by:"):].strip():
+        added = [line for line in frontmatter(after) or [] if line.lower().startswith("superseded-by:")]
+        had = [line for line in frontmatter(before) or [] if line.lower().startswith("superseded-by:")]
+        if len(added) != 1 or had:
             return (
-                f"{name}: setting Superseded must add one `superseded-by:` line naming the number "
-                "of the ADR that replaces it."
+                f"{name}: setting Superseded must add one `superseded-by:` line naming the "
+                "four-digit number of the ADR that replaces it."
             )
+        number = field(after, "superseded-by")
+        if not re.fullmatch(r"\d{4}", number or ""):
+            return f"{name}: `superseded-by:` must be the four-digit number of the replacing ADR."
+        problem = replacement_problem(path, number)
+        if problem:
+            return f"{name}: cannot set Superseded: {problem}."
         if without_status(after, also=("superseded-by:",)) != without_status(before):
             return (
                 f"{name}: setting Superseded may only change the status and add `superseded-by:`; "

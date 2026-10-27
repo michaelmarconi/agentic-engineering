@@ -13,5 +13,6 @@ Here's our conversation about where to keep login sessions, pasted from earlier:
 > **Me:** Let's go with Postgres, every server already talks to it.
 > **You:** Session reads would then be one more query on every request.
 > **Me:** Hmm, at our traffic that's a lot. Actually let's use Redis instead; we already run it for caching, and Postgres would add a query to every request.
+> **Me:** We'll check it in code review: session data only goes through Redis.
 
 Please record this decision as docs/adrs/0001-store-sessions-in-redis.md.
