@@ -101,7 +101,7 @@ pass-or-fail checks: one decision, a title that states it, real options with rea
 bad consequences, a Confirmation that can really be carried out, references only to other ADRs, and
 no clash with another ADR. The reviewer sees only the ADRs, not your conversation, so it judges
 the page as a newcomer would. `/adr` fixes what the reviewer finds, once, and
-has the fixes confirmed (see [Reviews](../../README.md#reviews)); then you get the ADR
+has the fixes confirmed (see [Reviews](../../README.md#review-process)); then you get the ADR
 with the reports.
 
 [^nygard]: Michael Nygard, [Documenting Architecture Decisions](https://cognitect.com/blog/2011/11/15/documenting-architecture-decisions),
