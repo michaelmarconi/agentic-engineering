@@ -65,7 +65,7 @@ document in the repository says no more than that document does. It also checks 
 refers to no spec, ADR or plan, by hyperlink, path or title, since those can change without the
 brief being touched and the reference would go stale. The reviewer sees only the brief and the
 documents it links to, not your conversation, so it judges the page as a newcomer would.
-`/brief` fixes what the reviewer finds, once, and has the fixes confirmed (see
+`/brief` corrects what the reviewer finds, once, and has the corrections checked (see
 [Review process](../lifecycle.md#review-process)); then you get the brief with the reports.
 
 The reviewer cannot tell whether the brief matches what you said, only what it links to, so read

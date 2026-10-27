@@ -83,8 +83,8 @@ Three things keep specs in this shape:
   list of pass-or-fail checks: the sections are all there, each requirement has one EARS rule,
   its scenarios add real cases, Verified by names a method, and the spec refers to no other spec,
   nor the brief, an ADR or a plan, by hyperlink, path or title, since those can change without
-  the spec being touched and the reference would go stale. `/spec` fixes what the reviewer
-  finds, once, and has the fixes confirmed (see [Review process](../lifecycle.md#review-process));
+  the spec being touched and the reference would go stale. `/spec` corrects what the reviewer
+  finds, once, and has the corrections checked (see [Review process](../lifecycle.md#review-process));
   then you get the spec with the reports.
 - **Status.** A hook checks each edit Claude makes to a spec with its file-editing tools and
   refuses one the lifecycle does not allow: a new spec that is not Draft, Ready to build while

@@ -100,8 +100,8 @@ Before you see an ADR, `/adr` has its reviewer agent check it against a short li
 pass-or-fail checks: one decision, a title that states it, real options with reasons, good and
 bad consequences, a Confirmation that can really be carried out, references only to other ADRs, and
 no clash with another ADR. The reviewer sees only the ADRs, not your conversation, so it judges
-the page as a newcomer would. `/adr` fixes what the reviewer finds, once, and
-has the fixes confirmed (see [Review process](../lifecycle.md#review-process)); then you get the ADR
+the page as a newcomer would. `/adr` corrects what the reviewer finds, once, and
+has the corrections checked (see [Review process](../lifecycle.md#review-process)); then you get the ADR
 with the reports.
 
 [^nygard]: Michael Nygard, [Documenting Architecture Decisions](https://cognitect.com/blog/2011/11/15/documenting-architecture-decisions),

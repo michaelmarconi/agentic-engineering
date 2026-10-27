@@ -99,34 +99,39 @@ Every review follows the same fixed sequence:
 
 ```mermaid
 flowchart LR
-    Write --> Review
-    Review -->|findings| Fix
+    Draft --> Review
+    Review -->|findings| Correct
     Review -->|none| You
-    Fix --> Confirm
-    Confirm -->|passes| You
-    Confirm -->|fails| Stop[Stop and show you]
+    Correct --> Check[Correction check]
+    Check -->|passes| You
+    Check -->|fails| Stop[Stop and show you]
     Stop ~~~ Pad["#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;"]
     style Pad fill:none,stroke:none
 ```
 
-1. **Review.** The reviewer checks the whole document and reports pass or fail for each check.
-   For each failure it quotes the check and the words that break it.
-2. **Fix.** The skill fixes every finding it can, once. A choice only you can make becomes an
-   open question for you, never a guess.
-3. **Confirm.** A reviewer checks only that each fix landed and that no edit broke anything.
-   Anything else it notices reaches you as a suggestion, not a failure.
-4. **You.** You get the document with the reports. If the confirm check failed, the skill stops
-   there and shows you why, rather than trying again.
+| Step | Who does it | What it does | What comes out |
+|---|---|---|---|
+| **Draft** | The drafting agent: Claude running the skill, with you | Writes the document from your conversation | The document |
+| **Review** | The skill's reviewer, such as `agents/spec-reviewer.md` | Checks the whole document against the skill's rubric | The review report: pass or fail for each check, quoting the check and the words that break it |
+| **Correct** | The drafting agent | Makes each correction once; a decision only you can make becomes an open question, never a guess | The corrected document |
+| **Correction check** | `agents/correction-checker.md`, shared by every skill | Checks only that each correction was made and that none broke anything; anything else it notices is a suggestion | The correction report: pass or fail |
+| **Sign-off** | You | Read the document and the reports, settle the open questions, and set the status | The document at its next status |
 
-A finding is one of three kinds. A **failure** breaks a check, and the skill fixes it. A
-**decision** is something only you can settle, such as which of two readings you meant; it goes
-to you as an open question. A **suggestion** is something you might want to add; it never holds
-a document back.
+If the review passes, the skill skips straight to you. If the correction check fails, the skill
+stops and shows you why, rather than trying again.
 
-There are no repeated rounds of review and fix. We measured this on specs with planted
-mistakes: one review finds nearly every one, and each further round of fixes brings new
+| Term | Meaning |
+|---|---|
+| **Rubric** | A skill's short list of pass-or-fail checks. The skill follows it while drafting; the reviewer checks against it. |
+| **Finding** | Anything a review reports. It is one of the three kinds below. |
+| **Failure** | A finding that breaks a rubric check. The drafting agent corrects it. |
+| **Decision** | A finding only you can settle, such as which of two readings you meant. It becomes an open question in the document. |
+| **Suggestion** | A finding you might act on. It never holds a document back. |
+
+There are no repeated rounds of review and correction. We measured this on specs with planted
+mistakes: one review finds nearly every one, and each further round of corrections brings new
 problems ([results](../experiments/review-seeding/RESULTS.md)).
 
-`/build` follows the same sequence for code: the build agent fixes the reviewers' findings once,
-and a confirm check follows. A clean review or a passing confirm merges the work into the main
-branch; a failing confirm stops and asks for help.
+`/build` follows the same sequence for code: the build agent corrects what the reviewers find
+once, and a correction check follows. A clean review or a passing correction check merges the work
+into the main branch; a failing correction check stops and asks for help.

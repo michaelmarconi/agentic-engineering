@@ -11,8 +11,8 @@ A build agent carries out the plan, then four reviewer agents check the result i
 - **ADRs:** is every accepted decision followed, not just the ones the plan touches?
 
 Findings follow the same [review process](../lifecycle.md#review-process) as documents: the build
-agent fixes them once, then a confirm check asks whether each fix landed and nothing broke. A
-clean review or a passing confirm merges the work into the main branch; a failing confirm stops
-and asks for help.
+agent corrects them once, then a correction check asks whether each correction was made and
+nothing broke. A clean review or a passing correction check merges the work into the main branch;
+a failing correction check stops and asks for help.
 
 TODO: the code and security reviews are Claude Code's own built-in reviews.

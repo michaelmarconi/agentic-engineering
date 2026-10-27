@@ -35,11 +35,12 @@ everything else is judgement.
      must not be written to the working tree, as with `/issue`'s draft; then it passes the
      document whole and word for word.
    - The reviewer reports pass or fail for each check, quoting the check's text with the
-     evidence for each failure, plus findings beyond the rubric. The skill fixes what it can,
-     once. A confirm check then answers only whether each fix landed and whether any edit broke
-     something; anything else it notices is a suggestion. If the confirm fails, the skill stops
+     evidence for each failure, plus findings beyond the rubric. The skill corrects what it
+     can, once. The correction checker (`agents/correction-checker.md`, shared by every skill)
+     then answers only whether each correction was made and whether any broke something;
+     anything else it notices is a suggestion. If the correction check fails, the skill stops
      and shows the person the report. There is never a second full review: one review finds
-     nearly everything, and each further round of fixes adds new problems
+     nearly everything, and each further round of corrections adds new problems
      (`experiments/review-seeding/RESULTS.md`). `/build` follows the same sequence. Only a
      decision the skill cannot make goes to the person, with optional suggestions passed on but
      never holding the document back.
@@ -120,6 +121,7 @@ evals/
   <name>-<case>/       # required, one folder per test case, run by `claude plugin eval`
 agents/
   <name>-reviewer.md   # one reviewer per skill that writes documents
+  correction-checker.md # checks the corrections after a review, for every skill
 hooks/
   hooks.json           # session map and status checks
 scripts/               # scripts the hooks run, the skill and version checks, and their tests
