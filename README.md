@@ -141,12 +141,15 @@ Add `--scope project` to the `install` command to share the plugin with everyone
 repository.
 
 Then save the plugin's settings. Claude Code does not fill them in for you, so until they are
-saved, skills that need them stop and ask, and every session starts with a reminder. In Claude
-Code, run `/plugin configure sdlc@sdlc`, type a value next to each setting and choose **Save
-configuration**; from a terminal, add `--config <key>=<value>` to the `install` command. Each
+saved, skills that need them stop and ask, and every session starts with a reminder. The install
+shows a configure screen whose boxes start empty: pressing Enter there saves nothing, and Claude
+Code still reports the plugin as active. In Claude Code, run `/plugin configure sdlc@sdlc`, type
+a value next to each setting, choose **Save configuration**, then run `/reload-plugins`; from a terminal, add `--config <key>=<value>` to the `install` command. Each
 setting's description says what it does and suggests a value. Settings are saved in your own
 Claude Code settings, not in the repository, so you save them once per computer. If you added
-the marketplace under another name, use `sdlc@<that name>` in place of `sdlc@sdlc`.
+the marketplace under another name, use `sdlc@<that name>` in place of `sdlc@sdlc`. Claude Code's
+`/config` may list a setting with its suggested value before you have saved it; skills receive
+only a value you saved.
 
 | Setting | Key | What it does |
 | --- | --- | --- |

@@ -12,7 +12,8 @@ place; git is its history.
 
 Before writing, read [references/rubric.md](references/rubric.md): it is the list of checks the
 reviewer will apply, so writing to it saves rounds. New specs start from
-[assets/template.md](assets/template.md).
+[assets/template.md](assets/template.md). Read these with the Read tool, not the shell, so the
+person is not asked to approve a command.
 
 ## Find the spec
 
@@ -79,8 +80,9 @@ The `status:` frontmatter says how far the spec is: Draft, Ready to build or Bui
 
 ## Review
 
-When the spec is written, start the `sdlc:spec-reviewer` agent and give it the spec's path; it
-reads everything else it needs itself. Wait for its report before touching the spec again, so
+When the spec is written, start the `sdlc:spec-reviewer` agent in the foreground, not in the
+background, and give it the spec's path; it reads everything else it needs itself. Wait for its
+report before touching the spec again, so
 the report matches the spec. It reports pass or fail for each rubric check with evidence, other
 findings, decisions that need the person, and suggestions.
 
@@ -88,7 +90,8 @@ Fix every finding you can and run the reviewer again, for up to ${user_config.re
 reviews in all, counting the first. If no number appears in that sentence, the plugin's Review
 rounds setting has not been saved: write the spec as usual, then stop before the first review,
 tell the person the spec is unreviewed, and ask them to run `/plugin configure sdlc@sdlc`, type a
-number next to Review rounds, choose Save configuration and then ask you for the review. Never
+number next to Review rounds, choose Save configuration, run `/reload-plugins` and then ask you
+for the review. Never
 pick a number yourself. After any edit to the spec's
 content, run the next review, even if a failure that needs the person remains, so the report
 the person gets is about the spec as it now stands; after the last review, edit no further. A

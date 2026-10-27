@@ -23,7 +23,8 @@ already says: a sentence two builders would read differently, a conflict, or som
 person can supply, such as the Problem's story or what a rule should be. Quote the sentence or
 section it is about. Behaviour that no sentence in the spec asks for, such as an extra case or
 feature, goes under Suggestions: the person may add it, but the spec can be built as written
-without it. If you cannot quote what a decision is about, it is a suggestion.
+without it. If you cannot quote what a decision is about, it is a suggestion. Leave out a
+suggestion that the spec's Open questions or your Needs a person already raise.
 
 Report in this shape:
 
