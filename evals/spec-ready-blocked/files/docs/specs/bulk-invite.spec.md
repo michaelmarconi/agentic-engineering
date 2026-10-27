@@ -29,9 +29,9 @@ WHEN an admin submits a list of email addresses, the system SHALL send an invita
 valid address that is not already a member.
 
 #### Scenario: One address already a member
-- GIVEN tom@example.com is already a member
-- WHEN an admin submits tom@example.com and ana@example.com
-- THEN only ana@example.com receives an invitation
+- GIVEN first@example.com is already a member
+- WHEN an admin submits first@example.com and second@example.com
+- THEN only second@example.com receives an invitation
 
 Verified by: an integration test of the invite flow, using a stand-in mail service that records
 outgoing invitations.

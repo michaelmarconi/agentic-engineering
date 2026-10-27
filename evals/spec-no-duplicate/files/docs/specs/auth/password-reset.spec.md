@@ -31,9 +31,9 @@ WHEN a person asks to reset the password for an email address, the system SHALL 
 link to that address if it belongs to an account.
 
 #### Scenario: Known address
-- GIVEN an account registered to priya@example.com
-- WHEN someone requests a reset for priya@example.com
-- THEN a reset link is emailed to priya@example.com
+- GIVEN an account registered to user@example.com
+- WHEN someone requests a reset for user@example.com
+- THEN a reset link is emailed to user@example.com
 
 Verified by: an integration test of the request flow, using a stand-in mail service that records
 outgoing messages.
