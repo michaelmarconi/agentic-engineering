@@ -100,7 +100,7 @@ flowchart LR
     Build --> Code[Code on the main branch]
     Code -.-> Audit
     Audit -.->|drift| Spec
-    Audit ~~~ Pad[" "]
+    Audit ~~~ Pad["#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;"]
     style Pad fill:none,stroke:none
 ```
 
@@ -173,7 +173,7 @@ flowchart LR
     Fix --> Confirm
     Confirm -->|passes| You
     Confirm -->|fails| Stop[Stop and show you]
-    Stop ~~~ Pad[" "]
+    Stop ~~~ Pad["#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;"]
     style Pad fill:none,stroke:none
 ```
 
