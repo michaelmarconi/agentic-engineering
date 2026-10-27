@@ -6,9 +6,9 @@ status: Draft
 
 ## Problem
 
-Lena gets about forty notifications a day. The bell icon shows how many she has, but not how
-many she has not opened yet, so each morning she clicks through all of them to find the new
-ones and often misses one that came in overnight.
+Lena gets about forty notifications a day and cannot tell how many she has not opened yet, so
+each morning she clicks through all of them to find the new ones and often misses one that came
+in overnight.
 
 ## Goal
 
@@ -72,9 +72,9 @@ SHALL count it as opened from then on.
 - WHEN Lena clicks a notification she opened yesterday
 - THEN the bell icon still shows 2
 
-Verified by: test that clicks unopened notifications from 3 down to none and then an already
-opened one, checking the number on the bell after each click, without reloading and after a
-reload.
+Verified by: test that starts with 3 unopened notifications, clicks one (checks 2), clicks an
+already opened one (checks still 2), then clicks the other two (checks 1, then no number),
+checking the bell after each click both without reloading and after a reload.
 
 ## Constraints
 

@@ -44,8 +44,9 @@ recording it as an ADR (architecture decision record); if not, make it an open q
 an unknown can only be settled by trying something, suggest a spike: a throwaway experiment.
 
 Add only behaviour the person asked for or agreed to. A case they have not covered, such as who
-may not use the feature or what happens on an error, is an open question, not a rule you
-choose. Write each requirement as rubric checks 5 to 8 describe: one EARS rule, scenarios that
+may not use the feature, what happens on an error, or what happens when a rule's condition does
+not hold, is an open question, not a rule you choose: a rule for paid invoices says nothing
+about unpaid ones. Write each requirement as rubric checks 5 to 8 describe: one EARS rule, scenarios that
 add concrete cases, and a Verified by line.
 
 An open question the person has seen is settled only by their answer: written into the spec,
@@ -66,8 +67,11 @@ The `status:` frontmatter says how far the spec is: Draft, Ready to build or Bui
   check 9), nothing is left under the review's Needs a person, and the review below has passed
   on the spec as it stands; make it its own, last edit, after that review. Ready means the person
   agreed to this text, so if you wrote or changed anything they have not seen since, show it and
-  wait for their reply first; agreement given before they saw it does not count. If questions
-  remain, say which and leave the spec as Draft.
+  wait for their reply first; agreement given before they saw it does not count, even a request
+  to fix small things and carry on. So never set Ready in the same reply as a change to the
+  spec's content. If questions
+  remain, say which and leave the spec as Draft, even if the person says they do not matter:
+  offer to settle them now instead.
 - Never set Built. Only the build step does, once its review finds every requirement verified.
 
 ## Review

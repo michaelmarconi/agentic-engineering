@@ -26,10 +26,11 @@ A spec is edited in place on a branch, and git is its history.
 
 Each requirement has a name, one rule and some scenarios. The rule is a single sentence in
 EARS, a small set of sentence patterns for requirements such as "IF ..., THEN the system SHALL
-...", where SHALL means the requirement is mandatory.[^ears][^rfc2119] The scenarios use Gherkin's Given/When/Then, the format behaviour-driven development
-uses to describe one example.[^gherkin] The rule covers every case; each scenario pins down one
-concrete case, such as a boundary or an error, and a scenario that only restates the rule is
-left out.[^openspec] *Verified by* names the method that shows the requirement holds: usually a
+...", where SHALL means the requirement is mandatory.[^ears][^rfc2119] The scenarios use
+Gherkin's Given/When/Then, the format behaviour-driven development uses to describe one
+example.[^gherkin] The rule covers every case; each scenario pins down one concrete case of it,
+such as a boundary or an example with real values, and never adds an outcome the rule does not
+state. A scenario that only restates the rule is left out.[^openspec] *Verified by* names the method that shows the requirement holds: usually a
 test, otherwise a demonstration, inspection or analysis.[^nasa]
 
 ```markdown
