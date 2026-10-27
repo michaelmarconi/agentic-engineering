@@ -1,0 +1,26 @@
+{
+  "spec_path": "docs/specs/coaching-series.spec.md",
+  "defects": [
+    {
+      "id": "seeded-06-a",
+      "type": "conflicts-with-brief",
+      "subtlety": "subtle",
+      "quote": "all at the moment the series is set up",
+      "description": "Booking every session when the series is set up books the court up to 8 weeks ahead (in the Autumn term scenario, 20 October is booked on 31 August), which the brief rules out: bookings open 14 days before the slot and nobody, admins included, can book further ahead."
+    },
+    {
+      "id": "seeded-06-b",
+      "type": "scenario-contradicts-rule",
+      "subtlety": "obvious",
+      "quote": "- THEN the series is set up with its 10 sessions",
+      "description": "The Ten weeks scenario accepts a 10-session series, but its rule refuses any series that would have more than 8 sessions."
+    },
+    {
+      "id": "seeded-06-c",
+      "type": "ambiguous-rule",
+      "subtlety": "subtle",
+      "quote": "the first date until the end date",
+      "description": "\"Until the end date\" does not say whether a session falling on the end date itself is booked (inclusive or exclusive), and both scenarios end on a Friday so they do not settle it."
+    }
+  ]
+}

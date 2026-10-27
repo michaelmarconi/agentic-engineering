@@ -1,0 +1,19 @@
+{
+  "spec_path": "docs/specs/guest-visits.spec.md",
+  "defects": [
+    {
+      "id": "seeded-02-a",
+      "type": "conflicts-with-brief",
+      "subtlety": "obvious",
+      "quote": "WHEN a guest is added to a booking, the system SHALL create a guest account for their email",
+      "description": "Creating an account for a guest contradicts the brief, which says people who are not members of the club, such as guests, never get an account and only people an admin invited have one."
+    },
+    {
+      "id": "seeded-02-b",
+      "type": "one-sided-limit",
+      "subtlety": "subtle",
+      "quote": "address is on fewer than 3 other bookings that start in the same calendar month.",
+      "description": "The monthly limit only states and tests the accepted side (a third visit); no rule says what happens when the guest is already on 3 bookings that month (refuse? warn?), and there is no scenario just over the limit."
+    }
+  ]
+}

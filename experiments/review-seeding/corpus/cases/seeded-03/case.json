@@ -1,0 +1,26 @@
+{
+  "spec_path": "docs/specs/playing-partners.spec.md",
+  "defects": [
+    {
+      "id": "seeded-03-a",
+      "type": "solution-in-problem",
+      "subtlety": "obvious",
+      "quote": "Jo needs an \"Add partners\" field on the booking",
+      "description": "The Problem names the solution (an \"Add partners\" field on the booking form) instead of only describing Jo's situation."
+    },
+    {
+      "id": "seeded-03-b",
+      "type": "scenario-contradicts-rule",
+      "subtlety": "subtle",
+      "quote": "- THEN both are added and the booking shows its 4 partners",
+      "description": "The Two at once scenario accepts additions that take the booking to 4 partners, while its rule allows at most 3 and refuses any addition that would take it past 3."
+    },
+    {
+      "id": "seeded-03-c",
+      "type": "internal-contradiction",
+      "subtlety": "subtle",
+      "quote": "WHEN a partner removes themselves from a booking, the system SHALL take their name off it and",
+      "description": "Leave a booking lets a partner remove themselves, but Only the holder changes partners says the system refuses any member who does not hold the booking trying to remove a partner; both cannot hold."
+    }
+  ]
+}

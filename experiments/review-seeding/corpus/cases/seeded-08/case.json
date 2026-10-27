@@ -1,0 +1,19 @@
+{
+  "spec_path": "docs/specs/court-usage-report.spec.md",
+  "defects": [
+    {
+      "id": "seeded-08-a",
+      "type": "one-sided-limit",
+      "subtlety": "subtle",
+      "quote": "it is the current month or one of the 12 months before the current month.",
+      "description": "The 12-month limit is only stated and tested on the inside (October 2025, twelve months back); no rule says what happens for a month outside it, such as September 2025 (or a future month), and no scenario sits just past the limit."
+    },
+    {
+      "id": "seeded-08-b",
+      "type": "unverifiable",
+      "subtlety": "obvious",
+      "quote": "Verified by: test that committee members can tell at a glance from the report which court is",
+      "description": "Court order's Verified by is a \"test\" of whether people can tell something at a glance, which only a person can judge and no test can carry out; it should test the listed order (or be a demonstration)."
+    }
+  ]
+}

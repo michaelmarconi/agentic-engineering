@@ -1,0 +1,26 @@
+{
+  "spec_path": "docs/specs/booking-reminders.spec.md",
+  "defects": [
+    {
+      "id": "seeded-05-a",
+      "type": "unstated-outcome",
+      "subtlety": "subtle",
+      "quote": "- THEN Tom is sent the reminder at once",
+      "description": "The Booked the same morning scenario sends a reminder at once for a booking made less than 24 hours ahead, but the only reminder rule covers bookings made at least 24 hours ahead; no rule states what happens to later bookings, so the outcome is invented (it should be a rule or an open question)."
+    },
+    {
+      "id": "seeded-05-b",
+      "type": "conflicts-with-other-spec",
+      "subtlety": "subtle",
+      "quote": "WHEN a member opens the cancel link in a reminder, the system SHALL cancel the booking if it",
+      "description": "Cancelling from the reminder at any time before the start contradicts booking-cancellation.spec.md, which refuses any cancellation less than 2 hours before the booking starts."
+    },
+    {
+      "id": "seeded-05-c",
+      "type": "how-not-what",
+      "subtlety": "obvious",
+      "quote": "Reminders are sent by a background job that reads the bookings table once a minute and",
+      "description": "The constraint prescribes a design (a background job polling a bookings table every minute) rather than behaviour."
+    }
+  ]
+}

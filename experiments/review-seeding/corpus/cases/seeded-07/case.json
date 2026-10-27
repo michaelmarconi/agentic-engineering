@@ -1,0 +1,26 @@
+{
+  "spec_path": "docs/specs/member-removal.spec.md",
+  "defects": [
+    {
+      "id": "seeded-07-a",
+      "type": "internal-contradiction",
+      "subtlety": "obvious",
+      "quote": "WHEN an admin removes a member, the system SHALL keep each booking of theirs that starts within",
+      "description": "Keep near-term bookings keeps the removed member's bookings that start within 48 hours, while Cancel upcoming bookings cancels every booking of theirs that has not started yet; a booking 32 hours away cannot be both kept and cancelled."
+    },
+    {
+      "id": "seeded-07-b",
+      "type": "unstated-outcome",
+      "subtlety": "subtle",
+      "quote": "- THEN she is told to make another member an admin first, and she stays a member",
+      "description": "The Removing yourself scenario refuses removal of the club's only admin, but no rule states that refusal (the Remove a member rule says any member an admin removes loses access); it should be a rule or an open question."
+    },
+    {
+      "id": "seeded-07-c",
+      "type": "solution-in-problem",
+      "subtlety": "subtle",
+      "quote": "the members page herself",
+      "description": "The Problem names the solution's screen (removing the member from \"the members page\") instead of describing only Priya's situation."
+    }
+  ]
+}
