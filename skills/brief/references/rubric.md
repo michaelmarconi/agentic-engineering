@@ -33,6 +33,6 @@ checking, and quotes the brief as evidence for every failure.
    "None." only when nothing is unknown.
 9. **Links back it.** Each fact drawn from a document links to that document where it is stated,
    and every statement that links to a document in the repository says no more than that
-   document does. A link the reviewer cannot open is reported, not failed.
+   document does. Links outside the repository are not checked.
 10. **Plain words.** No unexplained jargon or acronym: a graduate new to the project could
     follow every sentence.

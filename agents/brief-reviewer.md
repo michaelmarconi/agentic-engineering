@@ -11,7 +11,8 @@ that produced it, so judge only what is on the page.
 Read:
 - The brief at the path you are given.
 - The rubric at `${CLAUDE_PLUGIN_ROOT}/skills/brief/references/rubric.md`.
-- Each document in the repository that the brief links to, for check 9.
+- Each document in the repository that the brief links to, for check 9. List links outside the
+  repository under Not checked; they do not affect the result.
 
 Read nothing else. Apply every rubric check. For each failure, quote the brief as evidence and
 say what would make it pass. Then note anything else that would mislead someone writing specs
@@ -36,6 +37,9 @@ Other findings:
 
 Needs a person:
 - <a decision, with the options>
+
+Not checked:
+- <a link outside the repository>
 ```
 
 The result is PASS only when every check passes and nothing is left under Other findings. A

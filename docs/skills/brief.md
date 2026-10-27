@@ -61,12 +61,12 @@ Run `/brief` and say what you want: a new brief, or a change to the one you have
 Before you see the brief, `/brief` has its reviewer agent check it against a short list of
 pass-or-fail checks: the sections are all there, it speaks for the whole product, the goals can
 be measured, nothing is guessed or chooses how to build it, and every statement that links to a
-document says no more than that document does. The reviewer sees only the brief and the
-documents it links to, not your conversation, so it judges the page as a newcomer would.
-`/brief` fixes what the reviewer finds and has it checked again, up to the number of reviews in
-the Review rounds setting (see [Install](../../README.md#install)); then you get the brief with
-the final report. If that setting has not been saved, `/brief` stops before the first review and
-asks you to save it.
+document in the repository says no more than that document does. The reviewer sees only the
+brief and the documents it links to, not your conversation, so it judges the page as a newcomer
+would. `/brief` fixes what the reviewer finds and has it checked again, up to the number of
+reviews in the Review rounds setting (see [Install](../../README.md#install)); then you get the
+brief with the final report. If that setting has not been saved, `/brief` stops before the first
+review and asks you to save it.
 
 The reviewer cannot tell whether the brief matches what you said, only what it links to, so read
 the draft before you rely on it.

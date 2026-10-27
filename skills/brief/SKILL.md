@@ -56,13 +56,14 @@ Fix every finding you can and run the reviewer again, for up to ${user_config.re
 reviews in all, counting the first. If no number appears in that sentence, the plugin's Review
 rounds setting has not been saved: write the brief as usual, then stop before the first review,
 tell the person the brief is unreviewed, and ask them to run `/plugin configure sdlc@sdlc`, type
-a number next to Review rounds, choose Save configuration, run `/reload-plugins` and then ask you
-for the review. Never pick a number yourself. After any edit to the brief, run the next review,
-so the report the person gets is about the brief as it now stands; after the last review, edit no
-further. A finding under Needs a person goes into Open questions, and to them as a question, rather
-than a fix you invent.
-If the last review still fails, stop and show the person the report. The count starts again when
-the person replies.
+a number next to Review rounds, choose Save configuration, run `/reload-plugins` and then ask
+you for the review. Never pick a number yourself. After any edit to the brief, run the next
+review, so the report the person gets is about the brief as it now stands; after the last
+review, edit no further. Fix by making the brief accurate, never by dropping or hedging what the
+person said to get a pass. A finding under Needs a person goes to them as a question rather than
+a fix you invent, and into Open questions while a review remains to check that edit. If the last
+review still fails, stop and show the person the report. The count starts again when the person
+replies.
 
 Finish by giving the person the brief's path and the reviewer's final report, except the open
 questions and decisions it lists for the person: give their count and ask the first, as above.
