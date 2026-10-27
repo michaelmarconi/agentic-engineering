@@ -18,18 +18,19 @@ For a spec it refuses:
 For an ADR (architecture decision record) it refuses:
 
 - an ADR that had a status (Draft, Accepted, Rejected or Superseded) losing it;
-- a new ADR with any status but Draft;
+- a new ADR with any status but Draft, including one the lifecycle does not know;
 - Accepted or Rejected, except from Draft and as an edit that changes nothing else;
 - Superseded, except from Accepted with a `superseded-by:` line added and nothing else changed,
   naming the four-digit number of an Accepted ADR in the same folder whose `supersedes:` names
-  this one;
+  this one (it may name several);
 - any other change to an Accepted, Rejected or Superseded ADR, since a decided ADR is never
   edited, only superseded by a new one.
 
 Whether a person really accepted an ADR is beyond a hook; the skill asks them.
 
 A file that has no lifecycle status before or after the edit is left alone, so a project that
-keeps other files under docs/specs/ is not affected. Edits made any other way, by hand or through
+keeps other files under docs/specs/ or docs/adrs/ is not affected; only a new ADR with a status
+the lifecycle does not know is refused. Edits made any other way, by hand or through
 a shell command, are not seen.
 """
 
@@ -41,6 +42,10 @@ import sys
 
 STATUSES = ("Draft", "Ready to build", "Built")
 ADR_STATUSES = ("Draft", "Accepted", "Rejected", "Superseded")
+NEW_HINT = {
+    "spec": "If you are moving an existing spec, move it with `git mv`, which keeps its status.",
+    "ADR": "Only the person accepts or rejects a decision, once they have seen it reviewed.",
+}
 EMPTY_ANSWERS = {"", "none", "none."}
 FOOTNOTE = re.compile(r"^\[[^\]]+\]:")
 
@@ -53,9 +58,9 @@ def project_parts(path):
 
 
 def is_spec(path):
-    """True for a *.spec.md under docs/specs/ in the project."""
+    """True for a *.spec.md under docs/specs/ in the project, whatever the folders' case."""
     parts = project_parts(path)
-    return parts[:2] == ["docs", "specs"] and parts[-1].endswith(".spec.md")
+    return [part.lower() for part in parts[:2]] == ["docs", "specs"] and parts[-1].lower().endswith(".spec.md")
 
 
 def is_adr(path):
@@ -162,27 +167,27 @@ def check(payload):
                 "cannot be checked. Read the file again and copy old_string from it exactly."
             )
         return None
-    return rules(path, before, after, old)
 
-
-def spec_rules(path, before, after, old):
-    name = os.path.basename(path)
     new = status_of(after)
-    if old not in STATUSES and new not in STATUSES:
+    if old not in statuses and new not in statuses:
+        if kind == "ADR" and not before and new is not None:
+            return f"{name}: a new ADR must be written as Draft, not '{new}'."
         return None
     if sum(line.lower().startswith("status:") for line in frontmatter(after) or []) > 1:
         return f"{name}: the frontmatter has more than one `status:` line; keep one."
-    if new not in STATUSES:
+    if new not in statuses:
         found = f"'{new}'" if new else "none"
-        return (
-            f"{name}: the spec needs `status:` frontmatter set to Draft, Ready to build or Built "
-            f"(found {found})."
-        )
-    if old not in STATUSES and new != "Draft":
-        return (
-            f"{name}: a new spec must be written as Draft, not {new}. If you are moving an "
-            "existing spec, move it with `git mv`, which keeps its status."
-        )
+        allowed = ", ".join(statuses[:-1]) + " or " + statuses[-1]
+        return f"{name}: the {kind} needs `status:` frontmatter set to {allowed} (found {found})."
+    if old not in statuses and new != "Draft":
+        return f"{name}: a new {kind} must be written as Draft, not {new}. {NEW_HINT[kind]}"
+    return rules(path, before, after, old, new)
+
+
+def spec_rules(path, before, after, old, new):
+    name = os.path.basename(path)
+    if old not in STATUSES:
+        return None
     if new == old:
         if new != "Draft" and without_status(after) != without_status(before):
             return (
@@ -213,7 +218,7 @@ def spec_rules(path, before, after, old):
 def replacement_problem(path, number):
     """Why the ADR numbered `number` cannot supersede the ADR at `path`, or None if it can."""
     folder = os.path.dirname(os.path.abspath(path))
-    matches = [n for n in sorted(os.listdir(folder)) if n.startswith(number + "-") and n.endswith(".md")]
+    matches = [n for n in sorted(os.listdir(folder)) if n.startswith(number + "-") and n.lower().endswith(".md")]
     if not matches:
         return f"there is no ADR {number} in this folder"
     try:
@@ -223,33 +228,17 @@ def replacement_problem(path, number):
         return f"ADR {number} could not be read ({error})"
     if status_of(text) != "Accepted":
         return f"ADR {number} is not Accepted yet; the old ADR stays Accepted until the person accepts it"
-    if field(text, "supersedes") != os.path.basename(path)[:4]:
+    if os.path.basename(path)[:4] not in re.split(r"[\s,]+", field(text, "supersedes") or ""):
         return f"ADR {number} does not name this ADR in its `supersedes:` line"
     return None
 
 
-def adr_rules(path, before, after, old):
+def adr_rules(path, before, after, old, new):
     name = os.path.basename(path)
-    new = status_of(after)
-    if old not in ADR_STATUSES and new not in ADR_STATUSES:
-        return None
-    if sum(line.lower().startswith("status:") for line in frontmatter(after) or []) > 1:
-        return f"{name}: the frontmatter has more than one `status:` line; keep one."
-    if new not in ADR_STATUSES:
-        found = f"'{new}'" if new else "none"
-        return (
-            f"{name}: the ADR needs `status:` frontmatter set to Draft, Accepted, Rejected or "
-            f"Superseded (found {found})."
-        )
-    if old not in ADR_STATUSES and new != "Draft":
-        return (
-            f"{name}: a new ADR must be written as Draft, not {new}. Only the person accepts or "
-            "rejects a decision, once they have seen it reviewed."
-        )
     if old not in ADR_STATUSES:
         return None
     if new == old:
-        if new != "Draft" and without_status(after) != without_status(before):
+        if new != "Draft" and after != before:
             return (
                 f"{name}: this ADR is {old}, and a decided ADR is never edited. To change the "
                 "decision, write a new Draft ADR that supersedes it."

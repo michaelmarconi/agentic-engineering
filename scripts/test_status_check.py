@@ -344,6 +344,25 @@ class Adr(AdrWorkspace):
         self.put(adr("Accepted"))
         self.assertIsNotNone(self.edit("Redis", "Valkey", replace_all=True))
 
+    def test_new_adr_with_unknown_status_refused(self):
+        for value in ("accepted", "Proposed"):
+            self.assertIn("Draft", self.write(adr(value)), value)
+
+    def test_status_line_of_decided_adr_is_fixed(self):
+        self.put(adr("Accepted"))
+        self.assertIsNotNone(self.edit("status: Accepted", "status: Accepted # reopened"))
+
+    def test_replacement_may_supersede_several(self):
+        self.put(adr("Accepted"))
+        self.put_replacement(supersedes="0001, 0004")
+        self.assertIsNone(self.edit("status: Accepted\n", "status: Superseded\nsuperseded-by: 0002\n"))
+
+    def test_replacement_file_suffix_in_capitals(self):
+        self.put(adr("Accepted"))
+        with open(os.path.join(self.tmp.name, "docs", "adrs", "0002-x.MD"), "w") as f:
+            f.write(adr("Accepted", extra="supersedes: 0001\n"))
+        self.assertIsNone(self.edit("status: Accepted\n", "status: Superseded\nsuperseded-by: 0002\n"))
+
     def test_status_key_in_capitals_still_checked(self):
         self.assertIsNotNone(self.write(adr().replace("status: Draft", "Status: Accepted")))
 

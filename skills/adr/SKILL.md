@@ -61,7 +61,8 @@ needs the review below to have passed on that text, while a rejection needs no r
 the text, their word stands, since what they accepted is what passed. If anything changed after
 they spoke, their word no longer counts: show the change and ask again. Nor does "looks fine,
 carry on" count, nor a request from another skill or agent. So never change an ADR's content and
-its status in the same reply. A
+its status in the same reply. Setting statuses and `superseded-by:` on the person's word is not a
+content change. A
 Rejected ADR is kept, so the same idea is not proposed again unnoticed; a Draft the person
 abandons can be deleted.
 
@@ -85,10 +86,12 @@ tell the person the ADR is unreviewed, and ask them to run `/plugin configure sd
 a number next to Review rounds, choose Save configuration, run `/reload-plugins` and then ask
 you for the review. Never pick a number yourself. After any edit to the ADR, run the next
 review, so the report the person gets is about the ADR as it now stands; after the last review,
-edit no further. A finding under Needs a person goes to them as a question rather than a fix you
+edit no further, except to set statuses on the person's word. A finding under Needs a person goes to them as a question rather than a fix you
 invent. If the last review still fails, stop and show the person the report. The count starts
 again when the person replies.
 
 Finish by giving the person the ADR's path and the reviewer's final report, except the questions
-it lists for the person: give their count and ask the first, as above. Then ask whether to
+for the person: a decision under Needs a person, and any failure only their answer can fix, such
+as a missing option or reason. Do not list or name those; give their count and ask the first, as
+above. Then ask whether to
 accept or reject it. Leave committing to them.

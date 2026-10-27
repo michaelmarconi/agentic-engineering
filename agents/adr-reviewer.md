@@ -12,6 +12,8 @@ Read:
 - The ADR at the path you are given.
 - The rubric at `${CLAUDE_PLUGIN_ROOT}/skills/adr/references/rubric.md`.
 - The other ADRs under `docs/adrs/`, for the numbering, supersede and overlap checks.
+- For the links check only, the title (first `# ` heading) of `docs/brief.md` and of each file
+  under `docs/specs/` and `docs/plans/`, so you can tell when the ADR names one.
 
 Read nothing else. Apply every rubric check. For each failure, quote the ADR as evidence and say
 what would make it pass. Then note anything else that would make the decision wrong or hard to
