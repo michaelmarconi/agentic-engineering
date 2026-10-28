@@ -5,32 +5,40 @@ Claude Code runs this as a PreToolUse hook on Write, Edit and MultiEdit. It read
 JSON from stdin and, for a *.spec.md under the project's docs/specs/ or a *.md under its
 docs/adrs/ (the project being $CLAUDE_PROJECT_DIR, or the current directory if unset),
 works out what the file would contain after the edit and compares it with what is on disk now.
+Every status carries its emoji, emoji first: a spec is `📝 Draft`, `🟢 Ready to build` or
+`✅ Built`; an ADR is `📝 Draft`, `👍 Accepted`, `❌ Rejected` or `↪️ Superseded`. The U+FE0F that
+some keyboards add after an emoji is optional. It refuses a status written by its word alone or
+with the wrong emoji, and names the value to write. A document written before the emoji, whose
+status is a bare word such as `Accepted`, counts as having that status, and an edit that only adds
+the emoji to its status line is allowed, even on a decided ADR. Any other edit to it must add the
+emoji too.
+
 For a spec it refuses:
 
-- a spec that had a lifecycle status (Draft, Ready to build or Built) losing it;
-- a spec that had none being given any status but Draft, so new specs start as Draft;
-- setting Built: only the build step may, and it does not exist yet;
-- Ready to build or Built to anything but Draft;
-- Ready to build while the Open questions section is not empty or "None.", or in the same edit
-  as any other change;
-- a change to a Ready to build or Built spec that does not return it to Draft.
+- a spec that had a lifecycle status losing it;
+- a spec that had none being given any status but `📝 Draft`, so new specs start as Draft;
+- setting `✅ Built`: only the build step may, and it does not exist yet;
+- `🟢 Ready to build` or `✅ Built` to anything but `📝 Draft`;
+- `🟢 Ready to build` while the Open questions section is not empty or "None.", or in the same
+  edit as any other change;
+- a change to a `🟢 Ready to build` or `✅ Built` spec that does not return it to `📝 Draft`.
 
 For an ADR (architecture decision record) it refuses:
 
-- an ADR that had a status (Draft, Accepted, Rejected or Superseded) losing it;
-- a new ADR with any status but Draft, including one the lifecycle does not know;
-- Accepted or Rejected, except from Draft and as an edit that changes nothing else;
-- Superseded, except from Accepted with a `superseded-by:` line added and nothing else changed,
-  naming the four-digit number of an Accepted ADR in the same folder whose `supersedes:` names
-  this one (it may name several);
-- any other change to an Accepted, Rejected or Superseded ADR, since a decided ADR is never
-  edited, only superseded by a new one.
+- an ADR that had a status losing it;
+- a new ADR with any status but `📝 Draft`, including one the lifecycle does not know;
+- `👍 Accepted` or `❌ Rejected`, except from `📝 Draft` and as an edit that changes nothing else;
+- `↪️ Superseded`, except from `👍 Accepted` with a `superseded-by:` line added and nothing else
+  changed, naming the four-digit number of a `👍 Accepted` ADR in the same folder whose
+  `supersedes:` names this one (it may name several);
+- any other change to a `👍 Accepted`, `❌ Rejected` or `↪️ Superseded` ADR, since a decided ADR
+  is never edited, only superseded by a new one.
 
 Whether a person really accepted an ADR is beyond a hook; the skill asks them.
 
-A file that has no lifecycle status before or after the edit is left alone, so a project that
-keeps other files under docs/specs/ or docs/adrs/ is not affected; only a new ADR with a status
-the lifecycle does not know is refused. Edits made any other way, by hand or through
+A file that has no lifecycle status before or after the edit, nor one named by its word, is left
+alone, so a project that keeps other files under docs/specs/ or docs/adrs/ is not affected; only a
+new ADR with a status the lifecycle does not know is refused. Edits made any other way, by hand or through
 a shell command, are not seen.
 """
 
@@ -40,8 +48,15 @@ import os
 import re
 import sys
 
-STATUSES = ("Draft", "Ready to build", "Built")
-ADR_STATUSES = ("Draft", "Accepted", "Rejected", "Superseded")
+DRAFT, READY, BUILT = "📝 Draft", "🟢 Ready to build", "✅ Built"
+ACCEPTED, REJECTED, SUPERSEDED = "👍 Accepted", "❌ Rejected", "↪️ Superseded"
+STATUSES = (DRAFT, READY, BUILT)
+ADR_STATUSES = (DRAFT, ACCEPTED, REJECTED, SUPERSEDED)
+# Each status by its word alone, as documents written before the emoji hold it.
+WORDS = {value.split(" ", 1)[1]: value for value in STATUSES + ADR_STATUSES}
+# U+FE0F asks for an emoji to be drawn in colour; some keyboards add it and some don't.
+VARIATION = "\ufe0f"
+WITHOUT_VARIATION = {value.replace(VARIATION, ""): value for value in WORDS.values()}
 NEW_HINT = {
     "spec": "If you are moving an existing spec, move it with `git mv`, which keeps its status.",
     "ADR": "Only the person accepts or rejects a decision, once they have seen it reviewed.",
@@ -94,7 +109,41 @@ def field(text, key):
 
 
 def status_of(text):
-    return field(text, "status")
+    """The frontmatter status, read the same with or without U+FE0F after its emoji."""
+    value = field(text, "status")
+    if value is None:
+        return None
+    return WITHOUT_VARIATION.get(value.replace(VARIATION, ""), value)
+
+
+def lifecycle_status(text):
+    """The status, counting a bare word such as `Accepted` from before the emoji as its full value."""
+    value = status_of(text)
+    return WORDS.get(value, value)
+
+
+def meant(value, allowed):
+    """The full status in `allowed` that `value` names by its word, as `Draft` or `🟢 Built` do."""
+    full = WORDS.get(re.sub(r"^[^A-Za-z]*", "", value or ""))
+    return full if full in allowed else None
+
+
+def moving_over(before, after):
+    """True if the edit only gives a status written before the emoji its emoji."""
+    old_line = [line for line in frontmatter(before) or [] if is_key(line, "status")]
+    new_line = [line for line in frontmatter(after) or [] if is_key(line, "status")]
+    word = field(before, "status")
+    return (
+        word in WORDS
+        and len(old_line) == len(new_line) == 1
+        and new_line[0] == old_line[0].replace(word, WORDS[word], 1)
+        and without_status(after) == without_status(before)
+    )
+
+
+def listed(values):
+    named = [f"`{value}`" for value in values]
+    return ", ".join(named[:-1]) + " or " + named[-1]
 
 
 def without_status(text, also=()):
@@ -161,7 +210,7 @@ def check(payload):
                 before = f.read()
         except (OSError, UnicodeDecodeError) as error:
             return f"{os.path.basename(path)}: could not read the {kind} to check its status ({error})."
-    old = status_of(before) if before is not None else None
+    old = lifecycle_status(before) if before is not None else None
     name = os.path.basename(path)
     after = after_edit(payload.get("tool_name"), tool_input, before)
     if after is None:
@@ -173,20 +222,24 @@ def check(payload):
         return None
 
     new = status_of(after)
+    if new not in statuses and meant(new, statuses):
+        return (
+            f"{name}: write the status with its emoji, as `{meant(new, statuses)}` "
+            f"(found '{new}'). The {kind} statuses are {listed(statuses)}."
+        )
     if old not in statuses and new not in statuses:
         if kind == "ADR" and not before and new is not None:
-            return f"{name}: a new ADR must be written as Draft, not '{new}'."
+            return f"{name}: a new ADR must be written as `{DRAFT}`, not '{new}'."
         return None
     if sum(is_key(line, "status") for line in frontmatter(after) or []) > 1:
         return f"{name}: the frontmatter has more than one `status:` line; keep one."
     if new not in statuses:
         found = f"'{new}'" if new else "none"
-        allowed = ", ".join(statuses[:-1]) + " or " + statuses[-1]
-        return f"{name}: the {kind} needs `status:` frontmatter set to {allowed} (found {found})."
-    if old not in statuses and new != "Draft":
+        return f"{name}: the {kind} needs `status:` frontmatter set to {listed(statuses)} (found {found})."
+    if old not in statuses and new != DRAFT:
         if old:
-            return f"{name}: '{old}' is not a lifecycle status; set the {kind} to Draft first."
-        return f"{name}: a new {kind} must be written as Draft, not {new}. {NEW_HINT[kind]}"
+            return f"{name}: '{old}' is not a lifecycle status; set the {kind} to `{DRAFT}` first."
+        return f"{name}: a new {kind} must be written as `{DRAFT}`, not `{new}`. {NEW_HINT[kind]}"
     return rules(path, before, after, old, new)
 
 
@@ -195,28 +248,28 @@ def spec_rules(path, before, after, old, new):
     if old not in STATUSES:
         return None
     if new == old:
-        if new != "Draft" and without_status(after) != without_status(before):
+        if new != DRAFT and without_status(after) != without_status(before):
             return (
-                f"{name}: this spec is {old}, so changing it must also set its status back to "
-                "Draft, because what was agreed or built no longer matches."
+                f"{name}: this spec is `{old}`, so changing it must also set its status back to "
+                f"`{DRAFT}`, because what was agreed or built no longer matches."
             )
         return None
-    if new == "Built":
+    if new == BUILT:
         return (
-            f"{name}: only the build step sets Built, once its review finds every requirement "
+            f"{name}: only the build step sets `{BUILT}`, once its review finds every requirement "
             "verified. Leave the status as it is."
         )
-    if old in ("Ready to build", "Built") and new != "Draft":
-        return f"{name}: a {old} spec can only go back to Draft, not to {new}."
-    if new == "Ready to build" and without_status(after) != without_status(before or ""):
+    if old in (READY, BUILT) and new != DRAFT:
+        return f"{name}: a `{old}` spec can only go back to `{DRAFT}`, not to `{new}`."
+    if new == READY and without_status(after) != without_status(before or ""):
         return (
-            f"{name}: set Ready to build on its own, as the last edit after a passing review; "
+            f"{name}: set `{READY}` on its own, as the last edit after a passing review; "
             "this edit also changes the spec's content."
         )
-    if new == "Ready to build" and has_open_questions(after):
+    if new == READY and has_open_questions(after):
         return (
-            f"{name}: it still has open questions, so it cannot be Ready to build. Answer them "
-            "with the person, or leave the spec as Draft."
+            f"{name}: it still has open questions, so it cannot be `{READY}`. Answer them "
+            f"with the person, or leave the spec as `{DRAFT}`."
         )
     return None
 
@@ -239,8 +292,11 @@ def replacement_problem(path, number):
             text = f.read()
     except (OSError, UnicodeDecodeError) as error:
         return f"ADR {number} could not be read ({error})"
-    if status_of(text) != "Accepted":
-        return f"ADR {number} is not Accepted yet; the old ADR stays Accepted until the person accepts it"
+    if lifecycle_status(text) != ACCEPTED:
+        return (
+            f"ADR {number} is not `{ACCEPTED}` yet; the old ADR stays `{ACCEPTED}` until the "
+            "person accepts it"
+        )
     if own.group() not in re.findall(r"\d{4}", field(text, "supersedes") or ""):
         return f"ADR {number} does not name this ADR in its `supersedes:` line"
     return None
@@ -251,24 +307,24 @@ def adr_rules(path, before, after, old, new):
     if old not in ADR_STATUSES:
         return None
     if new == old:
-        if new != "Draft" and after != before:
+        if new != DRAFT and after != before and not moving_over(before, after):
             return (
-                f"{name}: this ADR is {old}, and a decided ADR is never edited. To change the "
-                "decision, write a new Draft ADR that supersedes it."
+                f"{name}: this ADR is `{old}`, and a decided ADR is never edited. To change the "
+                f"decision, write a new `{DRAFT}` ADR that supersedes it."
             )
         return None
-    if old == "Draft" and new in ("Accepted", "Rejected"):
+    if old == DRAFT and new in (ACCEPTED, REJECTED):
         if without_status(after) != without_status(before):
             return (
-                f"{name}: set {new} on its own, as the last edit after a passing review and the "
+                f"{name}: set `{new}` on its own, as the last edit after a passing review and the "
                 "person's sign-off; this edit also changes the ADR's content."
             )
         return None
-    if old == "Accepted" and new == "Superseded":
+    if old == ACCEPTED and new == SUPERSEDED:
         added = [line for line in frontmatter(after) or [] if is_key(line, "superseded-by")]
         if len(added) != 1 or field(before, "superseded-by") is not None:
             return (
-                f"{name}: setting Superseded must add one `superseded-by:` line naming the "
+                f"{name}: setting `{SUPERSEDED}` must add one `superseded-by:` line naming the "
                 "four-digit number of the ADR that replaces it."
             )
         number = field(after, "superseded-by")
@@ -276,16 +332,16 @@ def adr_rules(path, before, after, old, new):
             return f"{name}: `superseded-by:` must be the four-digit number of the replacing ADR."
         problem = replacement_problem(path, number)
         if problem:
-            return f"{name}: cannot set Superseded: {problem}."
+            return f"{name}: cannot set `{SUPERSEDED}`: {problem}."
         if without_status(after, also=("superseded-by",)) != without_status(before):
             return (
-                f"{name}: setting Superseded may only change the status and add `superseded-by:`; "
+                f"{name}: setting `{SUPERSEDED}` may only change the status and add `superseded-by:`; "
                 "the rest of a decided ADR is never edited."
             )
         return None
     return (
-        f"{name}: an ADR cannot go from {old} to {new}. Draft becomes Accepted or Rejected; "
-        "Accepted becomes Superseded; nothing else changes."
+        f"{name}: an ADR cannot go from `{old}` to `{new}`. `{DRAFT}` becomes `{ACCEPTED}` or "
+        f"`{REJECTED}`; `{ACCEPTED}` becomes `{SUPERSEDED}`; nothing else changes."
     )
 
 

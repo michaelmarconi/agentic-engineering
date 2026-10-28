@@ -44,11 +44,15 @@ class SessionMap(unittest.TestCase):
     def test_prints_map_when_a_spec_has_a_lifecycle_status(self):
         with open(MAP) as f:
             expected = f.read()
-        self.put("docs/specs/billing/invoice.spec.md", "---\nstatus: Draft\n---\n# Invoice\n")
+        self.put("docs/specs/billing/invoice.spec.md", "---\nstatus: 📝 Draft\n---\n# Invoice\n")
         out = self.output()
         self.assertEqual(out["hookSpecificOutput"]["hookEventName"], "SessionStart")
         self.assertEqual(out["hookSpecificOutput"]["additionalContext"], expected)
         self.assertNotIn("systemMessage", out)
+
+    def test_prints_map_for_a_spec_written_before_the_emoji(self):
+        self.put("docs/specs/invoice.spec.md", "---\nstatus: Ready to build\n---\n# Invoice\n")
+        self.assertIn("hookSpecificOutput", self.output())
 
     def test_prints_map_when_brief_exists(self):
         os.makedirs(os.path.join(self.tmp.name, "docs"))

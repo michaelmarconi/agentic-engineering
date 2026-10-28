@@ -13,7 +13,7 @@ import json
 import os
 import sys
 
-from status_check import STATUSES, status_of
+from status_check import STATUSES, lifecycle_status
 
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
 MAP = os.path.join(ROOT, "docs", "lifecycle.md")
@@ -27,7 +27,7 @@ def uses_lifecycle(project):
             if name.endswith(".spec.md"):
                 try:
                     with open(os.path.join(folder, name), encoding="utf-8") as f:
-                        if status_of(f.read()) in STATUSES:
+                        if lifecycle_status(f.read()) in STATUSES:
                             return True
                 except (OSError, UnicodeDecodeError):
                     pass
