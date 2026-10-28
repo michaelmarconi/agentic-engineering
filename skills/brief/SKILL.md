@@ -41,15 +41,16 @@ later stage (rubric checks 2 and 7), leave it out and tell them where it goes: h
 behaves goes in its spec, so suggest `/spec`; a technology or design they have decided goes in an
 ADR, and one they have not becomes an open question.
 
-Then ask about what the draft or the review leaves open: say how many questions there are and
-ask only the first, as one question rather than two joined together. The others wait in the
-brief, so leave them out of that reply entirely: describe the draft by what it says, never by
-what it lacks ("nothing yet on who else is involved" names a question), and report what you or
-the review changed without naming the gaps that remain. Ask the next once the first is settled,
-playing back what you have understood. Settle each answer before moving on: take the part they
-answered and ask again about the rest, because silence is not agreement. If the person has said
-not to ask now, or would rather not answer, give only the count: no question and no list of what
-the questions cover. An open question goes only when their answer is written into the brief.
+Then ask about what the draft or the review leaves open: say how many questions there are and ask
+only the first, as one question rather than two joined together, with any examples given as possible
+answers rather than further questions. The others wait in the brief, so leave them out of that reply
+entirely: describe the draft by what it says, never by what it lacks ("nothing yet on who else is
+involved" names a question), and report what you or the review changed without naming the gaps that
+remain. Ask the next once the first is settled, playing back what you have understood. Settle each
+answer before moving on: take the part they answered and ask again about the rest, because silence
+is not agreement. If the person has said not to ask now, or would rather not answer, give only the
+count: no question and no list of what the questions cover. An open question goes only when their
+answer is written into the brief.
 
 ## Review
 
@@ -96,6 +97,7 @@ it hard to miss anything. Give them the brief's path, the review report and the 
 there was one, leaving out the decisions they list for the person. Then say how many items must be
 settled before the brief can move on: its open questions, plus any correction the check found not
 made or broken. Say you will take them one at a time, rather than asking whether to, and ask the
-first only, as a single question; if the person has said not to ask now, ask nothing. Name the count
-only, not the items: each comes up when you reach it. List the reviewers' suggestions separately, as
-optional: they never hold the brief back. Leave committing to them.
+first only, as a single question, giving any examples as possible answers rather than further
+questions; if the person has said not to ask now, ask nothing. Name the count only, not the items:
+each comes up when you reach it. List the reviewers' suggestions separately, as optional: they never
+hold the brief back. Leave committing to them.

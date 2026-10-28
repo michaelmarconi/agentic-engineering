@@ -107,9 +107,10 @@ will appear under that account, since their name is public on the issue and it m
 account. Leave out the decisions the reports list for the person: say how many items must be settled
 before filing, those decisions plus any correction the check found not made or broken, say you will
 take them one at a time, rather than asking whether to, and ask the first only, as a single
-question; if the person has said not to ask now, ask nothing. Name the count only, not the items:
-each comes up when you reach it. List the reviewers' suggestions separately, as optional. Once
-nothing is left to settle, ask whether to file it.
+question, giving any examples as possible answers rather than further questions; if the person has
+said not to ask now, ask nothing. Name the count only, not the items: each comes up when you reach
+it. List the reviewers' suggestions separately, as optional. Once nothing is left to settle, ask
+whether to file it.
 
 File only on their clear yes to that draft: an issue on a public repository can't be taken back,
 so a yes given before they have seen the draft and the account doesn't count, even "file it, I
