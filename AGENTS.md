@@ -125,7 +125,7 @@ agents/
   <name>-reviewer.md   # one reviewer per skill that writes documents
   correction-checker.md # checks the corrections after a review, for every skill
 hooks/
-  hooks.json           # session map, status checks and the review relay
+  hooks.json           # session map, status checks, the review relay, reads of the plugin's own files
 scripts/               # scripts the hooks run, the skill, version and reference checks, and their tests
 docs/
   adrs/                # this plugin's own architecture decision records
