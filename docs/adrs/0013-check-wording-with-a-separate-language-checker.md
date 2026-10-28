@@ -3,7 +3,8 @@
 status: Draft
 date: 2026-10-28
 ---
- # Check wording with a separate language checker
+
+# Check wording with a separate language checker
 
 ## Context and Problem Statement
 
