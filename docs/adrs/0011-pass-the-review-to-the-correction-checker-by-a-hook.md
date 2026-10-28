@@ -77,6 +77,6 @@ only hook features that Claude Code documents, and wrote nothing into the projec
 
 Applies to: any text one agent of a review passes to another.
 Checked by: automated tests. Unit tests feed the hook examples of the messages Claude Code sends
-it, and check what it saves, what it adds to the checker's request,. Tests
+it, and check what it saves and what it adds to the checker's request. Tests
 that run each skill on sample conversations check that the checker's report quotes a finding
 from the reviewer's report word for word, which can only happen if the hook passed it on.
