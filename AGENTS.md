@@ -124,7 +124,7 @@ agents/
   correction-checker.md # checks the corrections after a review, for every skill
 hooks/
   hooks.json           # session map and status checks
-scripts/               # scripts the hooks run, the skill and version checks, and their tests
+scripts/               # scripts the hooks run, the skill, version and reference checks, and their tests
 docs/
   lifecycle.md         # the lifecycle rules, for people and for Claude at session start
   skills/<name>.md     # one page per skill, linked from README.md
