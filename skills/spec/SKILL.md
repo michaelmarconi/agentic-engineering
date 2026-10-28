@@ -131,6 +131,6 @@ it hard to miss anything. Give them the spec's path, the review report and the c
 there was one, leaving out the decisions they list for the person. Then say how many items must be
 settled before the spec can move on: its open questions, plus any correction the check found not
 made or broken. Say you will take them one at a time, rather than asking whether to, and ask the
-first only, as a single question. Name the count only, not the items: each comes up when you reach
-it. List the reviewers' suggestions separately, as optional: they never hold the spec back. Leave
-committing to them.
+first only, as a single question; if the person has said not to ask now, ask nothing. Name the count
+only, not the items: each comes up when you reach it. List the reviewers' suggestions separately, as
+optional: they never hold the spec back. Leave committing to them.

@@ -31,14 +31,15 @@ fact they gave that the brief's sections hold, such as who does what; where the
 conversation changed its mind, the latest word wins. Only when there is nothing to draw on, ask
 what they are building and for whom first.
 
-Write only what they said or showed you, as rubric check 8 describes, and link each fact taken
-from a document to it, as check 9 does. When they want the brief to refer to a spec, an ADR
-(architecture decision record) or a plan, by hyperlink, path or title, leave it out (check 11)
-and tell them why: that document can change or be deleted without the brief being touched, so
-the reference would go stale. When they mention something that belongs to a later stage
-(rubric checks 2 and 7), leave it out and tell them where it goes: how one capability behaves
-goes in its spec, so suggest `/spec`; a technology or design they have decided goes in an ADR,
-and one they have not becomes an open question.
+Write only what they said or showed you, as rubric check 8 describes, and link each fact taken from
+a document to it, as check 9 does. What they haven't said becomes an open question, each asking one
+thing: "What do they do today, and how long does it take?" is two questions. When they want the
+brief to refer to a spec, an ADR (architecture decision record) or a plan, by hyperlink, path or
+title, leave it out (check 11) and tell them why: that document can change or be deleted without the
+brief being touched, so the reference would go stale. When they mention something that belongs to a
+later stage (rubric checks 2 and 7), leave it out and tell them where it goes: how one capability
+behaves goes in its spec, so suggest `/spec`; a technology or design they have decided goes in an
+ADR, and one they have not becomes an open question.
 
 Then ask about what the draft or the review leaves open: say how many questions there are and
 ask only the first, as one question rather than two joined together. The others wait in the
@@ -95,6 +96,6 @@ it hard to miss anything. Give them the brief's path, the review report and the 
 there was one, leaving out the decisions they list for the person. Then say how many items must be
 settled before the brief can move on: its open questions, plus any correction the check found not
 made or broken. Say you will take them one at a time, rather than asking whether to, and ask the
-first only, as a single question. Name the count only, not the items: each comes up when you reach
-it. List the reviewers' suggestions separately, as optional: they never hold the brief back. Leave
-committing to them.
+first only, as a single question; if the person has said not to ask now, ask nothing. Name the count
+only, not the items: each comes up when you reach it. List the reviewers' suggestions separately, as
+optional: they never hold the brief back. Leave committing to them.
