@@ -1,0 +1,2522 @@
+[
+  {
+    "case": "clean-01",
+    "mode": "inject",
+    "run": 1,
+    "session": "f81b6f55-1cb2-4a33-b269-4d5402fcc42b",
+    "error": false,
+    "cost_usd": 0.1641967,
+    "checker_calls": 1,
+    "reviews": 1,
+    "complete": true,
+    "report": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "document": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "checker_result": "FAIL"
+  },
+  {
+    "case": "clean-01",
+    "mode": "inject",
+    "run": 2,
+    "session": "c96d6732-95b6-49c2-a561-0c42416c3d28",
+    "error": false,
+    "cost_usd": 0.1780047,
+    "checker_calls": 1,
+    "reviews": 1,
+    "complete": true,
+    "report": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "document": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "checker_result": "PASS"
+  },
+  {
+    "case": "clean-01",
+    "mode": "inject",
+    "run": 3,
+    "session": "040aecf9-da9f-49a4-a05b-c2fdf1bd5ebf",
+    "error": false,
+    "cost_usd": 0.1704941,
+    "checker_calls": 1,
+    "reviews": 1,
+    "complete": true,
+    "report": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "document": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "checker_result": "PASS"
+  },
+  {
+    "case": "clean-01",
+    "mode": "paste",
+    "run": 1,
+    "session": "6b102550-5cfd-4205-855c-5485b2145f9c",
+    "error": false,
+    "cost_usd": 0.20683319999999997,
+    "checker_calls": 1,
+    "reviews": 1,
+    "complete": true,
+    "report": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "document": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "checker_result": "FAIL"
+  },
+  {
+    "case": "clean-01",
+    "mode": "paste",
+    "run": 2,
+    "session": "2ecc5aef-4bf0-4443-a31b-87750ba11662",
+    "error": false,
+    "cost_usd": 0.16848970000000002,
+    "checker_calls": 1,
+    "reviews": 1,
+    "complete": true,
+    "report": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "document": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "checker_result": "PASS"
+  },
+  {
+    "case": "clean-01",
+    "mode": "paste",
+    "run": 3,
+    "session": "fd544423-9a45-43b3-8415-a5446a86bcdb",
+    "error": false,
+    "cost_usd": 0.2045501,
+    "checker_calls": 1,
+    "reviews": 1,
+    "complete": true,
+    "report": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "document": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "checker_result": "PASS"
+  },
+  {
+    "case": "clean-01",
+    "mode": "paste-opus",
+    "run": 1,
+    "session": "32818d77-d79a-4d52-856a-70369a0bb4c0",
+    "error": false,
+    "cost_usd": 0.3199135,
+    "checker_calls": 1,
+    "reviews": 1,
+    "complete": true,
+    "report": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "document": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "checker_result": "PASS"
+  },
+  {
+    "case": "clean-01",
+    "mode": "paste-opus",
+    "run": 2,
+    "session": "d450934a-ce3e-48a6-ba24-3fef10af1aa3",
+    "error": false,
+    "cost_usd": 0.3059914,
+    "checker_calls": 1,
+    "reviews": 1,
+    "complete": true,
+    "report": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "document": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "checker_result": "PASS"
+  },
+  {
+    "case": "clean-01",
+    "mode": "paste-opus",
+    "run": 3,
+    "session": "6ac257e9-7876-4168-920c-5a2a8135be68",
+    "error": false,
+    "cost_usd": 0.32803419999999994,
+    "checker_calls": 1,
+    "reviews": 1,
+    "complete": true,
+    "report": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "document": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "checker_result": "FAIL"
+  },
+  {
+    "case": "clean-02",
+    "mode": "inject",
+    "run": 1,
+    "session": "bf84b89a-91e9-48d9-bbb8-526cf2c70e5f",
+    "error": false,
+    "cost_usd": 0.14077209999999998,
+    "checker_calls": 1,
+    "reviews": 1,
+    "complete": true,
+    "report": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "document": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "checker_result": "PASS"
+  },
+  {
+    "case": "clean-02",
+    "mode": "inject",
+    "run": 2,
+    "session": "2677faea-eebe-410d-b2de-326314013862",
+    "error": false,
+    "cost_usd": 0.1524625,
+    "checker_calls": 1,
+    "reviews": 1,
+    "complete": true,
+    "report": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "document": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "checker_result": "PASS"
+  },
+  {
+    "case": "clean-02",
+    "mode": "inject",
+    "run": 3,
+    "session": "8d658609-9d7c-4b52-935c-9474ad32c70b",
+    "error": false,
+    "cost_usd": 0.15105210000000002,
+    "checker_calls": 1,
+    "reviews": 1,
+    "complete": true,
+    "report": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "document": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "checker_result": "PASS"
+  },
+  {
+    "case": "clean-02",
+    "mode": "paste",
+    "run": 1,
+    "session": "3b82f962-2f20-469c-b0d6-ddf9530083c6",
+    "error": false,
+    "cost_usd": 0.17023729999999998,
+    "checker_calls": 1,
+    "reviews": 1,
+    "complete": true,
+    "report": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "document": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "checker_result": "PASS"
+  },
+  {
+    "case": "clean-02",
+    "mode": "paste",
+    "run": 2,
+    "session": "79f09cc6-0df9-49f2-8376-4706371080a4",
+    "error": false,
+    "cost_usd": 0.15688950000000002,
+    "checker_calls": 1,
+    "reviews": 1,
+    "complete": true,
+    "report": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "document": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "checker_result": "PASS"
+  },
+  {
+    "case": "clean-02",
+    "mode": "paste",
+    "run": 3,
+    "session": "d9e978b8-32ba-4b4e-82ea-063ffe945159",
+    "error": false,
+    "cost_usd": 0.1658435,
+    "checker_calls": 1,
+    "reviews": 1,
+    "complete": true,
+    "report": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "document": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "checker_result": "PASS"
+  },
+  {
+    "case": "clean-02",
+    "mode": "paste-opus",
+    "run": 1,
+    "session": "23cbb1e0-fd27-434b-b934-40da01b415cf",
+    "error": false,
+    "cost_usd": 0.3085206,
+    "checker_calls": 1,
+    "reviews": 1,
+    "complete": true,
+    "report": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "document": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "checker_result": "PASS"
+  },
+  {
+    "case": "clean-02",
+    "mode": "paste-opus",
+    "run": 2,
+    "session": "9831c909-bb59-4e0a-9314-7cd5dade1690",
+    "error": false,
+    "cost_usd": 0.23824399999999998,
+    "checker_calls": 1,
+    "reviews": 1,
+    "complete": true,
+    "report": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "document": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "checker_result": "PASS"
+  },
+  {
+    "case": "clean-02",
+    "mode": "paste-opus",
+    "run": 3,
+    "session": "33639581-fede-4081-a3b5-bd657929637e",
+    "error": false,
+    "cost_usd": 0.27673729999999996,
+    "checker_calls": 1,
+    "reviews": 1,
+    "complete": true,
+    "report": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "document": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "checker_result": "PASS"
+  },
+  {
+    "case": "seeded-01",
+    "mode": "inject",
+    "run": 1,
+    "session": "f03cfe46-ff81-4cee-8ddc-c5e0b77d5798",
+    "error": false,
+    "cost_usd": 0.2468757,
+    "checker_calls": 1,
+    "reviews": 1,
+    "complete": true,
+    "report": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "document": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "checker_result": "PASS"
+  },
+  {
+    "case": "seeded-01",
+    "mode": "inject",
+    "run": 2,
+    "session": "14a25af9-05e5-461c-90e1-912e1108b9f6",
+    "error": false,
+    "cost_usd": 0.2643677,
+    "checker_calls": 1,
+    "reviews": 1,
+    "complete": true,
+    "report": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "document": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "checker_result": "FAIL"
+  },
+  {
+    "case": "seeded-01",
+    "mode": "inject",
+    "run": 3,
+    "session": "35ad2982-ce86-4c12-b540-4095168a872d",
+    "error": false,
+    "cost_usd": 0.2433102,
+    "checker_calls": 1,
+    "reviews": 1,
+    "complete": true,
+    "report": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "document": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "checker_result": "FAIL"
+  },
+  {
+    "case": "seeded-01",
+    "mode": "paste",
+    "run": 1,
+    "session": "ea499d1e-3dda-4f70-9074-2fa03dbc9506",
+    "error": false,
+    "cost_usd": 0.26413400000000004,
+    "checker_calls": 1,
+    "reviews": 1,
+    "complete": true,
+    "report": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "document": {
+      "present": true,
+      "exact": false,
+      "same_but_spacing": false,
+      "similarity": 0.9994,
+      "lines_lost": 1,
+      "lines_added": 1
+    },
+    "checker_result": "FAIL"
+  },
+  {
+    "case": "seeded-01",
+    "mode": "paste",
+    "run": 2,
+    "session": "7934018c-9575-42e5-b796-2124c1cfaf80",
+    "error": false,
+    "cost_usd": 0.2920839,
+    "checker_calls": 1,
+    "reviews": 1,
+    "complete": true,
+    "report": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "document": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "checker_result": "FAIL"
+  },
+  {
+    "case": "seeded-01",
+    "mode": "paste",
+    "run": 3,
+    "session": "b4a7dcb5-9a8f-4514-a85f-0c7e8a1c864f",
+    "error": false,
+    "cost_usd": 0.2462533,
+    "checker_calls": 1,
+    "reviews": 1,
+    "complete": true,
+    "report": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "document": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "checker_result": "FAIL"
+  },
+  {
+    "case": "seeded-01",
+    "mode": "paste-opus",
+    "run": 1,
+    "session": "39f82058-abb1-4902-989a-8e474532d070",
+    "error": false,
+    "cost_usd": 0.38041800000000003,
+    "checker_calls": 1,
+    "reviews": 1,
+    "complete": true,
+    "report": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "document": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "checker_result": "FAIL"
+  },
+  {
+    "case": "seeded-01",
+    "mode": "paste-opus",
+    "run": 2,
+    "session": "1068db84-9fe4-4e4f-8cf5-f2c7fc2d08d4",
+    "error": false,
+    "cost_usd": 0.3969491,
+    "checker_calls": 1,
+    "reviews": 1,
+    "complete": true,
+    "report": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "document": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "checker_result": "FAIL"
+  },
+  {
+    "case": "seeded-01",
+    "mode": "paste-opus",
+    "run": 3,
+    "session": "61f9e39e-1725-4671-afa8-aac9716abe06",
+    "error": false,
+    "cost_usd": 0.4169915,
+    "checker_calls": 1,
+    "reviews": 1,
+    "complete": true,
+    "report": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "document": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "checker_result": "FAIL"
+  },
+  {
+    "case": "seeded-02",
+    "mode": "inject",
+    "run": 1,
+    "session": "d7e0dcbd-ddd0-482f-96f3-91b401a371a5",
+    "error": false,
+    "cost_usd": 0.17930280000000004,
+    "checker_calls": 1,
+    "reviews": 1,
+    "complete": true,
+    "report": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "document": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "checker_result": "FAIL"
+  },
+  {
+    "case": "seeded-02",
+    "mode": "inject",
+    "run": 2,
+    "session": "104077cc-661f-499c-ba29-bb339cf05fce",
+    "error": false,
+    "cost_usd": 0.2030321,
+    "checker_calls": 1,
+    "reviews": 1,
+    "complete": true,
+    "report": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "document": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "checker_result": "FAIL"
+  },
+  {
+    "case": "seeded-02",
+    "mode": "inject",
+    "run": 3,
+    "session": "40deee72-9b08-409d-b0fa-a67f56ec751b",
+    "error": false,
+    "cost_usd": 0.1780437,
+    "checker_calls": 1,
+    "reviews": 1,
+    "complete": true,
+    "report": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "document": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "checker_result": "FAIL"
+  },
+  {
+    "case": "seeded-02",
+    "mode": "paste",
+    "run": 1,
+    "session": "ab60b100-c10f-4105-9cfb-769ffb3a7072",
+    "error": false,
+    "cost_usd": 0.21039110000000003,
+    "checker_calls": 1,
+    "reviews": 1,
+    "complete": true,
+    "report": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "document": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "checker_result": "FAIL"
+  },
+  {
+    "case": "seeded-02",
+    "mode": "paste",
+    "run": 2,
+    "session": "18a82bae-e84a-42db-8d18-dae716046ee0",
+    "error": false,
+    "cost_usd": 0.2013417,
+    "checker_calls": 1,
+    "reviews": 1,
+    "complete": true,
+    "report": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "document": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "checker_result": "FAIL"
+  },
+  {
+    "case": "seeded-02",
+    "mode": "paste",
+    "run": 3,
+    "session": "0e75b043-1ed0-4901-99c0-979771f0dd66",
+    "error": false,
+    "cost_usd": 0.20214600000000002,
+    "checker_calls": 1,
+    "reviews": 1,
+    "complete": true,
+    "report": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "document": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "checker_result": "FAIL"
+  },
+  {
+    "case": "seeded-02",
+    "mode": "paste-opus",
+    "run": 1,
+    "session": "8f59a47d-d569-45c6-be2e-470a26d8537b",
+    "error": false,
+    "cost_usd": 0.33825190000000005,
+    "checker_calls": 1,
+    "reviews": 1,
+    "complete": true,
+    "report": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "document": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "checker_result": "FAIL"
+  },
+  {
+    "case": "seeded-02",
+    "mode": "paste-opus",
+    "run": 2,
+    "session": "8db03e97-347a-4b98-bb68-42bb8d21cd47",
+    "error": false,
+    "cost_usd": 0.3617733,
+    "checker_calls": 1,
+    "reviews": 1,
+    "complete": true,
+    "report": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "document": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "checker_result": "PASS"
+  },
+  {
+    "case": "seeded-02",
+    "mode": "paste-opus",
+    "run": 3,
+    "session": "a6f80929-734d-47f4-9cf3-2f9742a0be9f",
+    "error": false,
+    "cost_usd": 0.33396070000000005,
+    "checker_calls": 1,
+    "reviews": 1,
+    "complete": true,
+    "report": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "document": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "checker_result": "FAIL"
+  },
+  {
+    "case": "seeded-03",
+    "mode": "inject",
+    "run": 1,
+    "session": "818a55ae-8f79-4f9e-b2f1-a76197e9c665",
+    "error": false,
+    "cost_usd": 0.16415209999999997,
+    "checker_calls": 1,
+    "reviews": 1,
+    "complete": true,
+    "report": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "document": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "checker_result": "PASS"
+  },
+  {
+    "case": "seeded-03",
+    "mode": "inject",
+    "run": 2,
+    "session": "8731cc25-c53f-4d0e-838f-a2a4fe99034c",
+    "error": false,
+    "cost_usd": 0.1609672,
+    "checker_calls": 1,
+    "reviews": 1,
+    "complete": true,
+    "report": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "document": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "checker_result": "PASS"
+  },
+  {
+    "case": "seeded-03",
+    "mode": "inject",
+    "run": 3,
+    "session": "82d1b64d-77a3-4d1a-912e-8ed2698a12b1",
+    "error": false,
+    "cost_usd": 0.22213020000000003,
+    "checker_calls": 1,
+    "reviews": 1,
+    "complete": true,
+    "report": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "document": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "checker_result": "PASS"
+  },
+  {
+    "case": "seeded-03",
+    "mode": "paste",
+    "run": 1,
+    "session": "bd50531c-66f7-4493-a320-42405e26d4f9",
+    "error": false,
+    "cost_usd": 0.1981309,
+    "checker_calls": 1,
+    "reviews": 1,
+    "complete": true,
+    "report": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "document": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "checker_result": "PASS"
+  },
+  {
+    "case": "seeded-03",
+    "mode": "paste",
+    "run": 2,
+    "session": "067f96b9-7658-4754-a755-8bdebcf78d0e",
+    "error": false,
+    "cost_usd": 0.2055189,
+    "checker_calls": 1,
+    "reviews": 1,
+    "complete": true,
+    "report": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "document": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "checker_result": "PASS"
+  },
+  {
+    "case": "seeded-03",
+    "mode": "paste",
+    "run": 3,
+    "session": "813a4410-b60e-425d-9e87-ffa462fc348c",
+    "error": false,
+    "cost_usd": 0.24226930000000002,
+    "checker_calls": 1,
+    "reviews": 1,
+    "complete": true,
+    "report": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "document": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "checker_result": "PASS"
+  },
+  {
+    "case": "seeded-03",
+    "mode": "paste-opus",
+    "run": 1,
+    "session": "0211b50b-0d23-4591-b7a5-921ff8c36271",
+    "error": false,
+    "cost_usd": 0.33942959999999994,
+    "checker_calls": 1,
+    "reviews": 1,
+    "complete": true,
+    "report": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "document": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "checker_result": "PASS"
+  },
+  {
+    "case": "seeded-03",
+    "mode": "paste-opus",
+    "run": 2,
+    "session": "f07c650f-ae25-4c6c-a81e-2ea186585980",
+    "error": false,
+    "cost_usd": 0.3567797,
+    "checker_calls": 1,
+    "reviews": 1,
+    "complete": true,
+    "report": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "document": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "checker_result": "PASS"
+  },
+  {
+    "case": "seeded-03",
+    "mode": "paste-opus",
+    "run": 3,
+    "session": "a255e6d7-51c7-4fe0-a789-6a7df06adbfb",
+    "error": false,
+    "cost_usd": 0.32508560000000003,
+    "checker_calls": 1,
+    "reviews": 1,
+    "complete": true,
+    "report": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "document": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "checker_result": "PASS"
+  },
+  {
+    "case": "seeded-04",
+    "mode": "inject",
+    "run": 1,
+    "session": "34faa7d9-73f2-4600-a485-f93ab8914c94",
+    "error": false,
+    "cost_usd": 0.19158450000000002,
+    "checker_calls": 1,
+    "reviews": 1,
+    "complete": true,
+    "report": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "document": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "checker_result": "FAIL"
+  },
+  {
+    "case": "seeded-04",
+    "mode": "inject",
+    "run": 2,
+    "session": "fa3d713e-2c8f-4779-8b11-73493051f85e",
+    "error": false,
+    "cost_usd": 0.17952289999999999,
+    "checker_calls": 1,
+    "reviews": 1,
+    "complete": true,
+    "report": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "document": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "checker_result": "FAIL"
+  },
+  {
+    "case": "seeded-04",
+    "mode": "inject",
+    "run": 3,
+    "session": "21d2524f-cff8-4128-af9d-b180ad1f3678",
+    "error": false,
+    "cost_usd": 0.18259599999999998,
+    "checker_calls": 1,
+    "reviews": 1,
+    "complete": true,
+    "report": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "document": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "checker_result": "FAIL"
+  },
+  {
+    "case": "seeded-04",
+    "mode": "paste",
+    "run": 1,
+    "session": "66a82144-9143-479f-9761-17117fc307e9",
+    "error": false,
+    "cost_usd": 0.22344979999999998,
+    "checker_calls": 1,
+    "reviews": 1,
+    "complete": true,
+    "report": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "document": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "checker_result": "FAIL"
+  },
+  {
+    "case": "seeded-04",
+    "mode": "paste",
+    "run": 2,
+    "session": "f6dcb101-c194-4bea-b71e-864ab60c8f95",
+    "error": false,
+    "cost_usd": 0.20493219999999998,
+    "checker_calls": 1,
+    "reviews": 1,
+    "complete": true,
+    "report": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "document": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "checker_result": "FAIL"
+  },
+  {
+    "case": "seeded-04",
+    "mode": "paste",
+    "run": 3,
+    "session": "eccbc135-574b-48d8-8686-2da2749fb028",
+    "error": false,
+    "cost_usd": 0.2172085,
+    "checker_calls": 1,
+    "reviews": 1,
+    "complete": true,
+    "report": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "document": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "checker_result": "FAIL"
+  },
+  {
+    "case": "seeded-04",
+    "mode": "paste-opus",
+    "run": 1,
+    "session": "639bd0df-dd27-4084-93cc-4e23bfb92411",
+    "error": false,
+    "cost_usd": 0.34303980000000006,
+    "checker_calls": 1,
+    "reviews": 1,
+    "complete": true,
+    "report": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "document": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "checker_result": "FAIL"
+  },
+  {
+    "case": "seeded-04",
+    "mode": "paste-opus",
+    "run": 2,
+    "session": "8cd5bfec-beee-497c-b03c-330c22476d36",
+    "error": false,
+    "cost_usd": 0.32301130000000006,
+    "checker_calls": 1,
+    "reviews": 1,
+    "complete": true,
+    "report": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "document": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "checker_result": "FAIL"
+  },
+  {
+    "case": "seeded-04",
+    "mode": "paste-opus",
+    "run": 3,
+    "session": "0a3af29a-5b6e-40a4-94f7-782ea680f332",
+    "error": false,
+    "cost_usd": 0.3461641,
+    "checker_calls": 1,
+    "reviews": 1,
+    "complete": true,
+    "report": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "document": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "checker_result": "FAIL"
+  },
+  {
+    "case": "seeded-05",
+    "mode": "inject",
+    "run": 1,
+    "session": "aabb42a4-fe34-43b1-af58-cfc89c99ec9e",
+    "error": false,
+    "cost_usd": 0.20440699999999998,
+    "checker_calls": 1,
+    "reviews": 1,
+    "complete": true,
+    "report": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "document": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "checker_result": "FAIL"
+  },
+  {
+    "case": "seeded-05",
+    "mode": "inject",
+    "run": 2,
+    "session": "a5c691ed-6182-46bd-9f3a-43547d4b8098",
+    "error": false,
+    "cost_usd": 0.2201147,
+    "checker_calls": 1,
+    "reviews": 1,
+    "complete": true,
+    "report": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "document": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "checker_result": "FAIL"
+  },
+  {
+    "case": "seeded-05",
+    "mode": "inject",
+    "run": 3,
+    "session": "6d57f825-5c32-4b66-9fa6-b5aca5505d9f",
+    "error": false,
+    "cost_usd": 0.1848129,
+    "checker_calls": 1,
+    "reviews": 1,
+    "complete": true,
+    "report": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "document": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "checker_result": "FAIL"
+  },
+  {
+    "case": "seeded-05",
+    "mode": "paste",
+    "run": 1,
+    "session": "334db0cf-ffc8-47f4-8446-3794c11c7381",
+    "error": false,
+    "cost_usd": 0.2896218,
+    "checker_calls": 1,
+    "reviews": 1,
+    "complete": true,
+    "report": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "document": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "checker_result": "FAIL"
+  },
+  {
+    "case": "seeded-05",
+    "mode": "paste",
+    "run": 2,
+    "session": "f43acd6e-2402-4ec3-aa7d-3eab56a4f795",
+    "error": false,
+    "cost_usd": 0.2784626,
+    "checker_calls": 1,
+    "reviews": 1,
+    "complete": true,
+    "report": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "document": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "checker_result": "FAIL"
+  },
+  {
+    "case": "seeded-05",
+    "mode": "paste",
+    "run": 3,
+    "session": "15e71e84-20f7-4b3e-99a3-4c9166af6090",
+    "error": false,
+    "cost_usd": 0.2421071,
+    "checker_calls": 1,
+    "reviews": 1,
+    "complete": true,
+    "report": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "document": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "checker_result": "PASS"
+  },
+  {
+    "case": "seeded-05",
+    "mode": "paste-opus",
+    "run": 1,
+    "session": "bff92a6a-6a33-405f-922c-e0636ebace68",
+    "error": false,
+    "cost_usd": 0.4134165000000001,
+    "checker_calls": 1,
+    "reviews": 1,
+    "complete": true,
+    "report": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "document": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "checker_result": "PASS"
+  },
+  {
+    "case": "seeded-05",
+    "mode": "paste-opus",
+    "run": 2,
+    "session": "6ba0495a-09bb-467d-a862-43a89424a6d5",
+    "error": false,
+    "cost_usd": 0.4060636,
+    "checker_calls": 1,
+    "reviews": 1,
+    "complete": true,
+    "report": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "document": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "checker_result": "PASS"
+  },
+  {
+    "case": "seeded-05",
+    "mode": "paste-opus",
+    "run": 3,
+    "session": "e2b3771c-60b3-4d7a-b58f-7b2651b6a2b2",
+    "error": false,
+    "cost_usd": 0.4248984,
+    "checker_calls": 1,
+    "reviews": 1,
+    "complete": true,
+    "report": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "document": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "checker_result": "FAIL"
+  },
+  {
+    "case": "seeded-06",
+    "mode": "inject",
+    "run": 1,
+    "session": "9cfdabe3-5a03-4789-90ad-007e3b2c7cbd",
+    "error": false,
+    "cost_usd": 0.19786019999999999,
+    "checker_calls": 1,
+    "reviews": 1,
+    "complete": true,
+    "report": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "document": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "checker_result": "FAIL"
+  },
+  {
+    "case": "seeded-06",
+    "mode": "inject",
+    "run": 2,
+    "session": "ad5d0d76-7c8c-4871-9fa2-b3ef77bcf0bb",
+    "error": false,
+    "cost_usd": 0.1966096,
+    "checker_calls": 1,
+    "reviews": 1,
+    "complete": true,
+    "report": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "document": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "checker_result": "FAIL"
+  },
+  {
+    "case": "seeded-06",
+    "mode": "inject",
+    "run": 3,
+    "session": "9946e675-4d8c-4073-a069-6116f6c9e4ea",
+    "error": false,
+    "cost_usd": 0.18074400000000002,
+    "checker_calls": 1,
+    "reviews": 1,
+    "complete": true,
+    "report": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "document": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "checker_result": "FAIL"
+  },
+  {
+    "case": "seeded-06",
+    "mode": "paste",
+    "run": 1,
+    "session": "831b0315-0d66-4c07-aabc-b80afb5a34a3",
+    "error": false,
+    "cost_usd": 0.26472090000000004,
+    "checker_calls": 1,
+    "reviews": 1,
+    "complete": true,
+    "report": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "document": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "checker_result": "FAIL"
+  },
+  {
+    "case": "seeded-06",
+    "mode": "paste",
+    "run": 2,
+    "session": "25debfe5-b0bb-43b0-a993-960a7bae9914",
+    "error": false,
+    "cost_usd": 0.26166819999999996,
+    "checker_calls": 1,
+    "reviews": 1,
+    "complete": true,
+    "report": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "document": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "checker_result": "FAIL"
+  },
+  {
+    "case": "seeded-06",
+    "mode": "paste",
+    "run": 3,
+    "session": "0fbebc79-e8a1-4319-8308-790f8f90c839",
+    "error": false,
+    "cost_usd": 0.2528718,
+    "checker_calls": 1,
+    "reviews": 1,
+    "complete": true,
+    "report": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "document": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "checker_result": "FAIL"
+  },
+  {
+    "case": "seeded-06",
+    "mode": "paste-opus",
+    "run": 1,
+    "session": "86c7d5f0-71b4-4c4b-a645-3757f060423b",
+    "error": false,
+    "cost_usd": 0.42729039999999996,
+    "checker_calls": 1,
+    "reviews": 1,
+    "complete": true,
+    "report": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "document": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "checker_result": "FAIL"
+  },
+  {
+    "case": "seeded-06",
+    "mode": "paste-opus",
+    "run": 2,
+    "session": "cd02de7d-e67a-4002-8e84-635fd8f107cd",
+    "error": false,
+    "cost_usd": 0.4184103,
+    "checker_calls": 1,
+    "reviews": 1,
+    "complete": true,
+    "report": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "document": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "checker_result": "FAIL"
+  },
+  {
+    "case": "seeded-06",
+    "mode": "paste-opus",
+    "run": 3,
+    "session": "1af8b05e-bb88-4e43-a771-455b23355d7c",
+    "error": false,
+    "cost_usd": 0.4677369,
+    "checker_calls": 1,
+    "reviews": 1,
+    "complete": true,
+    "report": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "document": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "checker_result": "FAIL"
+  },
+  {
+    "case": "seeded-07",
+    "mode": "inject",
+    "run": 1,
+    "session": "01e9835e-0daf-468a-82ad-9141c26ddc6d",
+    "error": false,
+    "cost_usd": 0.2133564,
+    "checker_calls": 1,
+    "reviews": 1,
+    "complete": true,
+    "report": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "document": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "checker_result": "PASS"
+  },
+  {
+    "case": "seeded-07",
+    "mode": "inject",
+    "run": 2,
+    "session": "e5d0adf7-be50-46ac-a6ab-4d44137836fa",
+    "error": false,
+    "cost_usd": 0.18536299999999997,
+    "checker_calls": 1,
+    "reviews": 1,
+    "complete": true,
+    "report": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "document": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "checker_result": "PASS"
+  },
+  {
+    "case": "seeded-07",
+    "mode": "inject",
+    "run": 3,
+    "session": "a20b2d90-6c7d-45ef-bcec-b5c4d653ef2e",
+    "error": false,
+    "cost_usd": 0.1858059,
+    "checker_calls": 1,
+    "reviews": 1,
+    "complete": true,
+    "report": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "document": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "checker_result": "PASS"
+  },
+  {
+    "case": "seeded-07",
+    "mode": "paste",
+    "run": 1,
+    "session": "f3d73193-08c1-40fc-8160-7828fc4ec37b",
+    "error": false,
+    "cost_usd": 0.270416,
+    "checker_calls": 1,
+    "reviews": 1,
+    "complete": true,
+    "report": {
+      "present": true,
+      "exact": false,
+      "same_but_spacing": false,
+      "similarity": 0.9985,
+      "lines_lost": 1,
+      "lines_added": 1
+    },
+    "document": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "checker_result": "FAIL"
+  },
+  {
+    "case": "seeded-07",
+    "mode": "paste",
+    "run": 2,
+    "session": "ec068a66-cdd5-474e-a6cd-e5f9a97296d7",
+    "error": false,
+    "cost_usd": 0.26856630000000004,
+    "checker_calls": 1,
+    "reviews": 1,
+    "complete": true,
+    "report": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "document": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "checker_result": "FAIL"
+  },
+  {
+    "case": "seeded-07",
+    "mode": "paste",
+    "run": 3,
+    "session": "d6f81f8d-d0bf-400a-bc46-fd402ce4a271",
+    "error": false,
+    "cost_usd": 0.2273244,
+    "checker_calls": 1,
+    "reviews": 1,
+    "complete": true,
+    "report": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "document": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "checker_result": "PASS"
+  },
+  {
+    "case": "seeded-07",
+    "mode": "paste-opus",
+    "run": 1,
+    "session": "ecebbb96-6b19-49da-aad9-d23af456368d",
+    "error": false,
+    "cost_usd": 0.39351309999999995,
+    "checker_calls": 1,
+    "reviews": 1,
+    "complete": true,
+    "report": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "document": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "checker_result": "FAIL"
+  },
+  {
+    "case": "seeded-07",
+    "mode": "paste-opus",
+    "run": 2,
+    "session": "e50c81eb-19e0-4541-930f-7aff76319538",
+    "error": false,
+    "cost_usd": 0.39138909999999993,
+    "checker_calls": 1,
+    "reviews": 1,
+    "complete": true,
+    "report": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "document": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "checker_result": "FAIL"
+  },
+  {
+    "case": "seeded-07",
+    "mode": "paste-opus",
+    "run": 3,
+    "session": "98cbdead-fe5e-4bfc-a510-41507525ceb2",
+    "error": false,
+    "cost_usd": 0.3823805,
+    "checker_calls": 1,
+    "reviews": 1,
+    "complete": true,
+    "report": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "document": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "checker_result": "PASS"
+  },
+  {
+    "case": "seeded-08",
+    "mode": "inject",
+    "run": 1,
+    "session": "374cdc36-3a20-4120-bc6f-77f3a50d61c0",
+    "error": false,
+    "cost_usd": 0.1382352,
+    "checker_calls": 1,
+    "reviews": 1,
+    "complete": true,
+    "report": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "document": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "checker_result": "PASS"
+  },
+  {
+    "case": "seeded-08",
+    "mode": "inject",
+    "run": 2,
+    "session": "b0edd21d-cbda-4d9a-92ee-8a90ac57f487",
+    "error": false,
+    "cost_usd": 0.15563470000000001,
+    "checker_calls": 1,
+    "reviews": 1,
+    "complete": true,
+    "report": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "document": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "checker_result": "FAIL"
+  },
+  {
+    "case": "seeded-08",
+    "mode": "inject",
+    "run": 3,
+    "session": "274e61eb-1887-403c-bba4-e2aa55fb6ab6",
+    "error": false,
+    "cost_usd": 0.15703409999999998,
+    "checker_calls": 1,
+    "reviews": 1,
+    "complete": true,
+    "report": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "document": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "checker_result": "PASS"
+  },
+  {
+    "case": "seeded-08",
+    "mode": "paste",
+    "run": 1,
+    "session": "ae1a3336-e786-4ac1-a6c4-705c131d01db",
+    "error": false,
+    "cost_usd": 0.20808469999999998,
+    "checker_calls": 1,
+    "reviews": 1,
+    "complete": true,
+    "report": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "document": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "checker_result": "FAIL"
+  },
+  {
+    "case": "seeded-08",
+    "mode": "paste",
+    "run": 2,
+    "session": "cb957baf-12c6-478a-9e86-e09ee4166951",
+    "error": false,
+    "cost_usd": 0.1803924,
+    "checker_calls": 1,
+    "reviews": 1,
+    "complete": true,
+    "report": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "document": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "checker_result": "PASS"
+  },
+  {
+    "case": "seeded-08",
+    "mode": "paste",
+    "run": 3,
+    "session": "d9075f82-4438-417a-946f-771be0fe4def",
+    "error": false,
+    "cost_usd": 0.17668980000000004,
+    "checker_calls": 1,
+    "reviews": 1,
+    "complete": true,
+    "report": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "document": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "checker_result": "PASS"
+  },
+  {
+    "case": "seeded-08",
+    "mode": "paste-opus",
+    "run": 1,
+    "session": "31635b05-f858-4788-894a-9a397414e249",
+    "error": false,
+    "cost_usd": 0.3087049,
+    "checker_calls": 1,
+    "reviews": 1,
+    "complete": true,
+    "report": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "document": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "checker_result": "PASS"
+  },
+  {
+    "case": "seeded-08",
+    "mode": "paste-opus",
+    "run": 2,
+    "session": "6422b18d-1c03-4ff6-838a-8f8e36330d91",
+    "error": false,
+    "cost_usd": 0.30961600000000006,
+    "checker_calls": 1,
+    "reviews": 1,
+    "complete": true,
+    "report": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "document": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "checker_result": "PASS"
+  },
+  {
+    "case": "seeded-08",
+    "mode": "paste-opus",
+    "run": 3,
+    "session": "5610ce20-96df-4f1b-a77b-a8a01a7852fa",
+    "error": false,
+    "cost_usd": 0.2977926000000001,
+    "checker_calls": 1,
+    "reviews": 1,
+    "complete": true,
+    "report": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "document": {
+      "present": true,
+      "exact": true,
+      "same_but_spacing": true,
+      "similarity": 1.0,
+      "lines_lost": 0,
+      "lines_added": 0
+    },
+    "checker_result": "PASS"
+  }
+]
