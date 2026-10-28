@@ -8,62 +8,77 @@ date: 2026-10-28
 
 ## Context and Problem Statement
 
-ADR 0010 adds a correction checker after each review. To judge the corrections it needs two texts
-exactly as they were: the review report, and the document as it stood when reviewed, before any
-correction. The checker starts without the conversation, so something has to hand it both. The
-plugin must work in any repository without writing anything into it, so these texts cannot be
-saved as files in the person's repository. Only the drafting agent, the Claude running the skill
-with the person, sees both texts in the normal course of its work.
+This repository is a plugin, an add-on, for Claude Code, Anthropic's AI coding assistant. The
+plugin helps a person write a software project's documents. While Claude writes a document with
+the person, we call it the drafting agent. ADR 0010, the architecture decision record before
+this one, has
+every document reviewed once, corrected once, and then checked by a correction checker. The
+reviewer and the checker are agents: separate instances of Claude, each started with its own
+instructions, its request, and none of the conversation.
+
+To judge the corrections, the checker compares the document before and after them, against the
+review. So it needs two texts exactly as they were: the reviewer's report, and the document as it
+stood when reviewed, before any correction. It has neither, since it starts
+without the conversation. The drafting agent has both, because it received the report and wrote
+the document.
+
+The plugin runs inside other people's projects and must not write anything into them, so the
+two texts cannot be saved as files in the project.
 
 ## Considered Options
 
-- **The drafting agent pastes both texts into the checker's request.** Rejected: a copy made by a
-  model is a rewrite, not a copy. In 30 runs each, a Sonnet drafting agent silently changed a
-  line in 2 runs (for example "the two-hour cancellation cut-off" became "the two-hour cut-off").
-  An Opus drafting agent copied exactly in all 30, but the drafting model is the person's choice,
-  and Opus cost almost twice as much per run. On a longer report the same habit could drop or
-  soften a finding, and nothing would notice.
-- **Save both texts as files in the person's repository.** Rejected: the plugin must not write
-  anything into the repository it is used in.
-- **Read them from Claude Code's record of the session on disk.** Rejected: where that record lives
-  and what it holds are Claude Code's own details, not documented for plugins, and can change
-  without notice.
-- **A plugin hook saves both texts and adds them to the checker's request.** A hook is a script
-  that Claude Code runs by itself at set moments, such as just before an agent starts, so no
-  model copies anything. Before the reviewer starts, the hook saves the document; when
-  the reviewer finishes, it saves the report. Both go into the plugin's own data folder, outside
-  the repository. Before the checker starts, the hook adds both to the checker's request. It deletes them when the
-  checker finishes, or, when no checker runs because the review found nothing, when the session
-  ends.
+- **The drafting agent copies both texts into its request to the checker.** Rejected: when a
+  model copies text, it sometimes rewords it without saying so. We measured this with real
+  review reports of 2 to 4 KB and specs of 40 to 110 lines: in each run, a drafting agent had to
+  copy one report and one spec into the checker's request, 30 runs per model. With Sonnet, Anthropic's mid-sized model, as the drafting agent, 2 of 30 runs changed a
+  line, for example "the two-hour cancellation cut-off" became "the two-hour cut-off". With Opus,
+  its largest model, all 30 copies were exact, but the person chooses which model drafts, and an
+  Opus run cost almost twice as much as a Sonnet run. In a longer report a reworded line could weaken or lose a
+  finding, and no step would detect it.
+- **Save both texts as files in the person's project.** Rejected: the plugin must not write into
+  the project.
+- **Read them from Claude Code's own log of the conversation.** Rejected: where Claude Code keeps
+  that log, and what is in it, is undocumented and may change in any release.
+- **A hook saves both texts and adds them to the checker's request.** A hook is a script that a
+  plugin registers with Claude Code, which runs it automatically at set moments, such as just
+  before or just after an agent runs, and lets it change the agent's request. Just before the
+  reviewer runs, the hook saves the document. Just after, it saves the report. Both go in a
+  folder Claude Code gives each plugin for its own data, outside the project. Just before the
+  checker runs, the hook adds both texts to the checker's request. The saved texts are deleted
+  when the checker finishes, or at the end of the conversation if no checker runs.
 
 ## Decision Outcome
 
-Chosen option: a plugin hook saves both texts and adds them to the checker's request, because it delivered both texts exactly in all 30 of
-30 runs, with no permission prompt, using only the hook fields Claude Code documents, and it
-writes nothing into the repository.
+Chosen option: a hook saves both texts and adds them to the checker's request, because in 30 runs
+both texts reached the checker exactly every time. It needed no approval from the person, used
+only hook features that Claude Code documents, and wrote nothing into the project.
 
-Because the hook already knows whether a review is on record, it also refuses to start the
-checker when no review of that document exists or when the document has not changed since its
-review, so a checker never runs before the corrections are made.
+Because the hook keeps a copy of each reviewed document, it also refuses to start the checker,
+which Claude Code lets a hook do with a reason Claude sees, when the document has no review, or
+when its text is identical to the copy, so the checker never runs before the corrections are
+made.
 
 ### Consequences
 
-- Good: the checker always judges against exactly what the reviewer saw and said, whichever
-  model is drafting.
-- Good: nothing is written into the person's repository.
-- Bad: the plugin gains a hook script to maintain, which depends on Claude Code's documented hook
-  fields for agent requests and results; if those change, the hook must follow.
-- Bad: the hook approves the checker's start itself, so a permission rule the person set on
-  agents does not apply to the checker.
-- Bad: a draft that a skill keeps off disk on purpose, such as an issue draft, sits in the
-  plugin's data folder until the checker finishes or the session ends.
-- Bad: two reviews started at the same moment in one session are not tested, because testing
-  that would need timing.
+- Good: the checker always works from exactly what the reviewer saw and reported, whichever model
+  is drafting.
+- Good: nothing is written into the person's project.
+- Bad: the plugin has one more script to maintain, and it depends on the details Claude Code
+  gives hooks about each agent's request and reply. If those change, the script must change too.
+- Bad: Claude Code normally applies the person's permission rules before an agent starts. The
+  hook approves the checker itself, so those rules do not apply to it.
+- Bad: some drafts are deliberately never saved as files, such as a bug report that may hold
+  private details and that the person has not yet agreed to file. The hook still keeps a copy on
+  the person's computer, in the plugin's data folder, until the check ends or the conversation
+  does.
+- Bad: when Claude reviews several documents at once, such as several decision records, two
+  reviews could start at the same moment. That case is not tested, because such a test would
+  depend on timing, which makes tests unreliable.
 
 ### Confirmation
 
-Applies to: anything one agent of a skill's review hands to another.
-Checked by: tests. Unit tests feed the hook recorded events and check what it saves, what it adds
-to the checker's request word for word, and when it refuses. Each skill's evals check that the
-checker's report quotes a finding from the review report word for word, which only happens if the
-hook delivered it.
+Applies to: any text one agent of a review passes to another.
+Checked by: automated tests. Unit tests feed the hook examples of the messages Claude Code sends
+it, and check what it saves, what it adds to the checker's request, and when it refuses. Tests
+that run each skill on sample conversations check that the checker's report quotes a finding
+from the reviewer's report word for word, which can only happen if the hook passed it on.
