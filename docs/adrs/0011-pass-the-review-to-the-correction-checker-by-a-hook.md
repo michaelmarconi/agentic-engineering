@@ -43,9 +43,11 @@ two texts cannot be saved as files in the project.
   plugin registers with Claude Code, which runs it automatically at set moments, such as just
   before or just after an agent runs, and lets it change the agent's request. Just before the
   reviewer runs, the hook saves the document. Just after, it saves the report. Both go in a
-  folder Claude Code gives each plugin for its own data, outside the project. Just before the
-  checker runs, the hook adds both texts to the checker's request. The saved texts are deleted
-  when the checker finishes, or at the end of the conversation if no checker runs.
+  folder Claude Code gives each plugin for its own data, outside the project. It keeps one saved copy per
+  document, so reviews of different documents never mix. Just before the checker runs, the hook
+  adds both texts to the checker's request and approves the checker's start itself. The saved
+  texts are deleted when the checker finishes, or at the end of the conversation if no checker
+  runs.
 
 ## Decision Outcome
 
@@ -60,8 +62,8 @@ made.
 
 ### Consequences
 
-- Good: the checker always works from exactly what the reviewer saw and reported, whichever model
-  is drafting.
+- Good: the checker works from exactly what the reviewer saw and reported, whichever model is
+  drafting.
 - Good: nothing is written into the person's project.
 - Bad: the plugin has one more script to maintain, and it depends on the details Claude Code
   gives hooks about each agent's request and reply. If those change, the script must change too.
@@ -69,11 +71,12 @@ made.
   hook approves the checker itself, so those rules do not apply to it.
 - Bad: some drafts are deliberately never saved as files, such as a bug report that may hold
   private details and that the person has not yet agreed to file. The hook still keeps a copy on
-  the person's computer, in the plugin's data folder, until the check ends or the conversation
-  does.
+  the person's computer, in the plugin's data folder, until the checker finishes, or until the
+  end of the conversation if no checker runs.
 - Bad: when Claude reviews several documents at once, such as several decision records, two
-  reviews could start at the same moment. That case is not tested, because such a test would
-  depend on timing, which makes tests unreliable.
+  reviews could save their copies at the same instant, and one save could interfere with the
+  other. That case is not tested, because such a test would depend on timing, which makes tests
+  unreliable.
 
 ### Confirmation
 

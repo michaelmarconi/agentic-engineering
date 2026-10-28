@@ -52,10 +52,11 @@ always ends with a clear result, and needs no setting.
   needs the setting.
 - **Several reviewers, each looking for one kind of problem, plus one more that checks their
   findings.** Rejected: they caught 100% of the planted mistakes, against 95% for the option above,
-  but at 4 times the cost. On the 2 specs with no planted mistakes, whose findings are mostly
-  false alarms, their first review reported 3.5 findings against 1.8, and only 9 of 30 runs
-  passed.
-- **The usual reviewer on Opus instead of Sonnet.** Rejected: it caught about as many (97% against 95%) at twice the cost.
+  but at 4 times the cost, and only 9 of their 30 runs passed. On the 2 specs with no planted
+  mistakes, where findings are mostly false alarms, their first review reported 3.5 findings
+  against 1.8.
+- **The usual reviewer on Opus instead of Sonnet.** Rejected: it caught about as many (97% against 95%) at twice the cost. Its runs left
+  6 of 63 planted mistakes, introduced 1.9 new problems per run, and 13 of 30 passed.
 - **One reviewer with two modes, a full review or a check of the corrections only.** Rejected:
   a reviewer told to check only the corrections can drift into reviewing the whole document
   again, which brings back the repeated reviews.
@@ -69,7 +70,9 @@ always ends with a clear result, and needs no setting.
 ## Decision Outcome
 
 Chosen option: review once, correct once, then check only the corrections, because on the same
-specs it did as well as or better than every other option on every measure:
+specs it ended with the best documents at the lowest cost. It catches slightly fewer mistakes
+than several reviewers: its one review is the same as the first review above, which caught 94%.
+But at the end of a run it did as well as or better than every other option:
 
 - Planted mistakes left: 3 of 63, the same as the several reviewers (repeated reviews left 5,
   the Opus reviewer 6).
@@ -94,9 +97,9 @@ The sequence is fixed:
    what failed, rather than correcting again.
 
 If the person later asks for changes, the same sequence runs again on the changed document. That is
-not a repeated review in the sense rejected above, because the reviewer never reviews the
-drafting agent's corrections to its own findings; it only reviews what the person asked for.
-Each review is followed by at most one round of corrections and one check.
+not the loop rejected above, which reviewed again to find out whether its own corrections were
+right. Here a new review happens only because the person changed the document, and each review
+is still followed by at most one round of corrections and one check.
 
 ### Consequences
 
