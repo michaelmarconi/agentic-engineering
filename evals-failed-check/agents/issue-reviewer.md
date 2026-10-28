@@ -1,6 +1,6 @@
 ---
 name: issue-reviewer
-description: Stand-in for the issue reviewer in the failed-check evals. Always reports one failure the drafting agent can correct, so the issue case reaches the correction check.
+description: Stand-in for the issue reviewer in the failed-check evals. Always reports one failure the drafting agent can correct, so every run reaches the correction check.
 tools: Read
 model: haiku
 ---

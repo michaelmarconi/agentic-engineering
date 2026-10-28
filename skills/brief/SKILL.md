@@ -94,6 +94,6 @@ Whether the check passed or failed, end with the hand-over. It is what the perso
 it hard to miss anything. Give them the brief's path, the review report and the check's report, if
 there was one, leaving out the decisions they list for the person. Then say how many items must be
 settled before the brief can move on: its open questions, plus any correction the check found not
-made or broken. Offer to work through them one at a time, and ask the first only. Name the count
-only, not the items: each comes up when you reach it. List the reviewers' suggestions separately, as
-optional: they never hold the brief back. Leave committing to them.
+made or broken. Offer to work through them one at a time, and ask the first only, as a single
+question. Name the count only, not the items: each comes up when you reach it. List the reviewers'
+suggestions separately, as optional: they never hold the brief back. Leave committing to them.
