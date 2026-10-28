@@ -104,6 +104,31 @@ everything else is judgement.
     person's session uses. Reviewer agents set `model:` to a model alias (such as `sonnet`), so
     the judgement that gates a document stays consistent. The README names the models the evals
     pass on; when a model changes or one is added, rerun the evals on it before claiming it.
+## This repository's own documents
+
+This repository keeps its own brief, `docs/brief.md`, and its own ADRs in `docs/adrs/`, in the
+formats the plugin's skills write and under the rules in [docs/lifecycle.md](docs/lifecycle.md).
+It does not install the plugin into itself: they are written by hand, in conversation with the
+maintainer. It keeps no specs, since each skill is already described by its `SKILL.md`, its rubric
+and its page under `docs/skills/`, and no plans, since work in flight is planned in Claude Code's
+plan mode.
+
+- A lasting technical decision about how the plugin is built becomes a new ADR, written as Draft.
+  The lifecycle's own rules stay in `docs/lifecycle.md`: they are the product, not decisions
+  about building it.
+- Each brief or ADR goes through the review sequence in
+  [docs/lifecycle.md](docs/lifecycle.md#review-process), run by hand. Start an agent that follows
+  `agents/brief-reviewer.md` or `agents/adr-reviewer.md`, reading `${CLAUDE_PLUGIN_ROOT}` as this
+  repository's root, and keep an exact copy of the document as reviewed. Correct once, then start
+  an agent that follows `agents/correction-checker.md`. Without the plugin installed, no hook
+  attaches the checker's blocks, so write the report and the copy into a file outside the
+  repository in the blocks the checker's definition names, and point the checker to that file.
+  Agents are not allowed to save their reports as files, so copy each report into its file by a script, from
+  Claude Code's record of the agent's run, never by retyping it, for the reason
+  [ADR 0011](docs/adrs/0011-pass-the-review-to-the-correction-checker-by-a-hook.md) gives.
+- Only the maintainer accepts or rejects an ADR, after reading its reviewed text. Each acceptance
+  is its own commit that changes only the status.
+
 ## Repository layout
 
 ```
@@ -129,6 +154,7 @@ hooks/
 scripts/               # scripts the hooks run, the skill, version and reference checks, and their tests
 docs/
   adrs/                # this plugin's own architecture decision records
+  brief.md             # this plugin's own brief
   lifecycle.md         # the lifecycle rules, for people and for Claude at session start
   skills/<name>.md     # one page per skill, linked from README.md
 AGENTS.md              # this file
