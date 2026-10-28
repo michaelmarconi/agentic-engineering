@@ -27,14 +27,15 @@ import re
 import sys
 
 from doc_references import CODE_SPAN, ROOT, marked_lines, markdown_files
-from status_check import READY, VARIATION, WORDS, frontmatter, meant
+from status_check import READY, VARIATION, WITHOUT_VARIATION, WORDS, frontmatter, meant
 
 SKIPPED = {("CHANGELOG.md",), ("evals",), ("evals-failed-check",), ("docs", "adrs")}
 PHRASE = READY.split(" ", 1)[1]
 # Statuses compare without U+FE0F, which is optional after an emoji.
-BARE = {value.replace(VARIATION, ""): value for value in WORDS.values()}
-EMOJI_VALUE = re.compile("|".join(re.escape(value) for value in BARE))
-STATUS_KEY = re.compile(r"status:\s*")
+EMOJI_VALUE = re.compile("|".join(re.escape(value) for value in WITHOUT_VARIATION))
+STATUS_KEY = re.compile(r"status\s*:\s*", re.IGNORECASE)
+# A code span may wrap onto the next line of its paragraph.
+WRAPPED_SPAN = re.compile(CODE_SPAN.pattern, re.DOTALL)
 
 
 def skipped(relative):
@@ -59,14 +60,20 @@ def span_problems(content):
     return []
 
 
-def line_problems(line):
-    found = []
-    for match in CODE_SPAN.finditer(line):
-        found.extend(span_problems(match.group(0).strip("`").strip()))
-    prose = CODE_SPAN.sub("", line).replace(VARIATION, "")
-    found.extend(f"'{BARE[value]}' should be in backticks" for value in EMOJI_VALUE.findall(prose))
-    found.extend(f"'{PHRASE}' should be `{READY}`" for _ in range(EMOJI_VALUE.sub("", prose).count(PHRASE)))
-    return found
+def paragraph_problems(first, lines):
+    """Yield (line number, problem) for a paragraph whose first line is numbered `first`."""
+    text = "\n".join(lines)
+    for match in WRAPPED_SPAN.finditer(text):
+        number = first + text.count("\n", 0, match.start())
+        content = " ".join(match.group(0).strip("`").split())
+        for wrong in span_problems(content):
+            yield number, wrong
+    prose = WRAPPED_SPAN.sub(lambda m: "\n" * m.group(0).count("\n"), text)
+    for offset, line in enumerate(prose.replace(VARIATION, "").split("\n")):
+        for value in EMOJI_VALUE.findall(line):
+            yield first + offset, f"'{WITHOUT_VARIATION[value]}' should be in backticks"
+        for _ in range(EMOJI_VALUE.sub("", line).count(PHRASE)):
+            yield first + offset, f"'{PHRASE}' should be `{READY}`"
 
 
 def problems(root):
@@ -85,14 +92,20 @@ def problems(root):
         head = frontmatter(text)
         # The status line in a file's frontmatter holds the value bare, so it is not checked.
         last = len(head) + 2 if head is not None else 0
+        paragraphs = []
         for number, line, fenced in marked_lines(text):
             if number <= last:
                 continue
             if fenced:
                 if loose_phrase(line.replace(VARIATION, "")):
                     found.append(f"{relative}:{number}: '{PHRASE}' should be '{READY}'")
-                continue
-            found.extend(f"{relative}:{number}: {wrong}" for wrong in line_problems(line))
+            elif line.strip():
+                if paragraphs and paragraphs[-1][0] + len(paragraphs[-1][1]) == number:
+                    paragraphs[-1][1].append(line)
+                else:
+                    paragraphs.append((number, [line]))
+        for first, lines in paragraphs:
+            found.extend(f"{relative}:{number}: {wrong}" for number, wrong in paragraph_problems(first, lines))
     return found
 
 

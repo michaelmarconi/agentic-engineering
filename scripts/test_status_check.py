@@ -507,6 +507,15 @@ class AdrEmoji(AdrWorkspace):
         self.put(spec("Built"))
         self.assertIn("back to `📝 Draft`", self.edit("do X", "do Y"))
 
+    def test_adding_the_variation_selector_allowed(self):
+        self.put(adr("\u21aa Superseded", extra="superseded-by: 0002\n"))
+        self.assertIsNone(self.edit("status: \u21aa Superseded", "status: ↪️ Superseded"))
+
+    def test_number_or_dash_is_not_an_emoji(self):
+        self.assertIsNone(status_check.meant("202 Accepted", status_check.ADR_STATUSES))
+        self.assertIsNone(status_check.meant("- Draft", status_check.ADR_STATUSES))
+        self.assertEqual(status_check.meant("📝Draft", status_check.ADR_STATUSES), "📝 Draft")
+
     def test_moving_over_keeps_the_word(self):
         self.put(adr("Accepted"))
         self.assertIsNotNone(self.edit("status: Accepted", "status: ❌ Rejected"))

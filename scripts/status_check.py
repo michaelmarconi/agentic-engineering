@@ -99,22 +99,19 @@ def is_key(line, *keys):
     return any(re.match(rf"{re.escape(key)}\s*:", line, re.IGNORECASE) for key in keys)
 
 
-def field(text, key):
-    """The value of a frontmatter key, without comment or quotes."""
-    for line in frontmatter(text) or []:
-        if is_key(line, key):
-            value = line.split(":", 1)[1].split("#", 1)[0].strip()
-            return value.strip("\"'")
-    return None
-
-
-def comment(text, key):
-    """The comment after a frontmatter key's value, if any."""
+def entry(text, key):
+    """A frontmatter key's (value without quotes, comment or None), or None if it has none."""
     for line in frontmatter(text) or []:
         if is_key(line, key):
             parts = line.split(":", 1)[1].split("#", 1)
-            return parts[1].strip() if len(parts) > 1 else None
+            return parts[0].strip().strip("\"'"), parts[1].strip() if len(parts) > 1 else None
     return None
+
+
+def field(text, key):
+    """The value of a frontmatter key, without comment or quotes."""
+    found = entry(text, key)
+    return found[0] if found else None
 
 
 def status_of(text):
@@ -133,20 +130,18 @@ def lifecycle_status(text):
 
 def meant(value, allowed):
     """The full status in `allowed` that `value` names by its word, as `Draft` or `🟢 Built` do."""
-    full = WORDS.get(re.sub(r"^[^A-Za-z]*", "", value or ""))
+    # Only a leading emoji is dropped, so `202 Accepted` or `- Draft` names no status.
+    full = WORDS.get(re.sub(r"^[^\x00-\x7f]+ ?", "", value or ""))
     return full if full in allowed else None
 
 
-def moving_over(before, after):
-    """True if the edit only gives a status written before the emoji its emoji.
+def restyled(before, after):
+    """True if the edit changes only how the status value is written, such as adding its emoji.
 
-    The status line may change its quotes and spacing too, but not its comment.
+    Callers have already found the status the same before and after; its comment must not change.
     """
-    word = field(before, "status")
     return (
-        word in WORDS
-        and status_of(after) == WORDS[word]
-        and comment(before, "status") == comment(after, "status")
+        (entry(before, "status") or (None, None))[1] == (entry(after, "status") or (None, None))[1]
         and without_status(after) == without_status(before)
     )
 
@@ -326,7 +321,7 @@ def adr_rules(path, before, after, old, new):
     if old not in ADR_STATUSES:
         return None
     if new == old:
-        if new != DRAFT and after != before and not moving_over(before, after):
+        if new != DRAFT and after != before and not restyled(before, after):
             return (
                 f"{name}: this ADR is `{old}`, and a decided ADR is never edited. To change the "
                 f"decision, write a new `{DRAFT}` ADR that supersedes it."

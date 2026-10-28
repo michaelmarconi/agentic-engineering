@@ -72,6 +72,16 @@ class StatusNames(unittest.TestCase):
         self.write("docs/a.md", "It is \u21aa Superseded.\n")
         self.assertFails("docs/a.md:1")
 
+    def test_code_span_may_wrap(self):
+        self.write("docs/a.md", "Set it to `🟢 Ready\nto build` once agreed.\n")
+        self.assertPasses()
+        self.write("docs/a.md", "Intro.\n\nSet it to `Ready\nto build` once agreed.\n")
+        self.assertFails("docs/a.md:3")
+
+    def test_status_key_in_any_case(self):
+        self.write("docs/a.md", "Set `Status : Accepted`.\n")
+        self.assertFails("docs/a.md:1")
+
     def test_plain_words_in_prose_pass(self):
         self.write("docs/a.md", "Draft from the conversation. Built with skill-creator.\n")
         self.assertPasses()
