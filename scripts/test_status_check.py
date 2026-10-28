@@ -465,9 +465,17 @@ class Emoji(Workspace):
         self.assertIsNone(self.edit("do X", "do Y"))
 
     def test_lifecycle_status_reads_old_and_new(self):
-        self.assertEqual(status_check.lifecycle_status("---\nstatus: Built\n---\n"), "✅ Built")
-        self.assertEqual(status_check.lifecycle_status("---\nstatus: ✅ Built\n---\n"), "✅ Built")
-        self.assertEqual(status_check.lifecycle_status("---\nstatus: Done\n---\n"), "Done")
+        statuses = status_check.STATUSES
+        self.assertEqual(status_check.lifecycle_status("---\nstatus: Built\n---\n", statuses), "✅ Built")
+        self.assertEqual(status_check.lifecycle_status("---\nstatus: ✅ Built\n---\n", statuses), "✅ Built")
+        self.assertEqual(status_check.lifecycle_status("---\nstatus: Done\n---\n", statuses), "Done")
+        self.assertEqual(status_check.lifecycle_status("---\nstatus: Accepted\n---\n", statuses), "Accepted")
+
+    def test_new_spec_refusal_quotes_what_was_written(self):
+        self.assertIn("'Ready to build'", self.write(spec("Ready to build")))
+
+    def test_lookalike_space_shown(self):
+        self.assertIn("\\xa0", self.write(spec("📝\u00a0Draft")))
 
 
 class AdrEmoji(AdrWorkspace):
@@ -515,6 +523,11 @@ class AdrEmoji(AdrWorkspace):
         self.assertIsNone(status_check.meant("202 Accepted", status_check.ADR_STATUSES))
         self.assertIsNone(status_check.meant("- Draft", status_check.ADR_STATUSES))
         self.assertEqual(status_check.meant("📝Draft", status_check.ADR_STATUSES), "📝 Draft")
+
+    def test_wrong_emoji_on_disk_still_decided(self):
+        self.put(adr("✅ Accepted"))
+        self.assertIn("never edited", self.edit("fast enough", "fast and cheap enough"))
+        self.assertIsNotNone(self.edit("status: ✅ Accepted", "status: 📝 Draft"))
 
     def test_moving_over_keeps_the_word(self):
         self.put(adr("Accepted"))

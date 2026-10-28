@@ -27,7 +27,7 @@ def uses_lifecycle(project):
             if name.endswith(".spec.md"):
                 try:
                     with open(os.path.join(folder, name), encoding="utf-8") as f:
-                        if lifecycle_status(f.read()) in STATUSES:
+                        if lifecycle_status(f.read(), STATUSES) in STATUSES:
                             return True
                 except (OSError, UnicodeDecodeError):
                     pass

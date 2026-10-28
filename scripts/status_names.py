@@ -34,7 +34,8 @@ PHRASE = READY.split(" ", 1)[1]
 # Statuses compare without U+FE0F, which is optional after an emoji.
 EMOJI_VALUE = re.compile("|".join(re.escape(value) for value in WITHOUT_VARIATION))
 STATUS_KEY = re.compile(r"status\s*:\s*", re.IGNORECASE)
-# A code span may wrap onto the next line of its paragraph.
+# A code span may wrap onto the next line of its paragraph, which a heading or list item ends.
+BLOCK_START = re.compile(r" {0,3}(#{1,6}\s|[-*+]\s|\d+[.)]\s)")
 WRAPPED_SPAN = re.compile(CODE_SPAN.pattern, re.DOTALL)
 
 
@@ -43,9 +44,9 @@ def skipped(relative):
     return any(parts[:len(skip)] == skip for skip in SKIPPED)
 
 
-def loose_phrase(text):
-    """True if "Ready to build" appears in `text` without its emoji in front."""
-    return PHRASE in EMOJI_VALUE.sub("", text)
+def loose_phrases(text):
+    """How often "Ready to build" appears in `text`, without U+FE0F, with no emoji in front."""
+    return EMOJI_VALUE.sub("", text).count(PHRASE)
 
 
 def span_problems(content):
@@ -55,7 +56,7 @@ def span_problems(content):
     full = meant(value, WORDS.values())
     if full and value != full.replace(VARIATION, ""):
         return [f"`{content}` should be `{(key.group(0) if key else '') + full}`"]
-    if loose_phrase(bare):
+    if loose_phrases(bare):
         return [f"`{content}` should name `{READY}`"]
     return []
 
@@ -72,7 +73,7 @@ def paragraph_problems(first, lines):
     for offset, line in enumerate(prose.replace(VARIATION, "").split("\n")):
         for value in EMOJI_VALUE.findall(line):
             yield first + offset, f"'{WITHOUT_VARIATION[value]}' should be in backticks"
-        for _ in range(EMOJI_VALUE.sub("", line).count(PHRASE)):
+        for _ in range(loose_phrases(line)):
             yield first + offset, f"'{PHRASE}' should be `{READY}`"
 
 
@@ -86,8 +87,11 @@ def problems(root):
         try:
             with open(source, encoding="utf-8") as f:
                 text = f.read()
-        except (OSError, ValueError):
+        except UnicodeDecodeError:
             found.append(f"{relative}: can't be read as UTF-8 text")
+            continue
+        except OSError as error:
+            found.append(f"{relative}: can't be read ({error.strerror})")
             continue
         head = frontmatter(text)
         # The status line in a file's frontmatter holds the value bare, so it is not checked.
@@ -97,10 +101,11 @@ def problems(root):
             if number <= last:
                 continue
             if fenced:
-                if loose_phrase(line.replace(VARIATION, "")):
+                if loose_phrases(line.replace(VARIATION, "")):
                     found.append(f"{relative}:{number}: '{PHRASE}' should be '{READY}'")
             elif line.strip():
-                if paragraphs and paragraphs[-1][0] + len(paragraphs[-1][1]) == number:
+                follows = paragraphs and paragraphs[-1][0] + len(paragraphs[-1][1]) == number
+                if follows and not BLOCK_START.match(line):
                     paragraphs[-1][1].append(line)
                 else:
                     paragraphs.append((number, [line]))

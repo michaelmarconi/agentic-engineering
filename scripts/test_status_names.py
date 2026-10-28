@@ -78,6 +78,10 @@ class StatusNames(unittest.TestCase):
         self.write("docs/a.md", "Intro.\n\nSet it to `Ready\nto build` once agreed.\n")
         self.assertFails("docs/a.md:3")
 
+    def test_code_span_does_not_cross_list_items(self):
+        self.write("docs/a.md", "- use a ` here\n- then `Draft` and more\n")
+        self.assertFails("`📝 Draft`")
+
     def test_status_key_in_any_case(self):
         self.write("docs/a.md", "Set `Status : Accepted`.\n")
         self.assertFails("docs/a.md:1")

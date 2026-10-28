@@ -122,10 +122,14 @@ def status_of(text):
     return WITHOUT_VARIATION.get(value.replace(VARIATION, ""), value)
 
 
-def lifecycle_status(text):
-    """The status, counting a bare word such as `Accepted` from before the emoji as its full value."""
-    value = status_of(text)
-    return WORDS.get(value, value)
+def lifecycle_status(text, statuses):
+    """The status as one of `statuses` if it names one, even without its emoji or with the wrong
+    one, as a document written before the emoji does; otherwise the status as written."""
+    return canonical(status_of(text), statuses)
+
+
+def canonical(value, statuses):
+    return value if value in statuses else meant(value, statuses) or value
 
 
 def meant(value, allowed):
@@ -215,7 +219,7 @@ def check(payload):
                 before = f.read()
         except (OSError, UnicodeDecodeError) as error:
             return f"{os.path.basename(path)}: could not read the {kind} to check its status ({error})."
-    old = lifecycle_status(before) if before is not None else None
+    old = lifecycle_status(before, statuses) if before is not None else None
     name = os.path.basename(path)
     after = after_edit(payload.get("tool_name"), tool_input, before)
     if after is None:
@@ -227,19 +231,19 @@ def check(payload):
         return None
 
     written = status_of(after)
-    new = written if written in statuses else meant(written, statuses) or written
+    new = canonical(written, statuses)
     # A status missing its emoji is judged as the one it names first, so a move the lifecycle
     # refuses anyway is refused for that, not with advice that only leads to that refusal.
-    reason = lifecycle_problem(path, kind, statuses, rules, before, after, old, new)
+    reason = lifecycle_problem(path, kind, statuses, rules, before, after, old, new, written)
     if reason or new == written:
         return reason
     return (
-        f"{name}: write the status with its emoji, as `{new}` (found '{written}'). The {kind} "
+        f"{name}: write the status with its emoji, as `{new}` (found {written!r}). The {kind} "
         f"statuses are {listed(statuses)}."
     )
 
 
-def lifecycle_problem(path, kind, statuses, rules, before, after, old, new):
+def lifecycle_problem(path, kind, statuses, rules, before, after, old, new, written):
     name = os.path.basename(path)
     if old not in statuses and new not in statuses:
         if kind == "ADR" and not before and new is not None:
@@ -253,7 +257,7 @@ def lifecycle_problem(path, kind, statuses, rules, before, after, old, new):
     if old not in statuses and new != DRAFT:
         if old:
             return f"{name}: '{old}' is not a lifecycle status; set the {kind} to `{DRAFT}` first."
-        return f"{name}: a new {kind} must be written as `{DRAFT}`, not `{new}`. {NEW_HINT[kind]}"
+        return f"{name}: a new {kind} must be written as `{DRAFT}`, not '{written}'. {NEW_HINT[kind]}"
     return rules(path, before, after, old, new)
 
 
@@ -306,7 +310,7 @@ def replacement_problem(path, number):
             text = f.read()
     except (OSError, UnicodeDecodeError) as error:
         return f"ADR {number} could not be read ({error})"
-    if lifecycle_status(text) != ACCEPTED:
+    if lifecycle_status(text, ADR_STATUSES) != ACCEPTED:
         return (
             f"ADR {number} is not `{ACCEPTED}` yet; the old ADR stays `{ACCEPTED}` until the "
             "person accepts it"
