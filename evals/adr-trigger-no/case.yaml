@@ -2,5 +2,3 @@ schema_version: "1.1"
 name: adr-trigger-no
 expected_outcome: |
   The adr skill is not invoked: what a feature should do is a spec, not a technical decision.
-context:
-  scaffold_script: place-files.sh

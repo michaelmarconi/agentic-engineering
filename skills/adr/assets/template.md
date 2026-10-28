@@ -12,7 +12,7 @@ date: <YYYY-MM-DD>
 
 ## Considered Options
 
-- <Option>: <why it lost, for each option not chosen>
+- <Option>: <why it was rejected, for each option not chosen>
 
 ## Decision Outcome
 

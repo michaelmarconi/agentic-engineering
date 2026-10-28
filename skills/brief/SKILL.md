@@ -10,7 +10,7 @@ A product has one, at `docs/brief.md`, edited in place; git is its history. Spec
 against it, one per capability, so the brief holds only what is true of the whole product.
 
 Before writing, read [references/rubric.md](references/rubric.md): it is the list of checks the
-reviewer will apply, so writing to it saves rounds. A new brief starts from
+reviewer will apply, so writing to it leaves less to correct. A new brief starts from
 [assets/template.md](assets/template.md). Read these with the Read tool, not the shell, so the
 person is not asked to approve a command.
 
@@ -31,44 +31,73 @@ fact they gave that the brief's sections hold, such as who does what; where the
 conversation changed its mind, the latest word wins. Only when there is nothing to draw on, ask
 what they are building and for whom first.
 
-Write only what they said or showed you, as rubric check 8 describes, and link each fact taken
-from a document to it, as check 9 does. When they want the brief to refer to a spec, an ADR
-(architecture decision record) or a plan, by hyperlink, path or title, leave it out (check 11)
-and tell them why: that document can change or be deleted without the brief being touched, so
-the reference would go stale. When they mention something that belongs to a later stage
-(rubric checks 2 and 7), leave it out and tell them where it goes: how one capability behaves
-goes in its spec, so suggest `/spec`; a technology or design they have decided goes in an ADR,
-and one they have not becomes an open question.
+Write only what they said or showed you, as rubric check 8 describes, and link each fact taken from
+a document to it, as check 9 does. What they haven't said becomes an open question, each asking one
+thing: "What do they do today, and how long does it take?" is two questions. When they want the
+brief to refer to a spec, an ADR (architecture decision record) or a plan, by hyperlink, path or
+title, leave it out (check 11) and tell them why: that document can change or be deleted without the
+brief being touched, so the reference would go stale. When they mention something that belongs to a
+later stage (rubric checks 2 and 7), leave it out and tell them where it goes: how one capability
+behaves goes in its spec, so suggest `/spec`; a technology or design they have decided goes in an
+ADR, and one they have not becomes an open question.
 
-Then ask about what the draft or the review leaves open: say how many questions there are and
-ask only the first, as one question rather than two joined together. The others wait in the
-brief, so leave them out of that reply entirely: describe the draft by what it says, never by
-what it lacks ("nothing yet on who else is involved" names a question), and report what you or
-the review changed without naming the gaps that remain. Ask the next once the first is settled,
-playing back what you have understood. Settle each answer before moving on: take the part they
-answered and ask again about the rest, because silence is not agreement. If the person has said
-not to ask now, or would rather not answer, give only the count: no question and no list of what
-the questions cover. An open question goes only when their answer is written into the brief.
+Then ask about what the draft or the review leaves open: say how many questions there are and ask
+only the first, as one question rather than two joined together, with any examples given as possible
+answers rather than further questions. The others wait in the brief, so leave them out of that reply
+entirely: describe the draft by what it says, never by what it lacks ("nothing yet on who else is
+involved" names a question), and report what you or the review changed without naming the gaps that
+remain. Ask the next once the first is settled, playing back what you have understood. Settle each
+answer before moving on: take the part they answered and ask again about the rest, because silence
+is not agreement. If the person has said not to ask now, or would rather not answer, give only the
+count: no question and no list of what the questions cover. An open question goes only when their
+answer is written into the brief.
 
 ## Review
 
-When the brief is written, start the `sdlc:brief-reviewer` agent in the foreground, not in the
-background, and give it the brief's path; it reads everything else it needs itself. Wait for its
-report before touching the brief again, so the report matches the brief.
+Every brief is reviewed once, corrected once, and then the corrections are checked. The
+sequence is fixed so it always ends with a clear result: further rounds of review find little
+more, and each round of corrections brings new mistakes.
 
-Fix every finding you can and run the reviewer again, for up to ${user_config.review_rounds}
-reviews in all, counting the first. If no number appears in that sentence, the plugin's Review
-rounds setting has not been saved: write the brief as usual, then stop before the first review,
-tell the person the brief is unreviewed, and ask them to run `/plugin configure sdlc@sdlc`, type
-a number next to Review rounds, choose Save configuration, run `/reload-plugins` and then ask
-you for the review. Never pick a number yourself. After any edit to the brief, run the next
-review, so the report the person gets is about the brief as it now stands; after the last
-review, edit no further. Fix by making the brief accurate, never by dropping or hedging what the
-person said to get a pass. A finding under Needs a person goes to them as a question rather than
-a fix you invent, and into Open questions while a review remains to check that edit. If the last
-review still fails, stop and show the person the report. The count starts again when the person
-replies.
+1. **Review.** When the brief is written, start the `sdlc:brief-reviewer` agent in the foreground,
+   not in the background, with this request, its first line exactly as shown, since a plugin
+   hook reads that line to keep a copy of the brief as reviewed:
 
-Finish by giving the person the brief's path and the reviewer's final report, except the open
-questions and decisions it lists for the person: give their count and ask the first, as above.
-Leave committing to them.
+   ```
+   Document: <the brief's path>
+   Review this brief.
+   ```
+
+   It reads everything else it needs itself. Wait for its report before touching the brief. If
+   it passes with nothing under Needs a person, go straight to handing over.
+2. **Correct, once.** Read the rubric again, then correct only what the report lists: each
+   failed check and each item under Other findings. Correct by making the brief
+   accurate, never by dropping or hedging what the person said. A decision under Needs a person
+   becomes an entry in the brief's Open questions, never a guess at the answer. Leave
+   suggestions alone and change nothing else, since an edit beyond the report is the likeliest
+   way to break something. Wait until every edit has succeeded. If nothing in the report was
+   yours to correct, there is nothing to check: go straight to handing over.
+3. **Check the corrections.** Start the `sdlc:correction-checker` agent in the foreground with
+   this request, and add nothing to it: the hook attaches the report and the brief as reviewed,
+   word for word.
+
+   ```
+   Document: <the brief's path>
+   Check the corrections.
+   ```
+
+   If the hook refuses to start it, do what its reason says. If the check fails, stop: change
+   the brief no further, and show the person the check's report. Do not review or correct
+   again; what happens next is their call.
+
+After the sequence, edit the brief only when the person asks. When they change it or ask you to,
+run the sequence again on the changed brief.
+
+Whether the check passed or failed, end with the hand-over. It is what the person acts on, so make
+it hard to miss anything. Give them the brief's path, the review report and the check's report, if
+there was one, leaving out the decisions they list for the person. Then say how many items must be
+settled before the brief can move on: its open questions, plus any correction the check found not
+made or broken. Say you will take them one at a time, rather than asking whether to, and ask the
+first only, as a single question, giving any examples as possible answers rather than further
+questions; if the person has said not to ask now, ask nothing. Name the count only, not the items:
+each comes up when you reach it. List the reviewers' suggestions separately, as optional: they never
+hold the brief back. Leave committing to them.

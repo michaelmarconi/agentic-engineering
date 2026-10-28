@@ -1,7 +1,0 @@
-schema_version: "1.1"
-name: spec-stops-without-settings
-expected_outcome: |
-  The Review rounds setting has not been saved, so the skill writes the spec but runs no review, tells the person the spec is unreviewed and asks them to save the setting, without picking a number itself.
-context:
-  scaffold_script: place-files.sh
-# Its scaffold does not run save_settings.py: it tests the stop when no setting is saved.

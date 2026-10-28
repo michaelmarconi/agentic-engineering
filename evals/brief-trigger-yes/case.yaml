@@ -2,5 +2,3 @@ schema_version: "1.1"
 name: brief-trigger-yes
 expected_outcome: |
   The brief skill is invoked to write the product brief.
-context:
-  scaffold_script: place-files.sh

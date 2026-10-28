@@ -11,7 +11,7 @@ so the code can change without the spec going stale. One capability has one spec
 place; git is its history.
 
 Before writing, read [references/rubric.md](references/rubric.md): it is the list of checks the
-reviewer will apply, so writing to it saves rounds. New specs start from
+reviewer will apply, so writing to it leaves less to correct. New specs start from
 [assets/template.md](assets/template.md). Read these with the Read tool, not the shell, so the
 person is not asked to approve a command.
 
@@ -76,8 +76,9 @@ The `status:` frontmatter says how far the spec is: Draft, Ready to build or Bui
   it to Draft, because what was agreed or built no longer matches: set the status to Draft
   first, as a plugin hook refuses any other change to such a spec.
 - Set Ready to build only when the person asks for it, the spec has no open questions (rubric
-  check 9), nothing is left under the review's Needs a person, and the review below has passed
-  on the spec as it stands; make it its own, last edit, after that review. Ready means the person
+  check 9), nothing is left under the review's Needs a person, and the review below has ended
+  with a pass on the spec as it stands, from the review itself or from the correction check
+  after it; make it its own, last edit, after that review. Ready means the person
   agreed to this text, so if you wrote or changed anything they have not seen since, show it and
   wait for their reply first; agreement given before they saw it does not count, even a request
   to fix small things and carry on. So never set Ready in the same reply as a change to the
@@ -88,27 +89,49 @@ The `status:` frontmatter says how far the spec is: Draft, Ready to build or Bui
 
 ## Review
 
-When the spec is written, start the `sdlc:spec-reviewer` agent in the foreground, not in the
-background, and give it the spec's path; it reads everything else it needs itself. Wait for its
-report before touching the spec again, so
-the report matches the spec. It reports pass or fail for each rubric check with evidence, other
-findings, decisions that need the person, and suggestions.
+Every spec is reviewed once, corrected once, and then the corrections are checked. The
+sequence is fixed so it always ends with a clear result: further rounds of review find little
+more, and each round of corrections brings new mistakes.
 
-Fix every finding you can and run the reviewer again, for up to ${user_config.review_rounds}
-reviews in all, counting the first. If no number appears in that sentence, the plugin's Review
-rounds setting has not been saved: write the spec as usual, then stop before the first review,
-tell the person the spec is unreviewed, and ask them to run `/plugin configure sdlc@sdlc`, type a
-number next to Review rounds, choose Save configuration, run `/reload-plugins` and then ask you
-for the review. Never pick a number yourself. After any edit to the spec's content, even
-adding an open question the review raised, run the next review, even if a failure that needs the person remains, so the report
-the person gets is about the spec as it now stands; after the last review, edit no further. A
-decision under Needs a person goes to them as a question rather than a fix you invent. If the
-last review still fails, stop and show the person the report. The count starts again when the
-person replies.
+1. **Review.** When the spec is written, start the `sdlc:spec-reviewer` agent in the foreground,
+   not in the background, with this request, its first line exactly as shown, since a plugin
+   hook reads that line to keep a copy of the spec as reviewed:
 
-Suggestions are optional behaviour the spec works without; pass them on to the person as
-options to add, and do not hold the spec back for them.
+   ```
+   Document: <the spec's path>
+   Review this spec.
+   ```
 
-Finish by giving the person the spec's path and the reviewer's final report, except the open
-questions and the decisions it lists for the person, including ones you added: give their count
-and ask the first, as above. Leave committing to them.
+   It reads everything else it needs itself. Wait for its report before touching the spec. If
+   it passes with nothing under Needs a person, go straight to handing over.
+2. **Correct, once.** Read the rubric again, then correct only what the report lists: each
+   failed check and each item under Other findings. A decision under Needs a person
+   becomes an entry in the spec's Open questions, never a guess at the answer. Leave
+   suggestions alone and change nothing else, since an edit beyond the report is the likeliest
+   way to break something. Wait until every edit has succeeded. If nothing in the report was
+   yours to correct, there is nothing to check: go straight to handing over.
+3. **Check the corrections.** Start the `sdlc:correction-checker` agent in the foreground with
+   this request, and add nothing to it: the hook attaches the report and the spec as reviewed,
+   word for word.
+
+   ```
+   Document: <the spec's path>
+   Check the corrections.
+   ```
+
+   If the hook refuses to start it, do what its reason says. If the check fails, stop: change
+   the spec no further, and show the person the check's report. Do not review or correct
+   again; what happens next is their call.
+
+After the sequence, edit the spec only when the person asks. When they change it or ask you to,
+run the sequence again on the changed spec.
+
+Whether the check passed or failed, end with the hand-over. It is what the person acts on, so make
+it hard to miss anything. Give them the spec's path, the review report and the check's report, if
+there was one, leaving out the decisions they list for the person. Then say how many items must be
+settled before the spec can move on: its open questions, plus any correction the check found not
+made or broken. Say you will take them one at a time, rather than asking whether to, and ask the
+first only, as a single question, giving any examples as possible answers rather than further
+questions; if the person has said not to ask now, ask nothing. Name the count only, not the items:
+each comes up when you reach it. List the reviewers' suggestions separately, as optional: they never
+hold the spec back. Leave committing to them.

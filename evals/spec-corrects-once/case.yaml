@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: spec-corrects-once
+expected_outcome: |
+  The new archive spec contradicts the existing data-retention spec, which only the person can resolve. Although the person asks for fixes until the review passes, the skill reviews once, corrects once, has the corrections checked once, and hands over with the number of items to settle, asking the first, without changing the other spec.
+context:
+  scaffold_script: place-files.sh

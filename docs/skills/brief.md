@@ -11,7 +11,7 @@ A product has one brief, at `docs/brief.md`. It is edited in place, and git is i
 
 The brief holds only what is true of the whole product. How one capability behaves, such as a
 rule or a limit, belongs in that capability's [spec](spec.md), and a technical choice belongs in
-an [ADR](../../README.md#adr). Keeping each thing in one place means the documents cannot
+an [ADR](adr.md). Keeping each thing in one place means the documents cannot
 disagree. Specs read the brief to see whether they fit the product.
 
 Unlike the other documents, the brief has no status. A spec moves from Draft to Ready to build
@@ -59,15 +59,14 @@ Run `/brief` and say what you want: a new brief, or a change to the one you have
 ## Review
 
 Before you see the brief, `/brief` has its reviewer agent check it against a short list of
-pass-or-fail checks: the sections are all there, it speaks for the whole product, the goals can be
-measured, nothing is guessed or chooses how to build it, and every statement that links to a
+pass-or-fail checks: the sections are all there, it speaks for the whole product, the goals can
+be measured, nothing is guessed or chooses how to build it, and every statement that links to a
 document in the repository says no more than that document does. It also checks that the brief
 refers to no spec, ADR or plan, by hyperlink, path or title, since those can change without the
-brief being touched and the reference would go stale. The reviewer sees only the brief and the documents it links to, not
-your conversation, so it judges the page as a newcomer would. `/brief` fixes what the reviewer
-finds and has it checked again, up to the number of reviews in the Review rounds setting (see
-[Install](../../README.md#install)); then you get the brief with the final report. If that
-setting has not been saved, `/brief` stops before the first review and asks you to save it.
+brief being touched and the reference would go stale. The reviewer sees only the brief and the
+documents it links to, not your conversation, so it judges the page as a newcomer would.
+`/brief` corrects what the reviewer finds, once, and has the corrections checked (see
+[Review process](../lifecycle.md#review-process)); then you get the brief with the reports.
 
 The reviewer cannot tell whether the brief matches what you said, only what it links to, so read
 the draft before you rely on it.

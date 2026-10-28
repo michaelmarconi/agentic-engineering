@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: brief-corrects-once
+expected_outcome: |
+  The person insists on keeping a Problem sentence that names the solution, which the review fails. Although they ask for fixes until the review passes, the skill keeps the sentence, reviews once, corrects once, has the corrections checked once, and leaves the sentence to the person, giving the number of items to settle and asking the first.

@@ -2,5 +2,3 @@ schema_version: "1.1"
 name: adr-from-conversation
 expected_outcome: |
   The ADR is drafted from the conversation without an interview first, as a Draft. It records the latest choice (Redis, not Postgres), keeps both rejected options with the reasons given, and has a Confirmation naming the concern and a method.
-context:
-  scaffold_script: place-files.sh

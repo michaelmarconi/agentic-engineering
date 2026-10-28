@@ -10,7 +10,7 @@ A spec describes one capability of the product: something a user or another syst
 with it, such as resetting a password. There is one spec per capability, and it describes the
 system as it should behave now. It says
 *what* the system does, never *how* it is built: a technical choice that comes up while shaping
-a spec belongs in a [spike](../../README.md#spike) or an [ADR](../../README.md#adr).[^openspec]
+a spec belongs in a [spike](spike.md) or an [ADR](adr.md).[^openspec]
 A spec is edited in place on a branch, and git is its history.
 
 ## Anatomy
@@ -71,7 +71,7 @@ stateDiagram-v2
   has passed with no decision left for you, and you have seen the text as it stands. If `/spec`
   changes anything after you asked, even a small fix you allowed in advance, it shows you the
   change and waits for your reply before setting Ready.
-- **Built:** the last [`/build`](../../README.md#build) review found every requirement in the
+- **Built:** the last [`/build`](build.md) review found every requirement in the
   spec verified, however many plans it took to build them.
 
 Changing a Ready or Built spec returns it to Draft. A capability that is no longer wanted has
@@ -83,17 +83,16 @@ Three things keep specs in this shape:
   list of pass-or-fail checks: the sections are all there, each requirement has one EARS rule,
   its scenarios add real cases, Verified by names a method, and the spec refers to no other spec,
   nor the brief, an ADR or a plan, by hyperlink, path or title, since those can change without
-  the spec being touched and the reference would go stale. `/spec` fixes what the reviewer finds and has it checked
-  again, up to the number of reviews in the Review rounds setting (see
-  [Install](../../README.md#install)), then you get the spec with the final report. If that
-  setting has not been saved, `/spec` stops before the first review and asks you to save it.
+  the spec being touched and the reference would go stale. `/spec` corrects what the reviewer
+  finds, once, and has the corrections checked (see [Review process](../lifecycle.md#review-process));
+  then you get the spec with the reports.
 - **Status.** A hook checks each edit Claude makes to a spec with its file-editing tools and
   refuses one the lifecycle does not allow: a new spec that is not Draft, Ready to build while
   Open questions is not empty, setting Built, or a change to a Ready to build or Built spec that
   does not return it to Draft. Built is refused for now because only `/build` may set it, after
   its own review passes, and `/build` is not built yet. Plans will get the same kind of check
   when `/plan` is built.
-- **Audit.** [`/audit`](../../README.md#audit) finds specs and code that no longer agree, such
+- **Audit.** [`/audit`](audit.md) finds specs and code that no longer agree, such
   as after a spec was edited by hand, which the hook does not see.
 
 ## Using `/spec`

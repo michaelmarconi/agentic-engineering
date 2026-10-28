@@ -17,7 +17,7 @@ checking, and quotes the ADR as evidence for every failure.
 4. **Context states the need.** Context says what forces a decision now, in words a newcomer can
    follow, and does not argue for an option.
 5. **Real options.** Considered Options lists at least two options that could each meet the
-   need, and each option not chosen says why it lost.
+   need, and each option not chosen says why it was rejected.
 6. **Outcome.** Decision Outcome names one of the considered options and gives the reason for
    choosing it. While the person has not chosen, Decision Outcome says so and the ADR stays
    Draft.

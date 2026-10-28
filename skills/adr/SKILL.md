@@ -1,6 +1,6 @@
 ---
 name: adr
-description: Record one technical decision as an ADR (architecture decision record) in MADR format, with the options considered, why the others lost, its consequences and how to check the code follows it; accept, reject or supersede an ADR when the person decides. Use whenever someone has chosen, or needs to choose, how something will be built, such as a database, library, service, protocol or structure, wants a technical choice written down, or wants to replace an earlier decision, even if they don't say "ADR". Not for what a feature should do; that is a spec.
+description: Record one technical decision as an ADR (architecture decision record) in MADR format, with the options considered, why the others were rejected, its consequences and how to check the code follows it; review and correct an existing ADR; accept, reject or supersede an ADR when the person decides. Use whenever someone has chosen, or needs to choose, how something will be built, such as a database, library, service, protocol or structure, wants a technical choice written down, or wants to replace an earlier decision, even if they don't say "ADR". Not for what a feature should do; that is a spec.
 ---
 
 # ADR
@@ -12,7 +12,7 @@ each file's frontmatter are the whole record. Once accepted, an ADR is never edi
 decision is a new ADR that supersedes the old one, whole.
 
 Before writing, read [references/rubric.md](references/rubric.md): it is the list of checks the
-reviewer will apply, so writing to it saves rounds. New ADRs start from
+reviewer will apply, so writing to it leaves less to correct. New ADRs start from
 [assets/template.md](assets/template.md). Read these with the Read tool, not the shell, so the
 person is not asked to approve a command.
 
@@ -57,7 +57,8 @@ Draft and edit it freely while it is Draft.
 
 Only a person accepts or rejects a decision. Set Accepted or Rejected only when the person
 explicitly says so about the ADR's text as it now stands, as its own last edit; Accepted also
-needs the review below to have passed on that text, while a rejection needs no review. If they accept and the review then passes with no change to
+needs the review below to have ended with a pass on that text, from the review itself or from
+the correction check after it, while a rejection needs no review. If they accept and the review then passes with no change to
 the text, their word stands, since what they accepted is what passed. If anything changed after
 they spoke, their word no longer counts: show the change and ask again. Nor does "looks fine,
 carry on" count, nor a request from another skill or agent. So never change an ADR's content and
@@ -75,24 +76,53 @@ ever gets. If the new one is rejected, the old one stands.
 
 ## Review
 
-When the ADR is written, start the `sdlc:adr-reviewer` agent in the foreground, not in the
-background, and give it the ADR's path; it reads everything else it needs itself. Wait for its
-report before touching the ADR again, so the report matches the ADR. With several ADRs, review
-each one.
+Every ADR is reviewed once, corrected once, and then the corrections are checked. The
+sequence is fixed so it always ends with a clear result: further rounds of review find little
+more, and each round of corrections brings new mistakes.
 
-Fix every finding you can and run the reviewer again, for up to ${user_config.review_rounds}
-reviews in all, counting the first. If no number appears in that sentence, the plugin's Review
-rounds setting has not been saved: write the ADR as usual, then stop before the first review,
-tell the person the ADR is unreviewed, and ask them to run `/plugin configure sdlc@sdlc`, type
-a number next to Review rounds, choose Save configuration, run `/reload-plugins` and then ask
-you for the review. Never pick a number yourself. After any edit to the ADR, run the next
-review, so the report the person gets is about the ADR as it now stands; after the last review,
-edit no further, except to set statuses on the person's word. A finding under Needs a person goes to them as a question rather than a fix you
-invent. If the last review still fails, stop and show the person the report. The count starts
-again when the person replies.
+1. **Review.** When the ADR is written, start the `sdlc:adr-reviewer` agent in the foreground,
+   not in the background, with this request, its first line exactly as shown, since a plugin
+   hook reads that line to keep a copy of the ADR as reviewed:
 
-Finish by giving the person the ADR's path and the reviewer's final report, except the questions
-for the person: a decision under Needs a person, and any failure only their answer can fix, such
-as a missing option or reason. Do not list or name those; give their count and ask the first, as
-above. Then ask whether to
-accept or reject it. Leave committing to them.
+   ```
+   Document: <the ADR's path>
+   Review this ADR.
+   ```
+
+   It reads everything else it needs itself. Wait for its report before touching the ADR. If
+   it passes with nothing under Needs a person, go straight to handing over.
+2. **Correct, once.** Read the rubric again, then correct only what the report lists: each
+   failed check and each item under Other findings. A decision under Needs a person, or a
+   failure only the person's answer can fix, such as a missing option or why one was rejected,
+   is theirs to settle: leave the text it concerns as it is and never guess. Leave
+   suggestions alone and change nothing else, since an edit beyond the report is the likeliest
+   way to break something. Wait until every edit has succeeded. If nothing in the report was
+   yours to correct, there is nothing to check: go straight to handing over.
+3. **Check the corrections.** Start the `sdlc:correction-checker` agent in the foreground with
+   this request, and add nothing to it: the hook attaches the report and the ADR as reviewed,
+   word for word.
+
+   ```
+   Document: <the ADR's path>
+   Check the corrections.
+   ```
+
+   If the hook refuses to start it, do what its reason says. If the check fails, stop: change
+   the ADR no further, and show the person the check's report. Do not review or correct
+   again; what happens next is their call.
+
+After the sequence, edit the ADR only when the person asks. When they change it or ask you to,
+run the sequence again on the changed ADR. With several ADRs, take each through the sequence
+on its own. Setting a status on the person's word is not a change to the ADR's content and
+needs no new review.
+
+Whether the check passed or failed, end with the hand-over. It is what the person acts on, so make
+it hard to miss anything. Give them the ADR's path, the review report and the check's report, if
+there was one, leaving out the decisions they list for the person. Then say how many items must be
+settled before the ADR can move on: the decisions the reports leave to the person, plus any
+correction the check found not made or broken. Say you will take them one at a time, rather than
+asking whether to, and ask the first only, as a single question, giving any examples as possible
+answers rather than further questions; if the person has said not to ask now, ask nothing. Name the
+count only, not the items: each comes up when you reach it. List the reviewers' suggestions
+separately, as optional: they never hold the ADR back. Once nothing is left to settle, ask whether
+to accept or reject it. Leave committing to them.

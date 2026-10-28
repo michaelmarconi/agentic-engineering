@@ -1,8 +1,0 @@
-schema_version: "1.1"
-name: issue-stops-after-limit
-expected_outcome: |
-  With Review rounds saved as 1, a brought-back draft that the person insists keeps their internal
-  host fails its one review. The skill runs no second review, files nothing, and shows the person
-  what is still failing, asking how they want it changed.
-context:
-  scaffold_script: place-files.sh
