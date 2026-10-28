@@ -13,13 +13,17 @@ directory if unset) or absolute. A draft that is never written to a file, such a
 uses `Document: issue draft` and carries the draft between `=== DRAFT ===` and
 `=== END DRAFT ===` lines in the request.
 
-- Before a known reviewer (spec, brief, adr or issue) starts, it saves the document's text,
-  replacing any earlier review of that document in this session.
-- When the reviewer finishes, it saves the reviewer's report.
-- Before the correction checker starts, it appends the report, the document as reviewed, and
+Every review has two parts that run side by side: the skill's own reviewer (spec, brief, adr or
+issue) and the shared language checker, which checks the wording (see docs/adrs/0013).
+
+- Before either starts, it saves the document's text. The two parts of one review join one
+  record; a part that starts on a different text, or that already reported on this one, begins
+  a new review, replacing any earlier review of that document in this session.
+- When either finishes, it saves that part's report.
+- Before the correction checker starts, it appends both reports, the document as reviewed, and
   the files that skill's checker should read, between fixed `=== ... ===` lines, and approves
   the start. It refuses the start, with a reason Claude sees, when the request has no
-  `Document:` line, when no finished review of that document is on record in this session, or
+  `Document:` line, when either report of that document is not on record in this session, or
   when the document is unchanged since its review.
 - When the checker finishes, it deletes that document's saved review; at the end of the session
   it deletes all of the session's.
@@ -30,6 +34,8 @@ cannot read, is left alone, so the hook never blocks anything else.
 """
 
 import argparse
+import contextlib
+import fcntl
 import hashlib
 import json
 import os
@@ -44,6 +50,8 @@ ISSUE = "issue draft"
 DRAFT_START = "=== DRAFT ===\n"
 DRAFT_END = "=== END DRAFT ==="
 CHECKER = "correction-checker"
+LANGUAGE = "language-checker"
+LIFECYCLE = os.path.join(ROOT, "docs", "lifecycle.md")
 # Each reviewer's skill, and the project files its checker may read to judge a changed sentence.
 REVIEWERS = {
     "spec-reviewer": ("spec", ["docs/brief.md", "docs/specs/"]),
@@ -108,6 +116,24 @@ def record_path(session, name):
     return os.path.join(base, hashlib.sha256(name.encode()).hexdigest() + ".json") if base else None
 
 
+@contextlib.contextmanager
+def locked(session):
+    """Hold the session's lock: both parts of a review can finish at the same moment.
+
+    Untested, since only a race could show it and no test relies on timing (AGENTS.md rule 5)."""
+    base = folder(session)
+    if not base:
+        yield
+        return
+    os.makedirs(base, exist_ok=True)
+    handle = os.open(base, os.O_RDONLY)
+    try:
+        fcntl.flock(handle, fcntl.LOCK_EX)
+        yield
+    finally:
+        os.close(handle)
+
+
 def load(session, name):
     path = record_path(session, name)
     try:
@@ -148,11 +174,15 @@ def refuse(reason):
 
 
 def attachments(name, record):
-    skill, extra = REVIEWERS[record["reviewer"]]
-    lines = [f"Rubric: {os.path.join(ROOT, 'skills', skill, 'references', 'rubric.md')}"]
+    reviewer = record["reviewer"]
+    skill, extra = REVIEWERS[reviewer]
+    lines = [f"Rubric: {os.path.join(ROOT, 'skills', skill, 'references', 'rubric.md')}",
+             f"Plain words rule: the Plain words section of {LIFECYCLE}"]
     if extra:
         lines.append("Only where needed to judge a changed sentence: " + ", ".join(extra))
-    return ("\n\n=== REVIEW REPORT ===\n" + record["report"] + "\n=== END REVIEW REPORT ===\n\n"
+    reports = record["reports"]
+    return ("\n\n=== REVIEW REPORT ===\n" + reports[reviewer] + "\n=== END REVIEW REPORT ===\n\n"
+            "=== WORDING REPORT ===\n" + reports[LANGUAGE] + "\n=== END WORDING REPORT ===\n\n"
             f"=== DOCUMENT AS REVIEWED: {name} ===\n" + record["text"] + "\n=== END DOCUMENT ===\n\n"
             "=== FILES TO READ ===\n" + "\n".join(lines) + "\n=== END FILES TO READ ===\n")
 
@@ -164,10 +194,15 @@ def start_checker(session, tool_input):
         return refuse("Start the correction checker with `Document: <path>` as the first line of "
                       "its request, the same line the reviewer was given.")
     name = key(named)
-    record = load(session, name)
-    if not record or "report" not in record:
+    record = load(session, name) or {}
+    reports = record.get("reports", {})
+    if record.get("reviewer") not in reports:
         return refuse(f"No review of {name} is on record in this session, so there is nothing to "
                       "check the corrections against. Run the review first.")
+    if LANGUAGE not in reports:
+        return refuse(f"The language checker's report on {name} is not on record in this "
+                      "session. Start the language checker beside the reviewer, on the same "
+                      "document, before correcting.")
     if current_text(name, prompt) == record["text"]:
         return refuse(f"{name} is unchanged since its review. Make the corrections first, then "
                       "start the correction checker.")
@@ -199,19 +234,29 @@ def handle(event):
         if when == "PostToolUse" and named:
             forget(session, key(named))
         return None
-    if agent not in REVIEWERS or not named:
+    if (agent not in REVIEWERS and agent != LANGUAGE) or not named:
         return None
     name = key(named)
-    if when == "PreToolUse":
-        text = current_text(name, prompt)
-        if text is not None:
-            save(session, name, {"reviewer": agent, "text": text})
-    elif when == "PostToolUse":
+    with locked(session):
         record = load(session, name)
-        report = response_text(event.get("tool_response"))
-        if record and report.strip():
-            record["report"] = report
+        if when == "PreToolUse":
+            text = current_text(name, prompt)
+            if text is None:
+                return None
+            if not record or record["text"] != text or agent in record["reports"] or (
+                    agent in REVIEWERS and record.get("reviewer") not in (None, agent)):
+                record = {"text": text, "reviewer": None, "reports": {}}
+            if agent in REVIEWERS:
+                record["reviewer"] = agent
+            record.setdefault("started", [])
+            if agent not in record["started"]:
+                record["started"].append(agent)
             save(session, name, record)
+        elif when == "PostToolUse":
+            report = response_text(event.get("tool_response"))
+            if record and agent in record.get("started", []) and report.strip():
+                record["reports"][agent] = report
+                save(session, name, record)
     return None
 
 

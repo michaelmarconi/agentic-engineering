@@ -1,0 +1,7 @@
+schema_version: "1.1"
+name: adr-plain-words
+expected_outcome: |
+  The person explains a decision in their team's shorthand: a nickname ("the 2 a.m. pile-up"),
+  a figure of speech ("the import keeps tripping over itself") and a payments term ("settlement
+  file"). The ADR keeps the meaning but says each in plain words, footnoting the payments term
+  where it first appears, and the language checker reviews it beside the ADR reviewer.

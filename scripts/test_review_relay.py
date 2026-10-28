@@ -12,6 +12,8 @@ ROOT = os.path.normpath(os.path.join(HERE, ".."))
 SPEC = "docs/specs/booking.spec.md"
 REPORT = "Result: FAIL\n\n| Check | Result | Evidence |\n|---|---|---|\n| 2. Story | fail | \"x\" |\n"
 DRAFT = "Title: Review stops early\n\nBody line one.\nBody line two.\n"
+WORDING = "Result: FAIL\n\nFindings:\n- \"rides along\": rewrite as \"is sent with\"\n"
+LANGUAGE = "sdlc:language-checker"
 
 
 def issue_request(draft, kind="bug"):
@@ -51,9 +53,16 @@ class Relay(unittest.TestCase):
         return self.run_hook(event)
 
     def review(self, agent="sdlc:spec-reviewer", prompt=f"Document: {SPEC}\nReview this spec.",
-               report=REPORT, session=None):
+               report=REPORT, session=None, wording=WORDING):
+        """Run the skill's reviewer, then the language checker unless wording is None."""
         self.assertIsNone(self.agent("PreToolUse", agent, prompt, session=session))
         self.assertIsNone(self.agent("PostToolUse", agent, prompt, response=report, session=session))
+        if wording is not None:
+            self.language(prompt, wording, session=session)
+
+    def language(self, prompt=f"Document: {SPEC}\nCheck the wording.", wording=WORDING, session=None):
+        self.assertIsNone(self.agent("PreToolUse", LANGUAGE, prompt, session=session))
+        self.assertIsNone(self.agent("PostToolUse", LANGUAGE, prompt, response=wording, session=session))
 
     def check(self, prompt=f"Document: {SPEC}\nCheck the corrections.", session=None, **extra):
         return self.agent("PreToolUse", "sdlc:correction-checker", prompt, session=session, **extra)
@@ -156,6 +165,97 @@ class Relay(unittest.TestCase):
         prompt = self.assertAllowed(self.check())["prompt"]
         self.assertIn("booking report", prompt)
         self.assertNotIn("payments", prompt)
+
+    # The language checker runs beside every reviewer
+
+    def test_checker_gets_the_wording_report_word_for_word_in_its_own_block(self):
+        self.put(SPEC, "v1\n")
+        self.review()
+        self.put(SPEC, "v2\n")
+        prompt = self.assertAllowed(self.check())["prompt"]
+        self.assertIn("=== REVIEW REPORT ===\n" + REPORT + "\n=== END REVIEW REPORT ===", prompt)
+        self.assertIn("=== WORDING REPORT ===\n" + WORDING + "\n=== END WORDING REPORT ===", prompt)
+
+    def test_checker_is_told_where_the_plain_words_rule_is(self):
+        self.put(SPEC, "v1\n")
+        self.review()
+        self.put(SPEC, "v2\n")
+        prompt = self.assertAllowed(self.check())["prompt"]
+        files = prompt.split("=== FILES TO READ ===")[1]
+        self.assertIn(os.path.join(ROOT, "docs", "lifecycle.md"), files)
+        self.assertIn("Plain words", files)
+
+    def test_both_reports_count_whichever_starts_or_finishes_first(self):
+        review = f"Document: {SPEC}\nReview."
+        wording = f"Document: {SPEC}\nCheck the wording."
+        orders = [
+            [("PreToolUse", LANGUAGE), ("PreToolUse", "sdlc:spec-reviewer"),
+             ("PostToolUse", "sdlc:spec-reviewer"), ("PostToolUse", LANGUAGE)],
+            [("PreToolUse", "sdlc:spec-reviewer"), ("PreToolUse", LANGUAGE),
+             ("PostToolUse", LANGUAGE), ("PostToolUse", "sdlc:spec-reviewer")],
+            [("PreToolUse", LANGUAGE), ("PostToolUse", LANGUAGE),
+             ("PreToolUse", "sdlc:spec-reviewer"), ("PostToolUse", "sdlc:spec-reviewer")],
+        ]
+        for n, order in enumerate(orders):
+            with self.subTest(order=n):
+                session = f"order{n}"
+                self.put(SPEC, "v1\n")
+                for when, agent in order:
+                    prompt = wording if agent == LANGUAGE else review
+                    response = None
+                    if when == "PostToolUse":
+                        response = WORDING if agent == LANGUAGE else REPORT
+                    self.assertIsNone(self.agent(when, agent, prompt, response=response, session=session))
+                self.put(SPEC, "v2\n")
+                prompt = self.assertAllowed(self.check(session=session))["prompt"]
+                self.assertIn(REPORT, prompt)
+                self.assertIn(WORDING, prompt)
+                self.assertIn("=== DOCUMENT AS REVIEWED: " + SPEC + " ===\nv1\n", prompt)
+
+    def test_checker_without_the_wording_report_is_refused(self):
+        self.put(SPEC, "v1\n")
+        self.review(wording=None)
+        self.put(SPEC, "v2\n")
+        self.assertRefused(self.check(), "language checker")
+
+    def test_checker_with_only_the_wording_report_is_refused(self):
+        self.put(SPEC, "v1\n")
+        self.language()
+        self.put(SPEC, "v2\n")
+        self.assertRefused(self.check(), "No review")
+
+    def test_wording_report_of_another_version_does_not_count(self):
+        self.put(SPEC, "v1\n")
+        self.review(wording=None)
+        self.put(SPEC, "v2\n")
+        self.language()
+        self.put(SPEC, "v3\n")
+        self.assertRefused(self.check(), "No review")
+
+    def test_a_new_review_of_unchanged_text_replaces_both_reports(self):
+        self.put(SPEC, "v1\n")
+        self.review(report="first report", wording="first wording")
+        self.review(report="second report", wording="second wording")
+        self.put(SPEC, "v2\n")
+        prompt = self.assertAllowed(self.check())["prompt"]
+        self.assertIn("second report", prompt)
+        self.assertIn("second wording", prompt)
+        self.assertNotIn("first", prompt)
+
+    def test_wording_of_an_issue_draft_counts(self):
+        self.review(agent="sdlc:issue-reviewer", prompt=issue_request(DRAFT))
+        corrected = DRAFT.replace("line two", "line 2")
+        prompt = self.assertAllowed(self.check(prompt=issue_request(corrected)))["prompt"]
+        self.assertIn("=== WORDING REPORT ===\n" + WORDING, prompt)
+
+    def test_language_checker_names_without_the_plugin_prefix_work_too(self):
+        self.put(SPEC, "v1\n")
+        self.review(wording=None)
+        self.assertIsNone(self.agent("PreToolUse", "language-checker", f"Document: {SPEC}\nGo."))
+        self.assertIsNone(self.agent("PostToolUse", "language-checker", f"Document: {SPEC}\nGo.",
+                                     response=WORDING))
+        self.put(SPEC, "v2\n")
+        self.assertAllowed(self.check())
 
     # /issue: the draft is never on disk
 

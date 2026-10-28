@@ -11,7 +11,9 @@ so the code can change without the spec going stale. One capability has one spec
 place; git is its history.
 
 Before writing, read [references/rubric.md](references/rubric.md): it is the list of checks the
-reviewer will apply, so writing to it leaves less to correct. New specs start from
+reviewer will apply, so writing to it leaves less to correct. Write in plain words, as the Plain
+words section of [the lifecycle page](../../docs/lifecycle.md#plain-words) says: a language
+checker holds every document to it. New specs start from
 [assets/template.md](assets/template.md). Read these with the Read tool, not the shell, so the
 person is not asked to approve a command.
 
@@ -93,26 +95,29 @@ Every spec is reviewed once, corrected once, and then the corrections are checke
 sequence is fixed so it always ends with a clear result: further rounds of review find little
 more, and each round of corrections brings new mistakes.
 
-1. **Review.** When the spec is written, start the `sdlc:spec-reviewer` agent in the foreground,
-   not in the background, with this request, its first line exactly as shown, since a plugin
-   hook reads that line to keep a copy of the spec as reviewed:
+1. **Review.** When the spec is written, start two agents in the foreground, not in the
+   background, both in one message so they run side by side: the `sdlc:spec-reviewer` agent
+   and the `sdlc:language-checker` agent, which checks the wording. Give each this request, its
+   first line exactly as shown, since a plugin hook reads that line to keep a copy of the spec
+   as reviewed:
 
    ```
    Document: <the spec's path>
    Review this spec.
    ```
 
-   It reads everything else it needs itself. Wait for its report before touching the spec. If
-   it passes with nothing under Needs a person, go straight to handing over.
-2. **Correct, once.** Read the rubric again, then correct only what the report lists: each
-   failed check and each item under Other findings. A decision under Needs a person
+   Each reads everything else it needs itself. Wait for both reports before touching the spec.
+   If both pass with nothing under Needs a person, go straight to handing over.
+2. **Correct, once.** Read the rubric and the Plain words rule again, then correct only what
+   the reports list: each failed check and each item under Other findings in the review report,
+   and each finding in the wording report. A decision under Needs a person
    becomes an entry in the spec's Open questions, never a guess at the answer. Leave
    suggestions alone and change nothing else, since an edit beyond the report is the likeliest
-   way to break something. Wait until every edit has succeeded. If nothing in the report was
+   way to break something. Wait until every edit has succeeded. If nothing in the reports was
    yours to correct, there is nothing to check: go straight to handing over.
 3. **Check the corrections.** Start the `sdlc:correction-checker` agent in the foreground with
-   this request, and add nothing to it: the hook attaches the report and the spec as reviewed,
-   word for word.
+   this request, and add nothing to it: the hook attaches both reports and the spec as
+   reviewed, word for word.
 
    ```
    Document: <the spec's path>
@@ -127,8 +132,8 @@ After the sequence, edit the spec only when the person asks. When they change it
 run the sequence again on the changed spec.
 
 Whether the check passed or failed, end with the hand-over. It is what the person acts on, so make
-it hard to miss anything. Give them the spec's path, the review report and the check's report, if
-there was one, leaving out the decisions they list for the person. Then say how many items must be
+it hard to miss anything. Give them the spec's path, the review and wording reports and the check's
+report, if there was one, leaving out the decisions they list for the person. Then say how many items must be
 settled before the spec can move on: its open questions, plus any correction the check found not
 made or broken. Say you will take them one at a time, rather than asking whether to, and ask the
 first only, as a single question, giving any examples as possible answers rather than further

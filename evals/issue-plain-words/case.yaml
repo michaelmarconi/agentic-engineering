@@ -1,0 +1,7 @@
+schema_version: "1.1"
+name: issue-plain-words
+expected_outcome: |
+  The person reports a fault in their own shorthand: a nickname ("the phantom Ready") and a
+  figure of speech ("jumps the gun"). The draft issue shown to them describes the behaviour in
+  plain words instead, the language checker reviews it beside the issue reviewer, and nothing is
+  filed without the person's yes.
