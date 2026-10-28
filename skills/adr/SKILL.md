@@ -97,10 +97,11 @@ more, and each round of corrections brings new mistakes.
    If both pass with nothing under Needs a person, go straight to handing over.
 2. **Correct, once.** Read the rubric and the Plain words rule again, then correct only what
    the reports list: each failed check and each item under Other findings in the review report,
-   and each finding in the wording report. A decision under Needs a person, or a
+   and each finding in the wording report. A wording item under Needs a person, whose
+   meaning only the person knows, is a decision like any other. A decision under Needs a person, or a
    failure only the person's answer can fix, such as a missing option or why one was rejected,
    is theirs to settle: leave the text it concerns as it is and never guess. Leave
-   suggestions alone and change nothing else, since an edit beyond the report is the likeliest
+   suggestions alone and change nothing else, since an edit beyond the reports is the likeliest
    way to break something. Wait until every edit has succeeded. If nothing in the reports was
    yours to correct, there is nothing to check: go straight to handing over.
 3. **Check the corrections.** Start the `sdlc:correction-checker` agent in the foreground with

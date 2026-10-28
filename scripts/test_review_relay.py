@@ -43,9 +43,9 @@ class Relay(unittest.TestCase):
         self.assertEqual(done.returncode, 0, done.stderr)
         return json.loads(done.stdout) if done.stdout.strip() else None
 
-    def agent(self, when, agent, prompt, response=None, session=None, **extra):
+    def agent(self, when, agent, prompt, response=None, session=None, call=None, **extra):
         event = {"hook_event_name": when, "session_id": session or self.session, "cwd": self.project,
-                 "tool_name": "Agent",
+                 "tool_name": "Agent", "tool_use_id": call or f"{agent}-{prompt}",
                  "tool_input": dict({"subagent_type": agent, "prompt": prompt,
                                      "description": "a task"}, **extra)}
         if response is not None:
@@ -256,6 +256,45 @@ class Relay(unittest.TestCase):
                                      response=WORDING))
         self.put(SPEC, "v2\n")
         self.assertAllowed(self.check())
+
+    def test_a_late_report_from_an_earlier_run_does_not_count(self):
+        v1 = f"Document: {SPEC}\nCheck the wording."
+        self.put(SPEC, "v1\n")
+        self.assertIsNone(self.agent("PreToolUse", LANGUAGE, v1, call="old"))
+        self.put(SPEC, "v2\n")
+        self.assertIsNone(self.agent("PreToolUse", "sdlc:spec-reviewer", v1, call="rev"))
+        self.assertIsNone(self.agent("PreToolUse", LANGUAGE, v1, call="new"))
+        self.assertIsNone(self.agent("PostToolUse", "sdlc:spec-reviewer", v1, response=REPORT, call="rev"))
+        self.assertIsNone(self.agent("PostToolUse", LANGUAGE, v1, response="current wording", call="new"))
+        self.assertIsNone(self.agent("PostToolUse", LANGUAGE, v1, response="stale wording", call="old"))
+        self.put(SPEC, "v3\n")
+        prompt = self.assertAllowed(self.check())["prompt"]
+        self.assertIn("current wording", prompt)
+        self.assertNotIn("stale wording", prompt)
+
+    def test_refusal_for_a_missing_wording_report_never_asks_for_another_review(self):
+        self.put(SPEC, "v1\n")
+        self.review(wording=None)
+        self.put(SPEC, "v2\n")
+        out = self.check()
+        self.assertRefused(out, "language checker")
+        reason = out["hookSpecificOutput"]["permissionDecisionReason"]
+        self.assertIn("show the person", reason)
+        self.assertNotIn("Start the language checker", reason)
+
+    def test_a_saved_record_in_another_shape_counts_as_no_review(self):
+        self.put(SPEC, "v1\n")
+        self.review()
+        for path in self.saved():
+            with open(path, "w", encoding="utf-8") as f:
+                json.dump({"reviewer": "spec-reviewer", "text": "v1\n", "report": "old shape"}, f)
+        self.put(SPEC, "v2\n")
+        self.assertRefused(self.check(), "No review")
+        for path in self.saved():
+            with open(path, "w", encoding="utf-8") as f:
+                f.write("[1, 2]")
+        self.assertIsNone(self.agent("PreToolUse", "sdlc:spec-reviewer", f"Document: {SPEC}\nGo."))
+        self.assertRefused(self.check(), "No review")
 
     # /issue: the draft is never on disk
 

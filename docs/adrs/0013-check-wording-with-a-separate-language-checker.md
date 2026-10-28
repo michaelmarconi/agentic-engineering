@@ -16,7 +16,8 @@ it the drafting agent. ADR 0010 has every document reviewed once by a reviewer a
 instance of Claude, started with its own instructions and none of the conversation, which checks
 the document against a list of pass-or-fail checks for that kind of document. The drafting agent
 then corrects the document once, and a second agent, the correction checker, checks only those
-corrections.
+corrections. ADR 0011 has a hook, a script Claude Code runs at set moments, save the reviewer's
+report and hand it to the correction checker.
 
 The drafting agent has been in the conversation, so the team's shorthand reads as plain to it.
 Its documents fill up with words a newcomer cannot follow: names used only inside the team,
@@ -32,7 +33,7 @@ is rewritten in plain words.
 ## Considered Options
 
 - **Add the wording rule to every kind of document's list of checks, for its own reviewer to
-  apply.** Rejected: it caught fewer problems. We planted 60 wording problems in 12 documents
+  apply.** Rejected: it caught fewer problems. We deliberately added 60 wording problems to 12 documents
   about two made-up products and ran each review 5 times. With the rule added to the list of
   checks, the reviewers found 88% of them. A separate checker given the same rule found 96%.
   The gap was widest for terms from the product's field that read like ordinary English, such
@@ -48,19 +49,19 @@ is rewritten in plain words.
 ## Decision Outcome
 
 Chosen option: a separate language checker, run beside each reviewer, because it found 96% of the
-planted wording problems against 88% for the same rule in each list of checks, while the
-reviewers beside it still found all 12 other planted problems.
+wording problems added on purpose, against 88% for the same rule in each list of checks, while the
+reviewers beside it still found all 12 other problems added on purpose.
 
 ### Consequences
 
 - Good: every kind of document, including those written later, gets the same wording check from
   one agent, so the rule is kept in one place.
-- Good: in the same test, the reviewers found every other planted problem whether or not the
-  language checker ran beside them. On the documents with no planted problem, the language
+- Good: in the same test, the reviewers found every other problem added on purpose whether or not the
+  language checker ran beside them. On the documents with no problem added, the language
   checker raised about as many wrong complaints as reviewers with the rule in their list: 0.25
   per document against 0.20.
 - Bad: each review costs about 17% more, since one more agent runs.
-- Bad: on documents with planted problems, the language checker raised more complaints that
+- Bad: on documents with problems added, the language checker raised more complaints that
   turned out to be wrong: about 0.8 per document, against 0.1 for reviewers with the rule in their
   list, such as flagging the product's own name. The drafting agent then rewrites a phrase that
   was already fine.

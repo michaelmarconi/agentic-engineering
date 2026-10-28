@@ -145,7 +145,7 @@ flowchart LR
 | **Correction check** | `agents/correction-checker.md`, shared by every skill | Checks only that each correction was made and that none broke anything; anything else it notices is a suggestion | The correction report: pass or fail |
 | **Sign-off** | You | Read the document and the reports, settle the open questions, and set the status | The document at its next status |
 
-If both reports pass, the skill skips straight to you. If the correction check fails, the skill
+If both reports pass, the skill hands the document to you with no correction step. If the correction check fails, the skill
 stops and shows you why, rather than trying again.
 
 | Term | Meaning |
@@ -159,8 +159,9 @@ stops and shows you why, rather than trying again.
 
 There are no repeated rounds of review and correction. We measured this on specs with planted
 mistakes: one review finds nearly every one, and each further round of corrections brings new
-problems. The wording has its own checker for the same reason, measured the same way: a checker
-that does only that job found more of the planted jargon than the same rule added to each rubric.
+problems. The wording has its own checker because we measured that too: a checker that does
+only that job found more of the jargon we added on purpose than the same rule added to each
+rubric.
 
 `/build` follows the same sequence for code: the build agent corrects what the reviewers find
 once, and a correction check follows. A clean review or a passing correction check merges the work

@@ -78,7 +78,7 @@ The plugin gives Claude three kinds of help to work with these documents:
   reads inside the plugin's folder only. They need Python 3.
 
 Every document a skill writes is checked by a reviewer agent before you see it, and by a
-language checker that makes sure someone new to your project could follow every word. Apart from the
+language checker that checks someone new to your project could follow its words. Apart from the
 documents, the plugin adds nothing to your repository, unless you choose to install it for
 everyone working there (see [Install](#install)).
 

@@ -74,9 +74,10 @@ reads them to keep a copy of the draft as reviewed, outside the person's reposit
    If both pass with nothing under Needs a person, go straight to showing the person.
 2. **Correct, once.** Read the rubric and the Plain words rule again, then correct only what
    the reports list: each failed check and each item under Other findings in the review report,
-   and each finding in the wording report. Whether a detail is safe to share is the
+   and each finding in the wording report. A wording item under Needs a person, whose
+   meaning only the person knows, is a decision like any other. Whether a detail is safe to share is the
    person's decision, so a finding under Needs a person goes to them as a question, never a
-   guess. Leave suggestions alone and change nothing else, since an edit beyond the report is
+   guess. Leave suggestions alone and change nothing else, since an edit beyond the reports is
    the likeliest way to break something. If nothing in the reports was yours to correct, there
    is nothing to check: go straight to showing the person.
 3. **Check the corrections.** Start the `sdlc:correction-checker` agent in the foreground with

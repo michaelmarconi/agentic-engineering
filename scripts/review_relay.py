@@ -19,12 +19,13 @@ issue) and the shared language checker, which checks the wording (see docs/adrs/
 - Before either starts, it saves the document's text. The two parts of one review join one
   record; a part that starts on a different text, or that already reported on this one, begins
   a new review, replacing any earlier review of that document in this session.
-- When either finishes, it saves that part's report.
+- When either finishes, it saves that part's report, if that run started on the text on record.
 - Before the correction checker starts, it appends both reports, the document as reviewed, and
   the files that skill's checker should read, between fixed `=== ... ===` lines, and approves
   the start. It refuses the start, with a reason Claude sees, when the request has no
   `Document:` line, when either report of that document is not on record in this session, or
-  when the document is unchanged since its review.
+  when the document is unchanged since its review. A missing wording report is never a reason
+  to review again: the refusal tells Claude to stop and show the person.
 - When the checker finishes, it deletes that document's saved review; at the end of the session
   it deletes all of the session's.
 
@@ -135,12 +136,17 @@ def locked(session):
 
 
 def load(session, name):
+    """The saved record, or None if there is none or it is not in this version's shape."""
     path = record_path(session, name)
     try:
         with open(path, encoding="utf-8") as f:
-            return json.load(f)
+            record = json.load(f)
     except (OSError, TypeError, ValueError):
         return None
+    if not isinstance(record, dict) or not isinstance(record.get("text"), str) or not isinstance(
+            record.get("reports"), dict) or not isinstance(record.get("started"), list):
+        return None
+    return record
 
 
 def save(session, name, record):
@@ -201,8 +207,8 @@ def start_checker(session, tool_input):
                       "check the corrections against. Run the review first.")
     if LANGUAGE not in reports:
         return refuse(f"The language checker's report on {name} is not on record in this "
-                      "session. Start the language checker beside the reviewer, on the same "
-                      "document, before correcting.")
+                      "session, so the corrections cannot be checked. Do not review again: stop "
+                      "and show the person the review report and this reason.")
     if current_text(name, prompt) == record["text"]:
         return refuse(f"{name} is unchanged since its review. Make the corrections first, then "
                       "start the correction checker.")
@@ -237,6 +243,7 @@ def handle(event):
     if (agent not in REVIEWERS and agent != LANGUAGE) or not named:
         return None
     name = key(named)
+    call = str(event.get("tool_use_id") or agent)
     with locked(session):
         record = load(session, name)
         if when == "PreToolUse":
@@ -245,16 +252,15 @@ def handle(event):
                 return None
             if not record or record["text"] != text or agent in record["reports"] or (
                     agent in REVIEWERS and record.get("reviewer") not in (None, agent)):
-                record = {"text": text, "reviewer": None, "reports": {}}
+                record = {"text": text, "reviewer": None, "reports": {}, "started": []}
             if agent in REVIEWERS:
                 record["reviewer"] = agent
-            record.setdefault("started", [])
-            if agent not in record["started"]:
-                record["started"].append(agent)
+            record["started"].append(call)
             save(session, name, record)
         elif when == "PostToolUse":
+            # Only a run that started on this record's text may report on it.
             report = response_text(event.get("tool_response"))
-            if record and agent in record.get("started", []) and report.strip():
+            if record and call in record["started"] and report.strip():
                 record["reports"][agent] = report
                 save(session, name, record)
     return None
