@@ -55,11 +55,6 @@ Chosen option: a hook saves both texts and adds them to the checker's request, b
 both texts reached the checker exactly every time. It needed no approval from the person, used
 only hook features that Claude Code documents, and wrote nothing into the project.
 
-Because the hook keeps a copy of each reviewed document, it also refuses to start the checker,
-which Claude Code lets a hook do with a reason Claude sees, when the document has no review, or
-when its text is identical to the copy, so the checker never runs before the corrections are
-made.
-
 ### Consequences
 
 - Good: the checker works from exactly what the reviewer saw and reported, whichever model is
@@ -82,6 +77,6 @@ made.
 
 Applies to: any text one agent of a review passes to another.
 Checked by: automated tests. Unit tests feed the hook examples of the messages Claude Code sends
-it, and check what it saves, what it adds to the checker's request, and when it refuses. Tests
+it, and check what it saves, what it adds to the checker's request,. Tests
 that run each skill on sample conversations check that the checker's report quotes a finding
 from the reviewer's report word for word, which can only happen if the hook passed it on.
