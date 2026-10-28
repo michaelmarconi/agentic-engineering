@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: issue-stops-on-failed-check
+expected_outcome: |
+  Run only by scripts/failed_check_evals.py, with a stand-in correction checker that always fails with finding CHK-417. The draft lacks the bug template's What I expected section, which the skill corrects once. When the check fails it stops: no further reviews or checks, nothing is filed, and the person is shown the failed check.

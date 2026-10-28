@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: brief-stops-on-failed-check
+expected_outcome: |
+  Run only by scripts/failed_check_evals.py, with a stand-in correction checker that always fails with finding CHK-417. Although the person asks for fixes until the review passes, the skill reviews once, corrects once, and when the check fails it stops: no further edits, reviews or checks, and the person is shown the failed check.

@@ -1,5 +1,0 @@
-schema_version: "1.1"
-name: brief-stops-after-limit
-expected_outcome: |
-  The person insists on keeping a Problem sentence that names the solution, which the review fails every time. The skill keeps the sentence, runs the reviewer at most three times, then stops and leaves the choice to the person instead of claiming the brief is finished.
-# place-files.sh saves Review rounds as 3, because grader 02 counts reviews against that number.

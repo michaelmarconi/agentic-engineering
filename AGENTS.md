@@ -120,6 +120,7 @@ skills/
     assets/            # optional, templates and static files
 evals/
   <name>-<case>/       # required, one folder per test case, run by `claude plugin eval`
+evals-failed-check/    # cases for what a skill does when the correction check fails; see Workflow
 agents/
   <name>-reviewer.md   # one reviewer per skill that writes documents
   correction-checker.md # checks the corrections after a review, for every skill
@@ -146,10 +147,16 @@ Nothing else belongs at the root without a reason recorded in the change that ad
   `python3 -m unittest discover -s skills/<name>/scripts`, and for the plugin's own scripts if
   you changed them or any skill: `python3 -m unittest discover -s scripts`. All must pass.
 - Run the evals for each skill you changed, once per supported model, with Sonnet as judge:
-  `claude plugin eval . --case '<name>-*' --model <model> --judge-model sonnet --scaffold`.
+  `claude plugin eval . --case '<name>-*' --model <model> --judge-model sonnet --scaffold --allow-tools Write Edit`;
+  without the grant, cases that write documents can't pass.
   The supported models are those named in README.md; a change merges only if its cases pass
   on every one. Evals are billed model runs: run the ones you touched, never the whole suite
   unprompted.
+- The correction checker is a model, so no ordinary case can make it fail on demand. The cases in
+  `evals-failed-check/` run against a temporary copy of the plugin whose checker always fails
+  with a known finding; they live outside `evals/` so the real plugin never runs them. If you
+  change a skill's review sequence, run its case through the script that builds that copy:
+  `python3 scripts/failed_check_evals.py --case '<name>-*' --model <model> --judge-model sonnet --scaffold --allow-tools Write Edit`.
 - Bump `version` in `.claude-plugin/plugin.json` in any change that alters what users receive,
   since installed copies only update when the version string changes. Follow
   [Semantic Versioning](https://semver.org/spec/v2.0.0.html): patch for a fix, minor for a new
