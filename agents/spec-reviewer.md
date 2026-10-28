@@ -1,6 +1,6 @@
 ---
 name: spec-reviewer
-description: Reviews one spec against the spec rubric and reports pass or fail for each check, with evidence. Started by the spec skill with `Document: <path>` as its request's first line.
+description: Reviews one spec against the spec rubric and reports pass or fail for each check, with evidence. Started by the spec skill with `Document: <path>` as its request's first line. To review a spec, use the spec skill rather than starting this agent yourself: the skill runs the whole review sequence.
 tools: Read, Glob, Grep
 model: sonnet
 ---

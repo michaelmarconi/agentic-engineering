@@ -100,14 +100,15 @@ them, says to file it anyway: it is their information to share.
 ## File
 
 Run `python3 "${CLAUDE_SKILL_DIR}/scripts/issue.py" account` to learn how it would be filed:
-`gh <login>` means with the GitHub CLI as that account, `link` means they submit it in their
-browser. Show the person the draft exactly as it would be filed, the review report and the check's
-report, if there was one, and, for `gh <login>`, that it will appear under that account, since their name is public on the
-issue and it may be a work account. Leave out the decisions the reports list for the person:
-say how many items must be settled before filing, those decisions plus any correction the check
-found not made or broken, offer to go through them one at a time, and ask the first only. List
-the reviewers' suggestions separately, as optional. Once nothing is left to settle, ask whether
-to file it.
+`gh <login>` means with the GitHub CLI as that account, `link` means they submit it in their browser.
+Whether the check passed or failed, end here. Show the person the draft exactly as it would be
+filed, the review report and the check's report, if there was one, and, for `gh <login>`, that it
+will appear under that account, since their name is public on the issue and it may be a work
+account. Leave out the decisions the reports list for the person: say how many items must be settled
+before filing, those decisions plus any correction the check found not made or broken, offer to go
+through them one at a time, and ask the first only. Name the count only, not the items: each comes
+up when you reach it. List the reviewers' suggestions separately, as optional. Once nothing is left
+to settle, ask whether to file it.
 
 File only on their clear yes to that draft: an issue on a public repository can't be taken back,
 so a yes given before they have seen the draft and the account doesn't count, even "file it, I

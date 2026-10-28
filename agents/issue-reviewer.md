@@ -1,6 +1,6 @@
 ---
 name: issue-reviewer
-description: Reviews a draft issue for the sdlc plugin against the issue rubric, chiefly that it leaks nothing from the person's repository, and reports pass or fail for each check with evidence. Started by the issue skill with `Document: issue draft`, the kind and the draft in its request.
+description: Reviews a draft issue for the sdlc plugin against the issue rubric, chiefly that it leaks nothing from the person's repository, and reports pass or fail for each check with evidence. Started by the issue skill with `Document: issue draft`, the kind and the draft in its request. To review a draft issue, use the issue skill rather than starting this agent yourself: the skill runs the whole review sequence.
 tools: Read, Glob, Grep
 model: sonnet
 ---

@@ -2,10 +2,12 @@
 """Run the evals that test what a skill does when the correction check fails.
 
 The correction checker is a model, so no ordinary eval can make it fail on demand. This script
-copies the plugin to a temporary folder, puts the stand-in checker from
-evals-failed-check/failing-correction-checker.md, which always fails with a known finding, in
-place of agents/correction-checker.md, makes the case folders under evals-failed-check/ the
-copy's only evals, and runs `claude plugin eval` on the copy with any further arguments given.
+copies the plugin to a temporary folder, replaces each agent there with the stand-in of the same
+name from evals-failed-check/agents/ (the checker always fails with a known finding; a stand-in
+reviewer always reports a failure the drafting agent can correct, for a skill whose own draft
+would otherwise pass review and never reach the check), makes the case folders under
+evals-failed-check/ the copy's only evals, and runs `claude plugin eval` on the copy with any
+further arguments given.
 The plugin itself is never changed. The run's results are copied to evals-failed-check/results/
 and the temporary folder is deleted.
 
@@ -23,15 +25,15 @@ import tempfile
 
 ROOT = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
 CASES = "evals-failed-check"
-FAKE = "failing-correction-checker.md"
+STAND_INS = "agents"
 
 
 def build_copy(plugin, copy):
-    """Copy the plugin to `copy`, with the stand-in checker and only the failed-check cases."""
+    """Copy the plugin to `copy`, with the stand-in agents and only the failed-check cases."""
     shutil.copytree(plugin, copy, ignore=shutil.ignore_patterns(".git", "evals", CASES, "__pycache__"))
-    shutil.copyfile(os.path.join(plugin, CASES, FAKE), os.path.join(copy, "agents", "correction-checker.md"))
+    shutil.copytree(os.path.join(plugin, CASES, STAND_INS), os.path.join(copy, "agents"), dirs_exist_ok=True)
     shutil.copytree(os.path.join(plugin, CASES), os.path.join(copy, "evals"),
-                    ignore=shutil.ignore_patterns(FAKE, "results"))
+                    ignore=shutil.ignore_patterns(STAND_INS, "results"))
 
 
 def main(argv=None):

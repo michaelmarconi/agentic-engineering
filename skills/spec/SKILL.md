@@ -126,10 +126,10 @@ more, and each round of corrections brings new mistakes.
 After the sequence, edit the spec only when the person asks. When they change it or ask you to,
 run the sequence again on the changed spec.
 
-The hand-over is what the person acts on, so make it hard to miss anything. Give them the
-spec's path, the review report and the check's report, if there was one, leaving out the
-decisions they list for the person. Then say how many items must be settled before the spec can
-move on: its open questions, plus any correction the check found not made or broken. Offer to
-work through them one at a time, and ask the first only. List the reviewers' suggestions
-separately, as optional: they never hold the spec back. Leave committing
-to them.
+Whether the check passed or failed, end with the hand-over. It is what the person acts on, so make
+it hard to miss anything. Give them the spec's path, the review report and the check's report, if
+there was one, leaving out the decisions they list for the person. Then say how many items must be
+settled before the spec can move on: its open questions, plus any correction the check found not
+made or broken. Offer to work through them one at a time, and ask the first only. Name the count
+only, not the items: each comes up when you reach it. List the reviewers' suggestions separately, as
+optional: they never hold the spec back. Leave committing to them.

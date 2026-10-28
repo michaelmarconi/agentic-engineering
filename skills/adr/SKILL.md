@@ -1,6 +1,6 @@
 ---
 name: adr
-description: Record one technical decision as an ADR (architecture decision record) in MADR format, with the options considered, why the others were rejected, its consequences and how to check the code follows it; accept, reject or supersede an ADR when the person decides. Use whenever someone has chosen, or needs to choose, how something will be built, such as a database, library, service, protocol or structure, wants a technical choice written down, or wants to replace an earlier decision, even if they don't say "ADR". Not for what a feature should do; that is a spec.
+description: Record one technical decision as an ADR (architecture decision record) in MADR format, with the options considered, why the others were rejected, its consequences and how to check the code follows it; review and correct an existing ADR; accept, reject or supersede an ADR when the person decides. Use whenever someone has chosen, or needs to choose, how something will be built, such as a database, library, service, protocol or structure, wants a technical choice written down, or wants to replace an earlier decision, even if they don't say "ADR". Not for what a feature should do; that is a spec.
 ---
 
 # ADR
@@ -116,10 +116,11 @@ run the sequence again on the changed ADR. With several ADRs, take each through 
 on its own. Setting a status on the person's word is not a change to the ADR's content and
 needs no new review.
 
-The hand-over is what the person acts on, so make it hard to miss anything. Give them the
-ADR's path, the review report and the check's report, if there was one, leaving out the
-decisions they list for the person. Then say how many items must be settled before the ADR can
-move on: the decisions the reports leave to the person, plus any correction the check found not made or broken. Offer to
-work through them one at a time, and ask the first only. List the reviewers' suggestions
-separately, as optional: they never hold the ADR back. Once nothing is left
-to settle, ask whether to accept or reject it. Leave committing to them.
+Whether the check passed or failed, end with the hand-over. It is what the person acts on, so make
+it hard to miss anything. Give them the ADR's path, the review report and the check's report, if
+there was one, leaving out the decisions they list for the person. Then say how many items must be
+settled before the ADR can move on: the decisions the reports leave to the person, plus any
+correction the check found not made or broken. Offer to work through them one at a time, and ask the
+first only. Name the count only, not the items: each comes up when you reach it. List the reviewers'
+suggestions separately, as optional: they never hold the ADR back. Once nothing is left to settle,
+ask whether to accept or reject it. Leave committing to them.

@@ -22,7 +22,9 @@ class FailedCheckEvals(unittest.TestCase):
         self.put("skills/spec/SKILL.md", "skill\n")
         self.put("evals/spec-normal/prompt.md", "normal case\n")
         self.put("evals/results/old.json", "{}")
-        self.put("evals-failed-check/failing-correction-checker.md", "fake checker\n")
+        self.put("evals-failed-check/agents/correction-checker.md", "fake checker\n")
+        self.put("evals-failed-check/agents/issue-reviewer.md", "fake reviewer\n")
+        self.put("agents/issue-reviewer.md", "real reviewer\n")
         self.put("evals-failed-check/spec-stops-on-failed-check/prompt.md", "stop case\n")
         self.put(".git/HEAD", "ref\n")
 
@@ -47,11 +49,15 @@ class FailedCheckEvals(unittest.TestCase):
         self.assertEqual(self.read(copy, "agents/spec-reviewer.md"), "reviewer\n")
         self.assertEqual(self.read(copy, "skills/spec/SKILL.md"), "skill\n")
 
+    def test_copy_has_every_stand_in_in_place_of_the_agent_it_is_named_after(self):
+        copy = self.build()
+        self.assertEqual(self.read(copy, "agents/issue-reviewer.md"), "fake reviewer\n")
+
     def test_copy_runs_only_the_failed_check_cases(self):
         copy = self.build()
         self.assertEqual(self.read(copy, "evals/spec-stops-on-failed-check/prompt.md"), "stop case\n")
         self.assertFalse(os.path.exists(os.path.join(copy, "evals", "spec-normal")))
-        self.assertFalse(os.path.exists(os.path.join(copy, "evals", "failing-correction-checker.md")))
+        self.assertFalse(os.path.exists(os.path.join(copy, "evals", "agents")))
 
     def test_copy_leaves_out_git_and_old_results(self):
         copy = self.build()
@@ -63,9 +69,12 @@ class FailedCheckEvals(unittest.TestCase):
         self.assertEqual(self.read(self.plugin, "agents/correction-checker.md"), "real checker\n")
         self.assertTrue(os.path.exists(os.path.join(self.plugin, "evals", "spec-normal")))
 
-    def test_this_repository_has_a_fake_checker_named_like_the_real_one(self):
-        text = self.read(ROOT, "evals-failed-check/failing-correction-checker.md")
-        self.assertIn("\nname: correction-checker\n", text)
+    def test_each_stand_in_in_this_repository_is_named_like_the_agent_it_replaces(self):
+        folder = os.path.join(ROOT, "evals-failed-check", "agents")
+        for file in os.listdir(folder):
+            name = file[:-len(".md")]
+            self.assertTrue(os.path.exists(os.path.join(ROOT, "agents", file)), file)
+            self.assertIn("\nname: %s\n" % name, self.read(folder, file))
 
     def test_help_describes_the_command(self):
         done = subprocess.run([sys.executable, SCRIPT, "--help"], capture_output=True, text=True)

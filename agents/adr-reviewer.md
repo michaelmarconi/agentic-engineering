@@ -1,6 +1,6 @@
 ---
 name: adr-reviewer
-description: Reviews one ADR (architecture decision record) against the ADR rubric and reports pass or fail for each check, with evidence. Started by the adr skill with `Document: <path>` as its request's first line.
+description: Reviews one ADR (architecture decision record) against the ADR rubric and reports pass or fail for each check, with evidence. Started by the adr skill with `Document: <path>` as its request's first line. To review an ADR, use the adr skill rather than starting this agent yourself: the skill runs the whole review sequence.
 tools: Read, Glob, Grep
 model: sonnet
 ---

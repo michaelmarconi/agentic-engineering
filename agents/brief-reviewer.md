@@ -1,6 +1,6 @@
 ---
 name: brief-reviewer
-description: Reviews the product brief against the brief rubric and reports pass or fail for each check, with evidence. Started by the brief skill with `Document: <path>` as its request's first line.
+description: Reviews the product brief against the brief rubric and reports pass or fail for each check, with evidence. Started by the brief skill with `Document: <path>` as its request's first line. To review a brief, use the brief skill rather than starting this agent yourself: the skill runs the whole review sequence.
 tools: Read, Glob, Grep
 model: sonnet
 ---

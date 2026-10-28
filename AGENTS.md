@@ -153,8 +153,9 @@ Nothing else belongs at the root without a reason recorded in the change that ad
   on every one. Evals are billed model runs: run the ones you touched, never the whole suite
   unprompted.
 - The correction checker is a model, so no ordinary case can make it fail on demand. The cases in
-  `evals-failed-check/` run against a temporary copy of the plugin whose checker always fails
-  with a known finding; they live outside `evals/` so the real plugin never runs them. If you
+  `evals-failed-check/` run against a temporary copy of the plugin in which the stand-in agents
+  in `evals-failed-check/agents/` replace the agents they are named after: the checker always
+  fails with a known finding. The cases live outside `evals/` so the real plugin never runs them. If you
   change a skill's review sequence, run its case through the script that builds that copy:
   `python3 scripts/failed_check_evals.py --case '<name>-*' --model <model> --judge-model sonnet --scaffold --allow-tools Write Edit`.
 - Bump `version` in `.claude-plugin/plugin.json` in any change that alters what users receive,
