@@ -28,7 +28,9 @@ with the person, sees both texts in the normal course of its work.
 - **Read them from Claude Code's record of the session on disk.** Rejected: where that record lives
   and what it holds are Claude Code's own details, not documented for plugins, and can change
   without notice.
-- **A plugin hook carries them.** Before the reviewer starts, the hook saves the document; when
+- **A plugin hook saves both texts and adds them to the checker's request.** A hook is a script
+  that Claude Code runs by itself at set moments, such as just before an agent starts, so no
+  model copies anything. Before the reviewer starts, the hook saves the document; when
   the reviewer finishes, it saves the report. Both go into the plugin's own data folder, outside
   the repository. Before the checker starts, the hook adds both to the checker's request. It deletes them when the
   checker finishes, or, when no checker runs because the review found nothing, when the session
@@ -36,7 +38,7 @@ with the person, sees both texts in the normal course of its work.
 
 ## Decision Outcome
 
-Chosen option: a plugin hook carries them, because it delivered both texts exactly in all 30 of
+Chosen option: a plugin hook saves both texts and adds them to the checker's request, because it delivered both texts exactly in all 30 of
 30 runs, with no permission prompt, using only the hook fields Claude Code documents, and it
 writes nothing into the repository.
 
