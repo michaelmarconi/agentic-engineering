@@ -120,7 +120,8 @@ Whether the check passed or failed, end with the hand-over. It is what the perso
 it hard to miss anything. Give them the ADR's path, the review report and the check's report, if
 there was one, leaving out the decisions they list for the person. Then say how many items must be
 settled before the ADR can move on: the decisions the reports leave to the person, plus any
-correction the check found not made or broken. Offer to work through them one at a time, and ask the
-first only, as a single question. Name the count only, not the items: each comes up when you reach
-it. List the reviewers' suggestions separately, as optional: they never hold the ADR back. Once
-nothing is left to settle, ask whether to accept or reject it. Leave committing to them.
+correction the check found not made or broken. Say you will take them one at a time, rather than
+asking whether to, and ask the first only, as a single question. Name the count only, not the items:
+each comes up when you reach it. List the reviewers' suggestions separately, as optional: they never
+hold the ADR back. Once nothing is left to settle, ask whether to accept or reject it. Leave
+committing to them.
