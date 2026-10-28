@@ -3,7 +3,8 @@
 Each check passes or fails. `/spec` reads this while writing; the spec reviewer reads it while
 checking, and quotes the spec as evidence for every failure.
 
-1. **Shape.** The spec has `status:` frontmatter set to Draft, Ready to build or Built, and the sections
+1. **Shape.** The spec has `status:` frontmatter set to `📝 Draft`, `🟢 Ready to build` or `✅ Built`,
+   emoji included, and the sections
    Problem, Goal, Scope, Requirements, Constraints and Open questions, in that order.
 2. **One specific story.** Problem names who is stuck and what happens to them today, as one
    concrete situation rather than a general complaint, and does not mention the solution, not
@@ -32,7 +33,7 @@ checking, and quotes the spec as evidence for every failure.
    something only a person can check is a demonstration or inspection, not a test.
 8. **Testable words.** No rule, scenario or constraint relies on words that cannot be checked,
    such as "fast", "user-friendly" or "as appropriate", without a measure.
-9. **Ready means ready.** A spec with status Ready to build or Built has no open questions: its
+9. **Ready means ready.** A spec with status `🟢 Ready to build` or `✅ Built` has no open questions: its
    Open questions section is empty or says only "None."
 10. **No overlap.** No other spec under `docs/specs/` covers the same capability or contradicts a
     requirement here.

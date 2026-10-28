@@ -22,7 +22,7 @@ A spec is edited in place on a branch, and git is its history.
 | Scope | What is in, and what is explicitly out[^shapeup] |
 | Requirements | The behaviour, one requirement at a time |
 | Constraints | Hard limits the behaviour must respect |
-| Open questions | Unknowns still to answer; empty before the spec can be Ready to build |
+| Open questions | Unknowns still to answer; empty before the spec can be `🟢 Ready to build` |
 
 Each requirement has a name, one rule and some scenarios. The rule is a single sentence in
 EARS, a small set of sentence patterns for requirements such as "IF ..., THEN the system SHALL
@@ -58,23 +58,25 @@ Verified by: unit tests for both scenarios.
 ```mermaid
 stateDiagram-v2
     direction LR
+    state "📝 Draft" as Draft
+    state "🟢 Ready to build" as Ready
+    state "✅ Built" as Built
     [*] --> Draft
     Draft --> Ready: ready
     Ready --> Draft: change
     Ready --> Built: built
     Built --> Draft: change
-    Ready: Ready to build
 ```
 
-- **Draft:** being shaped.
-- **Ready to build:** you have said it is done, Open questions is empty, the review (below)
+- `📝 Draft`: being shaped.
+- `🟢 Ready to build`: you have said it is done, Open questions is empty, the review (below)
   has passed with no decision left for you, and you have seen the text as it stands. If `/spec`
   changes anything after you asked, even a small fix you allowed in advance, it shows you the
-  change and waits for your reply before setting Ready.
-- **Built:** the last [`/build`](build.md) review found every requirement in the
+  change and waits for your reply before setting `🟢 Ready to build`.
+- `✅ Built`: the last [`/build`](build.md) review found every requirement in the
   spec verified, however many plans it took to build them.
 
-Changing a Ready or Built spec returns it to Draft. A capability that is no longer wanted has
+Changing a `🟢 Ready to build` or `✅ Built` spec returns it to `📝 Draft`. A capability that is no longer wanted has
 its spec deleted; git keeps the history.[^openspec]
 
 Three things keep specs in this shape:
@@ -87,9 +89,10 @@ Three things keep specs in this shape:
   finds, once, and has the corrections checked (see [Review process](../lifecycle.md#review-process));
   then you get the spec with the reports.
 - **Status.** A hook checks each edit Claude makes to a spec with its file-editing tools and
-  refuses one the lifecycle does not allow: a new spec that is not Draft, Ready to build while
-  Open questions is not empty, setting Built, or a change to a Ready to build or Built spec that
-  does not return it to Draft. Built is refused for now because only `/build` may set it, after
+  refuses one the lifecycle does not allow: a new spec that is not `📝 Draft`,
+  `🟢 Ready to build` while Open questions is not empty, setting `✅ Built`, a change to a
+  `🟢 Ready to build` or `✅ Built` spec that does not return it to `📝 Draft`, or a status
+  without its emoji. `✅ Built` is refused for now because only `/build` may set it, after
   its own review passes, and `/build` is not built yet. Plans will get the same kind of check
   when `/plan` is built.
 - **Audit.** [`/audit`](audit.md) finds specs and code that no longer agree, such
@@ -102,7 +105,7 @@ Run `/spec` and tell it what you want to do:
 - **New:** start a spec for a capability. `/spec` first checks whether an existing spec already
   covers it.
 - **Change:** edit a spec in place, including answering an open question.
-- **Ready:** mark a spec Ready to build.
+- **Ready:** mark a spec `🟢 Ready to build`.
 
 When the spec has open questions, `/spec` tells you how many there are and asks them one at a
 time; the rest wait in the spec's Open questions section. If you say you would rather not
@@ -113,7 +116,7 @@ answer now, it leaves them there.
 `docs/specs/<capability>.spec.md`, named for the capability. Specs start flat; when there are
 enough to need it, group them into folders of your choosing. The plugin finds specs anywhere
 under `docs/specs/` and gives folders no meaning. Move a spec with `git mv`, which keeps its
-status; the hook would see a spec written in a new place as a new spec and require Draft.
+status; the hook would see a spec written in a new place as a new spec and require `📝 Draft`.
 
 [^ears]: Mavin, Wilkinson, Harwood and Novak, "Easy Approach to Requirements Syntax (EARS)",
     17th IEEE International Requirements Engineering Conference, 2009,

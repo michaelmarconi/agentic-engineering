@@ -52,7 +52,7 @@ repository:
 - **ADR** (architecture decision record): one technical decision and why it was made.
 - **Plan:** a piece of work that builds part of a spec or an ADR. It is deleted once built.
 
-Each document except the brief has a status, such as Draft or Ready to build, which says how far
+Each document except the brief has a status, such as `📝 Draft` or `🟢 Ready to build`, which says how far
 along it is.
 
 One rule matters when you edit documents by hand: the brief, specs and ADRs never refer to each

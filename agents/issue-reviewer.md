@@ -19,7 +19,7 @@ Read:
   check 4: search it for the draft's names, paths, identifiers and distinctive phrases, and for
   the distinctive parts of each, such as one segment of a host or file name. One found
   there is a leak unless rubric check 4 allows it: the plugin's own words and paths, such as
-  "Ready to build" or `docs/specs/`, and ordinary words, turn up in any repository that uses the
+  `🟢 Ready to build` or `docs/specs/`, and ordinary words, turn up in any repository that uses the
   lifecycle. Don't read further into it than that needs.
 
 Apply every rubric check. For each failure, quote the draft as evidence and say what would make
