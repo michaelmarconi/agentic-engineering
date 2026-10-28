@@ -95,16 +95,18 @@ the conversations behind the document. So each one follows this rule:
 - **Computing terms**, such as "cache", "idempotent" or "HTTP", are used freely, and so are the
   product's own name and job titles that say what the person does, such as "accounts clerk".
 - **Domain terms**, words from the product's own field such as a trade, legal or business term,
-  get a Markdown footnote (`[^1]`) defining them where they first appear. A title cannot hold a
-  footnote, so a domain term in a title is defined at its first use in the text. Each document
-  defines its own terms, so it never depends on a glossary elsewhere that could fall out of date.
+  get a Markdown footnote (`[^1]`) defining them where they first appear, unless that sentence
+  already explains them. A domain term that is an acronym, such as "OTIF" for "on time, in full",
+  gives its full form in the footnote. A title cannot hold a footnote, so a domain term in a title
+  is defined at its first use in the text. Each document defines its own terms, so it never
+  depends on a glossary elsewhere that could fall out of date.
 - **Anything else a newcomer would not know** is rewritten in plain words or spelled out, never
-  footnoted: a name used only inside the code or the team, an acronym that is not a computing
-  term, or a phrase whose meaning the reader would have to guess. Read every phrase literally,
-  title included: a figure of speech, an idiom, a nickname for a situation or a word used in a
-  special sense of the team's own fails even when a reader could guess it, and is replaced by
-  the plain statement it stands for. For example, "the order hitchhikes on the nightly export"
-  becomes "the order is included in the nightly export".
+  footnoted: a name used only inside the code or the team, an acronym that is neither a computing
+  term nor a domain term, or a phrase whose meaning the reader would have to guess. Read every
+  phrase literally, title included: a figure of speech, an idiom, a nickname for a situation or a
+  word used in a special sense of the team's own fails even when a reader could guess it, and is
+  replaced by the plain statement it stands for. For example, "the order hitchhikes on the nightly
+  export" becomes "the order is included in the nightly export".
 
 The rule covers only what the plugin writes. Your own documents, code and messages follow your
 project's rules.
