@@ -59,8 +59,8 @@ class DocReferences(unittest.TestCase):
         self.write("docs/lifecycle.md", "# The lifecycle rules\n\n## Review process\n")
         self.write("README.md", "[ok](docs/lifecycle.md#review-process)\n")
         self.assertPasses()
-        self.write("README.md", "[gone](docs/lifecycle.md#review-rounds)\n")
-        self.assertFails("README.md:1", "#review-rounds")
+        self.write("README.md", "[gone](docs/lifecycle.md#no-such-heading)\n")
+        self.assertFails("README.md:1", "#no-such-heading")
 
     def test_heading_in_the_same_file_must_exist(self):
         self.write("README.md", "# Readme\n\n## How it works\n\n[up](#how-it-works) [x](#nowhere)\n")

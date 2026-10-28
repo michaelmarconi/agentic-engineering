@@ -6,6 +6,28 @@ What changed in each version of the plugin, newest first. Versions follow
 past a major version: it says what you need to change in your documents. Until 1.0.0, any
 minor version may need such a change, and its entry says so.
 
+## [0.7.0] - 2026-10-28
+
+### Changed
+
+- `/spec`, `/brief`, `/adr` and `/issue` now take every document through a fixed review
+  sequence: one review, one round of corrections, then a check of only those corrections by a
+  shared correction checker. If the check fails, the skill stops and shows you its report rather
+  than reviewing again. The reasons, with the measurements behind them, are in this plugin's
+  ADRs 0010 and 0011.
+- When the sequence ends, the skill gives you the review report, the check's report, the number
+  of items left for you to settle, and then asks you about the first of them only. The reviewers'
+  suggestions are listed separately as optional.
+- `/adr` is also used when you ask to review or correct an existing ADR.
+
+### Added
+
+- A hook hands the correction checker the review report and the document as it was reviewed,
+  word for word. It keeps them in the plugin's own data folder, outside your repository, and
+  deletes them when the check is done or the session ends.
+- A hook lets the plugin's skills and agents read the plugin's own files, such as a rubric,
+  without asking you each time. It approves reads inside the plugin's folder only.
+
 ## [0.6.0] - 2026-10-27
 
 ### Added
