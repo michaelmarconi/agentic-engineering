@@ -43,19 +43,28 @@ def markdown_files(root):
                 yield os.path.join(folder, name)
 
 
-def prose_lines(text):
-    """Yield (line number, line) for every line outside fenced code blocks."""
+def marked_lines(text):
+    """Yield (line number, line, fenced) for every line but the fences themselves."""
     fence = None
     for number, line in enumerate(text.splitlines(), 1):
         match = FENCE.match(line)
         if fence:
             if match and match.group(1)[0] == fence[0] and len(match.group(1)) >= len(fence):
                 fence = None
+                continue
+            yield number, line, True
             continue
         if match:
             fence = match.group(1)
             continue
-        yield number, line
+        yield number, line, False
+
+
+def prose_lines(text):
+    """Yield (line number, line) for every line outside fenced code blocks."""
+    for number, line, fenced in marked_lines(text):
+        if not fenced:
+            yield number, line
 
 
 def slug(heading):

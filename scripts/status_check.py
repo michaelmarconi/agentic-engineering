@@ -108,6 +108,15 @@ def field(text, key):
     return None
 
 
+def comment(text, key):
+    """The comment after a frontmatter key's value, if any."""
+    for line in frontmatter(text) or []:
+        if is_key(line, key):
+            parts = line.split(":", 1)[1].split("#", 1)
+            return parts[1].strip() if len(parts) > 1 else None
+    return None
+
+
 def status_of(text):
     """The frontmatter status, read the same with or without U+FE0F after its emoji."""
     value = field(text, "status")
@@ -129,14 +138,15 @@ def meant(value, allowed):
 
 
 def moving_over(before, after):
-    """True if the edit only gives a status written before the emoji its emoji."""
-    old_line = [line for line in frontmatter(before) or [] if is_key(line, "status")]
-    new_line = [line for line in frontmatter(after) or [] if is_key(line, "status")]
+    """True if the edit only gives a status written before the emoji its emoji.
+
+    The status line may change its quotes and spacing too, but not its comment.
+    """
     word = field(before, "status")
     return (
         word in WORDS
-        and len(old_line) == len(new_line) == 1
-        and new_line[0] == old_line[0].replace(word, WORDS[word], 1)
+        and status_of(after) == WORDS[word]
+        and comment(before, "status") == comment(after, "status")
         and without_status(after) == without_status(before)
     )
 
@@ -221,12 +231,21 @@ def check(payload):
             )
         return None
 
-    new = status_of(after)
-    if new not in statuses and meant(new, statuses):
-        return (
-            f"{name}: write the status with its emoji, as `{meant(new, statuses)}` "
-            f"(found '{new}'). The {kind} statuses are {listed(statuses)}."
-        )
+    written = status_of(after)
+    new = written if written in statuses else meant(written, statuses) or written
+    # A status missing its emoji is judged as the one it names first, so a move the lifecycle
+    # refuses anyway is refused for that, not with advice that only leads to that refusal.
+    reason = lifecycle_problem(path, kind, statuses, rules, before, after, old, new)
+    if reason or new == written:
+        return reason
+    return (
+        f"{name}: write the status with its emoji, as `{new}` (found '{written}'). The {kind} "
+        f"statuses are {listed(statuses)}."
+    )
+
+
+def lifecycle_problem(path, kind, statuses, rules, before, after, old, new):
+    name = os.path.basename(path)
     if old not in statuses and new not in statuses:
         if kind == "ADR" and not before and new is not None:
             return f"{name}: a new ADR must be written as `{DRAFT}`, not '{new}'."

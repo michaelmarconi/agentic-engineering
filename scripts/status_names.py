@@ -8,10 +8,14 @@ stay as written, `evals/` and `evals-failed-check/`, whose prompts quote what a 
 whose fixtures are documents, and `docs/adrs/`, whose decided records are never edited. A file's frontmatter, where the status line holds the
 value bare, is skipped. It reports:
 
-- a code span naming a status by its word with no emoji or the wrong one, such as `Accepted`;
-- "Ready to build" outside a code span, since that phrase only ever means the status;
-- a status with its emoji outside a code span, since emojis never sit in running prose;
-- in a fenced code block, "Ready to build" without its emoji in front.
+- a code span naming a status by its word with no emoji or the wrong one, such as `Accepted`
+  or `status: Accepted`;
+- "Ready to build" without its emoji in front, anywhere, since that phrase only ever means the
+  status, and outside a code span or fenced code block even with it;
+- a status with its emoji outside a code span or fenced code block, since emojis never sit in
+  running prose.
+
+U+FE0F after an emoji is optional throughout, as it is for the status-check hook.
 
 Draft, Built, Accepted, Rejected and Superseded on their own are ordinary words too, so prose
 that names those statuses without backticks is left to the reader.
@@ -22,12 +26,15 @@ import os
 import re
 import sys
 
-from doc_references import CODE_SPAN, FENCE, ROOT, markdown_files
-from status_check import READY, WORDS, frontmatter, status_of
+from doc_references import CODE_SPAN, ROOT, marked_lines, markdown_files
+from status_check import READY, VARIATION, WORDS, frontmatter, meant
 
 SKIPPED = {("CHANGELOG.md",), ("evals",), ("evals-failed-check",), ("docs", "adrs")}
-EMOJI_VALUE = re.compile("|".join(re.escape(value) for value in WORDS.values()))
-LEADING = re.compile(r"^[^A-Za-z]*")
+PHRASE = READY.split(" ", 1)[1]
+# Statuses compare without U+FE0F, which is optional after an emoji.
+BARE = {value.replace(VARIATION, ""): value for value in WORDS.values()}
+EMOJI_VALUE = re.compile("|".join(re.escape(value) for value in BARE))
+STATUS_KEY = re.compile(r"status:\s*")
 
 
 def skipped(relative):
@@ -35,26 +42,30 @@ def skipped(relative):
     return any(parts[:len(skip)] == skip for skip in SKIPPED)
 
 
-def span_problem(content):
-    word = LEADING.sub("", content)
-    if word not in WORDS:
-        return None
-    if status_of(f"---\nstatus: {content}\n---\n") == WORDS[word] and content.startswith(WORDS[word][0]):
-        return None
-    return f"`{content}` should be `{WORDS[word]}`"
+def loose_phrase(text):
+    """True if "Ready to build" appears in `text` without its emoji in front."""
+    return PHRASE in EMOJI_VALUE.sub("", text)
+
+
+def span_problems(content):
+    bare = content.replace(VARIATION, "")
+    key = STATUS_KEY.match(bare)
+    value = bare[key.end():] if key else bare
+    full = meant(value, WORDS.values())
+    if full and value != full.replace(VARIATION, ""):
+        return [f"`{content}` should be `{(key.group(0) if key else '') + full}`"]
+    if loose_phrase(bare):
+        return [f"`{content}` should name `{READY}`"]
+    return []
 
 
 def line_problems(line):
     found = []
     for match in CODE_SPAN.finditer(line):
-        wrong = span_problem(match.group(0).strip("`").strip())
-        if wrong:
-            found.append(wrong)
-    prose = CODE_SPAN.sub("", line)
-    if EMOJI_VALUE.search(prose):
-        found.append(f"'{EMOJI_VALUE.search(prose).group(0)}' should be in backticks")
-    elif READY.split(" ", 1)[1] in prose:
-        found.append(f"'Ready to build' should be `{READY}`")
+        found.extend(span_problems(match.group(0).strip("`").strip()))
+    prose = CODE_SPAN.sub("", line).replace(VARIATION, "")
+    found.extend(f"'{BARE[value]}' should be in backticks" for value in EMOJI_VALUE.findall(prose))
+    found.extend(f"'{PHRASE}' should be `{READY}`" for _ in range(EMOJI_VALUE.sub("", prose).count(PHRASE)))
     return found
 
 
@@ -71,19 +82,15 @@ def problems(root):
         except (OSError, ValueError):
             found.append(f"{relative}: can't be read as UTF-8 text")
             continue
-        fence = None
-        lines = text.splitlines()
-        start = len(frontmatter(text) or []) + 2 if frontmatter(text) is not None else 0
-        for number, line in enumerate(lines[start:], start + 1):
-            match = FENCE.match(line)
-            if fence:
-                if match and match.group(1)[0] == fence[0] and len(match.group(1)) >= len(fence):
-                    fence = None
-                elif "Ready to build" in line.replace(READY, ""):
-                    found.append(f"{relative}:{number}: 'Ready to build' should be '{READY}'")
+        head = frontmatter(text)
+        # The status line in a file's frontmatter holds the value bare, so it is not checked.
+        last = len(head) + 2 if head is not None else 0
+        for number, line, fenced in marked_lines(text):
+            if number <= last:
                 continue
-            if match:
-                fence = match.group(1)
+            if fenced:
+                if loose_phrase(line.replace(VARIATION, "")):
+                    found.append(f"{relative}:{number}: '{PHRASE}' should be '{READY}'")
                 continue
             found.extend(f"{relative}:{number}: {wrong}" for wrong in line_problems(line))
     return found

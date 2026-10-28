@@ -488,6 +488,25 @@ class AdrEmoji(AdrWorkspace):
         self.put(adr("Accepted"))
         self.assertIsNotNone(self.edit("status: Accepted", "status: 👍 Accepted # reopened"))
 
+    def test_moving_over_without_variation_selector(self):
+        self.put(adr("Superseded", extra="superseded-by: 0002\n"))
+        self.assertIsNone(self.edit("status: Superseded", "status: \u21aa Superseded"))
+
+    def test_moving_over_may_respace_and_quote(self):
+        self.put(adr("Accepted  # signed off"))
+        self.assertIsNone(self.edit("status: Accepted  # signed off", 'status: "👍 Accepted" # signed off'))
+
+    def test_body_edit_of_old_decided_adr_refused_as_decided(self):
+        self.put(adr("Accepted"))
+        self.assertIn("never edited", self.edit("fast enough", "fast and cheap enough"))
+
+    def test_body_edit_of_old_built_spec_must_return_to_draft(self):
+        self.put(adr())
+        os.remove(self.path)
+        self.path = os.path.join(self.tmp.name, "docs", "specs", "thing.spec.md")
+        self.put(spec("Built"))
+        self.assertIn("back to `📝 Draft`", self.edit("do X", "do Y"))
+
     def test_moving_over_keeps_the_word(self):
         self.put(adr("Accepted"))
         self.assertIsNotNone(self.edit("status: Accepted", "status: ❌ Rejected"))

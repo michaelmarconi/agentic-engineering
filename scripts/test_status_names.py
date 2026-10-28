@@ -54,6 +54,24 @@ class StatusNames(unittest.TestCase):
         self.write("docs/a.md", "It stays 📝 Draft.\n")
         self.assertFails("docs/a.md:1")
 
+    def test_status_key_in_a_code_span_is_checked(self):
+        self.write("docs/a.md", "Set `status: Accepted`.\n")
+        self.assertFails("`status: 👍 Accepted`")
+
+    def test_phrase_in_a_longer_code_span_fails(self):
+        self.write("docs/a.md", "Run `mark Ready to build`.\n")
+        self.assertFails("docs/a.md:1")
+
+    def test_every_problem_on_a_line_is_reported(self):
+        self.write("docs/a.md", "It is 📝 Draft, then ✅ Built, then Ready to build.\n")
+        self.assertEqual(self.check().stdout.count("docs/a.md:1"), 3)
+
+    def test_variation_selector_is_optional(self):
+        self.write("docs/a.md", "`\u21aa Superseded` and `🟢\ufe0f Ready to build`\n\n```\n🟢\ufe0f Ready to build\n```\n")
+        self.assertPasses()
+        self.write("docs/a.md", "It is \u21aa Superseded.\n")
+        self.assertFails("docs/a.md:1")
+
     def test_plain_words_in_prose_pass(self):
         self.write("docs/a.md", "Draft from the conversation. Built with skill-creator.\n")
         self.assertPasses()
