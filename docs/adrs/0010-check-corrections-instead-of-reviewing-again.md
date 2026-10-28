@@ -4,7 +4,7 @@ status: Draft
 date: 2026-10-28
 ---
 
-# Review once, correct once, then check only the corrections
+# Check corrections instead of reviewing again
 
 ## Context and Problem Statement
 
@@ -21,19 +21,19 @@ as much, adds as few new problems as possible, ends with a definite result, and 
 
 ## Considered Options
 
-- **Repeated rounds up to a set limit**, as before. Lost: 17 of 30 runs ended in a pass; the
+- **Repeated rounds up to a set limit**, as before. Rejected: 17 of 30 runs ended in a pass; the
   first review already caught 94% of planted mistakes, and further rounds added about 1.6 new
   problems per run while finding almost nothing new. It also needs each person to save a setting.
 - **Several reviewers, each looking for one kind of problem, plus a reviewer that checks their
-  claims.** Lost: it caught 100% of planted mistakes against 95%, at 4 times the cost, with twice
+  claims.** Rejected: it caught 100% of planted mistakes against 95%, at 4 times the cost, with twice
   as many claims on specs that had no planted mistakes, and only 9 of 30 runs ended in a pass.
-- **The same reviewer on Opus instead of Sonnet.** Lost: it caught no more (97% against 95%) at
+- **The same reviewer on Opus instead of Sonnet.** Rejected: it caught no more (97% against 95%) at
   twice the cost.
-- **One reviewer that works in two ways, a full review or a check of corrections only.** Lost:
+- **One reviewer that works in two ways, a full review or a check of corrections only.** Rejected:
   an agent asked to check only corrections can slide into reviewing the whole document again,
   which brings back the repeated rounds.
 - **Marking findings and corrections inside the document**, as tracked changes in CriticMarkup,
-  so a reviewer re-reads only the marked parts. Lost: too much machinery for what it gives. It
+  so a reviewer re-reads only the marked parts. Rejected: too much machinery for what it gives. It
   needs editing tools that enforce the markup and a step that strips it before a person signs off,
   and the reviewer cannot write in the document anyway.
 - **Review once, correct once, then check only the corrections.**

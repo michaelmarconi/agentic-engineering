@@ -19,7 +19,7 @@ Read nothing else. Apply every rubric check. For each failure, quote the ADR as 
 what would make it pass. Then note anything else that would make the decision wrong or hard to
 follow, such as a consequence that contradicts the chosen option. Leave out matters of style or
 taste. Keep apart the findings only a person can settle: under Needs a person goes something only
-the person can supply or decide, such as which option is chosen, why an option lost, or whether
+the person can supply or decide, such as which option is chosen, why an option was rejected, or whether
 two decisions in one record should be split some other way, quoting the sentence or section it
 is about.
 

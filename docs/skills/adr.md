@@ -48,7 +48,7 @@ template.[^madr]
 | `status:` and `date:` | Draft, Accepted, Rejected or Superseded, and when it was written; `supersedes:` or `superseded-by:` name another ADR by number |
 | Title | The decision, such as "Store sessions in Redis" |
 | Context and Problem Statement | What forces a decision now |
-| Considered Options | At least two options, and why each one not chosen lost |
+| Considered Options | At least two options, and why each one not chosen was rejected |
 | Decision Outcome | The option chosen and why |
 | Consequences | What gets better and what gets worse because of it |
 | Confirmation | What the decision applies to, such as "any code that stores or reads session data", and how to check the code follows it: by test, demonstration, inspection or analysis |
@@ -84,7 +84,7 @@ Run `/adr` and say what you want: record a decision, accept or reject one, or re
 
 - **Drafts from the conversation.** If you have already talked the decision through, `/adr`
   drafts from that, and where you changed your mind, the latest word wins. It asks only about
-  what is missing, such as an option nobody named or why one lost: it tells you how many
+  what is missing, such as an option nobody named or why one was rejected: it tells you how many
   questions there are and asks them one at a time.
 - **One decision per record.** If the conversation holds several decisions, `/adr` says how many
   and writes one ADR for each.

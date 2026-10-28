@@ -1,6 +1,6 @@
 ---
 name: adr
-description: Record one technical decision as an ADR (architecture decision record) in MADR format, with the options considered, why the others lost, its consequences and how to check the code follows it; accept, reject or supersede an ADR when the person decides. Use whenever someone has chosen, or needs to choose, how something will be built, such as a database, library, service, protocol or structure, wants a technical choice written down, or wants to replace an earlier decision, even if they don't say "ADR". Not for what a feature should do; that is a spec.
+description: Record one technical decision as an ADR (architecture decision record) in MADR format, with the options considered, why the others were rejected, its consequences and how to check the code follows it; accept, reject or supersede an ADR when the person decides. Use whenever someone has chosen, or needs to choose, how something will be built, such as a database, library, service, protocol or structure, wants a technical choice written down, or wants to replace an earlier decision, even if they don't say "ADR". Not for what a feature should do; that is a spec.
 ---
 
 # ADR

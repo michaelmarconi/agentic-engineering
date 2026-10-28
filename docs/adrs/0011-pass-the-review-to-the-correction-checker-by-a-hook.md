@@ -17,15 +17,15 @@ with the person, sees both texts in the normal course of its work.
 
 ## Considered Options
 
-- **The drafting agent pastes both texts into the checker's request.** Lost: a copy made by a
+- **The drafting agent pastes both texts into the checker's request.** Rejected: a copy made by a
   model is a rewrite, not a copy. In 30 runs each, a Sonnet drafting agent silently changed a
   line in 2 runs (for example "the two-hour cancellation cut-off" became "the two-hour cut-off").
   An Opus drafting agent copied exactly in all 30, but the drafting model is the person's choice,
   and Opus cost almost twice as much per run. On a longer report the same habit could drop or
   soften a finding, and nothing would notice.
-- **Save both texts as files in the person's repository.** Lost: the plugin must not write
+- **Save both texts as files in the person's repository.** Rejected: the plugin must not write
   anything into the repository it is used in.
-- **Read them from Claude Code's record of the session on disk.** Lost: where that record lives
+- **Read them from Claude Code's record of the session on disk.** Rejected: where that record lives
   and what it holds are Claude Code's own details, not documented for plugins, and can change
   without notice.
 - **A plugin hook carries them.** Before the reviewer starts, the hook saves the document; when
