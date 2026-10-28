@@ -13,7 +13,7 @@ The application needs one database for accounts, invoices and settings.
 ## Considered Options
 
 - Postgres
-- MySQL: lost because the team knows Postgres.
+- MySQL: rejected because the team knows Postgres.
 
 ## Decision Outcome
 

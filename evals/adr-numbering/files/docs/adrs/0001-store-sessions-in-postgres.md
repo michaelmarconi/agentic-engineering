@@ -15,7 +15,7 @@ their requests reach a different server or a server restarts.
 ## Considered Options
 
 - Store sessions in Postgres: one shared table every server reads.
-- Keep sessions in server memory: lost because sessions vanish on restart and are not shared.
+- Keep sessions in server memory: rejected because sessions vanish on restart and are not shared.
 
 ## Decision Outcome
 
