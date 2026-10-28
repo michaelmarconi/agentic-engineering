@@ -1,9 +1,7 @@
 """Tests for issue.py.
 
-These tests are the only check on filing. No eval case covers what the skill does after the
-person says yes, because `claude plugin eval` can't run a case that grants Bash and also has
-the plugin's Review rounds setting saved: the run's sandbox settings take the file the setting
-lives in. The evals stop at the skill asking whether to file.
+These tests are the only check on filing. The evals stop at the skill asking whether to file,
+since filing would publish an issue.
 """
 
 import io

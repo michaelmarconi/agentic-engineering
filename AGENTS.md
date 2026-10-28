@@ -25,26 +25,32 @@ everything else is judgement.
      plugin, so the script tests below fail on a skill that breaks one.
    - Optional `scripts/`, `references/` and `assets/`. References sit one level deep, and
      `SKILL.md` says when to read each one.
-4. **Reviewed.** Agents don't mark their own homework. Every skill that writes a document has
-   it reviewed before a person sees it:
+4. **Reviewed.** Agents don't mark their own homework. Every skill that writes a document takes
+   it through the review sequence that [docs/lifecycle.md](docs/lifecycle.md#review-process)
+   describes, and [ADR 0010](docs/adrs/0010-check-corrections-instead-of-reviewing-again.md)
+   explains: review once, correct once, then check only the corrections. To build it into a
+   skill:
    - A rubric at `skills/<name>/references/rubric.md`: a short list of named checks, each pass
-     or fail. The skill reads it while writing; the reviewer reads it while checking.
+     or fail. The skill reads it while writing and again before correcting; the reviewer reads
+     it while checking.
    - A reviewer agent at `agents/<name>-reviewer.md`, with read-only tools. It starts fresh,
      reads the rubric through `${CLAUDE_PLUGIN_ROOT}`, and reads only the files its own
-     definition names. The skill passes it paths, never pasted content, unless the document
-     must not be written to the working tree, as with `/issue`'s draft; then it passes the
-     document whole and word for word.
-   - The reviewer reports pass or fail for each check, quoting the check's text with the
-     evidence for each failure, plus findings beyond the rubric. The skill corrects what it
-     can, once. The correction checker (`agents/correction-checker.md`, shared by every skill)
-     then answers only whether each correction was made and whether any broke something;
-     anything else it notices is a suggestion. If the correction check fails, the skill stops
-     and shows the person the report. There is never a second full review: one review finds
-     nearly everything, and each further round of corrections adds new problems
-     ([ADR 0010](docs/adrs/0010-check-corrections-instead-of-reviewing-again.md)). `/build` follows the same sequence. Only a
-     decision the skill cannot make goes to the person, with optional suggestions passed on but
-     never holding the document back.
-   - The person gets the document and the final report.
+     definition names. It reports pass or fail for each check, quoting the evidence for each
+     failure, then Other findings, Needs a person and Suggestions.
+   - The skill starts the reviewer, then the shared correction checker
+     (`agents/correction-checker.md`), with a request whose first line is `Document: <path>`.
+     The review relay hook (`scripts/review_relay.py`, [ADR 0011](docs/adrs/0011-pass-the-review-to-the-correction-checker-by-a-hook.md))
+     reads that line to save the document before the review and the report after it, and
+     attaches both to the checker's request, so the skill never copies them. Add the new
+     reviewer and its skill's files to the hook's `REVIEWERS` table. A document that must not
+     be written to the working tree, such as `/issue`'s draft, uses `Document: issue draft` and
+     carries the draft between `=== DRAFT ===` and `=== END DRAFT ===` lines.
+   - The correct step reads the rubric again, corrects only what the report lists, turns each
+     decision for the person into an open question, leaves suggestions alone and changes
+     nothing else. A failed correction check stops and shows the person; there is never a
+     second review of the skill's own corrections.
+   - The hand-over gives the person the reports, the number of items they must settle, and the
+     first of them; suggestions are listed apart as optional.
 5. **Evaluated.** Every skill ships with evals under the plugin's `evals/`, in the case-folder
    layout that skill-creator writes and `claude plugin eval` runs. Write the rubric first, then
    the evals: each rubric check is also an eval assertion, so one rubric both tests the skill and
@@ -64,10 +70,6 @@ everything else is judgement.
      sleeps, waits, retries or racing another process for the right order. A result that
      depends on timing passes or fails by luck, so it proves nothing. If the only way to test
      a behaviour is by timing, leave it untested and say so in the case or test file.
-   - **Known gap.** `claude plugin eval` can't run a case that grants Bash and also has a
-     plugin setting saved, since the sandbox settings it writes take the same file. So skill
-     steps that run a command after a setting is read, such as `/issue` filing, are covered by
-     their script's unit tests, and their evals stop just before the command.
 6. **Built with skill-creator.** Create, change and tune skills, and their descriptions, with
    Anthropic's `skill-creator` skill, following its draft, eval, review and iterate loop.
 7. **Deterministic where it earns its place.** Use a script only when it must be exact every
@@ -117,15 +119,15 @@ skills/
     references/        # rubric.md (required for skills that write documents), others on demand
     assets/            # optional, templates and static files
 evals/
-  save_settings.py     # saves the plugin settings' defaults for each eval run
   <name>-<case>/       # required, one folder per test case, run by `claude plugin eval`
 agents/
   <name>-reviewer.md   # one reviewer per skill that writes documents
   correction-checker.md # checks the corrections after a review, for every skill
 hooks/
-  hooks.json           # session map and status checks
+  hooks.json           # session map, status checks and the review relay
 scripts/               # scripts the hooks run, the skill, version and reference checks, and their tests
 docs/
+  adrs/                # this plugin's own architecture decision records
   lifecycle.md         # the lifecycle rules, for people and for Claude at session start
   skills/<name>.md     # one page per skill, linked from README.md
 AGENTS.md              # this file
@@ -137,7 +139,7 @@ Nothing else belongs at the root without a reason recorded in the change that ad
 
 ## Workflow
 
-- Work on a branch and merge it to main once every check below passes. No pull requests needed.
+- Work on a branch and open a pull request; it merges once every check below passes.
 - Before merging, run `claude plugin validate . --strict` and fix every finding. It checks the
   manifests only; skill limits are checked by `scripts/skill_check.py` (rule 3).
 - Run the script tests for each skill you changed:
@@ -145,10 +147,6 @@ Nothing else belongs at the root without a reason recorded in the change that ad
   you changed them or any skill: `python3 -m unittest discover -s scripts`. All must pass.
 - Run the evals for each skill you changed, once per supported model, with Sonnet as judge:
   `claude plugin eval . --case '<name>-*' --model <model> --judge-model sonnet --scaffold`.
-  Each case's `place-files.sh` scaffold runs `evals/save_settings.py`, which saves each
-  setting's default for the run as a person would; without it, skills find no settings and
-  stop. Only a case that tests that stop leaves it out, and a case whose graders depend on a
-  setting's value passes that value to the script.
   The supported models are those named in README.md; a change merges only if its cases pass
   on every one. Evals are billed model runs: run the ones you touched, never the whole suite
   unprompted.

@@ -8,7 +8,6 @@ import unittest
 HERE = os.path.dirname(os.path.abspath(__file__))
 SCRIPT = os.path.join(HERE, "session_map.py")
 MAP = os.path.join(HERE, "..", "docs", "lifecycle.md")
-SAVED = {"CLAUDE_PLUGIN_OPTION_REVIEW_ROUNDS": "3"}
 
 
 class SessionMap(unittest.TestCase):
@@ -16,13 +15,12 @@ class SessionMap(unittest.TestCase):
         self.tmp = tempfile.TemporaryDirectory()
         self.addCleanup(self.tmp.cleanup)
 
-    def run_map(self, *args, settings=SAVED):
-        env = {k: v for k, v in os.environ.items() if not k.startswith("CLAUDE_PLUGIN_OPTION_")}
-        env.update(settings, CLAUDE_PROJECT_DIR=self.tmp.name)
+    def run_map(self, *args):
+        env = dict(os.environ, CLAUDE_PROJECT_DIR=self.tmp.name)
         return subprocess.run([sys.executable, SCRIPT, *args], capture_output=True, text=True, env=env)
 
-    def output(self, **kwargs):
-        done = self.run_map(**kwargs)
+    def output(self):
+        done = self.run_map()
         self.assertEqual(done.returncode, 0)
         return json.loads(done.stdout)
 
@@ -56,41 +54,6 @@ class SessionMap(unittest.TestCase):
         os.makedirs(os.path.join(self.tmp.name, "docs"))
         open(os.path.join(self.tmp.name, "docs", "brief.md"), "w").close()
         self.assertIn("/sdlc:", self.output()["hookSpecificOutput"]["additionalContext"])
-
-    def test_unsaved_setting_is_reported_even_without_lifecycle_documents(self):
-        out = self.output(settings={})
-        self.assertIn("'Review rounds' config setting is not set", out["systemMessage"])
-        self.assertIn("set it (3 is suggested)", out["systemMessage"])
-        self.assertIn("/reload-plugins", out["systemMessage"])
-        self.assertIn("/plugin configure sdlc@sdlc", out["systemMessage"])
-        context = out["hookSpecificOutput"]["additionalContext"]
-        self.assertIn(out["systemMessage"], context)
-        self.assertNotIn("/sdlc:spec", context)
-
-    def test_unsaved_setting_is_reported_with_the_map(self):
-        self.put("docs/brief.md")
-        context = self.output(settings={})["hookSpecificOutput"]["additionalContext"]
-        with open(MAP) as f:
-            self.assertTrue(context.startswith(f.read()))
-        self.assertIn("Review rounds", context)
-
-    def test_empty_value_counts_as_unsaved(self):
-        out = self.output(settings={"CLAUDE_PLUGIN_OPTION_REVIEW_ROUNDS": ""})
-        self.assertIn("Review rounds", out["systemMessage"])
-
-    def test_malformed_manifest_reports_nothing(self):
-        sys.path.insert(0, HERE)
-        import session_map
-        manifest = os.path.join(self.tmp.name, "plugin.json")
-        self.addCleanup(setattr, session_map, "MANIFEST", session_map.MANIFEST)
-        session_map.MANIFEST = manifest
-        for text in ["[]", '"x"', "{}", '{"userConfig": null}', '{"userConfig": []}',
-                     '{"userConfig": {"review_rounds": 3}}', "not json"]:
-            with open(manifest, "w") as f:
-                f.write(text)
-            self.assertEqual(session_map.unsaved_settings({}), [], text)
-        os.remove(manifest)
-        self.assertEqual(session_map.unsaved_settings({}), [])
 
     def test_help(self):
         done = self.run_map("--help")

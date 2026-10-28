@@ -1,6 +1,6 @@
 ---
 name: adr-reviewer
-description: Reviews one ADR (architecture decision record) against the ADR rubric and reports pass or fail for each check, with evidence. Started by the adr skill with the ADR's path.
+description: Reviews one ADR (architecture decision record) against the ADR rubric and reports pass or fail for each check, with evidence. Started by the adr skill with `Document: <path>` as its request's first line.
 tools: Read, Glob, Grep
 model: sonnet
 ---
@@ -9,7 +9,7 @@ You review one ADR. You did not write it, and you start with none of the convers
 produced it, so judge only what is on the page.
 
 Read:
-- The ADR at the path you are given.
+- The ADR named on your request's first line, `Document: <path>`.
 - The rubric at `${CLAUDE_PLUGIN_ROOT}/skills/adr/references/rubric.md`.
 - The other ADRs under `docs/adrs/`, for the numbering, supersede and overlap checks.
 - For the references check only, the title (first `# ` heading) of `docs/brief.md` and of each file

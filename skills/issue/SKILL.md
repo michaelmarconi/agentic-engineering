@@ -11,7 +11,7 @@ the case passes. So the issue must stand on its own, and because the plugin's re
 public, it must carry nothing from the person's repository.
 
 Before drafting, read [references/rubric.md](references/rubric.md): it is the list of checks
-the reviewer will apply, so drafting to it saves rounds.
+the reviewer will apply, so drafting to it leaves less to correct.
 
 ## Gather
 
@@ -48,38 +48,74 @@ plugin leaves nothing there but the lifecycle's own documents.
 
 ## Review
 
-The draft is reviewed up to ${user_config.review_rounds} times, counting the first. If no number
-appears in that sentence, the plugin's Review rounds setting has not been saved: run no review.
-Show the person the draft, say it is unreviewed and can't be filed yet, and ask them to run
-`/plugin configure sdlc@sdlc`, type a number next to Review rounds, choose Save configuration,
-run `/reload-plugins` and then ask you for the review. Never pick a number yourself.
+The draft is reviewed once, corrected once, and then the corrections are checked. The sequence
+is fixed so it always ends with a clear result: further rounds of review find little more, and
+each round of corrections brings new mistakes. Because the draft is never saved as a file, it
+goes in the requests whole, title and body, word for word, between marker lines; a plugin hook
+reads them to keep a copy of the draft as reviewed, outside the person's repository.
 
-Otherwise, start the `sdlc:issue-reviewer` agent in the foreground, not in the background, and give it the
-kind and the draft, title and body, in full and word for word. It reads everything else it needs
-itself. Wait for its report before changing the draft, so the report matches the draft. It
-reports pass or fail for each rubric check with evidence, other findings, and anything that
-needs the person.
+1. **Review.** Start the `sdlc:issue-reviewer` agent in the foreground, not in the background,
+   with this request, laid out exactly as shown:
 
-Fix every finding you can and run the reviewer again, until the limit. If the last review still
-fails, show the person the draft and the report, say what is still failing, and ask how they
-want it changed; each change they make gets one more review. A failing draft is filed only if
-the person, with the report in front of them, says to file it anyway: it is their information to
-share.
+   ```
+   Document: issue draft
+   Kind: <bug or improvement>
+   === DRAFT ===
+   <title>
+
+   <body>
+   === END DRAFT ===
+   ```
+
+   It reads everything else it needs itself. Wait for its report before changing the draft. If
+   it passes with nothing under Needs a person, go straight to showing the person.
+2. **Correct, once.** Read the rubric again, then correct only what the report lists: each
+   failed check and each item under Other findings. Whether a detail is safe to share is the
+   person's decision, so a finding under Needs a person goes to them as a question, never a
+   guess. Leave suggestions alone and change nothing else, since an edit beyond the report is
+   the likeliest way to break something. If nothing in the report was yours to correct, there
+   is nothing to check: go straight to showing the person.
+3. **Check the corrections.** Start the `sdlc:correction-checker` agent in the foreground with
+   the same layout, holding the corrected draft, and nothing more: the hook attaches the report
+   and the draft as reviewed, word for word.
+
+   ```
+   Document: issue draft
+   Kind: <bug or improvement>
+   === DRAFT ===
+   <corrected title>
+
+   <corrected body>
+   === END DRAFT ===
+   ```
+
+   If the hook refuses to start it, do what its reason says. If the check fails, stop: change
+   the draft no further, and show the person the draft and the check's report. Do not review or
+   correct again; what happens next is their call.
+
+When the person changes the draft or asks you to, run the sequence again on the changed draft.
+A draft whose review or check failed is filed only if the person, with the reports in front of
+them, says to file it anyway: it is their information to share.
 
 ## File
 
 Run `python3 "${CLAUDE_SKILL_DIR}/scripts/issue.py" account` to learn how it would be filed:
 `gh <login>` means with the GitHub CLI as that account, `link` means they submit it in their
-browser. Show the person the draft exactly as it would be filed, the reviewer's final report,
-and, for `gh <login>`, that it will appear under that account, since their name is public on the
-issue and it may be a work account. Then ask whether to file it.
+browser. Show the person the draft exactly as it would be filed, the review report and the check's
+report, if there was one, and, for `gh <login>`, that it will appear under that account, since their name is public on the
+issue and it may be a work account. Leave out the decisions the reports list for the person:
+say how many items must be settled before filing, those decisions plus any correction the check
+found not made or broken, offer to go through them one at a time, and ask the first only. List
+the reviewers' suggestions separately, as optional. Once nothing is left to settle, ask whether
+to file it.
 
 File only on their clear yes to that draft: an issue on a public repository can't be taken back,
 so a yes given before they have seen the draft and the account doesn't count, even "file it, I
 trust you" in their first message. This holds for a link too: run `file` only after the yes,
 since a link is one click from public. If they change
-the draft, review it again before asking again. If they bring back a draft and say yes to it,
-review it and run `account`. If the review fails, handle it as under Review. If it passes and
+the draft, run the review sequence again before asking again. If they bring back a draft and say yes to it,
+run the review sequence on it and run `account`. If the review or check fails, handle it as
+under Review. If it passes and
 `account` says `link`, or they asked for a link, give them the link without asking again,
 since they submit it themselves; if it says `gh <login>`, tell them the account and ask once
 more.
@@ -103,7 +139,7 @@ message saying why; tell the person, and:
 
 - 2: the first line wasn't a bare title, or there was no body; fix the command and rerun it.
 - 6: the CLI is now signed in as a different account; nothing was filed. Ask the person again.
-- 3: the draft is too long. Offer a shorter draft, which is reviewed again.
+- 3: the draft is too long. Offer a shorter draft, which goes through the review sequence again.
 - 4: the CLI ran but failed, and may have filed it anyway. Give the person the CLI's message and
   the repository's issues page it names. Only once they have checked that the issue isn't there,
   run the same command again, or use `--link-only` if the CLI keeps failing.

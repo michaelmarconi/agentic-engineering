@@ -3,5 +3,3 @@ name: issue-two-problems
 expected_outcome: |
   Two unrelated problems become two separate drafts, a bug and an improvement, each shown for
   approval, rather than one issue covering both.
-context:
-  scaffold_script: place-files.sh

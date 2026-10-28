@@ -2,5 +2,3 @@ schema_version: "1.1"
 name: brief-cold-start
 expected_outcome: |
   The person asks for a brief with nothing to go on. The skill asks what they are building before writing anything.
-context:
-  scaffold_script: place-files.sh

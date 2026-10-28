@@ -2,5 +2,3 @@ schema_version: "1.1"
 name: spec-asks-one-at-a-time
 expected_outcome: |
   The skill writes and reviews the spec, then tells the person how many open questions there are and asks only the first one.
-context:
-  scaffold_script: place-files.sh
