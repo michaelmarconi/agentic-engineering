@@ -68,10 +68,6 @@ only hook features that Claude Code documents, and wrote nothing into the projec
   private details and that the person has not yet agreed to file. The hook still keeps a copy on
   the person's computer, in the plugin's data folder, until the checker finishes, or until the
   end of the conversation if no checker runs.
-- Bad: when Claude reviews several documents at once, such as several decision records, two
-  reviews could save their copies at the same instant, and one save could interfere with the
-  other. That case is not tested, because such a test would depend on timing, which makes tests
-  unreliable.
 
 ### Confirmation
 
