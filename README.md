@@ -135,4 +135,5 @@ differently on another. The plugin handles this in three ways.
 ## Contributing
 
 Read [AGENTS.md](AGENTS.md) first. It holds the rules every skill is built to and the checks a
-change must pass.
+change must pass. The plugin's own design decisions, and why they were made, are recorded as
+architecture decision records in [docs/adrs/](docs/adrs/).

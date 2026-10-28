@@ -130,7 +130,7 @@ stops and shows you why, rather than trying again.
 
 There are no repeated rounds of review and correction. We measured this on specs with planted
 mistakes: one review finds nearly every one, and each further round of corrections brings new
-problems ([results](../experiments/review-seeding/RESULTS.md)).
+problems.
 
 `/build` follows the same sequence for code: the build agent corrects what the reviewers find
 once, and a correction check follows. A clean review or a passing correction check merges the work

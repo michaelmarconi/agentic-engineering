@@ -41,7 +41,7 @@ everything else is judgement.
      anything else it notices is a suggestion. If the correction check fails, the skill stops
      and shows the person the report. There is never a second full review: one review finds
      nearly everything, and each further round of corrections adds new problems
-     (`experiments/review-seeding/RESULTS.md`). `/build` follows the same sequence. Only a
+     ([ADR 0010](docs/adrs/0010-check-corrections-instead-of-reviewing-again.md)). `/build` follows the same sequence. Only a
      decision the skill cannot make goes to the person, with optional suggestions passed on but
      never holding the document back.
    - The person gets the document and the final report.
