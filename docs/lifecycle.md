@@ -108,12 +108,15 @@ the conversations behind the document. So each one follows this rule:
   replaced by the plain statement it stands for. For example, "the order hitchhikes on the nightly
   export" becomes "the order is included in the nightly export".
 
+An issue the plugin files is read by the plugin's maintainers, who know the lifecycle, so in an
+issue the lifecycle's own terms, such as "spec" or "Ready to build", count as plain too.
+
 The rule covers only what the plugin writes. Your own documents, code and messages follow your
 project's rules.
 
 ## Review process
 
-Agents don't mark their own homework. The agent that writes a document can miss its own
+No agent checks its own work. The agent that writes a document can miss its own
 mistakes, so every document a skill writes is checked by a reviewer agent before a person sees
 it. The reviewer is a separate Claude that starts fresh, without the conversation, so it judges
 the page as a newcomer would. It checks the document against the skill's rubric: a short list of
@@ -145,7 +148,8 @@ flowchart LR
 | **Correction check** | `agents/correction-checker.md`, shared by every skill | Checks only that each correction was made and that none broke anything; anything else it notices is a suggestion | The correction report: pass or fail |
 | **Sign-off** | You | Read the document and the reports, settle the open questions, and set the status | The document at its next status |
 
-If both reports pass, the skill hands the document to you with no correction step. If the correction check fails, the skill
+If both reports pass with nothing left for you to decide, the skill hands the document to you
+with no correction step. If the correction check fails, the skill
 stops and shows you why, rather than trying again.
 
 | Term | Meaning |

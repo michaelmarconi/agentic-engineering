@@ -296,6 +296,75 @@ class Relay(unittest.TestCase):
         self.assertIsNone(self.agent("PreToolUse", "sdlc:spec-reviewer", f"Document: {SPEC}\nGo."))
         self.assertRefused(self.check(), "No review")
 
+    def test_wording_of_a_slightly_different_copy_of_the_same_review_still_joins(self):
+        # /issue types the draft into both requests; a stray space must not lose the review.
+        self.assertIsNone(self.agent("PreToolUse", "sdlc:issue-reviewer", issue_request(DRAFT)))
+        self.assertIsNone(self.agent("PreToolUse", LANGUAGE, issue_request(DRAFT + " ")))
+        self.assertIsNone(self.agent("PostToolUse", "sdlc:issue-reviewer", issue_request(DRAFT), response=REPORT))
+        self.assertIsNone(self.agent("PostToolUse", LANGUAGE, issue_request(DRAFT + " "), response=WORDING))
+        corrected = DRAFT.replace("line two", "line 2")
+        prompt = self.assertAllowed(self.check(prompt=issue_request(corrected)))["prompt"]
+        self.assertIn("=== DOCUMENT AS REVIEWED: issue draft ===\n" + DRAFT, prompt)
+        self.assertIn(WORDING, prompt)
+
+    def test_a_second_language_check_during_a_review_leaves_it_alone(self):
+        self.put(SPEC, "v1\n")
+        self.review()
+        self.put(SPEC, "v2\n")
+        self.language(prompt=f"Document: {SPEC}\nCheck my wording fixes.", wording="second wording")
+        prompt = self.assertAllowed(self.check())["prompt"]
+        self.assertIn(REPORT, prompt)
+        self.assertIn(WORDING, prompt)
+        self.assertNotIn("second wording", prompt)
+
+    def test_a_new_review_may_start_with_the_language_checker(self):
+        self.put(SPEC, "v1\n")
+        self.review(report="first report", wording="first wording")
+        self.put(SPEC, "v2\n")
+        self.language(prompt=f"Document: {SPEC}\nCheck the wording.", wording="second wording")
+        self.review(report="second report", wording=None)
+        self.put(SPEC, "v3\n")
+        prompt = self.assertAllowed(self.check())["prompt"]
+        self.assertIn("second report", prompt)
+        self.assertIn("second wording", prompt)
+        self.assertNotIn("first", prompt)
+
+    def test_reviewer_or_language_checker_in_the_background_is_refused(self):
+        self.put(SPEC, "v1\n")
+        for agent in ("sdlc:spec-reviewer", LANGUAGE):
+            out = self.agent("PreToolUse", agent, f"Document: {SPEC}\nReview.", run_in_background=True)
+            self.assertRefused(out, "foreground")
+        self.assertEqual(self.saved(), [])
+
+    def test_without_tool_use_ids_both_reports_still_count(self):
+        self.put(SPEC, "v1\n")
+        for when, agent, response in [("PreToolUse", "sdlc:spec-reviewer", None),
+                                      ("PreToolUse", LANGUAGE, None),
+                                      ("PostToolUse", "sdlc:spec-reviewer", REPORT),
+                                      ("PostToolUse", LANGUAGE, WORDING)]:
+            event = {"hook_event_name": when, "session_id": self.session, "tool_name": "Agent",
+                     "tool_input": {"subagent_type": agent, "prompt": f"Document: {SPEC}\nGo."}}
+            if response:
+                event["tool_response"] = {"content": [{"type": "text", "text": response}]}
+            self.assertIsNone(self.run_hook(event))
+        self.put(SPEC, "v2\n")
+        self.assertAllowed(self.check())
+
+    def test_no_refusal_asks_for_a_second_review(self):
+        self.put(SPEC, "v1\n")
+        for out in (self.check(), self.check(prompt="Check the corrections.")):
+            reason = out["hookSpecificOutput"]["permissionDecisionReason"]
+            self.assertNotIn("Run the review", reason)
+
+    def test_a_null_text_block_in_a_reply_never_blocks(self):
+        self.put(SPEC, "v1\n")
+        self.assertIsNone(self.agent("PreToolUse", "sdlc:spec-reviewer", f"Document: {SPEC}\nGo."))
+        event = {"hook_event_name": "PostToolUse", "session_id": self.session, "tool_name": "Agent",
+                 "tool_use_id": f"sdlc:spec-reviewer-Document: {SPEC}\nGo.",
+                 "tool_input": {"subagent_type": "sdlc:spec-reviewer", "prompt": f"Document: {SPEC}\nGo."},
+                 "tool_response": {"content": [{"type": "text", "text": None}]}}
+        self.assertIsNone(self.run_hook(event))
+
     # /issue: the draft is never on disk
 
     def test_issue_draft_is_taken_from_the_requests(self):

@@ -11,8 +11,7 @@ graduate who is new to the project and to the product's field.
 
 Your request's first line names the document: `Document: <path>`. For an issue draft, which is
 never saved as a file, it says `Document: issue draft` and the draft is in the request, between
-`=== DRAFT ===` and `=== END DRAFT ===` lines. An issue is read by the plugin's maintainers, so
-for an issue the lifecycle's own terms, such as "spec" or "Ready to build", are plain too.
+`=== DRAFT ===` and `=== END DRAFT ===` lines.
 
 Read:
 - The document.

@@ -25,7 +25,7 @@ everything else is judgement.
      plugin, so the script tests below fail on a skill that breaks one.
    - Optional `scripts/`, `references/` and `assets/`. References sit one level deep, and
      `SKILL.md` says when to read each one.
-4. **Reviewed.** Agents don't mark their own homework. Every skill that writes a document takes
+4. **Reviewed.** No agent checks its own work. Every skill that writes a document takes
    it through the review sequence that [docs/lifecycle.md](docs/lifecycle.md#review-process)
    describes, and [ADR 0010](docs/adrs/0010-check-corrections-instead-of-reviewing-again.md)
    explains: review once, correct once, then check only the corrections. To build it into a
