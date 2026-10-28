@@ -71,7 +71,9 @@ The plugin gives Claude three kinds of help to work with these documents:
 - **Hooks:** small scripts Claude Code runs automatically at set moments. This plugin uses them
   to give Claude the lifecycle rules when a session starts in a repository that uses it, and to
   refuse spec and ADR edits Claude makes that the lifecycle does not allow, such as an illegal
-  status change. They need Python 3.
+  status change. After a review, a hook also hands the correction checker the review report and
+  the document as it was reviewed, word for word, keeping them in the plugin's own data folder
+  outside your repository until the check is done. They need Python 3.
 
 Every document a skill writes is checked by a reviewer agent before you see it. Apart from the
 documents, the plugin adds nothing to your repository, unless you choose to install it for
