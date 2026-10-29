@@ -708,6 +708,11 @@ class Plan(PlanWorkspace):
     def test_ready_refused_for_a_requirement_before_any_spec(self):
         self.assertIn("cannot read", self.ready(specs="  - Requirement: X"))
 
+    def test_footnote_marks_and_definitions_in_references_are_ignored(self):
+        specs = ("- [Thing](../specs/thing.spec.md)[^1]\n  - Requirement: X\n\n"
+                 "[^1]: A thing is what the\n    product makes.")
+        self.assertIsNone(self.ready(specs=specs))
+
     def test_template_comments_in_references_are_ignored(self):
         specs = "<!-- Each spec this work builds,\n     over two lines. -->\n- [Thing](../specs/thing.spec.md)\n  - Requirement: X"
         self.assertIsNone(self.ready(specs=specs))

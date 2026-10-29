@@ -65,7 +65,8 @@ file name and the template's comments removed:
 
 - **Specs** lists each spec with the requirements this work delivers beneath it, and **ADRs**
   each ADR the code must follow; either says "None." when there are none, but not both. Keep each line in the template's form,
-  `- [<title>](<path>)` with `  - Requirement: <name>` beneath a spec: the hook reads only that.
+  `- [<title>](<path>)` with `  - Requirement: <name>` beneath a spec: the hook reads only that. To explain a term there, add a footnote mark after the
+  link, never a line of prose.
 - **Decisions** holds one line for each decision that matters only to this work: what was
   decided and why.
 - A decision the person agreed belongs in an ADR goes under **Open questions**, as an ADR to

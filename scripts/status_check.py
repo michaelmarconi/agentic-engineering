@@ -368,9 +368,16 @@ def target(plan_path, link):
 
 
 def reference_lines(text, heading):
-    """The non-blank lines of a plan's references section, with template comments removed."""
+    """The non-blank lines of a plan's references section, without template comments or footnotes."""
     body = re.sub(r"<!--.*?-->", "", "\n".join(section(text, heading) or []), flags=re.S)
-    return [line for line in body.splitlines() if line.strip()]
+    lines, in_footnote = [], False
+    for line in body.splitlines():
+        if FOOTNOTE.match(line) or (in_footnote and (not line.strip() or line.startswith(("    ", "\t")))):
+            in_footnote = True
+        elif line.strip():
+            in_footnote = False
+            lines.append(line)
+    return lines
 
 
 def unreadable(line, heading):
