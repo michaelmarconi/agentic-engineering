@@ -43,9 +43,10 @@ has to install it.
 
 - Good: installing the plugin is all a person does; no script fails because a package is missing.
 - Good: the scripts' tests run with a bare Python 3, using its built-in test module.
-- Bad: a person without Python 3, such as someone on a Mac without Apple's developer tools,
-  cannot use the hooks until they install it, so the README has to say they need it. The status
-  check must then refuse an edit with a clear message, rather than let it through unchecked.
+- Bad: a person without Python 3, such as someone on a Mac without Apple's developer tools, cannot
+  use the hooks until they install it, so the README has to say they need it. The script that
+  refuses disallowed status changes must then refuse every edit with a clear message, rather than
+  let edits through unchecked.
 - Bad: without packages, some work is written by hand, such as reading a document's frontmatter,
   the block of fields at its top, which a package would otherwise parse.
 
