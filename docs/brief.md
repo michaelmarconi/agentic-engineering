@@ -23,8 +23,8 @@ meet defined quality standards and stay easy to evolve and maintain over the lon
 
 By version 1.0, on one real project:
 
-- A fresh assistant session given only the repository, with no past conversations, correctly says
-  what the project is for, what was decided and why, and what is built.
+- Someone new to the project can find out from its documents alone what it is for, what was
+  decided and why, and what is built.
 - Every lifecycle document the plugin writes is reviewed independently before a person sees it,
   as the plugin's own tests show.
 - A person approved every change to a lifecycle document's status, such as from Draft to
@@ -50,5 +50,4 @@ By version 1.0, on one real project:
 
 ## Open questions
 
-- Who judges that the fresh assistant session's answers are correct: the project's own engineers,
-  or a set of questions with agreed answers?
+None.
