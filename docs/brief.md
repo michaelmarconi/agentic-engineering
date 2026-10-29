@@ -27,7 +27,7 @@ By version 1.0, on one real project:
   decided and why, and what is built.
 - Every lifecycle document the plugin writes is reviewed independently before a person sees it,
   as the plugin's own tests show.
-- A person approved every change to a lifecycle document's status, such as from Draft to
+- A person approves every change to a lifecycle document's status, such as from Draft to
   Accepted, as the project's pull requests show.
 
 ## Out of scope
