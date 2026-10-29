@@ -20,6 +20,7 @@ For an ADR (architecture decision record) it refuses:
 - an ADR that had a status (Draft, Accepted, Rejected or Superseded) losing it;
 - a new ADR with any status but Draft, including one the lifecycle does not know;
 - Accepted or Rejected, except from Draft and as an edit that changes nothing else;
+- Accepted while the Open questions section is missing, or holds anything but "None.";
 - Superseded, except from Accepted with a `superseded-by:` line added and nothing else changed,
   naming the four-digit number of an Accepted ADR in the same folder whose `supersedes:` names
   this one (it may name several);
@@ -262,6 +263,11 @@ def adr_rules(path, before, after, old, new):
             return (
                 f"{name}: set {new} on its own, as the last edit after a passing review and the "
                 "person's sign-off; this edit also changes the ADR's content."
+            )
+        if new == "Accepted" and has_open_questions(after):
+            return (
+                f"{name}: it still has open questions, so it cannot be Accepted. Answer them "
+                "with the person, or leave the ADR as Draft."
             )
         return None
     if old == "Accepted" and new == "Superseded":

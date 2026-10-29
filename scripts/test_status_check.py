@@ -222,7 +222,7 @@ class Transitions(Workspace):
         self.assertIsNotNone(result)
 
 
-def adr(status="Draft", extra="", body="Chosen option: Redis, because it is fast enough."):
+def adr(status="Draft", extra="", body="Chosen option: Redis, because it is fast enough.", questions="None."):
     return (
         "---\n"
         f"status: {status}\n"
@@ -230,14 +230,15 @@ def adr(status="Draft", extra="", body="Chosen option: Redis, because it is fast
         f"{extra}"
         "---\n\n# Store sessions in Redis\n\n## Context and Problem Statement\n\nC\n\n"
         "## Considered Options\n\n- Redis\n- Postgres: slower\n\n"
-        f"## Decision Outcome\n\n{body}\n"
+        f"## Decision Outcome\n\n{body}\n\n"
+        f"## Open questions\n\n{questions}\n"
     )
 
 
 class AdrWorkspace(Workspace):
     def setUp(self):
         super().setUp()
-        self.path = os.path.join(self.tmp.name, "docs", "adrs", "0001-store-sessions-in-redis.md")
+        self.path = os.path.join(self.tmp.name, "docs", "adrs", "0001-session-storage.md")
 
 
 class Adr(AdrWorkspace):
@@ -265,6 +266,18 @@ class Adr(AdrWorkspace):
 
     def test_draft_to_rejected_alone_allowed(self):
         self.put(adr())
+        self.assertIsNone(self.edit("status: Draft", "status: Rejected"))
+
+    def test_accepting_with_open_questions_refused(self):
+        self.put(adr(questions="- How long do sessions last?"))
+        self.assertIn("open questions", self.edit("status: Draft", "status: Accepted"))
+
+    def test_accepting_without_open_questions_section_refused(self):
+        self.put(adr().split("\n## Open questions")[0])
+        self.assertIn("open questions", self.edit("status: Draft", "status: Accepted"))
+
+    def test_rejecting_with_open_questions_allowed(self):
+        self.put(adr(questions="- How long do sessions last?"))
         self.assertIsNone(self.edit("status: Draft", "status: Rejected"))
 
     def test_accepting_with_other_changes_refused(self):
@@ -296,7 +309,7 @@ class Adr(AdrWorkspace):
         self.assertIsNotNone(self.edit("status: Rejected", "status: Accepted"))
 
     def put_replacement(self, status="Accepted", supersedes="0001", number="0002"):
-        path = os.path.join(self.tmp.name, "docs", "adrs", f"{number}-store-sessions-elsewhere.md")
+        path = os.path.join(self.tmp.name, "docs", "adrs", f"{number}-session-storage.md")
         with open(path, "w") as f:
             f.write(adr(status, extra=f"supersedes: {supersedes}\n"))
 
