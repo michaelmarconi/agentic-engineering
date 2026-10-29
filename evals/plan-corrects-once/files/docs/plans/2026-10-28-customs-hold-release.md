@@ -27,7 +27,7 @@ released containers stay in the list of held containers. A release becomes a "cl
 event, "cleared" being the status of a container whose hold has ended, recorded through
 `record_status()` in `src/shipments.py`, the way `src/broker/updates.py` already records holds, as
 ADR 0003 requires. The list in `src/holds/list.py` already shows only containers whose latest event
-is "held", so a cleared container leaves it with no change there. Emailing the importer's logistics
+is "held", so a cleared container leaves it with no change there. Emailing the logistics
 coordinator on a release is left for later, as [the brief](../brief.md) says. Each release is
 also kept in a new Redis cache, so the page can read it quickly.
 
@@ -47,4 +47,5 @@ if message["type"] == "released":
 
 [^hold]: An order from the customs authority that a container stay where it is until its goods
     are inspected or its paperwork is approved.
-[^broker]: A licensed agent who deals with the customs authority on the importer's behalf.
+[^broker]: A licensed agent who deals with the customs authority for the company bringing the
+    goods into the country.

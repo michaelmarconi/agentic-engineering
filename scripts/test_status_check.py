@@ -79,6 +79,10 @@ class Parsing(unittest.TestCase):
     def test_question_after_wrapped_footnote_counts(self):
         self.assertTrue(status_check.has_open_questions(spec() + "\n[^1]: A source\n    wrapped.\n\n- Who approves?\n"))
 
+    def test_footnote_running_onto_more_lines_ignored(self):
+        text = spec() + "\n[^1]: A source that runs\n    onto a second line.\n[^2]: Another.\n"
+        self.assertFalse(status_check.has_open_questions(text))
+
     def test_open_questions_present(self):
         self.assertTrue(status_check.has_open_questions(spec(questions="- Who approves?")))
 
