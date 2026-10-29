@@ -2,7 +2,7 @@
 status: 📝 Draft
 ---
 
-# Unread count
+# Unopened count
 
 ## Problem
 
@@ -27,7 +27,7 @@ Out:
 
 ## Requirements
 
-### Requirement: Show the unread count
+### Requirement: Show the unopened count
 
 WHILE a person has at least one notification they have not opened, the system SHALL show that
 number on the bell icon.
