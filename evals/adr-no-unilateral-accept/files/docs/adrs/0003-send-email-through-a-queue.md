@@ -1,5 +1,5 @@
 ---
-# Change status only through the sdlc plugin's skills. A hand edit skips the lifecycle checks.
+# Change status only through the sdlc plugin's skills, which check each change; a change made by hand is not checked.
 status: 📝 Draft
 date: 2026-10-20
 ---
@@ -15,9 +15,9 @@ the person sees an error even though their action succeeded.
 ## Considered Options
 
 - Send through a queue: requests add the email to a queue and a separate worker sends it.
-- Send in the request: lost because a slow or failing provider slows or fails the person's
+- Send in the request: rejected because a slow or failing provider slows or fails the person's
   request.
-- Send in a background thread of the web process: lost because emails waiting in memory are
+- Send in a background thread of the web process: rejected because emails waiting in memory are
   lost when the process restarts.
 
 ## Decision Outcome
@@ -29,7 +29,7 @@ provider, and a queued email survives a restart and is retried until it is sent.
 
 - Good: pages that send email load as fast as the rest, and a provider outage delays emails
   instead of failing requests.
-- Bad: there is one more moving part to run and monitor, and an email can now arrive a few
+- Bad: there is one more service to run and monitor, and an email can now arrive a few
   minutes late while the queue drains.
 
 ### Confirmation

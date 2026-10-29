@@ -10,7 +10,9 @@ A product has one, at `docs/brief.md`, edited in place; git is its history. Spec
 against it, one per capability, so the brief holds only what is true of the whole product.
 
 Before writing, read [references/rubric.md](references/rubric.md): it is the list of checks the
-reviewer will apply, so writing to it leaves less to correct. A new brief starts from
+reviewer will apply, so writing to it leaves less to correct. Write in plain words, as the Plain
+words section of [the lifecycle page](../../docs/lifecycle.md#plain-words) says: a language
+checker holds every document to it. A new brief starts from
 [assets/template.md](assets/template.md). Read these with the Read tool, not the shell, so the
 person is not asked to approve a command.
 
@@ -35,7 +37,7 @@ Write only what they said or showed you, as rubric check 8 describes, and link e
 a document to it, as check 9 does. What they haven't said becomes an open question, each asking one
 thing: "What do they do today, and how long does it take?" is two questions. When they want the
 brief to refer to a spec, an ADR (architecture decision record) or a plan, by hyperlink, path or
-title, leave it out (check 11) and tell them why: that document can change or be deleted without the
+title, leave it out (check 10) and tell them why: that document can change or be deleted without the
 brief being touched, so the reference would go stale. When they mention something that belongs to a
 later stage (rubric checks 2 and 7), leave it out and tell them where it goes: how one capability
 behaves goes in its spec, so suggest `/spec`; a technology or design they have decided goes in an
@@ -58,27 +60,31 @@ Every brief is reviewed once, corrected once, and then the corrections are check
 sequence is fixed so it always ends with a clear result: further rounds of review find little
 more, and each round of corrections brings new mistakes.
 
-1. **Review.** When the brief is written, start the `sdlc:brief-reviewer` agent in the foreground,
-   not in the background, with this request, its first line exactly as shown, since a plugin
-   hook reads that line to keep a copy of the brief as reviewed:
+1. **Review.** When the brief is written, start two agents in the foreground, not in the
+   background, both in one message so they run side by side: the `sdlc:brief-reviewer` agent
+   and the `sdlc:language-checker` agent, which checks the wording. Give each this request, its
+   first line exactly as shown, since a plugin hook reads that line to keep a copy of the brief
+   as reviewed:
 
    ```
    Document: <the brief's path>
    Review this brief.
    ```
 
-   It reads everything else it needs itself. Wait for its report before touching the brief. If
-   it passes with nothing under Needs a person, go straight to handing over.
-2. **Correct, once.** Read the rubric again, then correct only what the report lists: each
-   failed check and each item under Other findings. Correct by making the brief
+   Each reads everything else it needs itself. Wait for both reports before touching the brief.
+   If both pass with nothing under Needs a person, go straight to handing over.
+2. **Correct, once.** Read the rubric and the Plain words rule again, then correct only what
+   the reports list: each failed check and each item under Other findings in the review report,
+   and each finding in the wording report. A wording item under Needs a person, whose
+   meaning only the person knows, is a decision like any other. Correct by making the brief
    accurate, never by dropping or hedging what the person said. A decision under Needs a person
    becomes an entry in the brief's Open questions, never a guess at the answer. Leave
-   suggestions alone and change nothing else, since an edit beyond the report is the likeliest
-   way to break something. Wait until every edit has succeeded. If nothing in the report was
+   suggestions alone and change nothing else, since an edit beyond the reports is the likeliest
+   way to break something. Wait until every edit has succeeded. If nothing in the reports was
    yours to correct, there is nothing to check: go straight to handing over.
 3. **Check the corrections.** Start the `sdlc:correction-checker` agent in the foreground with
-   this request, and add nothing to it: the hook attaches the report and the brief as reviewed,
-   word for word.
+   this request, and add nothing to it: the hook attaches both reports and the brief as
+   reviewed, word for word.
 
    ```
    Document: <the brief's path>
@@ -93,8 +99,8 @@ After the sequence, edit the brief only when the person asks. When they change i
 run the sequence again on the changed brief.
 
 Whether the check passed or failed, end with the hand-over. It is what the person acts on, so make
-it hard to miss anything. Give them the brief's path, the review report and the check's report, if
-there was one, leaving out the decisions they list for the person. Then say how many items must be
+it hard to miss anything. Give them the brief's path, the review and wording reports and the check's
+report, if there was one, leaving out the decisions they list for the person. Then say how many items must be
 settled before the brief can move on: its open questions, plus any correction the check found not
 made or broken. Say you will take them one at a time, rather than asking whether to, and ask the
 first only, as a single question, giving any examples as possible answers rather than further

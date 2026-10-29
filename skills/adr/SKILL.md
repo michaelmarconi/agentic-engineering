@@ -12,7 +12,9 @@ each file's frontmatter are the whole record. Once accepted, an ADR is never edi
 decision is a new ADR that supersedes the old one, whole.
 
 Before writing, read [references/rubric.md](references/rubric.md): it is the list of checks the
-reviewer will apply, so writing to it leaves less to correct. New ADRs start from
+reviewer will apply, so writing to it leaves less to correct. Write in plain words, as the Plain
+words section of [the lifecycle page](../../docs/lifecycle.md#plain-words) says: a language
+checker holds every document to it. New ADRs start from
 [assets/template.md](assets/template.md). Read these with the Read tool, not the shell, so the
 person is not asked to approve a command.
 
@@ -82,27 +84,31 @@ Every ADR is reviewed once, corrected once, and then the corrections are checked
 sequence is fixed so it always ends with a clear result: further rounds of review find little
 more, and each round of corrections brings new mistakes.
 
-1. **Review.** When the ADR is written, start the `sdlc:adr-reviewer` agent in the foreground,
-   not in the background, with this request, its first line exactly as shown, since a plugin
-   hook reads that line to keep a copy of the ADR as reviewed:
+1. **Review.** When the ADR is written, start two agents in the foreground, not in the
+   background, both in one message so they run side by side: the `sdlc:adr-reviewer` agent
+   and the `sdlc:language-checker` agent, which checks the wording. Give each this request, its
+   first line exactly as shown, since a plugin hook reads that line to keep a copy of the ADR
+   as reviewed:
 
    ```
    Document: <the ADR's path>
    Review this ADR.
    ```
 
-   It reads everything else it needs itself. Wait for its report before touching the ADR. If
-   it passes with nothing under Needs a person, go straight to handing over.
-2. **Correct, once.** Read the rubric again, then correct only what the report lists: each
-   failed check and each item under Other findings. A decision under Needs a person, or a
+   Each reads everything else it needs itself. Wait for both reports before touching the ADR.
+   If both pass with nothing under Needs a person, go straight to handing over.
+2. **Correct, once.** Read the rubric and the Plain words rule again, then correct only what
+   the reports list: each failed check and each item under Other findings in the review report,
+   and each finding in the wording report. A wording item under Needs a person, whose
+   meaning only the person knows, is a decision like any other. A decision under Needs a person, or a
    failure only the person's answer can fix, such as a missing option or why one was rejected,
    is theirs to settle: leave the text it concerns as it is and never guess. Leave
-   suggestions alone and change nothing else, since an edit beyond the report is the likeliest
-   way to break something. Wait until every edit has succeeded. If nothing in the report was
+   suggestions alone and change nothing else, since an edit beyond the reports is the likeliest
+   way to break something. Wait until every edit has succeeded. If nothing in the reports was
    yours to correct, there is nothing to check: go straight to handing over.
 3. **Check the corrections.** Start the `sdlc:correction-checker` agent in the foreground with
-   this request, and add nothing to it: the hook attaches the report and the ADR as reviewed,
-   word for word.
+   this request, and add nothing to it: the hook attaches both reports and the ADR as
+   reviewed, word for word.
 
    ```
    Document: <the ADR's path>
@@ -119,8 +125,8 @@ on its own. Setting a status on the person's word is not a change to the ADR's c
 needs no new review.
 
 Whether the check passed or failed, end with the hand-over. It is what the person acts on, so make
-it hard to miss anything. Give them the ADR's path, the review report and the check's report, if
-there was one, leaving out the decisions they list for the person. Then say how many items must be
+it hard to miss anything. Give them the ADR's path, the review and wording reports and the check's
+report, if there was one, leaving out the decisions they list for the person. Then say how many items must be
 settled before the ADR can move on: the decisions the reports leave to the person, plus any
 correction the check found not made or broken. Say you will take them one at a time, rather than
 asking whether to, and ask the first only, as a single question, giving any examples as possible

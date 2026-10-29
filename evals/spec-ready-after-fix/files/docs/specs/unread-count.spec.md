@@ -12,7 +12,7 @@ in overnight.
 
 ## Goal
 
-People can see at a glance how many of their notifications they have not opened yet.
+People can see how many of their notifications they have not opened yet without opening the list.
 
 ## Scope
 

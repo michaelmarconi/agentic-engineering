@@ -1,5 +1,5 @@
 ---
-# Change status only through the sdlc plugin's skills. A hand edit skips the lifecycle checks.
+# Change status only through the sdlc plugin's skills, which check each change; a change made by hand is not checked.
 status: 👍 Accepted
 date: 2026-10-20
 ---
@@ -14,7 +14,7 @@ their requests reach a different server or a server restarts.
 ## Considered Options
 
 - Store sessions in Postgres: one shared table every server reads.
-- Keep sessions in server memory: lost because sessions vanish on restart and are not shared.
+- Keep sessions in server memory: rejected because sessions vanish on restart and are not shared.
 
 ## Decision Outcome
 

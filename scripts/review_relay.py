@@ -13,14 +13,27 @@ directory if unset) or absolute. A draft that is never written to a file, such a
 uses `Document: issue draft` and carries the draft between `=== DRAFT ===` and
 `=== END DRAFT ===` lines in the request.
 
-- Before a known reviewer (spec, brief, adr or issue) starts, it saves the document's text,
-  replacing any earlier review of that document in this session.
-- When the reviewer finishes, it saves the reviewer's report.
-- Before the correction checker starts, it appends the report, the document as reviewed, and
-  the files that skill's checker should read, between fixed `=== ... ===` lines, and approves
-  the start. It refuses the start, with a reason Claude sees, when the request has no
-  `Document:` line, when no finished review of that document is on record in this session, or
-  when the document is unchanged since its review.
+Every review has two parts that run side by side: the skill's own reviewer (spec, brief, adr or
+issue) and the shared language checker, which checks the wording (see docs/adrs/0013).
+
+- Before either starts, it saves the document's text. A part joins the latest review of that
+  document if it is of the same text apart from spacing and has no report from this part yet, so
+  a part started again after a run that never reported still joins it; otherwise it begins a new
+  review. The text kept is the copy the reviewer saw. A few recent reviews are kept, and always
+  the newest the reviewer ran in, so a part run again on its own never wipes the review it
+  follows.
+- When either finishes, it saves that part's report in the review its run started in. Claude
+  Code gives both events of one run the same `tool_use_id`; without one, the agent's name
+  stands in for it.
+- Either part started in the background is refused, when reviews are being saved: its report
+  would arrive after the hook has already seen the run finish.
+- Before the correction checker starts, it takes the latest review the reviewer ran in, appends
+  both its reports, the document as reviewed, and the files that skill's checker should read,
+  between fixed `=== ... ===` lines, and approves the start. It refuses the start, with a reason
+  Claude sees, when the request has no `Document:` line, when that review lacks either report or
+  none is on record in this session, or when the document is unchanged since its review. No
+  refusal asks for another review, which the lifecycle never repeats: when a report is missing,
+  it tells Claude to stop and show the person.
 - When the checker finishes, it deletes that document's saved review; at the end of the session
   it deletes all of the session's.
 
@@ -30,6 +43,7 @@ cannot read, is left alone, so the hook never blocks anything else.
 """
 
 import argparse
+import contextlib
 import hashlib
 import json
 import os
@@ -38,12 +52,20 @@ import shutil
 import sys
 import tempfile
 
+try:
+    import fcntl
+except ImportError:  # Windows: run without the lock rather than fail every agent start.
+    fcntl = None
+
 ROOT = os.environ.get("CLAUDE_PLUGIN_ROOT") or os.path.normpath(
     os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
 ISSUE = "issue draft"
 DRAFT_START = "=== DRAFT ===\n"
 DRAFT_END = "=== END DRAFT ==="
 CHECKER = "correction-checker"
+LANGUAGE = "language-checker"
+LIFECYCLE = os.path.join(ROOT, "docs", "lifecycle.md")
+KEPT = 3  # reviews kept per document
 # Each reviewer's skill, and the project files its checker may read to judge a changed sentence.
 REVIEWERS = {
     "spec-reviewer": ("spec", ["docs/brief.md", "docs/specs/"]),
@@ -108,23 +130,63 @@ def record_path(session, name):
     return os.path.join(base, hashlib.sha256(name.encode()).hexdigest() + ".json") if base else None
 
 
+@contextlib.contextmanager
+def locked(session, create=True):
+    """Hold the session's lock: both parts of a review can finish at the same moment.
+
+    Untested, since only a race could show it and no test relies on timing (AGENTS.md rule 5)."""
+    base = folder(session)
+    if not base or not fcntl or not (create or os.path.isdir(base)):
+        yield
+        return
+    os.makedirs(base, exist_ok=True)
+    handle = os.open(base, os.O_RDONLY)
+    try:
+        fcntl.flock(handle, fcntl.LOCK_EX)
+        yield
+    finally:
+        os.close(handle)
+
+
+def valid(review):
+    if not (isinstance(review, dict) and isinstance(review.get("text"), str)
+            and isinstance(review.get("reports"), dict) and isinstance(review.get("started"), dict)):
+        return False
+    return all(isinstance(v, str) for v in review["reports"].values())
+
+
 def load(session, name):
+    """The document's saved reviews, oldest first; any not in this version's shape are dropped."""
     path = record_path(session, name)
     try:
         with open(path, encoding="utf-8") as f:
-            return json.load(f)
+            saved = json.load(f)
     except (OSError, TypeError, ValueError):
-        return None
+        return []
+    reviews = saved.get("reviews") if isinstance(saved, dict) else None
+    return [r for r in reviews if valid(r)] if isinstance(reviews, list) else []
 
 
-def save(session, name, record):
+def reviewed(review):
+    return "reviewer" in review["started"].values()
+
+
+def trim(reviews):
+    """The last few reviews, and the newest the reviewer ran in even when it is older than those."""
+    kept = reviews[-KEPT:]
+    if not any(reviewed(r) for r in kept):
+        kept = [r for r in reviews if reviewed(r)][-1:] + kept
+    return kept
+
+
+def save(session, name, reviews):
     path = record_path(session, name)
     if not path:
         return
     os.makedirs(os.path.dirname(path), exist_ok=True)
     handle, temp = tempfile.mkstemp(dir=os.path.dirname(path))
     with os.fdopen(handle, "w", encoding="utf-8") as f:
-        json.dump(record, f)
+        json.dump({"reviews": trim(reviews)}, f)
     os.replace(temp, path)
 
 
@@ -138,7 +200,7 @@ def forget(session, name):
 def response_text(response):
     if isinstance(response, dict):
         blocks = response.get("content") or []
-        return "".join(b.get("text", "") for b in blocks if isinstance(b, dict))
+        return "".join(b.get("text") or "" for b in blocks if isinstance(b, dict))
     return response if isinstance(response, str) else ""
 
 
@@ -147,12 +209,32 @@ def refuse(reason):
                                    "permissionDecisionReason": reason}}
 
 
+def reviewer_of(review):
+    return next((k for k in review["reports"] if k in REVIEWERS), None)
+
+
+def complete(review):
+    return reviewer_of(review) is not None and LANGUAGE in review["reports"]
+
+
+def has_report(review, part):
+    return LANGUAGE in review["reports"] if part == "language" else reviewer_of(review) is not None
+
+
+def same_text(a, b):
+    return " ".join(a.split()) == " ".join(b.split())
+
+
 def attachments(name, record):
-    skill, extra = REVIEWERS[record["reviewer"]]
-    lines = [f"Rubric: {os.path.join(ROOT, 'skills', skill, 'references', 'rubric.md')}"]
+    reviewer = reviewer_of(record)
+    skill, extra = REVIEWERS[reviewer]
+    lines = [f"Rubric: {os.path.join(ROOT, 'skills', skill, 'references', 'rubric.md')}",
+             f"Plain words rule: the Plain words section of {LIFECYCLE}"]
     if extra:
         lines.append("Only where needed to judge a changed sentence: " + ", ".join(extra))
-    return ("\n\n=== REVIEW REPORT ===\n" + record["report"] + "\n=== END REVIEW REPORT ===\n\n"
+    reports = record["reports"]
+    return ("\n\n=== REVIEW REPORT ===\n" + reports[reviewer] + "\n=== END REVIEW REPORT ===\n\n"
+            "=== WORDING REPORT ===\n" + reports[LANGUAGE] + "\n=== END WORDING REPORT ===\n\n"
             f"=== DOCUMENT AS REVIEWED: {name} ===\n" + record["text"] + "\n=== END DOCUMENT ===\n\n"
             "=== FILES TO READ ===\n" + "\n".join(lines) + "\n=== END FILES TO READ ===\n")
 
@@ -164,11 +246,16 @@ def start_checker(session, tool_input):
         return refuse("Start the correction checker with `Document: <path>` as the first line of "
                       "its request, the same line the reviewer was given.")
     name = key(named)
-    record = load(session, name)
-    if not record or "report" not in record:
-        return refuse(f"No review of {name} is on record in this session, so there is nothing to "
-                      "check the corrections against. Run the review first.")
-    if current_text(name, prompt) == record["text"]:
+    with locked(session, create=False):
+        reviews = [r for r in load(session, name) if reviewed(r)][-1:]
+    if not reviews or not complete(reviews[0]):
+        return refuse(f"No review of {name} with both the reviewer's and the language checker's "
+                      "reports is on record in this session, so the corrections cannot be "
+                      "checked. Do not review again: stop and show the person the reports you "
+                      "have and this reason.")
+    record = reviews[-1]
+    text = current_text(name, prompt)
+    if text == record["text"]:
         return refuse(f"{name} is unchanged since its review. Make the corrections first, then "
                       "start the correction checker.")
     updated = dict(tool_input, prompt=prompt + attachments(name, record))
@@ -197,21 +284,39 @@ def handle(event):
         if when == "PreToolUse":
             return start_checker(session, tool_input)
         if when == "PostToolUse" and named:
-            forget(session, key(named))
+            with locked(session, create=False):
+                forget(session, key(named))
         return None
-    if agent not in REVIEWERS or not named:
+    if (agent not in REVIEWERS and agent != LANGUAGE) or not named:
         return None
+    if when == "PreToolUse" and tool_input.get("run_in_background") and folder(session):
+        return refuse("Start the reviewer and the language checker in the foreground, not in the "
+                      "background, so their reports are kept for the correction check.")
     name = key(named)
-    if when == "PreToolUse":
-        text = current_text(name, prompt)
-        if text is not None:
-            save(session, name, {"reviewer": agent, "text": text})
-    elif when == "PostToolUse":
-        record = load(session, name)
-        report = response_text(event.get("tool_response"))
-        if record and report.strip():
-            record["report"] = report
-            save(session, name, record)
+    call = str(event.get("tool_use_id") or agent)
+    part = "reviewer" if agent in REVIEWERS else "language"
+    with locked(session):
+        reviews = load(session, name)
+        if when == "PreToolUse":
+            text = current_text(name, prompt)
+            if text is None:
+                return None
+            latest = reviews[-1] if reviews else None
+            if not (latest and same_text(latest["text"], text) and not has_report(latest, part)):
+                latest = {"text": text, "reports": {}, "started": {}}
+                reviews.append(latest)
+            if part == "reviewer":
+                latest["text"] = text  # the copy the reviewer saw is the one kept
+            latest["started"][call] = part
+            save(session, name, reviews)
+        elif when == "PostToolUse":
+            report = response_text(event.get("tool_response"))
+            for review in reversed(reviews):
+                if call in review["started"]:
+                    if report.strip():
+                        review["reports"][agent] = report
+                        save(session, name, reviews)
+                    break
     return None
 
 
@@ -228,7 +333,7 @@ def main(argv=None):
         return 0
     try:
         out = handle(event)
-    except OSError:
+    except Exception:  # never block a step over a fault in this hook
         out = None
     if out:
         print(json.dumps(out))
