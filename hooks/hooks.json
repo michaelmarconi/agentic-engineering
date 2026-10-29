@@ -16,7 +16,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/scripts/status_check.py\""
+            "command": "sh \"${CLAUDE_PLUGIN_ROOT}/scripts/status_check.sh\""
           }
         ]
       },

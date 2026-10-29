@@ -21,6 +21,15 @@ minor version may need such a change, and its entry says so.
   over at once, ask Claude to add the emoji to each status line under `docs/specs/` and
   `docs/adrs/`.
 
+## [0.8.1] - 2026-10-29
+
+### Fixed
+
+- On a computer without Python 3, the hook that checks spec and ADR status changes failed with
+  only a warning, so Claude's edits to those documents went through unchecked. Such edits are
+  now refused, with a message saying the plugin needs Python 3. Edits to any other file are not
+  affected.
+
 ## [0.8.0] - 2026-10-29
 
 ### Added
