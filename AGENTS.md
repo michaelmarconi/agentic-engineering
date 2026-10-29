@@ -27,7 +27,7 @@ everything else is judgement.
      `SKILL.md` says when to read each one.
 4. **Reviewed.** No agent checks its own work. Every skill that writes a document takes
    it through the review sequence that [docs/lifecycle.md](docs/lifecycle.md#review-process)
-   describes, and [ADR 0010](docs/adrs/0010-check-corrections-instead-of-reviewing-again.md)
+   describes, and [ADR 0010](docs/adrs/0010-correction-check.md)
    explains: review once, correct once, then check only the corrections. To build it into a
    skill:
    - A rubric at `skills/<name>/references/rubric.md`: a short list of named checks, each pass
@@ -38,10 +38,10 @@ everything else is judgement.
      definition names. It reports pass or fail for each check, quoting the evidence for each
      failure, then Other findings, Needs a person and Suggestions.
    - The skill starts the reviewer and the shared language checker
-     (`agents/language-checker.md`, [ADR 0013](docs/adrs/0013-check-wording-with-a-separate-language-checker.md))
+     (`agents/language-checker.md`, [ADR 0013](docs/adrs/0013-language-checker.md))
      side by side, then the shared correction checker (`agents/correction-checker.md`), each
      with a request whose first line is `Document: <path>`. The review relay hook
-     (`scripts/review_relay.py`, [ADR 0011](docs/adrs/0011-pass-the-review-to-the-correction-checker-by-a-hook.md))
+     (`scripts/review_relay.py`, [ADR 0011](docs/adrs/0011-review-relay-hook.md))
      reads that line to save the document before the review and both reports after it, and
      attaches them to the checker's request, so the skill never copies them. Add the new
      reviewer and its skill's files to the hook's `REVIEWERS` table. A document that must not
@@ -135,7 +135,7 @@ plan mode.
   repository in the blocks the checker's definition names, and point the checker to that file.
   Agents are not allowed to save their reports as files, so copy each report into its file by a script, from
   Claude Code's record of the agent's run, never by retyping it, for the reason
-  [ADR 0011](docs/adrs/0011-pass-the-review-to-the-correction-checker-by-a-hook.md) gives.
+  [ADR 0011](docs/adrs/0011-review-relay-hook.md) gives.
 - Only the maintainer accepts or rejects an ADR, after reading its reviewed text. Each acceptance
   is its own commit that changes only the status.
 
