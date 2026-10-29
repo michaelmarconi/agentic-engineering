@@ -23,19 +23,21 @@ document to drift out of date.
 
 ## Where ADRs live
 
-ADRs live in one flat folder, `docs/adrs/`, numbered in the order they were made:
+ADRs live in one flat folder, `docs/adrs/`, numbered in the order they were made and named by
+what each decision is about, in three to five words:
 
 ```
 docs/adrs/
-  0001-store-sessions-in-postgres.md     ↪️ Superseded
-  0002-send-email-through-a-queue.md     👍 Accepted
-  0003-store-sessions-in-redis.md        👍 Accepted
-  0004-cache-search-results.md           📝 Draft
+  0001-session-data-storage.md       ↪️ Superseded
+  0002-sending-email-to-customers.md 👍 Accepted
+  0003-session-data-storage.md       👍 Accepted
+  0004-caching-search-results.md     📝 Draft
 ```
 
-Nothing is moved or deleted once decided, so each file's status says whether it still holds.
-Each title states the decision taken, so a listing of the folder reads as a summary of the
-design. ADRs refer to each other by number, never to specs, the brief or plans: those change
+Nothing is moved or deleted once decided, so each file's status says whether it still holds. A
+replacement can share its subject with the ADR it replaces, as 0003 does, so the listing shows
+where a decision changed. The title inside each file states the decision itself, such as "Store
+sessions in Redis". ADRs refer to each other by number, never to specs, the brief or plans: those change
 while an ADR does not, so a reference to them would go stale.
 
 ## Anatomy
@@ -52,6 +54,7 @@ template.[^madr]
 | Decision Outcome | The option chosen and why |
 | Consequences | What gets better and what gets worse because of it |
 | Confirmation | What the decision applies to, such as "any code that stores or reads session data", and how to check the code follows it: by test, demonstration, inspection or analysis |
+| Open questions | What only you can settle, such as an option nobody named or why one was rejected; empty before the ADR can be `👍 Accepted` |
 
 Confirmation is what `/build` and `/audit` use to check that the code still follows each
 accepted decision. It names a concern rather than files, because the code may not exist yet and
@@ -72,24 +75,26 @@ stateDiagram-v2
 ```
 
 - `📝 Draft`: being written and reviewed; `/adr` may change it freely.
-- `👍 Accepted`: you have signed off the decision. It is now fixed.
+- `👍 Accepted`: you have signed off the decision, and Open questions is empty. It is now fixed.
 - `❌ Rejected`: you decided against it. It is kept, so the same idea is not proposed again
   unnoticed.
 - `↪️ Superseded`: a newer accepted ADR replaced it. Its text stays as it was.
 
 Only you can accept or reject an ADR. `/adr` asks you once the reviewed text is final, and
 approval given earlier, or by another skill, does not count. A plugin hook refuses status changes
-the lifecycle does not allow, a status without its emoji, and any edit to an ADR that is no longer `📝 Draft`, when Claude makes
-them with its file-editing tools.
+the lifecycle does not allow, a status without its emoji, accepting an ADR while Open questions is
+not empty, and any edit to an ADR that is no longer `📝 Draft`, when Claude makes them with its
+file-editing tools.
 
 ## Using `/adr`
 
 Run `/adr` and say what you want: record a decision, accept or reject one, or replace one.
 
 - **Drafts from the conversation.** If you have already talked the decision through, `/adr`
-  drafts from that, and where you changed your mind, the latest word wins. It asks only about
-  what is missing, such as an option nobody named or why one was rejected: it tells you how many
-  questions there are and asks them one at a time.
+  drafts from that, and where you changed your mind, the latest word wins. It writes what is
+  missing, such as an option nobody named or why one was rejected, into the ADR's Open questions,
+  tells you how many there are and asks them one at a time. Your answer goes into the ADR and the
+  question is removed.
 - **One decision per record.** If the conversation holds several decisions, `/adr` says how many
   and writes one ADR for each.
 - **Replacing a decision.** A new ADR names the one it replaces. The old one stays `👍 Accepted`

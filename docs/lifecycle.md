@@ -18,7 +18,7 @@ which says how far along it is.
 - **Spec**, `docs/specs/**/<capability>.spec.md`: what one capability of the product should do,
   and how we will know it does. A product has many. Statuses: `📝 Draft` → `🟢 Ready to build` → `✅ Built`;
   any change returns it to `📝 Draft`.
-- **ADR** (architecture decision record), `docs/adrs/NNNN-<title>.md`, in one flat folder: one
+- **ADR** (architecture decision record), `docs/adrs/NNNN-<subject>.md`, in one flat folder: one
   technical decision and why it was made. Statuses: `📝 Draft` → `👍 Accepted` or
   `❌ Rejected`; `👍 Accepted` → `↪️ Superseded`.
 - **Plan**, `docs/plans/`: a piece of work that builds part of a spec or an ADR. Statuses: `📝 Draft`
@@ -75,6 +75,10 @@ flowchart LR
 - **No separate design document.** `👍 Accepted` ADRs and the code are the design.
 - **Every document carries its own status.** A plan holds nothing that would be lost when it is
   deleted.
+- **No document moves forward with open questions.** Anything only a person can settle is
+  written into the document's Open questions, not left in the conversation. A spec becomes
+  `🟢 Ready to build`, an ADR `👍 Accepted` and a plan `🟢 Ready to build` only when that section
+  is empty.
 - **Only legal status moves.** Only the moves listed under [Documents](#documents) are allowed,
   and only `/build` sets `✅ Built`. A plugin hook refuses illegal spec and ADR status changes, and
   edits to decided ADRs, made with Claude's file-editing tools.

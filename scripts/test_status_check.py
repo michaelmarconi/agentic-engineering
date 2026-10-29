@@ -72,6 +72,13 @@ class Parsing(unittest.TestCase):
     def test_footnotes_after_open_questions_ignored(self):
         self.assertFalse(status_check.has_open_questions(spec() + "\n[^1]: A source.\n"))
 
+    def test_wrapped_footnotes_after_open_questions_ignored(self):
+        footnote = "\n[^1]: Settlement file, the nightly list of card payments the processor\n    paid us for.\n"
+        self.assertFalse(status_check.has_open_questions(spec() + footnote))
+
+    def test_question_after_wrapped_footnote_counts(self):
+        self.assertTrue(status_check.has_open_questions(spec() + "\n[^1]: A source\n    wrapped.\n\n- Who approves?\n"))
+
     def test_open_questions_present(self):
         self.assertTrue(status_check.has_open_questions(spec(questions="- Who approves?")))
 
@@ -143,6 +150,10 @@ class Transitions(Workspace):
     def test_draft_to_ready_with_other_changes_refused(self):
         self.put(spec())
         self.assertIn("on its own", self.write(spec("🟢 Ready to build", rule="The system SHALL do Y.")))
+
+    def test_ready_without_open_questions_section_named_in_refusal(self):
+        self.put(spec().split("\n## Open questions")[0])
+        self.assertIn("no Open questions section", self.edit("status: 📝 Draft", "status: 🟢 Ready to build"))
 
     def test_draft_to_ready_with_questions_refused(self):
         self.put(spec(questions="- Who approves?"))
@@ -222,7 +233,7 @@ class Transitions(Workspace):
         self.assertIsNotNone(result)
 
 
-def adr(status="📝 Draft", extra="", body="Chosen option: Redis, because it is fast enough."):
+def adr(status="📝 Draft", extra="", body="Chosen option: Redis, because it is fast enough.", questions="None."):
     return (
         "---\n"
         f"status: {status}\n"
@@ -230,14 +241,15 @@ def adr(status="📝 Draft", extra="", body="Chosen option: Redis, because it is
         f"{extra}"
         "---\n\n# Store sessions in Redis\n\n## Context and Problem Statement\n\nC\n\n"
         "## Considered Options\n\n- Redis\n- Postgres: slower\n\n"
-        f"## Decision Outcome\n\n{body}\n"
+        f"## Decision Outcome\n\n{body}\n\n"
+        f"## Open questions\n\n{questions}\n"
     )
 
 
 class AdrWorkspace(Workspace):
     def setUp(self):
         super().setUp()
-        self.path = os.path.join(self.tmp.name, "docs", "adrs", "0001-store-sessions-in-redis.md")
+        self.path = os.path.join(self.tmp.name, "docs", "adrs", "0001-session-data-storage.md")
 
 
 class Adr(AdrWorkspace):
@@ -265,6 +277,18 @@ class Adr(AdrWorkspace):
 
     def test_draft_to_rejected_alone_allowed(self):
         self.put(adr())
+        self.assertIsNone(self.edit("status: 📝 Draft", "status: ❌ Rejected"))
+
+    def test_accepting_with_open_questions_refused(self):
+        self.put(adr(questions="- How long do sessions last?"))
+        self.assertIn("open questions", self.edit("status: 📝 Draft", "status: 👍 Accepted"))
+
+    def test_accepting_without_open_questions_section_refused(self):
+        self.put(adr().split("\n## Open questions")[0])
+        self.assertIn("no Open questions section", self.edit("status: 📝 Draft", "status: 👍 Accepted"))
+
+    def test_rejecting_with_open_questions_allowed(self):
+        self.put(adr(questions="- How long do sessions last?"))
         self.assertIsNone(self.edit("status: 📝 Draft", "status: ❌ Rejected"))
 
     def test_accepting_with_other_changes_refused(self):
@@ -296,7 +320,7 @@ class Adr(AdrWorkspace):
         self.assertIsNotNone(self.edit("status: ❌ Rejected", "status: 👍 Accepted"))
 
     def put_replacement(self, status="👍 Accepted", supersedes="0001", number="0002"):
-        path = os.path.join(self.tmp.name, "docs", "adrs", f"{number}-store-sessions-elsewhere.md")
+        path = os.path.join(self.tmp.name, "docs", "adrs", f"{number}-session-data-storage.md")
         with open(path, "w") as f:
             f.write(adr(status, extra=f"supersedes: {supersedes}\n"))
 

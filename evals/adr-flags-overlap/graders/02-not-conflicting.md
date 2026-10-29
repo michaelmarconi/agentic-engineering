@@ -1,7 +1,7 @@
 ---
 type: regex
 target: trace
-pattern: '"file_path":"[^"]*0003-store-sessions-in-memcached\.md","content":"(?![^"]*supersedes: (\\")?0002)'
+pattern: '"file_path":"[^"]*0003-session-storage-service\.md","content":"(?![^"]*supersedes: (\\")?0002)'
 match: not_contains
 weight: 1
 ---

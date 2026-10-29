@@ -28,3 +28,7 @@ Chosen option: Postgres, because the team knows it.
 
 Applies to: any code that stores application data.
 Checked by: inspection that application data is stored only in Postgres.
+
+## Open questions
+
+None.

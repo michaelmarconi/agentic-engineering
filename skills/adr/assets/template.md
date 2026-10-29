@@ -27,3 +27,7 @@ Chosen option: <option>, because <reason>.
 
 Applies to: <the concern, such as "any code that stores or reads session data">.
 Checked by: <test, demonstration, inspection or analysis, and what it checks>.
+
+## Open questions
+
+- <Unknowns still to answer, or "None.">

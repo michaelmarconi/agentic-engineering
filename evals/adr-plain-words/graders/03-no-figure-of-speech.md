@@ -1,6 +1,6 @@
 ---
 type: regex
-target: { source: file, path: docs/adrs/0001-import-the-settlement-file-in-one-transaction.md }
+target: { source: file, path: docs/adrs/0001-settlement-file-import.md }
 pattern: "tripping over"
 flags: i
 match: not_contains

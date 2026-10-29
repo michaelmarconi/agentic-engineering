@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: adr-accept-blocked
+expected_outcome: |
+  The ADR stays Draft because its Open questions section is not empty, and the answer names the open question that needs answering first.
+context:
+  scaffold_script: place-files.sh

@@ -54,6 +54,10 @@ everything else is judgement.
      second review of the skill's own corrections.
    - The hand-over gives the person the reports, the number of items they must settle, and the
      first of them; suggestions are listed apart as optional.
+   - A document with a status ends with an Open questions section. The skill writes there
+     whatever only the person can settle, and never moves the document forward while the
+     section holds anything. The status hook (`scripts/status_check.py`) refuses such a move
+     for specs and ADRs; a new document type with a status adds its rule there.
 5. **Evaluated.** Every skill ships with evals under the plugin's `evals/`, in the case-folder
    layout that skill-creator writes and `claude plugin eval` runs. Write the rubric first, then
    the evals: each rubric check is also an eval assertion, so one rubric both tests the skill and

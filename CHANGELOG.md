@@ -6,6 +6,31 @@ What changed in each version of the plugin, newest first. Versions follow
 past a major version: it says what you need to change in your documents. Until 1.0.0, any
 minor version may need such a change, and its entry says so.
 
+## [0.10.0] - 2026-10-29
+
+### Changed
+
+- ADRs now end with an Open questions section, as specs do. Whatever only you can settle, such
+  as an option nobody named or why one was rejected, is written there instead of only being
+  asked in the conversation. Your answer goes into the ADR and the question is removed.
+- An ADR can be `👍 Accepted` only when its Open questions section is empty or says "None.". The
+  hook refuses the change otherwise, and says so when the section is missing altogether. A
+  `❌ Rejected` ADR may keep open questions.
+- New ADR files are named `NNNN-<subject>.md`, where the subject is three to five words on what
+  the decision is about, such as `0004-session-data-storage.md`. The title inside still states
+  the decision.
+- The lifecycle has a new principle: no document moves forward while it has open questions.
+
+### Fixed
+
+- The hook no longer counts the indented lines of a wrapped footnote after Open questions as
+  open questions, which could block a spec or ADR from moving forward.
+
+**This affects documents you already have.** A `📝 Draft` ADR written before this version has
+no Open questions section, so it cannot be accepted until one is added, holding "None." if
+nothing is open; that change needs a new review. ADRs that are already decided need nothing.
+Renaming older ADR files to the new pattern is optional and done by hand, with `git mv`.
+
 ## [0.9.0] - 2026-10-29
 
 ### Changed

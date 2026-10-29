@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: adr-answer-settles-question
+expected_outcome: |
+  The person answers the ADR's one open question. The answer, why one option was rejected, is written beside that option, the question is removed, the changed ADR is reviewed, and it stays Draft for the person to accept.
+context:
+  scaffold_script: place-files.sh

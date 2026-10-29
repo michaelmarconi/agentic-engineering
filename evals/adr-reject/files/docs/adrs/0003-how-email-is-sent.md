@@ -37,3 +37,7 @@ provider, and a queued email survives a restart and is retried until it is sent.
 Applies to: any code that sends an email.
 Checked by: inspection that request-handling code only adds emails to the queue and that only
 the worker calls the email provider.
+
+## Open questions
+
+None.

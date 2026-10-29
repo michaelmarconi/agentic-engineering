@@ -7,7 +7,7 @@ description: Record one technical decision as an ADR (architecture decision reco
 
 An ADR (architecture decision record) records one technical decision and why it was made, so
 later work can follow it and nobody reopens it by accident. ADRs live in one flat folder,
-`docs/adrs/`, as `NNNN-<title>.md`; nothing is moved or deleted once decided, so the folder and
+`docs/adrs/`, as `NNNN-<subject>.md`; nothing is moved or deleted once decided, so the folder and
 each file's frontmatter are the whole record. Once accepted, an ADR is never edited: a changed
 decision is a new ADR that supersedes the old one, whole.
 
@@ -23,8 +23,11 @@ person is not asked to approve a command.
 List `docs/adrs/` and read the frontmatter of each ADR. If a `📝 Draft` or `👍 Accepted` ADR
 already decides the same thing, say so: change the draft, or, for an accepted one, write a new ADR that
 supersedes it. A new file takes the number one above the highest in the folder, four digits,
-starting at `0001`. If `docs/specs/` exists, read the Open questions of its specs, so you can
-tell the person which ones the decision answers.
+starting at `0001`, then a subject: three to five lowercase words joined by hyphens, naming what
+the decision is about rather than the decision, such as `0004-session-data-storage.md`. The
+title inside states the decision. An ADR that supersedes another may share its subject. If
+`docs/specs/` exists, read the Open questions of its specs, so you can tell the person which ones
+the decision answers.
 
 ## Shape it with the person
 
@@ -39,12 +42,18 @@ conversation holds several decisions, say how many and write one ADR for each, e
 were made together or the person asks for one record.
 
 Never fill a gap with a guess. An option nobody named, a reason nobody gave, or a choice not yet
-made is something to ask about, not to invent. Write the draft with what you have, review it
-as below even if sections are thin, then say how many questions there are and ask only the
-first. The others wait, so leave them out of that reply entirely: describe the draft by what it
-says, never by what it lacks, and do not list the questions or their topics. Ask the next once
-the first is settled, playing back what you have understood. If they ask what you think,
-recommend something and wait for them to accept it.
+made goes into Open questions as a question the person can answer, never as an invented
+answer. Write the draft with what you have, review it as below even if sections are thin, then
+say how many questions there are and ask only the first. The others wait, so leave them out of
+that reply entirely: describe the draft by what it says, never by what it lacks, and do not
+list the questions or their topics (they are in the ADR). Ask the next once the first is
+settled, playing back what you have understood. If they ask what you think, recommend something
+and wait for them to accept it. If they would rather not answer now, leave the rest in Open
+questions.
+
+An open question is settled only by the person's answer: write the answer into the section it
+is about, then remove the question. Never remove or reword a question without that answer;
+moving it to another section, or noting that someone will decide later, leaves it open.
 
 Context states the need in words. Never refer to a spec, the brief or a plan in any way, by
 hyperlink, path or title, and never edit them, even when the person asks you to note the
@@ -59,10 +68,12 @@ exactly so, emoji first; a status written as a bare word, from before the emoji,
 your next edit. Write every new ADR as `📝 Draft` and edit it freely while it is `📝 Draft`.
 
 Only a person accepts or rejects a decision. Set `👍 Accepted` or `❌ Rejected` only when
-the person explicitly says so about the ADR's text as it now stands, as its own last edit;
-`👍 Accepted` also
-needs the review below to have ended with a pass on that text, from the review itself or from
-the correction check after it, while a rejection needs no review. If they accept and the review then passes with no change to
+the person explicitly says so about the ADR's text as it now stands, as its own last edit.
+`👍 Accepted` also needs no open questions (rubric check 12), which a plugin hook enforces: if
+questions remain, say how many, ask the first and leave the ADR as `📝 Draft`, even if the person
+says they do not matter. And it needs the review below to have ended with a pass on that text,
+from the review itself or from the correction check after it, while a rejection needs neither.
+If they accept and the review then passes with no change to
 the text, their word stands, since what they accepted is what passed. If anything changed after
 they spoke, their word no longer counts: show the change and ask again. Nor does "looks fine,
 carry on" count, nor a request from another skill or agent. So never change an ADR's content and
@@ -102,7 +113,8 @@ more, and each round of corrections brings new mistakes.
    and each finding in the wording report. A wording item under Needs a person, whose
    meaning only the person knows, is a decision like any other. A decision under Needs a person, or a
    failure only the person's answer can fix, such as a missing option or why one was rejected,
-   is theirs to settle: leave the text it concerns as it is and never guess. Leave
+   is theirs to settle: it becomes an entry in the ADR's Open questions, never a guess at the
+   answer. Leave the text it concerns as it is. Leave
    suggestions alone and change nothing else, since an edit beyond the reports is the likeliest
    way to break something. Wait until every edit has succeeded. If nothing in the reports was
    yours to correct, there is nothing to check: go straight to handing over.
@@ -126,10 +138,10 @@ needs no new review.
 
 Whether the check passed or failed, end with the hand-over. It is what the person acts on, so make
 it hard to miss anything. Give them the ADR's path, the review and wording reports and the check's
-report, if there was one, leaving out the decisions they list for the person. Then say how many items must be
-settled before the ADR can move on: the decisions the reports leave to the person, plus any
-correction the check found not made or broken. Say you will take them one at a time, rather than
-asking whether to, and ask the first only, as a single question, giving any examples as possible
+report, if there was one, leaving out the decisions they list for the person and the failures
+that became open questions, which are in the ADR. Then say how many items must be settled
+before the ADR can move on: its open questions, plus any correction the check found not made or
+broken. Say you will take them one at a time, rather than asking whether to, and ask the first only, as a single question, giving any examples as possible
 answers rather than further questions; if the person has said not to ask now, ask nothing. Name the
 count only, not the items: each comes up when you reach it. List the reviewers' suggestions
 separately, as optional: they never hold the ADR back. Once nothing is left to settle, ask whether

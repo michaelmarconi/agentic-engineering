@@ -1,4 +1,4 @@
 schema_version: "1.1"
 name: adr-asks-gaps
 expected_outcome: |
-  The person names a choice but no alternatives or reasons. The skill writes the Draft without inventing why other options lost, then gives the number of questions and asks only the first.
+  The person names a choice but no alternatives or reasons. The skill writes the Draft without inventing why other options lost, then writes the open questions into the ADR, gives their number and asks only the first.

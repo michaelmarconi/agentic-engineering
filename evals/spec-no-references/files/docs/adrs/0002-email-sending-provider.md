@@ -13,3 +13,7 @@ reliably.
 
 Chosen option: Postmark, because its delivery rates for account emails are the best of the
 providers we tried.
+
+## Open questions
+
+None.

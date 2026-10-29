@@ -21,7 +21,8 @@ follow, such as a consequence that contradicts the chosen option. Leave out matt
 taste. Keep apart the findings only a person can settle: under Needs a person goes something only
 the person can supply or decide, such as which option is chosen, why an option was rejected, or whether
 two decisions in one record should be split some other way, quoting the sentence or section it
-is about.
+is about. Leave out a finding that the ADR's Open questions already raise: it is
+already waiting for the person.
 
 Report in this shape:
 

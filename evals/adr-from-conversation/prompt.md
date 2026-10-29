@@ -16,4 +16,4 @@ Here's our conversation about where to keep login sessions, pasted from earlier:
 > **Me:** We'll check it in code review: session data only goes through Redis.
 > **Me:** The downside is that if Redis loses its data, everyone has to log in again.
 
-Please record this decision as docs/adrs/0001-store-sessions-in-redis.md.
+Please record this decision as docs/adrs/0001-session-data-storage.md.
