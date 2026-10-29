@@ -42,7 +42,7 @@ silence is not agreement; if they ask what you think, recommend something and wa
 accept it. If they would rather not answer now, leave the rest in Open questions.
 
 Never fill a gap with a guess, including the person and situation in the Problem: if the
-person has not told you who is stuck and how, write only what you were told, without adding a
+person has not told you who has the problem and how, write only what you were told, without adding a
 purpose or detail of your own, say the rest is not known yet and ask in Open questions. Use
 only people the person named, anywhere in the spec; scenario values such as
 `user@example.com` need no name.
@@ -134,7 +134,9 @@ run the sequence again on the changed spec.
 
 Whether the check passed or failed, end with the hand-over. It is what the person acts on, so make
 it hard to miss anything. Give them the spec's path, the review and wording reports and the check's
-report, if there was one, leaving out the decisions they list for the person. Then say how many items must be
+report, if there was one, leaving out the decisions they list for the person. When the review
+found a conflict with another spec, name that spec and the rule that conflicts, since the spec
+itself cannot refer to it, so this reply is the only place the person learns of it. Then say how many items must be
 settled before the spec can move on: its open questions, plus any correction the check found not
 made or broken. Say you will take them one at a time, rather than asking whether to, and ask the
 first only, as a single question, giving any examples as possible answers rather than further
