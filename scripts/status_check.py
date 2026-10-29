@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
-"""Refuse spec and ADR status changes the lifecycle does not allow.
+"""Refuse spec, ADR and plan status changes the lifecycle does not allow.
 
 Claude Code runs this as a PreToolUse hook on Write, Edit and MultiEdit. It reads the hook's
 JSON from stdin and, for a *.spec.md under the project's docs/specs/ or a *.md under its
-docs/adrs/ (the project being $CLAUDE_PROJECT_DIR, or the current directory if unset),
+docs/adrs/ or a *.md directly in its docs/plans/ (the project being $CLAUDE_PROJECT_DIR, or the
+current directory if unset),
 works out what the file would contain after the edit and compares it with what is on disk now.
-Every status carries its emoji, emoji first: a spec is `📝 Draft`, `🟢 Ready to build` or
-`✅ Built`; an ADR is `📝 Draft`, `👍 Accepted`, `❌ Rejected` or `↪️ Superseded`. The U+FE0F that
+Every status carries its emoji, emoji first: a spec or a plan is `📝 Draft`, `🟢 Ready to build`
+or `✅ Built`; an ADR is `📝 Draft`, `👍 Accepted`, `❌ Rejected` or `↪️ Superseded`. The U+FE0F that
 some keyboards add after an emoji is optional. It refuses a status written by its word alone or
 with the wrong emoji, and names the value to write. A document written before the emoji, whose
 status is a bare word such as `Accepted`, counts as having that status, and an edit that only adds
@@ -35,10 +36,24 @@ For an ADR (architecture decision record) it refuses:
 - any other change to a `👍 Accepted`, `❌ Rejected` or `↪️ Superseded` ADR, since a decided ADR
   is never edited, only superseded by a new one.
 
-Whether a person really accepted an ADR is beyond a hook; the skill asks them.
+For a plan it refuses:
+
+- a plan that had a lifecycle status losing it, and a new plan with any status but `📝 Draft`;
+- setting `✅ Built`: only the build step may, and it does not exist yet;
+- `🟢 Ready to build` or `✅ Built` to anything but `📝 Draft`;
+- `🟢 Ready to build` in the same edit as any other change, or while the Open questions section is
+  missing or not empty or "None.";
+- `🟢 Ready to build` unless the plan names something to build, each spec listed under Specs
+  exists, is `🟢 Ready to build` or `✅ Built` and has a `### Requirement:` heading for each
+  `- Requirement:` line beneath it, each ADR listed under ADRs exists and is `👍 Accepted`, and no
+  other plan in the folder that is not `✅ Built` names the same requirement of the same spec.
+  References are paths relative to the plan;
+- a change to a `🟢 Ready to build` or `✅ Built` plan that does not return it to `📝 Draft`.
+
+Whether a person really accepted an ADR or signed off a plan is beyond a hook; the skill asks them.
 
 A file that has no lifecycle status before or after the edit, nor one named by its word, is left
-alone, so a project that keeps other files under docs/specs/ or docs/adrs/ is not affected; only a
+alone, so a project that keeps other files under docs/specs/, docs/adrs/ or docs/plans/ is not affected; only a
 new ADR with a status the lifecycle does not know is refused. Edits made any other way, by hand or through
 a shell command, are not seen.
 """
@@ -61,9 +76,13 @@ WITHOUT_VARIATION = {value.replace(VARIATION, ""): value for value in WORDS.valu
 NEW_HINT = {
     "spec": "If you are moving an existing spec, move it with `git mv`, which keeps its status.",
     "ADR": "Only the person accepts or rejects a decision, once they have seen it reviewed.",
+    "plan": f"Set `{READY}` on its own once the person signs the plan off.",
 }
 EMPTY_ANSWERS = {"", "none", "none."}
 FOOTNOTE = re.compile(r"^\[[^\]]+\]:")
+LINK = re.compile(r"^- \[[^\]]*\]\(<?([^)>\s]+)>?\)")
+REQUIREMENT_LINE = re.compile(r"^\s+- Requirement:\s*(.+?)\s*$")
+REQUIREMENT_HEADING = re.compile(r"^###\s+Requirement:\s*(.+?)\s*$")
 
 
 def project_parts(path):
@@ -83,6 +102,13 @@ def is_adr(path):
     """True for a *.md anywhere under docs/adrs/ in the project, whatever the folders' case."""
     parts = project_parts(path)
     return [part.lower() for part in parts[:2]] == ["docs", "adrs"] and parts[-1].lower().endswith(".md")
+
+
+def is_plan(path):
+    """True for a *.md directly in docs/plans/ in the project, whatever the folders' case."""
+    parts = project_parts(path)
+    return (len(parts) == 3 and [part.lower() for part in parts[:2]] == ["docs", "plans"]
+            and parts[-1].lower().endswith(".md"))
 
 
 def frontmatter(text):
@@ -170,20 +196,16 @@ def has_open_questions_section(text):
 def has_open_questions(text):
     """True if the Open questions section is missing or holds anything but "None.".
 
-    Footnote definitions, including their indented continuation lines, are not questions.
+    Footnote definitions, including their continuation lines, are not questions.
     """
-    lines = text.splitlines()
-    starts = [i for i, line in enumerate(lines) if line.strip().lower() == "## open questions"]
-    if not starts:
+    lines = section(text, "Open questions")
+    if lines is None:
         return True
     in_footnote = False
-    for line in lines[starts[0] + 1:]:
-        if line.startswith("# ") or line.startswith("## "):
-            break
-        if FOOTNOTE.match(line):
+    for line in lines:
+        # A footnote runs on over lines indented by four spaces or a tab, and blank lines between.
+        if FOOTNOTE.match(line) or (in_footnote and (not line.strip() or line.startswith(("    ", "\t")))):
             in_footnote = True
-            continue
-        if in_footnote and (not line.strip() or line[0] in " \t"):
             continue
         in_footnote = False
         answer = line.strip().lstrip("-*").strip().strip("_*").strip().lower()
@@ -237,6 +259,8 @@ def check(payload):
         kind, statuses, rules = "spec", STATUSES, spec_rules
     elif is_adr(path):
         kind, statuses, rules = "ADR", ADR_STATUSES, adr_rules
+    elif is_plan(path):
+        kind, statuses, rules = "plan", STATUSES, plan_rules
     else:
         return None
     before = None
@@ -313,6 +337,171 @@ def spec_rules(path, before, after, old, new):
         )
     if new == READY and has_open_questions(after):
         return open_questions_refusal(name, after, READY, "spec")
+    return None
+
+
+def section(text, heading):
+    """The lines of the `## <heading>` section, or None if the text has none."""
+    lines = text.splitlines()
+    starts = [i for i, line in enumerate(lines) if line.strip().lower() == "## " + heading.lower()]
+    if not starts:
+        return None
+    body = []
+    for line in lines[starts[0] + 1:]:
+        if line.startswith("# ") or line.startswith("## "):
+            break
+        body.append(line)
+    return body
+
+
+def read(path):
+    try:
+        with open(path, encoding="utf-8") as f:
+            return f.read()
+    except (OSError, UnicodeDecodeError):
+        return None
+
+
+def target(plan_path, link):
+    """The file a plan's reference points to, resolved from the plan's folder."""
+    return os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(plan_path)), link.split("#", 1)[0]))
+
+
+def reference_lines(text, heading):
+    """The non-blank lines of a plan's references section, without template comments or footnotes."""
+    body = re.sub(r"<!--.*?-->", "", "\n".join(section(text, heading) or []), flags=re.S)
+    lines, in_footnote = [], False
+    for line in body.splitlines():
+        if FOOTNOTE.match(line) or (in_footnote and (not line.strip() or line.startswith(("    ", "\t")))):
+            in_footnote = True
+        elif line.strip():
+            in_footnote = False
+            lines.append(line)
+    return lines
+
+
+def unreadable(line, heading):
+    return (f"it cannot read the line '{line.strip()}' under {heading}; list each as "
+            "`- [<title>](<path>)`" + (", with `  - Requirement: <name>` beneath it" if heading == "Specs" else "")
+            + ', or write "None."')
+
+
+def named_specs(plan_path, text):
+    """The plan's Specs section as ([(spec path, link as written, [requirement names])], problem)."""
+    entries = []
+    for line in reference_lines(text, "Specs"):
+        link = LINK.match(line)
+        requirement = REQUIREMENT_LINE.match(line)
+        if link:
+            entries.append((target(plan_path, link.group(1)), link.group(1), []))
+        elif requirement and entries:
+            entries[-1][2].append(requirement.group(1))
+        elif line.strip().lstrip("-*").strip().lower() not in EMPTY_ANSWERS:
+            return entries, unreadable(line, "Specs")
+    return entries, None
+
+
+def named_adrs(plan_path, text):
+    """The plan's ADRs section as ([(ADR path, link as written)], problem)."""
+    entries = []
+    for line in reference_lines(text, "ADRs"):
+        link = LINK.match(line)
+        if link:
+            entries.append((target(plan_path, link.group(1)), link.group(1)))
+        elif line.strip().lstrip("-*").strip().lower() not in EMPTY_ANSWERS:
+            return entries, unreadable(line, "ADRs")
+    return entries, None
+
+
+def requirements(plan_path, text):
+    return {(spec, name) for spec, _, names in named_specs(plan_path, text)[0] for name in names}
+
+
+def described(status):
+    return f"is '{status}'" if status else "has no status"
+
+
+def reference_problem(path, text):
+    """Why the plan's specs and ADRs do not let it be Ready to build, or None if they do."""
+    specs, problem = named_specs(path, text)
+    adrs, adr_problem = named_adrs(path, text)
+    if problem or adr_problem:
+        return problem or adr_problem
+    if not specs and not adrs:
+        return "it names nothing to build: list a spec and its requirements under Specs, or an ADR under ADRs"
+    for spec_path, link, names in specs:
+        if not is_spec(spec_path):
+            return f"{link} is not a spec: a spec is a `.spec.md` file under docs/specs/"
+        spec_text = read(spec_path)
+        if spec_text is None:
+            return f"the spec {link} does not exist"
+        status = lifecycle_status(spec_text, STATUSES)
+        if status not in (READY, BUILT):
+            return f"the spec {link} {described(status)}, not `{READY}` or `{BUILT}`"
+        if not names:
+            return f"no requirement is named under {link}; list each one as `- Requirement: <name>`"
+        headings = {m.group(1) for m in map(REQUIREMENT_HEADING.match, spec_text.splitlines()) if m}
+        for name in names:
+            if name not in headings:
+                return f"the spec {link} has no `### Requirement: {name}`"
+    for adr_path, link in adrs:
+        if not is_adr(adr_path):
+            return f"{link} is not an ADR: an ADR is a file in docs/adrs/"
+        adr_text = read(adr_path)
+        if adr_text is None:
+            return f"the ADR {link} does not exist"
+        status = lifecycle_status(adr_text, ADR_STATUSES)
+        if status != ACCEPTED:
+            return f"the ADR {link} {described(status)}, not `{ACCEPTED}`"
+    return None
+
+
+def overlap_problem(path, text):
+    """Why another unbuilt plan blocks this one, or None if none names the same requirement."""
+    wanted = requirements(path, text)
+    folder = os.path.dirname(os.path.abspath(path))
+    for name in sorted(os.listdir(folder)):
+        other = os.path.join(folder, name)
+        if name == os.path.basename(path) or not name.lower().endswith(".md") or not os.path.isfile(other):
+            continue
+        other_text = read(other) or ""
+        if lifecycle_status(other_text, STATUSES) not in (DRAFT, READY):
+            continue
+        shared = sorted(requirement for _, requirement in wanted & requirements(other, other_text))
+        if shared:
+            return f"the plan {name} already names Requirement: {shared[0]}; change that plan instead"
+    return None
+
+
+def plan_rules(path, before, after, old, new):
+    name = os.path.basename(path)
+    if old not in STATUSES:
+        return None
+    if new == old:
+        if new != DRAFT and without_status(after) != without_status(before):
+            return (
+                f"{name}: this plan is `{old}`, so changing it must also set its status back to "
+                f"`{DRAFT}`, for the person to sign off again."
+            )
+        return None
+    if new == BUILT:
+        return f"{name}: only the build step sets `{BUILT}`, and it does not exist yet. Leave the status as it is."
+    if old in (READY, BUILT) and new != DRAFT:
+        return f"{name}: a `{old}` plan can only go back to `{DRAFT}`, not to `{new}`."
+    if new == READY:
+        if without_status(after) != without_status(before or ""):
+            return (
+                f"{name}: set `{READY}` on its own, as the last edit after the person signs the "
+                "plan off; this edit also changes the plan's content."
+            )
+        if has_open_questions(after):
+            return (
+                f"{name}: it still has open questions, so it cannot be `{READY}`. Settle them "
+                f"with the person, or leave the plan as `{DRAFT}`."
+            )
+        problem = reference_problem(path, after) or overlap_problem(path, after)
+        if problem:
+            return f"{name}: it cannot be `{READY}`: {problem}."
     return None
 
 

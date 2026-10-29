@@ -50,14 +50,15 @@ repository:
 - **Spec:** what one capability of the product should do, and how we will know it does. A
   product has many.
 - **ADR** (architecture decision record): one technical decision and why it was made.
-- **Plan:** a piece of work that builds part of a spec or an ADR. It is deleted once built.
+- **Plan:** a piece of work that builds part of a spec or an ADR. Once built, it is marked built
+  and later removed.
 
 Each document except the brief has a status, such as `📝 Draft` or `🟢 Ready to build`, which says how far
 along it is.
 
 One rule matters when you edit documents by hand: the brief, specs and ADRs never refer to each
 other, whether by hyperlink, path or title, because either end can change or be deleted without
-the other being touched, and the reference quietly goes stale. Only a plan, which is deleted
+the other being touched, and the reference quietly goes stale. Only a plan, which is removed
 once built, refers to the specs and ADRs it builds, and an ADR refers to the one it replaces.
 
 The plugin gives Claude three kinds of help to work with these documents:
@@ -70,13 +71,13 @@ The plugin gives Claude three kinds of help to work with these documents:
   a plan or reviewing a document.
 - **Hooks:** small scripts Claude Code runs automatically at set moments. This plugin uses them
   to give Claude the lifecycle rules when a session starts in a repository that uses it, and to
-  refuse spec and ADR edits Claude makes that the lifecycle does not allow, such as an illegal
+  refuse spec, ADR and plan edits Claude makes that the lifecycle does not allow, such as an illegal
   status change. After a review, a hook also hands the correction checker the review reports and
   the document as it was reviewed, word for word, keeping them in the plugin's own data folder
   outside your repository until the check is done. Another lets the plugin's skills and agents
   read the plugin's own files, such as a rubric, without asking you each time; it approves
   reads inside the plugin's folder only. They need Python 3: without it, Claude's edits to your
-  specs and ADRs are refused until you install it.
+  specs, ADRs and plans are refused until you install it.
 
 Every document a skill writes is checked by a reviewer agent before you see it, and by a
 language checker that checks someone new to your project could follow its words. Apart from the
@@ -114,7 +115,7 @@ flowchart LR
 | [`/spec`](docs/skills/spec.md) | Writes or changes the spec for one capability | Built |
 | [`/spike`](docs/skills/spike.md) | Settles an unknown with a throwaway experiment | Not built yet |
 | [`/adr`](docs/skills/adr.md) | Records one technical decision | Built |
-| [`/plan`](docs/skills/plan.md) | Scopes a piece of work against its specs and ADRs | Not built yet |
+| [`/plan`](docs/skills/plan.md) | Scopes a piece of work against its specs and ADRs | Built |
 | [`/build`](docs/skills/build.md) | Builds a plan, has it reviewed and merges it | Not built yet |
 | [`/audit`](docs/skills/audit.md) | Finds where the code and its documents have drifted apart | Not built yet |
 | [`/issue`](docs/skills/issue.md) | Reports a problem with this plugin, so its fix is tested | Built |

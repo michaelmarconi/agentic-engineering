@@ -43,6 +43,11 @@ class WithoutPython(unittest.TestCase):
         self.assertEqual(result.returncode, 2)
         self.assertIn("needs Python 3", result.stderr)
 
+    def test_refuses_a_plan_edit(self):
+        result = self.run_hook("/repo/docs/plans/2026-10-29-login.md")
+        self.assertEqual(result.returncode, 2)
+        self.assertIn("needs Python 3", result.stderr)
+
     def test_refuses_whatever_the_folders_case(self):
         self.assertEqual(self.run_hook("/repo/Docs/ADRs/0001-x.md").returncode, 2)
 

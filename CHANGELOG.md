@@ -6,6 +6,30 @@ What changed in each version of the plugin, newest first. Versions follow
 past a major version: it says what you need to change in your documents. Until 1.0.0, any
 minor version may need such a change, and its entry says so.
 
+## [0.11.0] - 2026-10-29
+
+### Added
+
+- `/sdlc:plan` plans one piece of work before it is built. It finds the requirements of settled
+  specs and the accepted ADRs the work builds, explores the code with Claude Code's own Explore
+  and Plan helper agents, and settles each technical decision with you one at a time, proposing
+  an answer and whether it belongs in the plan or in an ADR. Only then does it write a short plan
+  in `docs/plans/YYYY-MM-DD-<title>.md`, have it reviewed and corrected once, and hand it to you.
+  It never makes a technical decision for you, and it does not use Claude Code's plan mode.
+- Plans have the statuses `📝 Draft`, `🟢 Ready to build` and `✅ Built`. The hook refuses
+  `🟢 Ready to build` unless the plan has no open questions, every spec it names is
+  `🟢 Ready to build` or `✅ Built` and holds each requirement it names, every ADR it names is
+  `👍 Accepted`, and no other plan that is not `✅ Built` names the same requirement. Any change
+  to a `🟢 Ready to build` plan returns it to `📝 Draft`. Only the build step will set
+  `✅ Built`; until it exists, the hook refuses it.
+- A plan reviewer agent checks each plan against the plan rubric, beside the language checker.
+
+### Changed
+
+- In a plan, as in an issue, the lifecycle's own terms such as "spec", "ADR" and the statuses
+  count as plain words.
+- The language checker no longer reads a document's frontmatter, whose wording the plugin fixes.
+
 ## [0.10.0] - 2026-10-29
 
 ### Changed

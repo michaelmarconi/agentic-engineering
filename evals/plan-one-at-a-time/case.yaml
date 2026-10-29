@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: plan-one-at-a-time
+expected_outcome: |
+  The 'Coordinator emailed on release' requirement leaves two choices that nothing settles: how the email is sent, since the code has no email facility, and where the coordinator's address comes from. The skill explores, says how many decisions there are, asks only the first with a proposed answer, and writes no plan yet.
+context:
+  scaffold_script: place-files.sh

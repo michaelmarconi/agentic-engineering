@@ -124,6 +124,15 @@ class Relay(unittest.TestCase):
         self.assertIn(os.path.join(ROOT, "skills", "adr", "references", "rubric.md"), prompt)
         self.assertNotIn("spec", prompt.split("=== REVIEW REPORT ===")[1].split("=== END DOCUMENT ===")[1])
 
+    def test_checker_of_a_plan_is_told_the_plan_rubric_and_the_documents_it_names(self):
+        plan = "docs/plans/2026-10-29-x.md"
+        self.put(plan, "v1\n")
+        self.review(agent="sdlc:plan-reviewer", prompt=f"Document: {plan}\nReview this plan.")
+        self.put(plan, "v2\n")
+        prompt = self.assertAllowed(self.check(prompt=f"Document: {plan}\nCheck."))["prompt"]
+        self.assertIn(os.path.join(ROOT, "skills", "plan", "references", "rubric.md"), prompt)
+        self.assertIn("docs/specs/, docs/adrs/, docs/plans/", prompt)
+
     def test_names_without_the_plugin_prefix_work_too(self):
         self.put(SPEC, "v1\n")
         self.review(agent="spec-reviewer")

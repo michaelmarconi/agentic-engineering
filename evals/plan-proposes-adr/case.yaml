@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: plan-proposes-adr
+expected_outcome: |
+  How the system sends email is a choice later work will follow, since the code has none yet. Asked to start with it, the skill proposes an answer and proposes recording it as an ADR rather than only in the plan, with a reason, and writes no ADR itself.
+context:
+  scaffold_script: place-files.sh

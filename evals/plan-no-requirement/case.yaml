@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: plan-no-requirement
+expected_outcome: |
+  Upgrading pytest builds no requirement and follows no ADR, so the skill writes no plan and suggests doing the upgrade straight away.
+context:
+  scaffold_script: place-files.sh

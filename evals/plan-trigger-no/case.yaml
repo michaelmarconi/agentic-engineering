@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: plan-trigger-no
+expected_outcome: |
+  The plan skill is not invoked: recording a technical decision on its own is an ADR, not a plan.

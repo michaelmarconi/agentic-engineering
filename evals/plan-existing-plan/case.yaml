@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: plan-existing-plan
+expected_outcome: |
+  A Draft plan already names the 'Release recorded' requirement, so the skill writes no new plan and offers to change the existing one instead.
+context:
+  scaffold_script: place-files.sh
