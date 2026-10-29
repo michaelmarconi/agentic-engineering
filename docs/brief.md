@@ -50,7 +50,5 @@ By version 1.0, on one real project:
 
 ## Open questions
 
-- Who approves a status change: any engineer on the team, or someone other than the document's
-  author?
 - Who judges that the fresh assistant session's answers are correct: the project's own engineers,
   or a set of questions with agreed answers?
