@@ -16,13 +16,13 @@ which says how far along it is.
   holding only what is true of the whole product. No status; it is never built, only kept true,
   and edited in place.
 - **Spec**, `docs/specs/**/<capability>.spec.md`: what one capability of the product should do,
-  and how we will know it does. A product has many. Statuses: Draft → Ready to build → Built; any
-  change returns it to Draft.
+  and how we will know it does. A product has many. Statuses: `📝 Draft` → `🟢 Ready to build` → `✅ Built`;
+  any change returns it to `📝 Draft`.
 - **ADR** (architecture decision record), `docs/adrs/NNNN-<title>.md`, in one flat folder: one
-  technical decision and why it was made. Statuses: Draft → Accepted or Rejected; Accepted →
-  Superseded.
-- **Plan**, `docs/plans/`: a piece of work that builds part of a spec or an ADR. Statuses: Draft →
-  Ready to build. `/build` deletes it in the commit that merges its work.
+  technical decision and why it was made. Statuses: `📝 Draft` → `👍 Accepted` or
+  `❌ Rejected`; `👍 Accepted` → `↪️ Superseded`.
+- **Plan**, `docs/plans/`: a piece of work that builds part of a spec or an ADR. Statuses: `📝 Draft`
+  → `🟢 Ready to build`. `/build` deletes it in the commit that merges its work.
 
 ## Steps
 
@@ -72,19 +72,19 @@ flowchart LR
   ADR it supersedes or that supersedes it. The brief, specs and ADRs never refer to one another in
   any way, whether by hyperlink, path or title, because either end can change or be deleted
   without the other being touched, and the reference would quietly go stale.
-- **No separate design document.** Accepted ADRs and the code are the design.
+- **No separate design document.** `👍 Accepted` ADRs and the code are the design.
 - **Every document carries its own status.** A plan holds nothing that would be lost when it is
   deleted.
 - **Only legal status moves.** Only the moves listed under [Documents](#documents) are allowed,
-  and only `/build` sets Built. A plugin hook refuses illegal spec and ADR status changes, and
+  and only `/build` sets `✅ Built`. A plugin hook refuses illegal spec and ADR status changes, and
   edits to decided ADRs, made with Claude's file-editing tools.
-- **Built means every requirement is verified.** A spec is Built when `/build`'s spec reviewer
+- **Built means every requirement is verified.** A spec is `✅ Built` when `/build`'s spec reviewer
   finds every requirement in the whole spec verified, not just the part the plan built. `/audit`
   repeats that judgement later.
-- **A plan builds only on settled documents.** A plan is Ready to build only when each spec it
-  touches is Ready to build or Built, and each ADR it touches is Accepted.
+- **A plan builds only on settled documents.** A plan is `🟢 Ready to build` only when each spec
+  it touches is `🟢 Ready to build` or `✅ Built`, and each ADR it touches is `👍 Accepted`.
 - **Drift is a finding, not a status.** `/audit` reports it with a suggested way back: fix the
-  code, return the spec to Draft, or supersede the ADR.
+  code, return the spec to `📝 Draft`, or supersede the ADR.
 
 ## Plain words
 
@@ -109,7 +109,7 @@ the conversations behind the document. So each one follows this rule:
   export" becomes "the order is included in the nightly export".
 
 An issue the plugin files is read by the plugin's maintainers, who know the lifecycle, so in an
-issue the lifecycle's own terms, such as "spec" or "Ready to build", count as plain too.
+issue the lifecycle's own terms, such as "spec" or `🟢 Ready to build`, count as plain too.
 
 The rule covers only what the plugin writes. Your own documents, code and messages follow your
 project's rules.

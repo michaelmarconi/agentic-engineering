@@ -112,6 +112,13 @@ everything else is judgement.
     the pages under `docs/`, commit messages, pull request descriptions and Claude's replies while
     working here. Files written for Claude, such as a `SKILL.md`, a rubric or an agent, may use
     the lifecycle's own terms, since Claude reads them with the lifecycle page in hand.
+14. **Statuses by their exact value.** A document status is its emoji and its word: `📝 Draft`,
+    `🟢 Ready to build`, `✅ Built`, `👍 Accepted`, `❌ Rejected` and `↪️ Superseded`. The
+    status line holds that value bare. Everywhere else, name a status in backticks with its emoji,
+    exactly as the status line has it, so a reader can find it and copy it; never put an emoji in
+    running prose. `scripts/test_status_names.py` catches a backticked status that is wrong, and
+    the words of `🟢 Ready to build` left unformatted; the other words are ordinary English too,
+    so those are yours to catch.
 
 ## This repository's own documents
 
@@ -162,7 +169,7 @@ agents/
   correction-checker.md # checks the corrections after a review, for every skill
 hooks/
   hooks.json           # session map, status checks, the review relay, reads of the plugin's own files
-scripts/               # scripts the hooks run, the skill, version and reference checks, and their tests
+scripts/               # scripts the hooks run, the skill, version, reference and status-name checks, and their tests
 docs/
   adrs/                # this plugin's own architecture decision records
   brief.md             # this plugin's own brief

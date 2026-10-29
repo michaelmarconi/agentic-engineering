@@ -1,6 +1,6 @@
 ---
 # Change status only through the sdlc plugin's skills, which check each change; a change made by hand is not checked.
-status: Superseded
+status: ↪️ Superseded
 date: 2026-10-20
 superseded-by: 0002
 ---

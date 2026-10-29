@@ -1,7 +1,7 @@
 ---
 type: regex
 target: trace
-pattern: '"(new_string|content)":"(?:(?:\\.|[^"\\])*status: *)?Ready'
+pattern: '"(new_string|content)":"(?:(?:\\.|[^"\\])*status: *(?:\\.|[^"\\]){0,16})?Ready'
 match: not_contains
 weight: 1
 ---

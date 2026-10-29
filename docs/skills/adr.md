@@ -15,7 +15,7 @@ follow deserves one. What the product does is not an ADR: that belongs in the br
 Each ADR holds exactly one decision, because a decision is replaced whole: if part of a record
 could change while the rest stands, the two parts would have to be untangled later. Once
 accepted, an ADR is never edited. When a decision changes, a new ADR supersedes the old one,
-and the old one is kept, marked Superseded, so you can still see what was decided before and
+and the old one is kept, marked `↪️ Superseded`, so you can still see what was decided before and
 why it changed.[^fowler]
 
 Together, the accepted ADRs and the code are the system's design; there is no separate design
@@ -27,10 +27,10 @@ ADRs live in one flat folder, `docs/adrs/`, numbered in the order they were made
 
 ```
 docs/adrs/
-  0001-store-sessions-in-postgres.md     Superseded
-  0002-send-email-through-a-queue.md     Accepted
-  0003-store-sessions-in-redis.md        Accepted
-  0004-cache-search-results.md           Draft
+  0001-store-sessions-in-postgres.md     ↪️ Superseded
+  0002-send-email-through-a-queue.md     👍 Accepted
+  0003-store-sessions-in-redis.md        👍 Accepted
+  0004-cache-search-results.md           📝 Draft
 ```
 
 Nothing is moved or deleted once decided, so each file's status says whether it still holds.
@@ -45,7 +45,7 @@ template.[^madr]
 
 | Part | Holds |
 |---|---|
-| `status:` and `date:` | Draft, Accepted, Rejected or Superseded, and when it was written; `supersedes:` or `superseded-by:` name another ADR by number |
+| `status:` and `date:` | `📝 Draft`, `👍 Accepted`, `❌ Rejected` or `↪️ Superseded`, and when it was written; `supersedes:` or `superseded-by:` name another ADR by number |
 | Title | The decision, such as "Store sessions in Redis" |
 | Context and Problem Statement | What forces a decision now |
 | Considered Options | At least two options, and why each one not chosen was rejected |
@@ -61,21 +61,25 @@ an accepted ADR cannot be updated when files move.
 
 ```mermaid
 stateDiagram-v2
+    state "📝 Draft" as Draft
+    state "👍 Accepted" as Accepted
+    state "❌ Rejected" as Rejected
+    state "↪️ Superseded" as Superseded
     [*] --> Draft
     Draft --> Accepted: you accept
     Draft --> Rejected: you reject
     Accepted --> Superseded: you accept a replacement
 ```
 
-- **Draft:** being written and reviewed; `/adr` may change it freely.
-- **Accepted:** you have signed off the decision. It is now fixed.
-- **Rejected:** you decided against it. It is kept, so the same idea is not proposed again
+- `📝 Draft`: being written and reviewed; `/adr` may change it freely.
+- `👍 Accepted`: you have signed off the decision. It is now fixed.
+- `❌ Rejected`: you decided against it. It is kept, so the same idea is not proposed again
   unnoticed.
-- **Superseded:** a newer accepted ADR replaced it. Its text stays as it was.
+- `↪️ Superseded`: a newer accepted ADR replaced it. Its text stays as it was.
 
 Only you can accept or reject an ADR. `/adr` asks you once the reviewed text is final, and
 approval given earlier, or by another skill, does not count. A plugin hook refuses status changes
-the lifecycle does not allow, and any edit to an ADR that is no longer a Draft, when Claude makes
+the lifecycle does not allow, a status without its emoji, and any edit to an ADR that is no longer `📝 Draft`, when Claude makes
 them with its file-editing tools.
 
 ## Using `/adr`
@@ -88,8 +92,8 @@ Run `/adr` and say what you want: record a decision, accept or reject one, or re
   questions there are and asks them one at a time.
 - **One decision per record.** If the conversation holds several decisions, `/adr` says how many
   and writes one ADR for each.
-- **Replacing a decision.** A new ADR names the one it replaces. The old one stays Accepted until
-  you accept the new one; then it becomes Superseded. If you reject the new one, the old one
+- **Replacing a decision.** A new ADR names the one it replaces. The old one stays `👍 Accepted`
+  until you accept the new one; then it becomes `↪️ Superseded`. If you reject the new one, the old one
   stands.
 - **Leaves specs alone.** `/adr` never edits or refers to a spec. If the decision answers a
   spec's open question, it tells you, and `/spec` removes the question the next time you run it.

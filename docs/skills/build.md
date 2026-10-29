@@ -7,7 +7,7 @@ A build agent carries out the plan, then four reviewer agents check the result i
 - **Code:** is it correct and well made?
 - **Security:** does it open any holes?
 - **Spec:** is everything the plan was for built and shown to work, with nothing unrequested
-  added? Once every requirement in the spec is, the spec is marked Built.
+  added? Once every requirement in the spec is, the spec is marked `✅ Built`.
 - **ADRs:** is every accepted decision followed, not just the ones the plan touches?
 
 Findings follow the same [review process](../lifecycle.md#review-process) as documents: the build

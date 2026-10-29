@@ -1,5 +1,5 @@
 ---
-status: Accepted
+status: 👍 Accepted
 ---
 
 # Send email through Postmark

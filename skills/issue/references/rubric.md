@@ -24,7 +24,7 @@ checking, and quotes the draft as evidence for every failure.
 5. **Context.** Context gives the plugin version, the Claude Code version and the OS, names the
    skill, agent or hook involved (or says none is known). A version that couldn't be read is
    given as "unknown", which passes, and describes any lifecycle documents
-   involved by kind and status, such as "a Ready to build spec with two requirements".
+   involved by kind and status, such as "a `🟢 Ready to build` spec with two requirements".
 6. **Reproducible.** A bug's Steps to reproduce let someone without the person's repository
    produce the same behaviour: a starting state built from stand-ins, the exact request to make,
    and what then happens. When the original request isn't known, the steps give a concrete
