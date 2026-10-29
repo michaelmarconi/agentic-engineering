@@ -31,9 +31,9 @@ while the first skills were being tested.
 Chosen option: a list of supported models in the README, with a change merged only when the tests
 of every skill it affects pass on each of them, because people can then rely on the plugin on any
 listed model, and the cost grows only with the models we choose to support. A change affects a
-skill when it alters the skill itself, its reviewer or anything they read. A model joins the list
-only once every skill's tests pass on it. The list starts with Sonnet and Opus, and the maintainer
-decides when a model is added or dropped.
+skill when it alters the skill itself, its reviewer (the separate agent that checks what the skill
+writes) or anything they read. A model joins the list only once every skill's tests pass on it. The
+list starts with Sonnet and Opus, and the maintainer decides when a model is added or dropped.
 
 ### Consequences
 
