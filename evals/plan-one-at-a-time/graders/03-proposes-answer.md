@@ -3,4 +3,4 @@ type: llm
 focus: last_message
 weight: 1
 ---
-The question comes with a proposed answer and a reason for it.
+The reply recommends one answer to the question it asks, such as "I propose X", and gives at least one reason for that answer. Alternatives listed beside the recommendation are fine.
