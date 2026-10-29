@@ -44,10 +44,9 @@ were made together or the person asks for one record.
 Never fill a gap with a guess. An option nobody named, a reason nobody gave, or a choice not yet
 made goes into Open questions as a question the person can answer, never as an invented
 answer. Write the Draft with what you have, review it as below even if sections are thin, then
-say how many questions there
-are and ask only the first. The others wait, so leave them out of that reply entirely: describe
-the draft by what it says, never by what it lacks, and do not list the questions or their
-topics (they are in the ADR). Ask the next once the first is settled, playing back what you have
+say how many questions there are and ask only the first. The others wait, so leave them out of
+that reply entirely: describe the draft by what it says, never by what it lacks, and do not
+list the questions or their topics (they are in the ADR). Ask the next once the first is settled, playing back what you have
 understood. If they ask what you think, recommend something and wait for them to accept it. If
 they would rather not answer now, leave the rest in Open questions.
 
