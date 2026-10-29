@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: plan-code-settles
+expected_outcome: |
+  The 'Release recorded' requirement is settled by the spec, ADR 0003 and the existing hold handling, so there is nothing to decide. The skill asks no question about how releases are recorded, and writes a dated plan in docs/plans/ that names the requirement and the ADR and holds no code.
+context:
+  scaffold_script: place-files.sh
