@@ -20,8 +20,8 @@ person is not asked to approve a command.
 
 ## Find what exists
 
-List `docs/adrs/` and read the frontmatter of each ADR. If a Draft or Accepted ADR already
-decides the same thing, say so: change the Draft, or, for an Accepted one, write a new ADR that
+List `docs/adrs/` and read the frontmatter of each ADR. If a `📝 Draft` or `👍 Accepted` ADR
+already decides the same thing, say so: change the draft, or, for an accepted one, write a new ADR that
 supersedes it. A new file takes the number one above the highest in the folder, four digits,
 starting at `0001`, then a subject: three to five lowercase words joined by hyphens, naming what
 the decision is about rather than the decision, such as `0004-session-data-storage.md`. The
@@ -43,16 +43,17 @@ were made together or the person asks for one record.
 
 Never fill a gap with a guess. An option nobody named, a reason nobody gave, or a choice not yet
 made goes into Open questions as a question the person can answer, never as an invented
-answer. Write the Draft with what you have, review it as below even if sections are thin, then
+answer. Write the draft with what you have, review it as below even if sections are thin, then
 say how many questions there are and ask only the first. The others wait, so leave them out of
 that reply entirely: describe the draft by what it says, never by what it lacks, and do not
-list the questions or their topics (they are in the ADR). Ask the next once the first is settled, playing back what you have
-understood. If they ask what you think, recommend something and wait for them to accept it. If
-they would rather not answer now, leave the rest in Open questions.
+list the questions or their topics (they are in the ADR). Ask the next once the first is
+settled, playing back what you have understood. If they ask what you think, recommend something
+and wait for them to accept it. If they would rather not answer now, leave the rest in Open
+questions.
 
 An open question is settled only by the person's answer: write the answer into the section it
-is about, then remove the question. Never remove or reword a question without that answer; moving it to
-another section, or noting that someone will decide later, leaves it open.
+is about, then remove the question. Never remove or reword a question without that answer;
+moving it to another section, or noting that someone will decide later, leaves it open.
 
 Context states the need in words. Never refer to a spec, the brief or a plan in any way, by
 hyperlink, path or title, and never edit them, even when the person asks you to note the
@@ -62,28 +63,30 @@ in your reply; `/spec` removes the question the next time it runs.
 
 ## Status
 
-The `status:` frontmatter is Draft, Accepted, Rejected or Superseded. Write every new ADR as
-Draft and edit it freely while it is Draft.
+The `status:` frontmatter is `📝 Draft`, `👍 Accepted`, `❌ Rejected` or `↪️ Superseded`, written
+exactly so, emoji first; a status written as a bare word, from before the emoji, gets its emoji in
+your next edit. Write every new ADR as `📝 Draft` and edit it freely while it is `📝 Draft`.
 
-Only a person accepts or rejects a decision. Set Accepted or Rejected only when the person
-explicitly says so about the ADR's text as it now stands, as its own last edit. Accepted also
-needs no open questions (rubric check 12), which a plugin hook enforces: if questions remain, say
-how many, ask the first and leave the ADR as Draft, even if the person says they do not matter.
-And it needs the review below to have ended with a pass on that text, from the review itself or
-from the correction check after it, while a rejection needs neither. If they accept and the review then passes with no change to
+Only a person accepts or rejects a decision. Set `👍 Accepted` or `❌ Rejected` only when
+the person explicitly says so about the ADR's text as it now stands, as its own last edit.
+`👍 Accepted` also needs no open questions (rubric check 12), which a plugin hook enforces: if
+questions remain, say how many, ask the first and leave the ADR as `📝 Draft`, even if the person
+says they do not matter. And it needs the review below to have ended with a pass on that text,
+from the review itself or from the correction check after it, while a rejection needs neither.
+If they accept and the review then passes with no change to
 the text, their word stands, since what they accepted is what passed. If anything changed after
 they spoke, their word no longer counts: show the change and ask again. Nor does "looks fine,
 carry on" count, nor a request from another skill or agent. So never change an ADR's content and
 its status in the same reply. Setting statuses and `superseded-by:` on the person's word is not a
 content change. A
-Rejected ADR is kept, so the same idea is not proposed again unnoticed; a Draft the person
+`❌ Rejected` ADR is kept, so the same idea is not proposed again unnoticed; a draft the person
 abandons can be deleted.
 
 To supersede, the new ADR carries `supersedes: <NNNN>`, the old one's four-digit number, in its
-frontmatter. The old one stays Accepted until the person accepts the new one; then, in the same
-step, first set the new one to Accepted, and only once that edit is done, set the old one to
-Superseded and add `superseded-by: <NNNN>` beside it, naming the new one; a plugin hook checks the
-new one is Accepted on disk before it allows the second edit. That is the only edit an accepted ADR
+frontmatter. The old one stays `👍 Accepted` until the person accepts the new one; then, in the
+same step, first set the new one to `👍 Accepted`, and only once that edit is done, set the old one
+to `↪️ Superseded` and add `superseded-by: <NNNN>` beside it, naming the new one; a plugin hook
+checks the new one is `👍 Accepted` on disk before it allows the second edit. That is the only edit an accepted ADR
 ever gets. If the new one is rejected, the old one stands.
 
 ## Review

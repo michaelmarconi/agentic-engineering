@@ -6,6 +6,21 @@ What changed in each version of the plugin, newest first. Versions follow
 past a major version: it says what you need to change in your documents. Until 1.0.0, any
 minor version may need such a change, and its entry says so.
 
+## [0.9.0] - 2026-10-29
+
+### Changed
+
+- Every document status now starts with an emoji: `📝 Draft`, `🟢 Ready to build`, `✅ Built`,
+  `👍 Accepted`, `❌ Rejected` and `↪️ Superseded`. New specs and ADRs are written that way, and
+  the plugin's pages name each status the same way.
+- The plugin's hook now refuses a status written without its emoji, or with the wrong one, and
+  says what to write instead. **This affects documents you already have.** A spec or ADR whose
+  status is a bare word, such as `status: Accepted`, still counts as that status, but the next
+  change Claude makes to it must also add the emoji. A change that only adds the emoji to the
+  status line is always allowed, even on an ADR that is already decided. To bring every document
+  over at once, ask Claude to add the emoji to each status line under `docs/specs/` and
+  `docs/adrs/`.
+
 ## [0.8.1] - 2026-10-29
 
 ### Fixed

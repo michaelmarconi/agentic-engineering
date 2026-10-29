@@ -1,5 +1,5 @@
 ---
-status: Draft
+status: 📝 Draft
 ---
 
 # Ledger sync

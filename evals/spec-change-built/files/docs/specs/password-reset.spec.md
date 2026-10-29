@@ -1,5 +1,5 @@
 ---
-status: Built
+status: ✅ Built
 ---
 
 # Password reset
