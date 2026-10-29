@@ -1,46 +1,58 @@
 # Software Development Lifecycle (SDLC) plugin for Claude Code
 
-A plugin, an add-on, for Claude Code, Anthropic's artificial intelligence (AI) coding assistant, that has Claude take
-software work from an idea to reviewed code on the main branch along one defined path, keeping
-the reasoning in a few short documents.
+A software development lifecycle that brings engineering rigour to software built with artificial
+intelligence (AI) coding assistants, taking each piece of work from intent to verified code along
+one defined path, with the reasoning kept in a few short documents.
 
 ## Problem
 
-People who build software with an AI coding assistant decide what to build, and how, in
-conversation with it. Those conversations end, and what was decided, and why, ends with them.
-Each person directs the assistant in their own way, so nothing checks that the code still does
-what was intended, or follows what was decided.
-
-The maintainer, Michael Marconi, met this in an earlier set of instructions of his own for
-Claude Code. Its instructions grew past a 500-line budget each, and mixed step-by-step
-procedure with policy and notes about past incidents, until they were hard to follow or change.
+When engineers build software mainly by directing an AI coding assistant, most of the
+engineering happens in conversation. What to build, how and why are
+settled there, and are lost when the conversation ends. Each engineer directs the assistant in
+their own way, so the rigour engineering normally relies on is missing: intent written down before
+building, decisions recorded with their reasons, independent review, and a check that the code
+still does what was intended.
 
 ## Who it's for
 
-- Michael Marconi: the maintainer, and for now the only user, who builds this plugin and uses it
-  in his own projects.
-- People outside the project who install it: none yet. Version 1.0 is released when the first
-  one does.
+Engineers and teams who build software mainly by directing an AI coding assistant, and want
+engineering rigour while they do. They meet the problem whenever they build a product that must
+meet defined quality standards and stay easy to evolve and maintain over the long run.
 
 ## Goals
 
-- None stated yet; see Open questions.
+By version 1.0, on one real project:
+
+- A fresh assistant session given only the repository, with no past conversations, correctly says
+  what the project is for, what was decided and why, and what is built.
+- Every lifecycle document was reviewed independently before a person saw it, as its review
+  records show.
+- A person approved every change to a lifecycle document's status, such as from Draft to
+  Accepted, as the project's pull requests show.
 
 ## Out of scope
 
 - Releasing software. How a project releases differs too much from one project to the next to
   follow one path.
+- Small, self-contained changes, such as a one-line fix. They suit a short session with the
+  assistant directly; the lifecycle is for larger pieces of work that need specs.
 
 ## Constraints
 
 - It must work when installed in any repository without changing anything there, apart from the
   documents it writes for the lifecycle: the product's brief, its specs, its decision records and
   its plans.
+- Those documents are plain text files in the repository, which a person can read and maintain
+  without the plugin.
+- It must work on an existing codebase that has no lifecycle documents yet, as well as on a new
+  one. Bringing the lifecycle into such a codebase will get a step of its own later.
 - It runs inside Claude Code, and only there.
 
 ## Open questions
 
-- How often does Michael meet this problem?
-- Who are the first outside users meant to be?
-- What should change, measurably, for someone who uses the plugin?
-- How would that change be observed or counted?
+- Where are the review records kept that show each document was reviewed? The plugin keeps none
+  in the repository today, and the documents it may write there do not include them.
+- Who approves a status change: any engineer on the team, or someone other than the document's
+  author?
+- Who judges that the fresh assistant session's answers are correct: the project's own engineers,
+  or a set of questions with agreed answers?
