@@ -1,5 +1,5 @@
 ---
-# Change status only through the sdlc plugin's skills. A hand edit skips the lifecycle checks.
+# Change status only through the sdlc plugin's skills, which check each change; a change made by hand is not checked.
 status: Accepted
 date: 2026-10-20
 ---
@@ -13,7 +13,7 @@ The application needs one database for accounts, invoices and settings.
 ## Considered Options
 
 - Postgres
-- MySQL: lost because the team knows Postgres.
+- MySQL: rejected because the team knows Postgres.
 
 ## Decision Outcome
 

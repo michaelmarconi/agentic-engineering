@@ -1,4 +1,4 @@
 schema_version: "1.1"
 name: brief-plain-words
 expected_outcome: |
-  The person writes in industry shorthand. The brief keeps the meaning but spells out or explains every acronym, so a newcomer can follow it.
+  The person writes in industry shorthand. The brief keeps the meaning but spells out every acronym where it first appears, in the sentence or in a footnote, so a newcomer can follow it, and the language checker reviews it beside the brief reviewer.

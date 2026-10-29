@@ -14,8 +14,7 @@ Read:
 - Each document in the repository that the brief links to, for check 9. List links outside the
   repository under Not checked; they do not affect the result.
 
-Read nothing else. Apply every rubric check. For check 10, find every acronym in the brief, title
-included, and fail any that is not spelled out or explained where it first appears. For each failure, quote the brief as evidence and
+Read nothing else. Apply every rubric check. For each failure, quote the brief as evidence and
 say what would make it pass. Then note anything else that would mislead someone writing specs
 from this brief, such as two sections that contradict each other. Leave out matters of style or
 taste. Keep apart the findings only a person can settle: under Needs a person goes something only

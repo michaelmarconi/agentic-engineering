@@ -3,12 +3,12 @@
 
 The correction checker is a model, so no ordinary eval can make it fail on demand. This script
 copies the plugin to a temporary folder, replaces each agent there with the stand-in of the same
-name from evals-failed-check/agents/ (the checker always fails with a known finding, and each
+name from evals-failed-check/agents/ (the checker always fails with a known finding, each
 stand-in reviewer always reports a failure the drafting agent can correct, so that every run
-reaches the check), makes the case folders under evals-failed-check/ the copy's only evals, and
-runs `claude plugin eval` on the copy with any further arguments given. The plugin itself is
-never changed. The run's results are copied to evals-failed-check/results/ and the temporary
-folder is deleted.
+reaches the check, and the stand-in language checker always passes), makes the case folders
+under evals-failed-check/ the copy's only evals, and runs `claude plugin eval` on the copy with
+any further arguments given. The plugin itself is never changed. The run's results are copied
+to evals-failed-check/results/ and the temporary folder is deleted.
 
 Example:
   python3 scripts/failed_check_evals.py --case 'spec-*' --model sonnet --judge-model sonnet \\

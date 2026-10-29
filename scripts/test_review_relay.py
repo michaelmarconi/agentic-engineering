@@ -12,6 +12,8 @@ ROOT = os.path.normpath(os.path.join(HERE, ".."))
 SPEC = "docs/specs/booking.spec.md"
 REPORT = "Result: FAIL\n\n| Check | Result | Evidence |\n|---|---|---|\n| 2. Story | fail | \"x\" |\n"
 DRAFT = "Title: Review stops early\n\nBody line one.\nBody line two.\n"
+WORDING = "Result: FAIL\n\nFindings:\n- \"rides along\": rewrite as \"is sent with\"\n"
+LANGUAGE = "sdlc:language-checker"
 
 
 def issue_request(draft, kind="bug"):
@@ -33,17 +35,19 @@ class Relay(unittest.TestCase):
         with open(full, "w", encoding="utf-8") as f:
             f.write(text)
 
-    def run_hook(self, event, raw=None):
+    def run_hook(self, event, raw=None, data=True):
         env = dict(os.environ, CLAUDE_PLUGIN_DATA=self.data, CLAUDE_PROJECT_DIR=self.project,
                    CLAUDE_PLUGIN_ROOT=ROOT)
+        if not data:
+            del env["CLAUDE_PLUGIN_DATA"]
         done = subprocess.run([sys.executable, SCRIPT], input=raw if raw is not None else json.dumps(event),
                               capture_output=True, text=True, env=env)
         self.assertEqual(done.returncode, 0, done.stderr)
         return json.loads(done.stdout) if done.stdout.strip() else None
 
-    def agent(self, when, agent, prompt, response=None, session=None, **extra):
+    def agent(self, when, agent, prompt, response=None, session=None, call=None, **extra):
         event = {"hook_event_name": when, "session_id": session or self.session, "cwd": self.project,
-                 "tool_name": "Agent",
+                 "tool_name": "Agent", "tool_use_id": call or f"{agent}-{prompt}",
                  "tool_input": dict({"subagent_type": agent, "prompt": prompt,
                                      "description": "a task"}, **extra)}
         if response is not None:
@@ -51,9 +55,16 @@ class Relay(unittest.TestCase):
         return self.run_hook(event)
 
     def review(self, agent="sdlc:spec-reviewer", prompt=f"Document: {SPEC}\nReview this spec.",
-               report=REPORT, session=None):
+               report=REPORT, session=None, wording=WORDING):
+        """Run the skill's reviewer, then the language checker unless wording is None."""
         self.assertIsNone(self.agent("PreToolUse", agent, prompt, session=session))
         self.assertIsNone(self.agent("PostToolUse", agent, prompt, response=report, session=session))
+        if wording is not None:
+            self.language(prompt, wording, session=session)
+
+    def language(self, prompt=f"Document: {SPEC}\nCheck the wording.", wording=WORDING, session=None):
+        self.assertIsNone(self.agent("PreToolUse", LANGUAGE, prompt, session=session))
+        self.assertIsNone(self.agent("PostToolUse", LANGUAGE, prompt, response=wording, session=session))
 
     def check(self, prompt=f"Document: {SPEC}\nCheck the corrections.", session=None, **extra):
         return self.agent("PreToolUse", "sdlc:correction-checker", prompt, session=session, **extra)
@@ -156,6 +167,287 @@ class Relay(unittest.TestCase):
         prompt = self.assertAllowed(self.check())["prompt"]
         self.assertIn("booking report", prompt)
         self.assertNotIn("payments", prompt)
+
+    # The language checker runs beside every reviewer
+
+    def test_checker_gets_the_wording_report_word_for_word_in_its_own_block(self):
+        self.put(SPEC, "v1\n")
+        self.review()
+        self.put(SPEC, "v2\n")
+        prompt = self.assertAllowed(self.check())["prompt"]
+        self.assertIn("=== REVIEW REPORT ===\n" + REPORT + "\n=== END REVIEW REPORT ===", prompt)
+        self.assertIn("=== WORDING REPORT ===\n" + WORDING + "\n=== END WORDING REPORT ===", prompt)
+
+    def test_checker_is_told_where_the_plain_words_rule_is(self):
+        self.put(SPEC, "v1\n")
+        self.review()
+        self.put(SPEC, "v2\n")
+        prompt = self.assertAllowed(self.check())["prompt"]
+        files = prompt.split("=== FILES TO READ ===")[1]
+        self.assertIn(os.path.join(ROOT, "docs", "lifecycle.md"), files)
+        self.assertIn("Plain words", files)
+
+    def test_both_reports_count_whichever_starts_or_finishes_first(self):
+        review = f"Document: {SPEC}\nReview."
+        wording = f"Document: {SPEC}\nCheck the wording."
+        orders = [
+            [("PreToolUse", LANGUAGE), ("PreToolUse", "sdlc:spec-reviewer"),
+             ("PostToolUse", "sdlc:spec-reviewer"), ("PostToolUse", LANGUAGE)],
+            [("PreToolUse", "sdlc:spec-reviewer"), ("PreToolUse", LANGUAGE),
+             ("PostToolUse", LANGUAGE), ("PostToolUse", "sdlc:spec-reviewer")],
+            [("PreToolUse", LANGUAGE), ("PostToolUse", LANGUAGE),
+             ("PreToolUse", "sdlc:spec-reviewer"), ("PostToolUse", "sdlc:spec-reviewer")],
+        ]
+        for n, order in enumerate(orders):
+            with self.subTest(order=n):
+                session = f"order{n}"
+                self.put(SPEC, "v1\n")
+                for when, agent in order:
+                    prompt = wording if agent == LANGUAGE else review
+                    response = None
+                    if when == "PostToolUse":
+                        response = WORDING if agent == LANGUAGE else REPORT
+                    self.assertIsNone(self.agent(when, agent, prompt, response=response, session=session))
+                self.put(SPEC, "v2\n")
+                prompt = self.assertAllowed(self.check(session=session))["prompt"]
+                self.assertIn(REPORT, prompt)
+                self.assertIn(WORDING, prompt)
+                self.assertIn("=== DOCUMENT AS REVIEWED: " + SPEC + " ===\nv1\n", prompt)
+
+    def test_checker_without_the_wording_report_is_refused(self):
+        self.put(SPEC, "v1\n")
+        self.review(wording=None)
+        self.put(SPEC, "v2\n")
+        self.assertRefused(self.check(), "language checker")
+
+    def test_checker_with_only_the_wording_report_is_refused(self):
+        self.put(SPEC, "v1\n")
+        self.language()
+        self.put(SPEC, "v2\n")
+        self.assertRefused(self.check(), "No review")
+
+    def test_wording_report_of_another_version_does_not_count(self):
+        self.put(SPEC, "v1\n")
+        self.review(wording=None)
+        self.put(SPEC, "v2\n")
+        self.language()
+        self.put(SPEC, "v3\n")
+        self.assertRefused(self.check(), "No review")
+
+    def test_a_new_review_of_unchanged_text_replaces_both_reports(self):
+        self.put(SPEC, "v1\n")
+        self.review(report="first report", wording="first wording")
+        self.review(report="second report", wording="second wording")
+        self.put(SPEC, "v2\n")
+        prompt = self.assertAllowed(self.check())["prompt"]
+        self.assertIn("second report", prompt)
+        self.assertIn("second wording", prompt)
+        self.assertNotIn("first", prompt)
+
+    def test_wording_of_an_issue_draft_counts(self):
+        self.review(agent="sdlc:issue-reviewer", prompt=issue_request(DRAFT))
+        corrected = DRAFT.replace("line two", "line 2")
+        prompt = self.assertAllowed(self.check(prompt=issue_request(corrected)))["prompt"]
+        self.assertIn("=== WORDING REPORT ===\n" + WORDING, prompt)
+
+    def test_language_checker_names_without_the_plugin_prefix_work_too(self):
+        self.put(SPEC, "v1\n")
+        self.review(wording=None)
+        self.assertIsNone(self.agent("PreToolUse", "language-checker", f"Document: {SPEC}\nGo."))
+        self.assertIsNone(self.agent("PostToolUse", "language-checker", f"Document: {SPEC}\nGo.",
+                                     response=WORDING))
+        self.put(SPEC, "v2\n")
+        self.assertAllowed(self.check())
+
+    def test_a_late_report_from_an_earlier_run_does_not_count(self):
+        v1 = f"Document: {SPEC}\nCheck the wording."
+        self.put(SPEC, "v1\n")
+        self.assertIsNone(self.agent("PreToolUse", LANGUAGE, v1, call="old"))
+        self.put(SPEC, "v2\n")
+        self.assertIsNone(self.agent("PreToolUse", "sdlc:spec-reviewer", v1, call="rev"))
+        self.assertIsNone(self.agent("PreToolUse", LANGUAGE, v1, call="new"))
+        self.assertIsNone(self.agent("PostToolUse", "sdlc:spec-reviewer", v1, response=REPORT, call="rev"))
+        self.assertIsNone(self.agent("PostToolUse", LANGUAGE, v1, response="current wording", call="new"))
+        self.assertIsNone(self.agent("PostToolUse", LANGUAGE, v1, response="stale wording", call="old"))
+        self.put(SPEC, "v3\n")
+        prompt = self.assertAllowed(self.check())["prompt"]
+        self.assertIn("current wording", prompt)
+        self.assertNotIn("stale wording", prompt)
+
+    def test_refusal_for_a_missing_wording_report_never_asks_for_another_review(self):
+        self.put(SPEC, "v1\n")
+        self.review(wording=None)
+        self.put(SPEC, "v2\n")
+        out = self.check()
+        self.assertRefused(out, "language checker")
+        reason = out["hookSpecificOutput"]["permissionDecisionReason"]
+        self.assertIn("show the person", reason)
+        self.assertNotIn("Start the language checker", reason)
+
+    def test_a_saved_record_in_another_shape_counts_as_no_review(self):
+        self.put(SPEC, "v1\n")
+        self.review()
+        for path in self.saved():
+            with open(path, "w", encoding="utf-8") as f:
+                json.dump({"reviewer": "spec-reviewer", "text": "v1\n", "report": "old shape"}, f)
+        self.put(SPEC, "v2\n")
+        self.assertRefused(self.check(), "No review")
+        for path in self.saved():
+            with open(path, "w", encoding="utf-8") as f:
+                f.write("[1, 2]")
+        self.assertIsNone(self.agent("PreToolUse", "sdlc:spec-reviewer", f"Document: {SPEC}\nGo."))
+        self.assertRefused(self.check(), "No review")
+
+    def test_wording_of_a_slightly_different_copy_of_the_same_review_still_joins(self):
+        # /issue types the draft into both requests; a stray space must not lose the review.
+        self.assertIsNone(self.agent("PreToolUse", "sdlc:issue-reviewer", issue_request(DRAFT)))
+        self.assertIsNone(self.agent("PreToolUse", LANGUAGE, issue_request(DRAFT + " ")))
+        self.assertIsNone(self.agent("PostToolUse", "sdlc:issue-reviewer", issue_request(DRAFT), response=REPORT))
+        self.assertIsNone(self.agent("PostToolUse", LANGUAGE, issue_request(DRAFT + " "), response=WORDING))
+        corrected = DRAFT.replace("line two", "line 2")
+        prompt = self.assertAllowed(self.check(prompt=issue_request(corrected)))["prompt"]
+        self.assertIn("=== DOCUMENT AS REVIEWED: issue draft ===\n" + DRAFT, prompt)
+        self.assertIn(WORDING, prompt)
+
+    def test_a_second_language_check_during_a_review_leaves_it_alone(self):
+        self.put(SPEC, "v1\n")
+        self.review()
+        self.put(SPEC, "v2\n")
+        self.language(prompt=f"Document: {SPEC}\nCheck my wording fixes.", wording="second wording")
+        prompt = self.assertAllowed(self.check())["prompt"]
+        self.assertIn(REPORT, prompt)
+        self.assertIn(WORDING, prompt)
+        self.assertNotIn("second wording", prompt)
+
+    def test_a_new_review_may_start_with_the_language_checker(self):
+        self.put(SPEC, "v1\n")
+        self.review(report="first report", wording="first wording")
+        self.put(SPEC, "v2\n")
+        self.language(prompt=f"Document: {SPEC}\nCheck the wording.", wording="second wording")
+        self.review(report="second report", wording=None)
+        self.put(SPEC, "v3\n")
+        prompt = self.assertAllowed(self.check())["prompt"]
+        self.assertIn("second report", prompt)
+        self.assertIn("second wording", prompt)
+        self.assertNotIn("first", prompt)
+
+    def test_reviewer_or_language_checker_in_the_background_is_refused(self):
+        self.put(SPEC, "v1\n")
+        for agent in ("sdlc:spec-reviewer", LANGUAGE):
+            out = self.agent("PreToolUse", agent, f"Document: {SPEC}\nReview.", run_in_background=True)
+            self.assertRefused(out, "foreground")
+        self.assertEqual(self.saved(), [])
+
+    def test_without_tool_use_ids_both_reports_still_count(self):
+        self.put(SPEC, "v1\n")
+        for when, agent, response in [("PreToolUse", "sdlc:spec-reviewer", None),
+                                      ("PreToolUse", LANGUAGE, None),
+                                      ("PostToolUse", "sdlc:spec-reviewer", REPORT),
+                                      ("PostToolUse", LANGUAGE, WORDING)]:
+            event = {"hook_event_name": when, "session_id": self.session, "tool_name": "Agent",
+                     "tool_input": {"subagent_type": agent, "prompt": f"Document: {SPEC}\nGo."}}
+            if response:
+                event["tool_response"] = {"content": [{"type": "text", "text": response}]}
+            self.assertIsNone(self.run_hook(event))
+        self.put(SPEC, "v2\n")
+        self.assertAllowed(self.check())
+
+    def test_no_refusal_asks_for_a_second_review(self):
+        self.put(SPEC, "v1\n")
+        for out in (self.check(), self.check(prompt="Check the corrections.")):
+            reason = out["hookSpecificOutput"]["permissionDecisionReason"]
+            self.assertNotIn("Run the review", reason)
+
+    def test_a_part_started_again_after_a_run_with_no_report_joins_the_same_review(self):
+        self.put(SPEC, "v1\n")
+        prompt = f"Document: {SPEC}\nReview."
+        self.assertIsNone(self.agent("PreToolUse", "sdlc:spec-reviewer", prompt, call="r1"))
+        self.assertIsNone(self.agent("PreToolUse", LANGUAGE, prompt, call="l1"))
+        self.assertIsNone(self.agent("PostToolUse", "sdlc:spec-reviewer", prompt, response=REPORT, call="r1"))
+        # l1 never finishes; it is started again as l2.
+        self.assertIsNone(self.agent("PreToolUse", LANGUAGE, prompt, call="l2"))
+        self.assertIsNone(self.agent("PostToolUse", LANGUAGE, prompt, response=WORDING, call="l2"))
+        self.put(SPEC, "v2\n")
+        prompt = self.assertAllowed(self.check())["prompt"]
+        self.assertIn(REPORT, prompt)
+        self.assertIn(WORDING, prompt)
+
+    def test_the_newest_complete_review_outlasts_later_unfinished_ones(self):
+        self.put(SPEC, "v1\n")
+        self.review()
+        for version in ("v2\n", "v3\n", "v4\n"):
+            self.put(SPEC, version)
+            self.language(wording="wording of " + version)
+        self.put(SPEC, "v5\n")
+        prompt = self.assertAllowed(self.check())["prompt"]
+        self.assertIn(REPORT, prompt)
+        self.assertIn(WORDING, prompt)
+
+    def test_a_saved_review_with_reports_of_the_wrong_type_counts_as_no_review(self):
+        self.put(SPEC, "v1\n")
+        self.review()
+        for path in self.saved():
+            with open(path, "w", encoding="utf-8") as f:
+                json.dump({"reviews": [{"text": "v1\n", "started": {"a": "reviewer", "b": "language"},
+                                        "reports": {"spec-reviewer": 5, "language-checker": ["x"]}}]}, f)
+        self.put(SPEC, "v2\n")
+        self.assertRefused(self.check(), "No review")
+
+    def test_a_correction_that_only_changes_spacing_still_counts(self):
+        # In Markdown a blank line or an indent can be the correction.
+        self.put(SPEC, "Intro\n- item\n")
+        self.review()
+        self.put(SPEC, "Intro\n\n- item\n")
+        self.assertAllowed(self.check())
+
+    def test_the_reviewers_copy_of_an_issue_draft_is_the_one_kept(self):
+        self.assertIsNone(self.agent("PreToolUse", LANGUAGE, issue_request(DRAFT + " ")))
+        self.assertIsNone(self.agent("PreToolUse", "sdlc:issue-reviewer", issue_request(DRAFT)))
+        self.assertIsNone(self.agent("PostToolUse", LANGUAGE, issue_request(DRAFT + " "), response=WORDING))
+        self.assertIsNone(self.agent("PostToolUse", "sdlc:issue-reviewer", issue_request(DRAFT), response=REPORT))
+        self.assertRefused(self.check(prompt=issue_request(DRAFT)), "unchanged")
+
+    def test_a_newer_review_missing_a_report_is_not_covered_by_an_older_one(self):
+        self.put(SPEC, "v1\n")
+        self.review()
+        self.put(SPEC, "v2\n")
+        self.review(report="", wording="second wording")
+        self.put(SPEC, "v3\n")
+        self.assertRefused(self.check(), "No review")
+
+    def test_reports_of_agents_this_version_does_not_know_are_ignored(self):
+        self.put(SPEC, "v1\n")
+        self.review()
+        for path in self.saved():
+            with open(path, encoding="utf-8") as f:
+                saved = json.load(f)
+            saved["reviews"][0]["reports"]["old-reviewer"] = "old"
+            with open(path, "w", encoding="utf-8") as f:
+                json.dump(saved, f)
+        self.put(SPEC, "v2\n")
+        self.assertAllowed(self.check())
+
+    def test_a_check_with_nothing_saved_leaves_no_folder_behind(self):
+        self.put(SPEC, "v1\n")
+        self.check()
+        self.agent("PostToolUse", "sdlc:correction-checker", f"Document: {SPEC}\nCheck.", response="ok")
+        self.assertFalse(os.path.exists(os.path.join(self.data, "reviews")))
+
+    def test_background_runs_are_left_alone_when_nothing_is_saved(self):
+        self.put(SPEC, "v1\n")
+        event = {"hook_event_name": "PreToolUse", "session_id": self.session, "tool_name": "Agent",
+                 "tool_input": {"subagent_type": LANGUAGE, "prompt": f"Document: {SPEC}\nGo.",
+                                "run_in_background": True}}
+        self.assertIsNone(self.run_hook(event, data=False))
+
+    def test_a_null_text_block_in_a_reply_never_blocks(self):
+        self.put(SPEC, "v1\n")
+        self.assertIsNone(self.agent("PreToolUse", "sdlc:spec-reviewer", f"Document: {SPEC}\nGo."))
+        event = {"hook_event_name": "PostToolUse", "session_id": self.session, "tool_name": "Agent",
+                 "tool_use_id": f"sdlc:spec-reviewer-Document: {SPEC}\nGo.",
+                 "tool_input": {"subagent_type": "sdlc:spec-reviewer", "prompt": f"Document: {SPEC}\nGo."},
+                 "tool_response": {"content": [{"type": "text", "text": None}]}}
+        self.assertIsNone(self.run_hook(event))
 
     # /issue: the draft is never on disk
 
