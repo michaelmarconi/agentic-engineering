@@ -1,6 +1,8 @@
 ---
-type: llm
-focus: trace
+type: regex
+target: trace
+pattern: '"name":"Write","input":\{"file_path":"[^"]*docs/plans/[^"]*","content":"(?:\\.|[^"\\])*```'
+match: not_contains
 weight: 1
 ---
-The plan written under docs/plans/ holds no code: no code blocks and no lines of code, though it may name files and functions.
+The plan written holds no code block.

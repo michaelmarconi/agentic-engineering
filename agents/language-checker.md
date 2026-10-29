@@ -18,7 +18,8 @@ Read:
 - The Plain words section of `${CLAUDE_PLUGIN_ROOT}/docs/lifecycle.md`. Apply only that section;
   the rest of the page is for other checks.
 
-Read nothing else. Go through the document sentence by sentence, title and headings included.
+Read nothing else. Skip the frontmatter, between the opening `---` lines: its wording is fixed by
+the plugin. Go through the rest of the document sentence by sentence, title and headings included.
 For each term or phrase that breaks the rule, quote it and say whether it needs a footnote (a
 domain term) or a rewrite (anything else), with a plain rewrite where you can offer one. Leave
 out matters of style or taste: a finding must be something the newcomer could not follow or

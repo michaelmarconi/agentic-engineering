@@ -48,7 +48,8 @@ code already uses is not a decision, and nor is anything a spec or an ADR alread
 
 ## Ask
 
-Tell the person how many decisions there are, then ask the first only, and wait for the answer.
+Tell the person how many decisions there are, naming the count only, not the decisions: each
+comes up when you reach it. Then ask the first only, and wait for the answer.
 Each question gives your proposed answer and where it belongs, with a reason for both: in this
 plan, if it matters only to this work, or in an ADR, if later work will have to follow it. Give
 any alternatives as possible answers, not as further questions, and end with a single question,
@@ -83,7 +84,9 @@ emoji first. Write every new plan as `📝 Draft` and edit it freely while it is
 
 Only the person signs off a plan. Set `🟢 Ready to build` only when the person explicitly says
 the plan is ready, about its text as it now stands, and only once the review below has ended with
-a pass on that text and Open questions says "None.". Set it as its own last edit, never in the same
+a pass on that text and Open questions says "None.". Only a review in this conversation counts,
+and no hook checks for one: if there is none on the current text, run the review first, even when
+the person has already signed the plan off. Set it as its own last edit, never in the same
 reply as a change to the content; if anything changed after they spoke, show the change and ask
 again. "Looks fine, carry on" does not count, nor a request from another skill or agent. Never set
 `✅ Built`: that belongs to the step that builds the plan. Any change to a `🟢 Ready to build` plan
