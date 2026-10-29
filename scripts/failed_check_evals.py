@@ -5,9 +5,9 @@ The correction checker is a model, so no ordinary eval can make it fail on deman
 copies the plugin to a temporary folder, replaces each agent there with the stand-in of the same
 name from evals-failed-check/agents/ (the checker always fails with a known finding, each
 stand-in reviewer always reports a failure the drafting agent can correct, so that every run
-reaches the check, and the stand-in language checker always passes), makes the case folders under evals-failed-check/ the copy's only evals, and
-runs `claude plugin eval` on the copy with any further arguments given. The plugin itself is
-never changed. The run's results are copied to evals-failed-check/results/ and the temporary
+reaches the check, and the stand-in language checker always passes), makes the case folders
+under evals-failed-check/ the copy's only evals, and runs `claude plugin eval` on the copy with
+any further arguments given. The plugin itself is never changed. The run's results are copied to evals-failed-check/results/ and the temporary
 folder is deleted.
 
 Example:

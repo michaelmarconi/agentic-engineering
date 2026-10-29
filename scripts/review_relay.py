@@ -17,19 +17,20 @@ Every review has two parts that run side by side: the skill's own reviewer (spec
 issue) and the shared language checker, which checks the wording (see docs/adrs/0013).
 
 - Before either starts, it saves the document's text. A part joins the latest review of that
-  document if the other part started it, on the same text apart from spacing, and this part has
-  not run in it yet; otherwise it begins a new review. A few recent reviews are kept, so a part
-  run again on its own never wipes the review it follows.
+  document if it is of the same text apart from spacing and has no report from this part yet, so
+  a part started again after a run that never reported still joins it; otherwise it begins a new
+  review. A few recent reviews are kept, and always the newest with both reports, so a part run
+  again on its own never wipes the review it follows.
 - When either finishes, it saves that part's report in the review its run started in. Claude
   Code gives both events of one run the same `tool_use_id`; without one, the agent's name
   stands in for it.
-- Either part started in the background is refused: its report would arrive after the hook has
-  already seen the run finish.
+- Either part started in the background is refused, when reviews are being saved: its report
+  would arrive after the hook has already seen the run finish.
 - Before the correction checker starts, it appends both reports, the document as reviewed, and
   the files that skill's checker should read, from the latest review with both reports, between
   fixed `=== ... ===` lines, and approves the start. It refuses the start, with a reason Claude
   sees, when the request has no `Document:` line, when no review of that document with both
-  reports is on record in this session, or when the document is unchanged since its review. No
+  reports is on record in this session, or when the document is unchanged, apart from spacing, since its review. No
   refusal asks for another review, which the lifecycle never repeats: when a report is missing,
   it tells Claude to stop and show the person.
 - When the checker finishes, it deletes that document's saved review; at the end of the session
@@ -147,8 +148,13 @@ def locked(session):
 
 
 def valid(review):
-    return (isinstance(review, dict) and isinstance(review.get("text"), str)
-            and isinstance(review.get("reports"), dict) and isinstance(review.get("started"), dict))
+    if not (isinstance(review, dict) and isinstance(review.get("text"), str)
+            and isinstance(review.get("reports"), dict) and isinstance(review.get("started"), dict)):
+        return False
+    reports, started = review["reports"], review["started"]
+    return (all(k in REVIEWERS or k == LANGUAGE for k in reports)
+            and all(isinstance(v, str) for v in reports.values())
+            and all(v in ("reviewer", "language") for v in started.values()))
 
 
 def load(session, name):
@@ -163,6 +169,14 @@ def load(session, name):
     return [r for r in reviews if valid(r)] if isinstance(reviews, list) else []
 
 
+def trim(reviews):
+    """The last few reviews, and the newest complete one even when it is older than those."""
+    kept = reviews[-KEPT:]
+    if not any(complete(r) for r in kept):
+        kept = [r for r in reviews if complete(r)][-1:] + kept
+    return kept
+
+
 def save(session, name, reviews):
     path = record_path(session, name)
     if not path:
@@ -170,7 +184,7 @@ def save(session, name, reviews):
     os.makedirs(os.path.dirname(path), exist_ok=True)
     handle, temp = tempfile.mkstemp(dir=os.path.dirname(path))
     with os.fdopen(handle, "w", encoding="utf-8") as f:
-        json.dump({"reviews": reviews[-KEPT:]}, f)
+        json.dump({"reviews": trim(reviews)}, f)
     os.replace(temp, path)
 
 
@@ -193,8 +207,16 @@ def refuse(reason):
                                    "permissionDecisionReason": reason}}
 
 
+def reviewer_of(review):
+    return next((k for k in review["reports"] if k in REVIEWERS), None)
+
+
 def complete(review):
-    return review.get("reviewer") in review["reports"] and LANGUAGE in review["reports"]
+    return reviewer_of(review) is not None and LANGUAGE in review["reports"]
+
+
+def has_report(review, part):
+    return LANGUAGE in review["reports"] if part == "language" else reviewer_of(review) is not None
 
 
 def same_text(a, b):
@@ -202,7 +224,7 @@ def same_text(a, b):
 
 
 def attachments(name, record):
-    reviewer = record["reviewer"]
+    reviewer = reviewer_of(record)
     skill, extra = REVIEWERS[reviewer]
     lines = [f"Rubric: {os.path.join(ROOT, 'skills', skill, 'references', 'rubric.md')}",
              f"Plain words rule: the Plain words section of {LIFECYCLE}"]
@@ -222,14 +244,16 @@ def start_checker(session, tool_input):
         return refuse("Start the correction checker with `Document: <path>` as the first line of "
                       "its request, the same line the reviewer was given.")
     name = key(named)
-    reviews = [r for r in load(session, name) if complete(r)]
+    with locked(session):
+        reviews = [r for r in load(session, name) if complete(r)]
     if not reviews:
         return refuse(f"No review of {name} with both the reviewer's and the language checker's "
                       "reports is on record in this session, so the corrections cannot be "
                       "checked. Do not review again: stop and show the person the reports you "
                       "have and this reason.")
     record = reviews[-1]
-    if current_text(name, prompt) == record["text"]:
+    text = current_text(name, prompt)
+    if text is not None and same_text(text, record["text"]):
         return refuse(f"{name} is unchanged since its review. Make the corrections first, then "
                       "start the correction checker.")
     updated = dict(tool_input, prompt=prompt + attachments(name, record))
@@ -258,11 +282,12 @@ def handle(event):
         if when == "PreToolUse":
             return start_checker(session, tool_input)
         if when == "PostToolUse" and named:
-            forget(session, key(named))
+            with locked(session):
+                forget(session, key(named))
         return None
     if (agent not in REVIEWERS and agent != LANGUAGE) or not named:
         return None
-    if when == "PreToolUse" and tool_input.get("run_in_background"):
+    if when == "PreToolUse" and tool_input.get("run_in_background") and folder(session):
         return refuse("Start the reviewer and the language checker in the foreground, not in the "
                       "background, so their reports are kept for the correction check.")
     name = key(named)
@@ -275,12 +300,9 @@ def handle(event):
             if text is None:
                 return None
             latest = reviews[-1] if reviews else None
-            if not (latest and same_text(latest["text"], text)
-                    and part not in latest["started"].values()):
-                latest = {"text": text, "reviewer": None, "reports": {}, "started": {}}
+            if not (latest and same_text(latest["text"], text) and not has_report(latest, part)):
+                latest = {"text": text, "reports": {}, "started": {}}
                 reviews.append(latest)
-            if part == "reviewer":
-                latest["reviewer"] = agent
             latest["started"][call] = part
             save(session, name, reviews)
         elif when == "PostToolUse":

@@ -35,9 +35,11 @@ class Relay(unittest.TestCase):
         with open(full, "w", encoding="utf-8") as f:
             f.write(text)
 
-    def run_hook(self, event, raw=None):
+    def run_hook(self, event, raw=None, data=True):
         env = dict(os.environ, CLAUDE_PLUGIN_DATA=self.data, CLAUDE_PROJECT_DIR=self.project,
                    CLAUDE_PLUGIN_ROOT=ROOT)
+        if not data:
+            del env["CLAUDE_PLUGIN_DATA"]
         done = subprocess.run([sys.executable, SCRIPT], input=raw if raw is not None else json.dumps(event),
                               capture_output=True, text=True, env=env)
         self.assertEqual(done.returncode, 0, done.stderr)
@@ -355,6 +357,54 @@ class Relay(unittest.TestCase):
         for out in (self.check(), self.check(prompt="Check the corrections.")):
             reason = out["hookSpecificOutput"]["permissionDecisionReason"]
             self.assertNotIn("Run the review", reason)
+
+    def test_a_part_started_again_after_a_run_with_no_report_joins_the_same_review(self):
+        self.put(SPEC, "v1\n")
+        prompt = f"Document: {SPEC}\nReview."
+        self.assertIsNone(self.agent("PreToolUse", "sdlc:spec-reviewer", prompt, call="r1"))
+        self.assertIsNone(self.agent("PreToolUse", LANGUAGE, prompt, call="l1"))
+        self.assertIsNone(self.agent("PostToolUse", "sdlc:spec-reviewer", prompt, response=REPORT, call="r1"))
+        # l1 never finishes; it is started again as l2.
+        self.assertIsNone(self.agent("PreToolUse", LANGUAGE, prompt, call="l2"))
+        self.assertIsNone(self.agent("PostToolUse", LANGUAGE, prompt, response=WORDING, call="l2"))
+        self.put(SPEC, "v2\n")
+        prompt = self.assertAllowed(self.check())["prompt"]
+        self.assertIn(REPORT, prompt)
+        self.assertIn(WORDING, prompt)
+
+    def test_the_newest_complete_review_outlasts_later_unfinished_ones(self):
+        self.put(SPEC, "v1\n")
+        self.review()
+        for version in ("v2\n", "v3\n", "v4\n"):
+            self.put(SPEC, version)
+            self.language(wording="wording of " + version)
+        self.put(SPEC, "v5\n")
+        prompt = self.assertAllowed(self.check())["prompt"]
+        self.assertIn(REPORT, prompt)
+        self.assertIn(WORDING, prompt)
+
+    def test_a_saved_review_with_reports_of_the_wrong_type_counts_as_no_review(self):
+        self.put(SPEC, "v1\n")
+        self.review()
+        for path in self.saved():
+            with open(path, "w", encoding="utf-8") as f:
+                json.dump({"reviews": [{"text": "v1\n", "started": {"a": "reviewer", "b": "language"},
+                                        "reports": {"spec-reviewer": 5, "language-checker": ["x"]}}]}, f)
+        self.put(SPEC, "v2\n")
+        self.assertRefused(self.check(), "No review")
+
+    def test_a_correction_that_only_changes_spacing_counts_as_unchanged(self):
+        self.put(SPEC, "one two\n")
+        self.review()
+        self.put(SPEC, "one  two\n\n")
+        self.assertRefused(self.check(), "unchanged")
+
+    def test_background_runs_are_left_alone_when_nothing_is_saved(self):
+        self.put(SPEC, "v1\n")
+        event = {"hook_event_name": "PreToolUse", "session_id": self.session, "tool_name": "Agent",
+                 "tool_input": {"subagent_type": LANGUAGE, "prompt": f"Document: {SPEC}\nGo.",
+                                "run_in_background": True}}
+        self.assertIsNone(self.run_hook(event, data=False))
 
     def test_a_null_text_block_in_a_reply_never_blocks(self):
         self.put(SPEC, "v1\n")
