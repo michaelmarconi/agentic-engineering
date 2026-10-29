@@ -3,11 +3,12 @@
 Each check passes or fails. `/adr` reads this while writing; the ADR reviewer reads it while
 checking, and quotes the ADR as evidence for every failure.
 
-1. **Shape.** The file is `docs/adrs/NNNN-<title-in-lowercase-with-hyphens>.md`, with a four-digit
-   number no other ADR in the folder uses. Its frontmatter has `status:` set to Draft,
-   Accepted, Rejected or Superseded and `date:` as YYYY-MM-DD. The sections are Context and
-   Problem Statement, Considered Options, and Decision Outcome with Consequences and
-   Confirmation under it, in that order.
+1. **Shape.** The file is `docs/adrs/NNNN-<subject>.md`, with a four-digit number no other ADR in
+   the folder uses. The subject is three to five lowercase words joined by hyphens, naming what
+   the decision is about, such as `0004-session-data-storage.md`, not the decision itself. Its
+   frontmatter has `status:` set to Draft, Accepted, Rejected or Superseded and `date:` as
+   YYYY-MM-DD. The sections are Context and Problem Statement, Considered Options, Decision
+   Outcome with Consequences and Confirmation under it, and Open questions, in that order.
 2. **Title states the decision.** The title names the option chosen, such as "Store sessions in
    Redis", not the topic, such as "Session storage". While no option is chosen yet, a title
    naming the question passes.
@@ -19,8 +20,8 @@ checking, and quotes the ADR as evidence for every failure.
 5. **Real options.** Considered Options lists at least two options that could each meet the
    need, and each option not chosen says why it was rejected.
 6. **Outcome.** Decision Outcome names one of the considered options and gives the reason for
-   choosing it. While the person has not chosen, Decision Outcome says so and the ADR stays
-   Draft.
+   choosing it. While the person has not chosen, Decision Outcome says so, Open questions asks for
+   the choice, and the ADR stays Draft.
 7. **Consequences.** Consequences names at least one good and one bad result of the choice.
 8. **Confirmation.** Confirmation says what the decision applies to, as a concern such as "any
    code that stores or reads session data", never as file paths, and how to check the code
@@ -37,3 +38,5 @@ checking, and quotes the ADR as evidence for every failure.
     while an ADR does not, so the reference would go stale.
 11. **No overlap.** No other Draft or Accepted ADR in `docs/adrs/` decides the same thing or
     contradicts this one, unless this one supersedes it.
+12. **Accepted means settled.** An Accepted or Superseded ADR has no open questions: its Open
+    questions section is empty or says only "None." A Draft or Rejected ADR may have some.

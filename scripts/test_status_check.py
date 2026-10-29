@@ -238,7 +238,7 @@ def adr(status="Draft", extra="", body="Chosen option: Redis, because it is fast
 class AdrWorkspace(Workspace):
     def setUp(self):
         super().setUp()
-        self.path = os.path.join(self.tmp.name, "docs", "adrs", "0001-session-storage.md")
+        self.path = os.path.join(self.tmp.name, "docs", "adrs", "0001-session-data-storage.md")
 
 
 class Adr(AdrWorkspace):
@@ -309,7 +309,7 @@ class Adr(AdrWorkspace):
         self.assertIsNotNone(self.edit("status: Rejected", "status: Accepted"))
 
     def put_replacement(self, status="Accepted", supersedes="0001", number="0002"):
-        path = os.path.join(self.tmp.name, "docs", "adrs", f"{number}-session-storage.md")
+        path = os.path.join(self.tmp.name, "docs", "adrs", f"{number}-session-data-storage.md")
         with open(path, "w") as f:
             f.write(adr(status, extra=f"supersedes: {supersedes}\n"))
 
