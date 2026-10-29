@@ -17,8 +17,7 @@ the person sees an error even though their action succeeded.
 - Send through a queue: requests add the email to a queue and a separate worker sends it.
 - Send in the request: rejected because a slow or failing provider slows or fails the person's
   request.
-- Send in a background thread of the web process: rejected because emails waiting in memory are
-  lost when the process restarts.
+- Send in a background thread of the web process.
 
 ## Decision Outcome
 
@@ -40,4 +39,4 @@ the worker calls the email provider.
 
 ## Open questions
 
-- How long may an email wait in the queue before someone is alerted?
+- Why was sending in a background thread of the web process rejected?
