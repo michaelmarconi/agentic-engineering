@@ -1,7 +1,8 @@
 ---
 # Change status only through the sdlc plugin's skills, which check each change; a change made by hand is not checked.
-status: Accepted
+status: Draft
 date: 2026-10-20
+supersedes: 0001
 ---
 
 # Store sessions in Redis
@@ -36,3 +37,7 @@ under 1 ms per request in our load test, and lets the server end a session at on
 Applies to: any code that stores or reads session data.
 Checked by: inspection that sessions are read and written only through Redis, and that nothing
 reads the old sessions table.
+
+## Open questions
+
+None.

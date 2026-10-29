@@ -34,3 +34,7 @@ sessions disappear on their own.
 Applies to: `src/session/store.ts` and `src/session/middleware.ts`.
 Checked by: a test that starts two servers against one Redis and reads on one a session made on
 the other.
+
+## Open questions
+
+None.

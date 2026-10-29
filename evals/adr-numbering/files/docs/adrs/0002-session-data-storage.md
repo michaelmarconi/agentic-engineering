@@ -37,3 +37,7 @@ under 1 ms per request in our load test, and lets the server end a session at on
 Applies to: any code that stores or reads session data.
 Checked by: inspection that sessions are read and written only through Redis, and that nothing
 reads the old sessions table.
+
+## Open questions
+
+None.

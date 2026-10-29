@@ -29,3 +29,7 @@ Chosen option: store sessions in Postgres, because every server already connects
 
 Applies to: any code that stores or reads session data.
 Checked by: inspection that sessions are read and written only through the sessions table.
+
+## Open questions
+
+None.
