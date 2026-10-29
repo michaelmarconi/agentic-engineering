@@ -13,7 +13,7 @@ directory if unset) or absolute. A draft that is never written to a file, such a
 uses `Document: issue draft` and carries the draft between `=== DRAFT ===` and
 `=== END DRAFT ===` lines in the request.
 
-Every review has two parts that run side by side: the skill's own reviewer (spec, brief, adr or
+Every review has two parts that run side by side: the skill's own reviewer (spec, brief, adr, plan or
 issue) and the shared language checker, which checks the wording (see docs/adrs/0013).
 
 - Before either starts, it saves the document's text. A part joins the latest review of that
@@ -72,6 +72,7 @@ REVIEWERS = {
     "brief-reviewer": ("brief", []),
     "adr-reviewer": ("adr", ["docs/adrs/"]),
     "issue-reviewer": ("issue", []),
+    "plan-reviewer": ("plan", ["docs/specs/", "docs/adrs/", "docs/plans/"]),
 }
 
 
