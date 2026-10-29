@@ -6,6 +6,29 @@ What changed in each version of the plugin, newest first. Versions follow
 past a major version: it says what you need to change in your documents. Until 1.0.0, any
 minor version may need such a change, and its entry says so.
 
+## [0.8.0] - 2026-10-29
+
+### Added
+
+- A language checker reads every document `/spec`, `/brief`, `/adr` and `/issue` write, at the
+  same time as the skill's reviewer, and reports any words someone new to your project could not
+  follow. The skill corrects what both reports find in its one round of corrections, and the
+  correction checker checks those corrections too. The reasons, with the measurements behind
+  them, are in this plugin's ADR 0013.
+- A Plain words rule in the lifecycle page says what the checker holds documents to: computing
+  terms are used freely, a term from your product's own field gets a footnote defining it where
+  it first appears, and anything else a newcomer would not know, such as a team nickname or a
+  figure of speech, is rewritten in plain words.
+
+### Changed
+
+- The brief's rubric no longer has its own plain words check, since the language checker now
+  does that job for every skill.
+- The note at the top of a new spec or ADR, and the prompt in the spec template's Problem
+  section, are reworded in plain words.
+- When a new spec conflicts with another spec, the hand-over names that spec and the rule that
+  conflicts, since the spec itself cannot refer to it.
+
 ## [0.7.0] - 2026-10-28
 
 ### Changed
