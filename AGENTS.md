@@ -25,7 +25,7 @@ everything else is judgement.
      plugin, so the script tests below fail on a skill that breaks one.
    - Optional `scripts/`, `references/` and `assets/`. References sit one level deep, and
      `SKILL.md` says when to read each one.
-4. **Reviewed.** Agents don't mark their own homework. Every skill that writes a document takes
+4. **Reviewed.** No agent checks its own work. Every skill that writes a document takes
    it through the review sequence that [docs/lifecycle.md](docs/lifecycle.md#review-process)
    describes, and [ADR 0010](docs/adrs/0010-check-corrections-instead-of-reviewing-again.md)
    explains: review once, correct once, then check only the corrections. To build it into a
@@ -37,15 +37,18 @@ everything else is judgement.
      reads the rubric through `${CLAUDE_PLUGIN_ROOT}`, and reads only the files its own
      definition names. It reports pass or fail for each check, quoting the evidence for each
      failure, then Other findings, Needs a person and Suggestions.
-   - The skill starts the reviewer, then the shared correction checker
-     (`agents/correction-checker.md`), with a request whose first line is `Document: <path>`.
-     The review relay hook (`scripts/review_relay.py`, [ADR 0011](docs/adrs/0011-pass-the-review-to-the-correction-checker-by-a-hook.md))
-     reads that line to save the document before the review and the report after it, and
-     attaches both to the checker's request, so the skill never copies them. Add the new
+   - The skill starts the reviewer and the shared language checker
+     (`agents/language-checker.md`, [ADR 0013](docs/adrs/0013-check-wording-with-a-separate-language-checker.md))
+     side by side, then the shared correction checker (`agents/correction-checker.md`), each
+     with a request whose first line is `Document: <path>`. The review relay hook
+     (`scripts/review_relay.py`, [ADR 0011](docs/adrs/0011-pass-the-review-to-the-correction-checker-by-a-hook.md))
+     reads that line to save the document before the review and both reports after it, and
+     attaches them to the checker's request, so the skill never copies them. Add the new
      reviewer and its skill's files to the hook's `REVIEWERS` table. A document that must not
      be written to the working tree, such as `/issue`'s draft, uses `Document: issue draft` and
      carries the draft between `=== DRAFT ===` and `=== END DRAFT ===` lines.
-   - The correct step reads the rubric again, corrects only what the report lists, turns each
+   - The correct step reads the rubric and the Plain words rule again, corrects only what the
+     reports list, turns each
      decision for the person into an open question, leaves suggestions alone and changes
      nothing else. A failed correction check stops and shows the person; there is never a
      second review of the skill's own corrections.
@@ -104,6 +107,12 @@ everything else is judgement.
     person's session uses. Reviewer agents set `model:` to a model alias (such as `sonnet`), so
     the judgement that gates a document stays consistent. The README names the models the evals
     pass on; when a model changes or one is added, rerun the evals on it before claiming it.
+13. **Plain words.** Everything written for people in this repository follows the
+    [Plain words](docs/lifecycle.md#plain-words) rule, as if the plugin had written it: the README,
+    the pages under `docs/`, commit messages, pull request descriptions and Claude's replies while
+    working here. Files written for Claude, such as a `SKILL.md`, a rubric or an agent, may use
+    the lifecycle's own terms, since Claude reads them with the lifecycle page in hand.
+
 ## This repository's own documents
 
 This repository keeps its own brief, `docs/brief.md`, and its own ADRs in `docs/adrs/`, in the
@@ -118,10 +127,11 @@ plan mode.
   about building it.
 - Each brief or ADR goes through the review sequence in
   [docs/lifecycle.md](docs/lifecycle.md#review-process), run by hand. Start an agent that follows
-  `agents/brief-reviewer.md` or `agents/adr-reviewer.md`, reading `${CLAUDE_PLUGIN_ROOT}` as this
-  repository's root, and keep an exact copy of the document as reviewed. Correct once, then start
-  an agent that follows `agents/correction-checker.md`. Without the plugin installed, no hook
-  attaches the checker's blocks, so write the report and the copy into a file outside the
+  `agents/brief-reviewer.md` or `agents/adr-reviewer.md`, and beside it one that follows
+  `agents/language-checker.md`, each reading `${CLAUDE_PLUGIN_ROOT}` as this repository's root,
+  and keep an exact copy of the document as reviewed. Correct once, then start an agent that
+  follows `agents/correction-checker.md`. Without the plugin installed, no hook attaches the
+  checker's blocks, so write both reports and the copy into a file outside the
   repository in the blocks the checker's definition names, and point the checker to that file.
   Agents are not allowed to save their reports as files, so copy each report into its file by a script, from
   Claude Code's record of the agent's run, never by retyping it, for the reason
@@ -148,6 +158,7 @@ evals/
 evals-failed-check/    # cases for what a skill does when the correction check fails; see Workflow
 agents/
   <name>-reviewer.md   # one reviewer per skill that writes documents
+  language-checker.md  # checks the wording beside every reviewer, for every skill
   correction-checker.md # checks the corrections after a review, for every skill
 hooks/
   hooks.json           # session map, status checks, the review relay, reads of the plugin's own files

@@ -1,7 +1,7 @@
 # The lifecycle rules
 
 This page holds the whole lifecycle: the documents it keeps, the steps that write them, the
-principles they follow and how every document is reviewed. The plugin gives this page to Claude
+principles they follow, the words they use and how every document is reviewed. The plugin gives this page to Claude
 at the start of every session in a repository that has a brief or a spec, so Claude knows how the
 steps fit together even when you run only one of them. The [README](../README.md) introduces the
 plugin and how to install it.
@@ -86,14 +86,44 @@ flowchart LR
 - **Drift is a finding, not a status.** `/audit` reports it with a suggested way back: fix the
   code, return the spec to Draft, or supersede the ADR.
 
+## Plain words
+
+Every document the plugin writes, including an issue it files, is for a reader who is new to the
+project: someone with a computer science degree but no knowledge of the product's field or of
+the conversations behind the document. So each one follows this rule:
+
+- **Computing terms**, such as "cache", "idempotent" or "HTTP", are used freely, and so are the
+  product's own name and job titles that say what the person does, such as "accounts clerk".
+- **Domain terms**, words from the product's own field such as a trade, legal or business term,
+  get a Markdown footnote (`[^1]`) defining them where they first appear, unless that sentence
+  already explains them. A domain term that is an acronym, such as "OTIF" for "on time, in full",
+  gives its full form in the footnote. A title cannot hold a footnote, so a domain term in a title
+  is defined at its first use in the text. Each document defines its own terms, so it never
+  depends on a glossary elsewhere that could fall out of date.
+- **Anything else a newcomer would not know** is rewritten in plain words or spelled out, never
+  footnoted: a name used only inside the code or the team, an acronym that is neither a computing
+  term nor a domain term, or a phrase whose meaning the reader would have to guess. Read every
+  phrase literally, title included: a figure of speech, an idiom, a nickname for a situation or a
+  word used in a special sense of the team's own fails even when a reader could guess it, and is
+  replaced by the plain statement it stands for. For example, "the order hitchhikes on the nightly
+  export" becomes "the order is included in the nightly export".
+
+An issue the plugin files is read by the plugin's maintainers, who know the lifecycle, so in an
+issue the lifecycle's own terms, such as "spec" or "Ready to build", count as plain too.
+
+The rule covers only what the plugin writes. Your own documents, code and messages follow your
+project's rules.
+
 ## Review process
 
-Agents don't mark their own homework. The agent that writes a document can miss its own
+No agent checks its own work. The agent that writes a document can miss its own
 mistakes, so every document a skill writes is checked by a reviewer agent before a person sees
 it. The reviewer is a separate Claude that starts fresh, without the conversation, so it judges
 the page as a newcomer would. It checks the document against the skill's rubric: a short list of
 pass-or-fail checks, such as "each requirement has exactly one rule". The same rubric guides the
-skill while it writes.
+skill while it writes. Beside it, at the same time, the language checker, shared by every skill,
+reads the document for words a newcomer could not follow, by the [Plain words](#plain-words)
+rule.
 
 Every review follows the same fixed sequence:
 
@@ -113,16 +143,19 @@ flowchart LR
 |---|---|---|---|
 | **Draft** | The drafting agent: Claude running the skill, with you | Writes the document from your conversation | The document |
 | **Review** | The skill's reviewer, such as `agents/spec-reviewer.md` | Checks the whole document against the skill's rubric | The review report: pass or fail for each check, quoting the check and the words that break it |
-| **Correct** | The drafting agent | Makes each correction once; a decision only you can make becomes an open question, never a guess | The corrected document |
+| | `agents/language-checker.md`, shared by every skill, at the same time | Checks every phrase of the document against the [Plain words](#plain-words) rule | The wording report: pass or fail, quoting each phrase that breaks the rule |
+| **Correct** | The drafting agent | Makes each correction from both reports once; a decision only you can make becomes an open question, never a guess | The corrected document |
 | **Correction check** | `agents/correction-checker.md`, shared by every skill | Checks only that each correction was made and that none broke anything; anything else it notices is a suggestion | The correction report: pass or fail |
 | **Sign-off** | You | Read the document and the reports, settle the open questions, and set the status | The document at its next status |
 
-If the review passes, the skill skips straight to you. If the correction check fails, the skill
+If both reports pass with nothing left for you to decide, the skill hands the document to you
+with no correction step. If the correction check fails, the skill
 stops and shows you why, rather than trying again.
 
 | Term | Meaning |
 |---|---|
 | **Rubric** | A skill's short list of pass-or-fail checks. The skill follows it while drafting; the reviewer checks against it. |
+| **Review** | The skill's reviewer and the language checker, run side by side on the same document. |
 | **Finding** | Anything a review reports. It is one of the three kinds below. |
 | **Failure** | A finding that breaks a rubric check. The drafting agent corrects it. |
 | **Decision** | A finding only you can settle, such as which of two readings you meant. It becomes an open question in the document. |
@@ -130,7 +163,9 @@ stops and shows you why, rather than trying again.
 
 There are no repeated rounds of review and correction. We measured this on specs with planted
 mistakes: one review finds nearly every one, and each further round of corrections brings new
-problems.
+problems. The wording has its own checker because we measured that too: a checker that does
+only that job found more of the jargon we added on purpose than the same rule added to each
+rubric.
 
 `/build` follows the same sequence for code: the build agent corrects what the reviewers find
 once, and a correction check follows. A clean review or a passing correction check merges the work

@@ -62,12 +62,13 @@ written into your repository.
 Before you see the draft, a reviewer agent checks it against
 [the issue rubric](../../skills/issue/references/rubric.md). Among other things, it searches
 your repository for every name and phrase in the draft, since anything found there is a leak.
-The skill corrects what the reviewer finds, once, and has the corrections checked (see
+At the same time, a language checker reads it for words the plugin's maintainers could not
+follow, by the [Plain words](../lifecycle.md#plain-words) rule. The skill corrects what both find, once, and has the corrections checked (see
 [Review process](../lifecycle.md#review-process)).
 
 ## Filing
 
-You see the draft exactly as it would be filed, with the reviewer's report. Nothing is filed
+You see the draft exactly as it would be filed, with both reports. Nothing is filed
 until you say yes. Then `/issue` files it with the GitHub command-line tool,
 [`gh`](https://cli.github.com/), if that is installed and signed in. Otherwise it gives you a
 link that opens GitHub's new-issue page already filled in[^query], and you press Submit. Ask for

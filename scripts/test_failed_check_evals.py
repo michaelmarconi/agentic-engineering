@@ -76,6 +76,12 @@ class FailedCheckEvals(unittest.TestCase):
             self.assertTrue(os.path.exists(os.path.join(ROOT, "agents", file)), file)
             self.assertIn("\nname: %s\n" % name, self.read(folder, file))
 
+    def test_every_agent_in_this_repository_has_a_stand_in(self):
+        # A real agent left in the copy would make a run's result depend on a model's judgement.
+        stand_ins = set(os.listdir(os.path.join(ROOT, "evals-failed-check", "agents")))
+        for file in os.listdir(os.path.join(ROOT, "agents")):
+            self.assertIn(file, stand_ins)
+
     def test_help_describes_the_command(self):
         done = subprocess.run([sys.executable, SCRIPT, "--help"], capture_output=True, text=True)
         self.assertEqual(done.returncode, 0)

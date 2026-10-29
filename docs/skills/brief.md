@@ -64,8 +64,10 @@ be measured, nothing is guessed or chooses how to build it, and every statement 
 document in the repository says no more than that document does. It also checks that the brief
 refers to no spec, ADR or plan, by hyperlink, path or title, since those can change without the
 brief being touched and the reference would go stale. The reviewer sees only the brief and the
-documents it links to, not your conversation, so it judges the page as a newcomer would.
-`/brief` corrects what the reviewer finds, once, and has the corrections checked (see
+documents it links to, not your conversation, so it judges the page as a newcomer would. At
+the same time, a language checker reads it for words a newcomer could not follow, by the
+[Plain words](../lifecycle.md#plain-words) rule: a term from your field gets a footnote, and
+team shorthand is rewritten. `/brief` corrects what both find, once, and has the corrections checked (see
 [Review process](../lifecycle.md#review-process)); then you get the brief with the reports.
 
 The reviewer cannot tell whether the brief matches what you said, only what it links to, so read

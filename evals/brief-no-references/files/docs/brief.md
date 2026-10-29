@@ -1,6 +1,6 @@
 # Courtside
 
-Courtside lets members of Elm Park Tennis Club book courts online, so they stop clashing over the whiteboard.
+Courtside lets members of Elm Park Tennis Club book courts online, so two members no longer book the same court for the same time.
 
 ## Problem
 

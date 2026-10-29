@@ -1,5 +1,5 @@
 ---
-# Change status only through the sdlc plugin's skills. A hand edit skips the lifecycle checks.
+# Change status only through the sdlc plugin's skills, which check each change; a change made by hand is not checked.
 status: Draft
 ---
 
@@ -7,7 +7,7 @@ status: Draft
 
 ## Problem
 
-<Who is stuck, and what happens to them today, told as one specific situation.>
+<Who has the problem, and what happens to them today, told as one specific situation.>
 
 ## Goal
 

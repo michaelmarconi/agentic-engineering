@@ -11,7 +11,9 @@ the case passes. So the issue must stand on its own, and because the plugin's re
 public, it must carry nothing from the person's repository.
 
 Before drafting, read [references/rubric.md](references/rubric.md): it is the list of checks
-the reviewer will apply, so drafting to it leaves less to correct.
+the reviewer will apply, so drafting to it leaves less to correct. Write in plain words, as
+the Plain words section of [the lifecycle page](../../docs/lifecycle.md#plain-words) says: a
+language checker holds every draft to it.
 
 ## Gather
 
@@ -54,8 +56,9 @@ each round of corrections brings new mistakes. Because the draft is never saved 
 goes in the requests whole, title and body, word for word, between marker lines; a plugin hook
 reads them to keep a copy of the draft as reviewed, outside the person's repository.
 
-1. **Review.** Start the `sdlc:issue-reviewer` agent in the foreground, not in the background,
-   with this request, laid out exactly as shown:
+1. **Review.** Start two agents in the foreground, not in the background, both in one message
+   so they run side by side: the `sdlc:issue-reviewer` agent and the `sdlc:language-checker`
+   agent, which checks the wording. Give each this request, laid out exactly as shown:
 
    ```
    Document: issue draft
@@ -67,16 +70,18 @@ reads them to keep a copy of the draft as reviewed, outside the person's reposit
    === END DRAFT ===
    ```
 
-   It reads everything else it needs itself. Wait for its report before changing the draft. If
-   it passes with nothing under Needs a person, go straight to showing the person.
-2. **Correct, once.** Read the rubric again, then correct only what the report lists: each
-   failed check and each item under Other findings. Whether a detail is safe to share is the
+   Each reads everything else it needs itself. Wait for both reports before changing the draft.
+   If both pass with nothing under Needs a person, go straight to showing the person.
+2. **Correct, once.** Read the rubric and the Plain words rule again, then correct only what
+   the reports list: each failed check and each item under Other findings in the review report,
+   and each finding in the wording report. A wording item under Needs a person, whose
+   meaning only the person knows, is a decision like any other. Whether a detail is safe to share is the
    person's decision, so a finding under Needs a person goes to them as a question, never a
-   guess. Leave suggestions alone and change nothing else, since an edit beyond the report is
-   the likeliest way to break something. If nothing in the report was yours to correct, there
+   guess. Leave suggestions alone and change nothing else, since an edit beyond the reports is
+   the likeliest way to break something. If nothing in the reports was yours to correct, there
    is nothing to check: go straight to showing the person.
 3. **Check the corrections.** Start the `sdlc:correction-checker` agent in the foreground with
-   the same layout, holding the corrected draft, and nothing more: the hook attaches the report
+   the same layout, holding the corrected draft, and nothing more: the hook attaches both reports
    and the draft as reviewed, word for word.
 
    ```
@@ -102,7 +107,7 @@ them, says to file it anyway: it is their information to share.
 Run `python3 "${CLAUDE_SKILL_DIR}/scripts/issue.py" account` to learn how it would be filed:
 `gh <login>` means with the GitHub CLI as that account, `link` means they submit it in their browser.
 Whether the check passed or failed, end here. Show the person the draft exactly as it would be
-filed, the review report and the check's report, if there was one, and, for `gh <login>`, that it
+filed, the review and wording reports and the check's report, if there was one, and, for `gh <login>`, that it
 will appear under that account, since their name is public on the issue and it may be a work
 account. Leave out the decisions the reports list for the person: say how many items must be settled
 before filing, those decisions plus any correction the check found not made or broken, say you will

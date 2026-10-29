@@ -1,5 +1,5 @@
 ---
-# Change status only through the sdlc plugin's skills. A hand edit skips the lifecycle checks.
+# Change status only through the sdlc plugin's skills, which check each change; a change made by hand is not checked.
 status: Accepted
 date: 2026-10-20
 supersedes: 0001
@@ -16,8 +16,8 @@ query: at peak it is 40% of all queries and adds about 15 ms to every request.
 
 - Store sessions in Redis: an in-memory store shared by every server, which we already run for
   caching.
-- Keep sessions in Postgres: lost because it keeps the load and the delay described above.
-- Signed cookies holding the whole session: lost because a session cannot be ended from the
+- Keep sessions in Postgres: rejected because it keeps the load and the delay described above.
+- Signed cookies holding the whole session: rejected because a session cannot be ended from the
   server, for example when an account is locked.
 
 ## Decision Outcome
