@@ -7,12 +7,12 @@ status: 📝 Draft
 
 ## Specs
 
-- [Customs hold alerts](../specs/customs-hold-alerts.spec.md)
+- [Customs hold alerts](../specs/customs-hold-alerts.spec.md)[^hold]
   - Requirement: Release recorded
 
 ## ADRs
 
-- [0003 Keep each shipment's status as a history of events](../adrs/0003-shipment-status-history.md)
+- Architecture decision record (ADR) [0003 Keep each shipment's status as a history of events](../adrs/0003-shipment-status-history.md)
 
 ## Decisions
 
@@ -21,13 +21,15 @@ status: 📝 Draft
 
 ## Plan
 
-Releases reported by the customs broker are ignored today, so released containers stay in the
-list of held containers. A release becomes a "cleared" status event, recorded through
-`record_status()` in `src/shipments.py`, the way `src/broker/updates.py` already records holds,
-as the status history ADR requires. The list in `src/holds/list.py` already reads each
-container's latest event, so a cleared container drops out of it with no change there. Telling
-anyone about a release is left for later, as [the brief](../brief.md) says. Each release
-is also kept in a new Redis cache, so the page can read it quickly.
+A customs hold stops a shipping container from leaving the port, and a release ends it. The customs
+broker[^broker] reports each hold and release to the system, but releases are ignored today, so
+released containers stay in the list of held containers. A release becomes a "cleared" status
+event, "cleared" being the status of a container whose hold has ended, recorded through
+`record_status()` in `src/shipments.py`, the way `src/broker/updates.py` already records holds, as
+ADR 0003 requires. The list in `src/holds/list.py` already shows only containers whose latest event
+is "held", so a cleared container leaves it with no change there. Emailing the importer's logistics
+coordinator on a release is left for later, as [the brief](../brief.md) says. Each release is
+also kept in a new Redis cache, so the page can read it quickly.
 
 1. Write the failing test from the spec's scenario: hold at 2027-02-12 09:12, release at
    2027-02-13 14:30.
@@ -42,3 +44,7 @@ if message["type"] == "released":
 ## Open questions
 
 - None.
+
+[^hold]: An order from the customs authority that a container stay where it is until its goods
+    are inspected or its paperwork is approved.
+[^broker]: A licensed agent who deals with the customs authority on the importer's behalf.
