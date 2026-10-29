@@ -48,13 +48,15 @@ code already uses is not a decision, and nor is anything a spec or an ADR alread
 
 ## Ask
 
-Tell the person how many decisions there are, naming the count only, not the decisions: each
-comes up when you reach it. Then ask the first only, and wait for the answer.
-Each question gives your proposed answer and where it belongs, with a reason for both: in this
-plan, if it matters only to this work, or in an ADR, if later work will have to follow it. Give
-any alternatives as possible answers, not as further questions, and end with a single question,
-such as whether they agree with your proposal. Ask the next once the first is settled. If an answer adds or removes a decision, say so and give the new count. With no
-decisions, say so and go straight to writing.
+Tell the person how many decisions there are, naming the count only, not the decisions: each comes
+up when you reach it. Then ask the first only, and wait for the answer. Each question gives your
+proposed answer and where it belongs, with a reason for both: in this plan, if it matters only to
+this work, or in an ADR, if later work will have to follow it. Choosing a service, library,
+protocol or way of storing data that the rest of the code would then use the same way is an ADR,
+even if only this work uses it so far. Give any alternatives as possible answers, not as further
+questions, and end with a single question, such as whether they agree with your proposal. Ask the
+next once the first is settled. If an answer adds or removes a decision, say so and give the new
+count. With no decisions, say so and go straight to writing.
 
 ## Write
 
