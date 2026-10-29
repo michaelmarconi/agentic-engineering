@@ -75,7 +75,8 @@ The plugin gives Claude three kinds of help to work with these documents:
   the document as it was reviewed, word for word, keeping them in the plugin's own data folder
   outside your repository until the check is done. Another lets the plugin's skills and agents
   read the plugin's own files, such as a rubric, without asking you each time; it approves
-  reads inside the plugin's folder only. They need Python 3.
+  reads inside the plugin's folder only. They need Python 3: without it, Claude's edits to your
+  specs and ADRs are refused until you install it.
 
 Every document a skill writes is checked by a reviewer agent before you see it, and by a
 language checker that checks someone new to your project could follow its words. Apart from the
