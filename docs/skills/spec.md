@@ -95,8 +95,8 @@ Three things keep specs in this shape:
   `🟢 Ready to build` while Open questions is not empty, setting `✅ Built`, a change to a
   `🟢 Ready to build` or `✅ Built` spec that does not return it to `📝 Draft`, or a status
   without its emoji. `✅ Built` is refused for now because only `/build` may set it, after
-  its own review passes, and `/build` is not built yet. Plans will get the same kind of check
-  when `/plan` is built.
+  its own review passes, and `/build` is not built yet. Plans get the same kind of check; see
+  [`/plan`](plan.md).
 - **Audit.** [`/audit`](audit.md) finds specs and code that no longer agree, such
   as after a spec was edited by hand, which the hook does not see.
 
