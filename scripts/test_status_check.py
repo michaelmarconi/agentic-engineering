@@ -568,6 +568,145 @@ class AdrEmoji(AdrWorkspace):
     put_replacement = Adr.put_replacement
 
 
+def plan(status="📝 Draft", specs=None, adrs="None.", questions="None.", decisions="None."):
+    if specs is None:
+        specs = "- [Thing](../specs/thing.spec.md)\n  - Requirement: X"
+    return (
+        "---\n"
+        "# Change status only through the sdlc plugin's skills, which check each change; a change made by hand is not checked.\n"
+        f"status: {status}\n"
+        "---\n\n# Thing release\n\n"
+        f"## Specs\n\n{specs}\n\n## ADRs\n\n{adrs}\n\n## Decisions\n\n{decisions}\n\n"
+        f"## Plan\n\nDo the thing.\n\n## Open questions\n\n{questions}\n"
+    )
+
+
+class PlanWorkspace(Workspace):
+    def setUp(self):
+        super().setUp()
+        self.spec_path = self.path
+        self.path = os.path.join(self.tmp.name, "docs", "plans", "2026-10-29-thing-release.md")
+        self.put_at(self.spec_path, spec("🟢 Ready to build"))
+
+    def put_at(self, path, text):
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        with open(path, "w") as f:
+            f.write(text)
+
+    def ready(self, **parts):
+        """Put a Draft plan, then set it Ready to build on its own."""
+        self.put(plan(**parts))
+        return self.edit("status: 📝 Draft", "status: 🟢 Ready to build")
+
+
+class Plan(PlanWorkspace):
+    def test_new_draft_allowed(self):
+        self.assertIsNone(self.write(plan()))
+
+    def test_new_ready_refused(self):
+        self.assertIn("Draft", self.write(plan("🟢 Ready to build")))
+
+    def test_losing_status_refused(self):
+        self.put(plan())
+        self.assertIn("status", self.edit("status: 📝 Draft\n", ""))
+
+    def test_draft_edit_allowed(self):
+        self.put(plan())
+        self.assertIsNone(self.edit("Do the thing.", "Do the thing well."))
+
+    def test_draft_to_ready_allowed(self):
+        self.assertIsNone(self.ready())
+
+    def test_template_frontmatter_with_comment_line_read(self):
+        with open(os.path.join(HERE, "..", "skills", "plan", "assets", "template.md"), encoding="utf-8") as f:
+            self.assertEqual(status_check.status_of(f.read()), "📝 Draft")
+
+    def test_ready_with_other_changes_refused(self):
+        self.put(plan())
+        reason = self.write(plan("🟢 Ready to build").replace("Do the thing.", "Do it."))
+        self.assertIn("on its own", reason)
+
+    def test_ready_with_open_questions_refused(self):
+        self.assertIn("open questions", self.ready(questions="- Which queue?"))
+
+    def test_ready_without_open_questions_section_refused(self):
+        self.put(plan().replace("## Open questions\n\nNone.\n", ""))
+        self.assertIn("open questions", self.edit("status: 📝 Draft", "status: 🟢 Ready to build"))
+
+    def test_ready_needs_the_spec_to_exist(self):
+        reason = self.ready(specs="- [Gone](../specs/gone.spec.md)\n  - Requirement: X")
+        self.assertIn("gone.spec.md", reason)
+
+    def test_ready_needs_the_spec_settled(self):
+        self.put_at(self.spec_path, spec())
+        self.assertIn("Draft", self.ready())
+
+    def test_ready_allowed_on_a_built_spec(self):
+        self.put_at(self.spec_path, spec("✅ Built"))
+        self.assertIsNone(self.ready())
+
+    def test_ready_needs_each_requirement_in_its_spec(self):
+        reason = self.ready(specs="- [Thing](../specs/thing.spec.md)\n  - Requirement: Y")
+        self.assertIn("Requirement: Y", reason)
+
+    def test_ready_needs_a_requirement_under_each_spec(self):
+        self.assertIn("requirement", self.ready(specs="- [Thing](../specs/thing.spec.md)"))
+
+    def test_ready_needs_something_to_build(self):
+        self.assertIn("nothing", self.ready(specs="None."))
+
+    def test_ready_on_an_accepted_adr_alone_allowed(self):
+        self.put_at(os.path.join(self.tmp.name, "docs", "adrs", "0003-history.md"), adr("👍 Accepted"))
+        self.assertIsNone(self.ready(specs="None.", adrs="- [0003 History](../adrs/0003-history.md)"))
+
+    def test_ready_needs_each_adr_accepted(self):
+        self.put_at(os.path.join(self.tmp.name, "docs", "adrs", "0003-history.md"), adr())
+        reason = self.ready(adrs="- [0003 History](../adrs/0003-history.md)")
+        self.assertIn("0003-history.md", reason)
+
+    def test_ready_needs_each_adr_to_exist(self):
+        self.assertIn("0009-gone.md", self.ready(adrs="- [0009 Gone](../adrs/0009-gone.md)"))
+
+    def test_ready_refused_when_another_plan_names_the_requirement(self):
+        other = os.path.join(self.tmp.name, "docs", "plans", "2026-10-01-earlier.md")
+        self.put_at(other, plan())
+        self.assertIn("2026-10-01-earlier.md", self.ready())
+
+    def test_a_built_plan_does_not_block_the_requirement(self):
+        other = os.path.join(self.tmp.name, "docs", "plans", "2026-10-01-earlier.md")
+        self.put_at(other, plan("✅ Built"))
+        self.assertIsNone(self.ready())
+
+    def test_another_plan_for_another_requirement_allowed(self):
+        self.put_at(self.spec_path, spec("🟢 Ready to build", rule="The system SHALL do X.\n\n### Requirement: Y\n\nThe system SHALL do Y."))
+        other = os.path.join(self.tmp.name, "docs", "plans", "2026-10-01-earlier.md")
+        self.put_at(other, plan(specs="- [Thing](../specs/thing.spec.md)\n  - Requirement: Y"))
+        self.assertIsNone(self.ready())
+
+    def test_setting_built_refused(self):
+        self.put(plan("🟢 Ready to build"))
+        self.assertIn("build step", self.edit("status: 🟢 Ready to build", "status: ✅ Built"))
+
+    def test_changing_ready_plan_without_draft_refused(self):
+        self.put(plan("🟢 Ready to build"))
+        self.assertIn("Draft", self.edit("Do the thing.", "Do it."))
+
+    def test_changing_ready_plan_back_to_draft_allowed(self):
+        self.put(plan("🟢 Ready to build"))
+        self.assertIsNone(self.write(plan().replace("Do the thing.", "Do it.")))
+
+    def test_plain_word_status_refused_with_value_to_write(self):
+        self.assertIn("📝 Draft", self.write(plan("Draft")))
+
+    def test_file_in_a_subfolder_of_plans_ignored(self):
+        path = os.path.join(self.tmp.name, "docs", "plans", "old", "x.md")
+        self.assertIsNone(self.write(plan("🟢 Ready to build"), path=path))
+
+    def test_file_without_status_left_alone(self):
+        path = os.path.join(self.tmp.name, "docs", "plans", "README.md")
+        self.assertIsNone(self.write("# Notes\n", path=path))
+
+
 class Command(Workspace):
     def run_hook(self, payload):
         return subprocess.run(
