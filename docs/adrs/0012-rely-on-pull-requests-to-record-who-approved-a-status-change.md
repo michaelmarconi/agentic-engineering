@@ -14,8 +14,7 @@ one feature must do, Ready to build. Someone reading a document later may want t
 that decision and when, so they can ask them about it.
 
 Git, the version control system, does not reliably say who. Claude makes most of the commits, so
-its name is on them: on 2026-10-28, 85 of the 91 commits on this repository's main branch were
-by Claude. We have to decide where the record of who approved a status change lives.
+its name is on them: most of the commits on this repository's main branch are by Claude. We have to decide where the record of who approved a status change lives.
 
 We assume that the project puts every change, status changes included, through a pull request:
 a proposed change that a person reviews and approves on a code-hosting service such as GitHub
