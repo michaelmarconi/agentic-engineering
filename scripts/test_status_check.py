@@ -72,6 +72,13 @@ class Parsing(unittest.TestCase):
     def test_footnotes_after_open_questions_ignored(self):
         self.assertFalse(status_check.has_open_questions(spec() + "\n[^1]: A source.\n"))
 
+    def test_wrapped_footnotes_after_open_questions_ignored(self):
+        footnote = "\n[^1]: Settlement file, the nightly list of card payments the processor\n    paid us for.\n"
+        self.assertFalse(status_check.has_open_questions(spec() + footnote))
+
+    def test_question_after_wrapped_footnote_counts(self):
+        self.assertTrue(status_check.has_open_questions(spec() + "\n[^1]: A source\n    wrapped.\n\n- Who approves?\n"))
+
     def test_open_questions_present(self):
         self.assertTrue(status_check.has_open_questions(spec(questions="- Who approves?")))
 
@@ -143,6 +150,10 @@ class Transitions(Workspace):
     def test_draft_to_ready_with_other_changes_refused(self):
         self.put(spec())
         self.assertIn("on its own", self.write(spec("Ready to build", rule="The system SHALL do Y.")))
+
+    def test_ready_without_open_questions_section_named_in_refusal(self):
+        self.put(spec().split("\n## Open questions")[0])
+        self.assertIn("no Open questions section", self.edit("status: Draft", "status: Ready to build"))
 
     def test_draft_to_ready_with_questions_refused(self):
         self.put(spec(questions="- Who approves?"))
@@ -274,7 +285,7 @@ class Adr(AdrWorkspace):
 
     def test_accepting_without_open_questions_section_refused(self):
         self.put(adr().split("\n## Open questions")[0])
-        self.assertIn("open questions", self.edit("status: Draft", "status: Accepted"))
+        self.assertIn("no Open questions section", self.edit("status: Draft", "status: Accepted"))
 
     def test_rejecting_with_open_questions_allowed(self):
         self.put(adr(questions="- How long do sessions last?"))

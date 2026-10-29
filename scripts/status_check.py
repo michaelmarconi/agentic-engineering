@@ -105,20 +105,46 @@ def without_status(text, also=()):
     return [line for i, line in enumerate(lines) if i > end or not is_key(line, "status", *also)]
 
 
+def has_open_questions_section(text):
+    return any(line.strip().lower() == "## open questions" for line in text.splitlines())
+
+
 def has_open_questions(text):
+    """True if the Open questions section is missing or holds anything but "None.".
+
+    Footnote definitions, including their indented continuation lines, are not questions.
+    """
     lines = text.splitlines()
     starts = [i for i, line in enumerate(lines) if line.strip().lower() == "## open questions"]
     if not starts:
         return True
+    in_footnote = False
     for line in lines[starts[0] + 1:]:
         if line.startswith("# ") or line.startswith("## "):
             break
         if FOOTNOTE.match(line):
+            in_footnote = True
             continue
+        if in_footnote and (not line.strip() or line[0] in " \t"):
+            continue
+        in_footnote = False
         answer = line.strip().lstrip("-*").strip().strip("_*").strip().lower()
         if answer not in EMPTY_ANSWERS:
             return True
     return False
+
+
+def open_questions_refusal(name, text, status, kind):
+    if not has_open_questions_section(text):
+        return (
+            f"{name}: it has no Open questions section, so it cannot be {status}. Add the section "
+            f'from the template, holding "None." if nothing is open, and have the {kind} reviewed '
+            "again before the person signs it off."
+        )
+    return (
+        f"{name}: it still has open questions, so it cannot be {status}. Answer them "
+        f"with the person, or leave the {kind} as Draft."
+    )
 
 
 def after_edit(tool, tool_input, before):
@@ -215,10 +241,7 @@ def spec_rules(path, before, after, old, new):
             "this edit also changes the spec's content."
         )
     if new == "Ready to build" and has_open_questions(after):
-        return (
-            f"{name}: it still has open questions, so it cannot be Ready to build. Answer them "
-            "with the person, or leave the spec as Draft."
-        )
+        return open_questions_refusal(name, after, "Ready to build", "spec")
     return None
 
 
@@ -265,10 +288,7 @@ def adr_rules(path, before, after, old, new):
                 "person's sign-off; this edit also changes the ADR's content."
             )
         if new == "Accepted" and has_open_questions(after):
-            return (
-                f"{name}: it still has open questions, so it cannot be Accepted. Answer them "
-                "with the person, or leave the ADR as Draft."
-            )
+            return open_questions_refusal(name, after, "Accepted", "ADR")
         return None
     if old == "Accepted" and new == "Superseded":
         added = [line for line in frontmatter(after) or [] if is_key(line, "superseded-by")]
