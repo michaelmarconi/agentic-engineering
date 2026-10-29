@@ -393,11 +393,45 @@ class Relay(unittest.TestCase):
         self.put(SPEC, "v2\n")
         self.assertRefused(self.check(), "No review")
 
-    def test_a_correction_that_only_changes_spacing_counts_as_unchanged(self):
-        self.put(SPEC, "one two\n")
+    def test_a_correction_that_only_changes_spacing_still_counts(self):
+        # In Markdown a blank line or an indent can be the correction.
+        self.put(SPEC, "Intro\n- item\n")
         self.review()
-        self.put(SPEC, "one  two\n\n")
-        self.assertRefused(self.check(), "unchanged")
+        self.put(SPEC, "Intro\n\n- item\n")
+        self.assertAllowed(self.check())
+
+    def test_the_reviewers_copy_of_an_issue_draft_is_the_one_kept(self):
+        self.assertIsNone(self.agent("PreToolUse", LANGUAGE, issue_request(DRAFT + " ")))
+        self.assertIsNone(self.agent("PreToolUse", "sdlc:issue-reviewer", issue_request(DRAFT)))
+        self.assertIsNone(self.agent("PostToolUse", LANGUAGE, issue_request(DRAFT + " "), response=WORDING))
+        self.assertIsNone(self.agent("PostToolUse", "sdlc:issue-reviewer", issue_request(DRAFT), response=REPORT))
+        self.assertRefused(self.check(prompt=issue_request(DRAFT)), "unchanged")
+
+    def test_a_newer_review_missing_a_report_is_not_covered_by_an_older_one(self):
+        self.put(SPEC, "v1\n")
+        self.review()
+        self.put(SPEC, "v2\n")
+        self.review(report="", wording="second wording")
+        self.put(SPEC, "v3\n")
+        self.assertRefused(self.check(), "No review")
+
+    def test_reports_of_agents_this_version_does_not_know_are_ignored(self):
+        self.put(SPEC, "v1\n")
+        self.review()
+        for path in self.saved():
+            with open(path, encoding="utf-8") as f:
+                saved = json.load(f)
+            saved["reviews"][0]["reports"]["old-reviewer"] = "old"
+            with open(path, "w", encoding="utf-8") as f:
+                json.dump(saved, f)
+        self.put(SPEC, "v2\n")
+        self.assertAllowed(self.check())
+
+    def test_a_check_with_nothing_saved_leaves_no_folder_behind(self):
+        self.put(SPEC, "v1\n")
+        self.check()
+        self.agent("PostToolUse", "sdlc:correction-checker", f"Document: {SPEC}\nCheck.", response="ok")
+        self.assertFalse(os.path.exists(os.path.join(self.data, "reviews")))
 
     def test_background_runs_are_left_alone_when_nothing_is_saved(self):
         self.put(SPEC, "v1\n")

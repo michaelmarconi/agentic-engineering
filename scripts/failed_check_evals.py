@@ -7,8 +7,8 @@ name from evals-failed-check/agents/ (the checker always fails with a known find
 stand-in reviewer always reports a failure the drafting agent can correct, so that every run
 reaches the check, and the stand-in language checker always passes), makes the case folders
 under evals-failed-check/ the copy's only evals, and runs `claude plugin eval` on the copy with
-any further arguments given. The plugin itself is never changed. The run's results are copied to evals-failed-check/results/ and the temporary
-folder is deleted.
+any further arguments given. The plugin itself is never changed. The run's results are copied
+to evals-failed-check/results/ and the temporary folder is deleted.
 
 Example:
   python3 scripts/failed_check_evals.py --case 'spec-*' --model sonnet --judge-model sonnet \\
