@@ -29,7 +29,7 @@ checking, and quotes the plan as evidence for every failure.
 9. **Ready means ready.** A plan with status `🟢 Ready to build` or `✅ Built` has an Open
    questions section that is empty or says only "None."
 10. **No overlap.** No other plan under `docs/plans/` that is `📝 Draft` or `🟢 Ready to build`
-    names a requirement of the same spec that this plan names.
+    names a requirement that this plan names.
 
 The reviewer also passes on plan mode's advice for the Plan section as suggestions, never as
 failures: start with why the work is being done and what it leaves for later; give one

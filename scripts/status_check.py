@@ -196,20 +196,16 @@ def has_open_questions_section(text):
 def has_open_questions(text):
     """True if the Open questions section is missing or holds anything but "None.".
 
-    Footnote definitions, including their indented continuation lines, are not questions.
+    Footnote definitions, including their continuation lines, are not questions.
     """
-    lines = text.splitlines()
-    starts = [i for i, line in enumerate(lines) if line.strip().lower() == "## open questions"]
-    if not starts:
+    lines = section(text, "Open questions")
+    if lines is None:
         return True
     in_footnote = False
-    for line in lines[starts[0] + 1:]:
-        if line.startswith("# ") or line.startswith("## "):
-            break
-        if FOOTNOTE.match(line):
+    for line in lines:
+        # A footnote runs on over lines indented by four spaces or a tab, and blank lines between.
+        if FOOTNOTE.match(line) or (in_footnote and (not line.strip() or line.startswith(("    ", "\t")))):
             in_footnote = True
-            continue
-        if in_footnote and (not line.strip() or line[0] in " \t"):
             continue
         in_footnote = False
         answer = line.strip().lstrip("-*").strip().strip("_*").strip().lower()
@@ -371,41 +367,70 @@ def target(plan_path, link):
     return os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(plan_path)), link.split("#", 1)[0]))
 
 
+def reference_lines(text, heading):
+    """The non-blank lines of a plan's references section, with template comments removed."""
+    body = re.sub(r"<!--.*?-->", "", "\n".join(section(text, heading) or []), flags=re.S)
+    return [line for line in body.splitlines() if line.strip()]
+
+
+def unreadable(line, heading):
+    return (f"it cannot read the line '{line.strip()}' under {heading}; list each as "
+            "`- [<title>](<path>)`" + (", with `  - Requirement: <name>` beneath it" if heading == "Specs" else "")
+            + ', or write "None."')
+
+
 def named_specs(plan_path, text):
-    """The plan's Specs section as [(spec path, link as written, [requirement names])]."""
+    """The plan's Specs section as ([(spec path, link as written, [requirement names])], problem)."""
     entries = []
-    for line in section(text, "Specs") or []:
+    for line in reference_lines(text, "Specs"):
         link = LINK.match(line)
         requirement = REQUIREMENT_LINE.match(line)
         if link:
             entries.append((target(plan_path, link.group(1)), link.group(1), []))
         elif requirement and entries:
             entries[-1][2].append(requirement.group(1))
-    return entries
+        elif line.strip().lstrip("-*").strip().lower() not in EMPTY_ANSWERS:
+            return entries, unreadable(line, "Specs")
+    return entries, None
 
 
 def named_adrs(plan_path, text):
-    """The plan's ADRs section as [(ADR path, link as written)]."""
-    return [(target(plan_path, link.group(1)), link.group(1))
-            for link in map(LINK.match, section(text, "ADRs") or []) if link]
+    """The plan's ADRs section as ([(ADR path, link as written)], problem)."""
+    entries = []
+    for line in reference_lines(text, "ADRs"):
+        link = LINK.match(line)
+        if link:
+            entries.append((target(plan_path, link.group(1)), link.group(1)))
+        elif line.strip().lstrip("-*").strip().lower() not in EMPTY_ANSWERS:
+            return entries, unreadable(line, "ADRs")
+    return entries, None
 
 
 def requirements(plan_path, text):
-    return {(spec, name) for spec, _, names in named_specs(plan_path, text) for name in names}
+    return {(spec, name) for spec, _, names in named_specs(plan_path, text)[0] for name in names}
+
+
+def described(status):
+    return f"is '{status}'" if status else "has no status"
 
 
 def reference_problem(path, text):
     """Why the plan's specs and ADRs do not let it be Ready to build, or None if they do."""
-    specs, adrs = named_specs(path, text), named_adrs(path, text)
+    specs, problem = named_specs(path, text)
+    adrs, adr_problem = named_adrs(path, text)
+    if problem or adr_problem:
+        return problem or adr_problem
     if not specs and not adrs:
         return "it names nothing to build: list a spec and its requirements under Specs, or an ADR under ADRs"
     for spec_path, link, names in specs:
+        if not is_spec(spec_path):
+            return f"{link} is not a spec: a spec is a `.spec.md` file under docs/specs/"
         spec_text = read(spec_path)
         if spec_text is None:
             return f"the spec {link} does not exist"
         status = lifecycle_status(spec_text, STATUSES)
         if status not in (READY, BUILT):
-            return f"the spec {link} is '{status}', not `{READY}` or `{BUILT}`"
+            return f"the spec {link} {described(status)}, not `{READY}` or `{BUILT}`"
         if not names:
             return f"no requirement is named under {link}; list each one as `- Requirement: <name>`"
         headings = {m.group(1) for m in map(REQUIREMENT_HEADING.match, spec_text.splitlines()) if m}
@@ -413,12 +438,14 @@ def reference_problem(path, text):
             if name not in headings:
                 return f"the spec {link} has no `### Requirement: {name}`"
     for adr_path, link in adrs:
+        if not is_adr(adr_path):
+            return f"{link} is not an ADR: an ADR is a file in docs/adrs/"
         adr_text = read(adr_path)
         if adr_text is None:
             return f"the ADR {link} does not exist"
         status = lifecycle_status(adr_text, ADR_STATUSES)
         if status != ACCEPTED:
-            return f"the ADR {link} is '{status}', not `{ACCEPTED}`"
+            return f"the ADR {link} {described(status)}, not `{ACCEPTED}`"
     return None
 
 

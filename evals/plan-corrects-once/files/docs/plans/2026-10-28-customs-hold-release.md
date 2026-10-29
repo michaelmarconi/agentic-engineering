@@ -12,7 +12,7 @@ status: 📝 Draft
 
 ## ADRs
 
-- Architecture decision record (ADR) [0003 Keep each shipment's status as a history of events](../adrs/0003-shipment-status-history.md)
+- [ADR 0003, an architecture decision record: Keep each shipment's status as a history of events](../adrs/0003-shipment-status-history.md)
 
 ## Decisions
 

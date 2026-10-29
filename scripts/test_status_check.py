@@ -83,6 +83,10 @@ class Parsing(unittest.TestCase):
         text = spec() + "\n[^1]: A source that runs\n    onto a second line.\n[^2]: Another.\n"
         self.assertFalse(status_check.has_open_questions(text))
 
+    def test_indented_question_after_a_footnote_still_counts(self):
+        text = spec() + "\n[^1]: A source.\n\n  - Who approves?\n"
+        self.assertTrue(status_check.has_open_questions(text))
+
     def test_open_questions_present(self):
         self.assertTrue(status_check.has_open_questions(spec(questions="- Who approves?")))
 
@@ -686,6 +690,41 @@ class Plan(PlanWorkspace):
         other = os.path.join(self.tmp.name, "docs", "plans", "2026-10-01-earlier.md")
         self.put_at(other, plan(specs="- [Thing](../specs/thing.spec.md)\n  - Requirement: Y"))
         self.assertIsNone(self.ready())
+
+    def test_ready_refused_when_an_adr_line_cannot_be_read(self):
+        self.put_at(os.path.join(self.tmp.name, "docs", "adrs", "0003-history.md"), adr())
+        reason = self.ready(adrs="- ADR [0003 History](../adrs/0003-history.md)")
+        self.assertIn("cannot read", reason)
+
+    def test_ready_refused_when_a_spec_line_cannot_be_read(self):
+        specs = "- [Thing](../specs/thing.spec.md)\n  - Requirement: X\n- Spec B: [B](../specs/b.spec.md)\n  - Requirement: B1"
+        self.assertIn("cannot read", self.ready(specs=specs))
+
+    def test_ready_refused_when_specs_holds_prose_beside_a_good_adr(self):
+        self.put_at(os.path.join(self.tmp.name, "docs", "adrs", "0003-history.md"), adr("👍 Accepted"))
+        reason = self.ready(specs="The thing spec, its X part.", adrs="- [0003 History](../adrs/0003-history.md)")
+        self.assertIn("cannot read", reason)
+
+    def test_ready_refused_for_a_requirement_before_any_spec(self):
+        self.assertIn("cannot read", self.ready(specs="  - Requirement: X"))
+
+    def test_template_comments_in_references_are_ignored(self):
+        specs = "<!-- Each spec this work builds,\n     over two lines. -->\n- [Thing](../specs/thing.spec.md)\n  - Requirement: X"
+        self.assertIsNone(self.ready(specs=specs))
+
+    def test_ready_refused_when_a_spec_link_is_not_a_spec(self):
+        other = os.path.join(self.tmp.name, "docs", "plans", "2026-10-01-earlier.md")
+        self.put_at(other, plan("🟢 Ready to build", specs="None.", adrs="None."))
+        reason = self.ready(specs="- [Earlier](2026-10-01-earlier.md)\n  - Requirement: X")
+        self.assertIn("not a spec", reason)
+
+    def test_ready_refused_when_an_adr_link_is_not_an_adr(self):
+        reason = self.ready(adrs="- [Thing](../specs/thing.spec.md)")
+        self.assertIn("not an ADR", reason)
+
+    def test_spec_without_status_named_plainly(self):
+        self.put_at(self.spec_path, "# Thing\n")
+        self.assertIn("has no status", self.ready())
 
     def test_setting_built_refused(self):
         self.put(plan("🟢 Ready to build"))
