@@ -25,8 +25,8 @@ By version 1.0, on one real project:
 
 - A fresh assistant session given only the repository, with no past conversations, correctly says
   what the project is for, what was decided and why, and what is built.
-- Every lifecycle document was reviewed independently before a person saw it, as its review
-  records show.
+- Every lifecycle document the plugin writes is reviewed independently before a person sees it,
+  as the plugin's own tests show.
 - A person approved every change to a lifecycle document's status, such as from Draft to
   Accepted, as the project's pull requests show.
 
@@ -50,8 +50,6 @@ By version 1.0, on one real project:
 
 ## Open questions
 
-- Where are the review records kept that show each document was reviewed? The plugin keeps none
-  in the repository today, and the documents it may write there do not include them.
 - Who approves a status change: any engineer on the team, or someone other than the document's
   author?
 - Who judges that the fresh assistant session's answers are correct: the project's own engineers,
