@@ -13,9 +13,9 @@ plugin helps a person write a software project's documents, such as architecture
 records (ADRs) like this one. Another is a specification, or spec: the intended behaviour of one
 capability of the product, written as requirements, each with example scenarios and a line saying
 how to check it. A third is a plan: a signed-off description of one piece of work that builds
-part of a spec. A spec carries a status. Today it can be `📝 Draft`, `🟢 Ready to build` (its
-intent is settled, with no questions left) or `✅ Built`, and `✅ Built` was meant to say that the
-software meets every requirement in the spec.
+part of a spec. Each spec carries a status, and a status could describe either the document,
+such as whether its intent is settled, or the software, such as whether it meets every
+requirement.
 
 The software keeps changing after it is built: later work, small corrections made without a plan,
 tests that are removed. A spec can also be built in parts by several pieces of work, and some
@@ -59,9 +59,7 @@ is measured against it whenever the answer matters.
 - Bad: a spec no longer shows whether it has been built. Finding out means checking the software
   against it, or reading the plans used to build it.
 - Bad: the plugin's description of the steps its documents go through, the status-change hook
-  (ADR 0005) and the rule for when a plan is ready all change: `🟢 Ready to build` becomes
-  `👍 Accepted` for specs, and `✅ Built` is dropped. Specs that already say `🟢 Ready to build`
-  are changed by hand.
+  (ADR 0005) and the rule for when a plan may be built all change to match.
 
 ### Confirmation
 
