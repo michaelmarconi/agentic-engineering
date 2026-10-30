@@ -38,7 +38,9 @@ being true. So we need to decide what a spec's status describes.
   records that a change was made, not that the system still behaves that way. Nothing checks the
   specs against the code afterwards, so they gradually stop matching the code as it changes, and
   are no guarantee of what the system ends up doing.
-- **A spec's status describes only the document: `📝 Draft` or `🟢 Ready to build`.** Whether the
+- **A spec's status describes only the document: `📝 Draft` or `👍 Accepted`.** A person accepts
+  a spec once its intent is settled, as they accept an ADR, and any later edit returns it to
+  `📝 Draft`. The name no longer ties the spec to building, which is a plan's concern. Whether the
   software meets the spec is answered when someone needs to know, by checking the software
   against the spec at that time.
 
@@ -52,17 +54,20 @@ is measured against it whenever the answer matters.
 
 - Good: no status can become false without anyone noticing, however the code changes.
 - Good: specs built in parts, and requirements only a person can check, need no special status.
-- Good: a spec's status works like an ADR's, which describes the decision, not the code.
+- Good: a spec's status works like an ADR's, which describes the decision, not the code, and
+  uses the same word for a person's sign-off.
 - Bad: a spec no longer shows whether it has been built. Finding out means checking the software
   against it, or reading the plans used to build it.
 - Bad: the plugin's description of the steps its documents go through, the status-change hook
-  (ADR 0005) and the rule for when a plan is ready all change to drop `✅ Built` for specs.
+  (ADR 0005) and the rule for when a plan is ready all change: `🟢 Ready to build` becomes
+  `👍 Accepted` for specs, and `✅ Built` is dropped. Specs that already say `🟢 Ready to build`
+  are changed by hand.
 
 ### Confirmation
 
 Applies to: the statuses a spec can have.
 Checked by: test. The status-change hook's tests show it refuses any spec status other than
-`📝 Draft` and `🟢 Ready to build`.
+`📝 Draft` and `👍 Accepted`.
 
 ## Open questions
 
