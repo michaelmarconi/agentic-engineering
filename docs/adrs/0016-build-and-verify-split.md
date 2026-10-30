@@ -4,7 +4,7 @@ status: 📝 Draft
 date: 2026-10-30
 ---
 
-# Leave running the built software to a separate step
+# Verify the built software separately from the build
 
 ## Context and Problem Statement
 
