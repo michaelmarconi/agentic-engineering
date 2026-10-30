@@ -4,7 +4,7 @@ status: 📝 Draft
 date: 2026-10-30
 ---
 
-# Let a spec's status describe only the document
+# Spec status describes the document, not the software
 
 ## Context and Problem Statement
 
