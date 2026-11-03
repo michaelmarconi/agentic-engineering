@@ -14,10 +14,10 @@ hook has attached, after it:
 
 - the commit the reviews checked, between `=== REVIEWED COMMIT ===` and `=== END REVIEWED COMMIT ===`;
 - the code review, security review and build review reports, each between its own
-  `=== ... REPORT ===` lines; a review that did not run says "Not run.";
+  `=== ... REPORT ===` lines;
 - the rubric to judge by, between `=== FILES TO READ ===` and `=== END FILES TO READ ===`.
 
-If the reviewed commit or the build review report is missing, report FAIL and say which; nothing
+If the reviewed commit or any of the three reports is missing, report FAIL and say which; nothing
 can be checked without them.
 
 Read the plan, the rubric, and the corrections, with these git commands only, run with Bash:

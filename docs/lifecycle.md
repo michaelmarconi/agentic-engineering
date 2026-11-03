@@ -57,7 +57,8 @@ flowchart LR
   the spec; a choice becomes an ADR.
 - `/adr` records one technical decision.
 - `/plan` scopes a piece of work against the specs and ADRs it delivers.
-- `/build` builds a plan on a branch of its own, has it reviewed, and hands the branch back.
+- `/build` builds a plan on a branch of its own, has it reviewed, and pushes the branch to your
+  remote.
   Verifying the software, opening a pull request and merging stay with you.
 - `/audit` finds drift, where the code and its documents disagree, at any time.
 

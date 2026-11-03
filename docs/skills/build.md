@@ -72,10 +72,14 @@ anything, `/build` checks:
   cloud sessions, choose the branch name for you. If anything is uncommitted, it stops, so your
   own work never gets mixed into the build. While it runs, a plugin hook refuses any commit or
   push to the default branch.
-- **The reviews can run.** Claude must be allowed to start `/code-review`, which a setting can turn
-  off, and `/security-review` needs a remote named `origin`. If either is missing, `/build` says so
-  now, skips that review, and repeats it in the summary. A skipped review has not passed, so the
-  plan is not marked `✅ Built`.
+- **It has a remote.** The repository needs a remote named `origin` whose default branch git
+  knows, which `git clone` sets up. `/security-review` compares the branch with that default
+  branch, and the hand-over pushes to it. If it is missing, `/build` stops and names the command
+  to run, such as `git remote set-head origin -a`; it never runs that itself, since it would
+  change your repository.
+- **The reviews can run.** Claude must be allowed to start `/code-review` and `/security-review`,
+  which a setting can turn off. If either is not, `/build` stops and says which, so every build
+  gets all three reviews.
 
 Finally, it runs your tests once. Any test that already fails is noted for the summary, and
 `/build` does not try to fix it.
@@ -146,9 +150,9 @@ tests and linters again.
 
 ## Handing over
 
-However the build ends, a small script commits and pushes the branch if the repository has a
-remote. It does this, not Claude, and reports exactly what happened, including the branch name and
-any failure to push. `/build` never opens a pull request and never merges.
+However the build ends, a small script commits the branch and pushes it to `origin`. It does
+this, not Claude, and reports exactly what happened, including the branch name and any failure
+to push. `/build` never opens a pull request and never merges.
 
 The plan is set to `✅ Built` only when every review has passed. If the build stopped instead,
 because the corrections failed their check, a requirement's tests still failed after two attempts,
@@ -163,7 +167,7 @@ It ends with a short summary:
 - the test and lint commands it ran, with their output, and any tests that were failing before it
   started;
 - the decisions it made for you, each with its reason;
-- what the reviews found, what was corrected, and any review it skipped;
+- what the reviews found, and what was corrected;
 - a reminder to verify the work before merging.
 
 ## After a build

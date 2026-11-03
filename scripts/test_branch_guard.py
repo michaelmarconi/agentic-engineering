@@ -91,6 +91,15 @@ class DuringABuild(Guard):
         self.git("checkout", "-q", "-b", "build/thing")
         self.assert_refused(self.bash("git checkout main && git commit -m x"))
 
+    def test_file_checkout_is_not_a_branch_switch(self):
+        self.git("checkout", "-q", "-b", "build/thing")
+        self.assertIsNone(self.bash("git checkout README.md && git commit -m x"))
+        self.assertIsNone(self.bash("git checkout -- a.txt && git commit -m x"))
+        self.assertIsNone(self.bash("git checkout HEAD -- main && git commit -m x"))
+
+    def test_file_checkout_on_the_default_branch_still_refused(self):
+        self.assert_refused(self.bash("git checkout README.md && git commit -m x"))
+
     def test_pushing_every_branch_refused(self):
         self.git("checkout", "-q", "-b", "build/thing")
         self.assert_refused(self.bash("git push --all origin"))

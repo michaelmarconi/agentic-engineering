@@ -3,13 +3,13 @@
 
 `/build` runs this however the build ends. It:
 
-1. refuses to run on the repository's default branch (the branch `origin/HEAD` names, or `main`
-   or `master` when there is none) or with no branch checked out;
+1. refuses to run without a remote named `origin` whose default branch is known (`origin/HEAD`),
+   on that default branch, or with no branch checked out;
 2. commits everything not yet committed, with the message given;
 3. with --reviews-passed, sets the plan's status from `🟢 Ready to build` to `✅ Built`, changing
    nothing else in the file, and commits that on its own. It writes the file itself, so the
    status hook, which refuses `✅ Built` from Claude, never sees it;
-4. pushes the branch to the remote named `origin`, if there is one.
+4. pushes the branch to `origin`.
 
 It prints what happened, one line per step, for Claude to pass on word for word.
 
@@ -38,10 +38,9 @@ def current_branch(repo):
 
 
 def default_branch(repo):
+    """The branch `origin/HEAD` names, or None when it is not set."""
     result = git(repo, "symbolic-ref", "--quiet", "--short", "refs/remotes/origin/HEAD")
-    if result.returncode == 0 and result.stdout.strip():
-        return {result.stdout.strip().split("/", 1)[-1]}
-    return {"main", "master"}
+    return result.stdout.strip().split("/", 1)[-1] if result.returncode == 0 and result.stdout.strip() else None
 
 
 def has_origin(repo):
@@ -80,10 +79,17 @@ def commit(repo, message, lines):
 
 def hand_over(repo, plan, message, reviews_passed):
     lines = []
+    if not has_origin(repo):
+        return 2, ["Refused: there is no remote named `origin` to push the branch to. Add one, then "
+                   "hand over again. Nothing was changed."]
+    default = default_branch(repo)
+    if default is None:
+        return 2, ["Refused: the default branch of `origin` is not known. Run "
+                   "`git remote set-head origin -a`, then hand over again. Nothing was changed."]
     branch = current_branch(repo)
     if branch is None:
         return 2, ["Refused: no branch is checked out, so there is nothing to hand over. Nothing was changed."]
-    if branch in default_branch(repo):
+    if branch == default:
         return 2, [f"Refused: `{branch}` is the default branch, and a build never commits there. "
                    "Nothing was changed."]
     plan_path = os.path.join(repo, plan)
@@ -117,15 +123,12 @@ def hand_over(repo, plan, message, reviews_passed):
         reason = "the reviews have not all passed" if not reviews_passed else "a commit failed"
         lines.append(f"Plan: {plan} stays `{status}`, because {reason}.")
 
-    if not has_origin(repo):
-        lines.append("Push: there is no remote named origin, so the branch stays on this machine.")
+    result = git(repo, "push", "-q", "-u", "origin", branch)
+    if result.returncode == 0:
+        lines.append(f"Push: pushed {branch} to origin.")
     else:
-        result = git(repo, "push", "-q", "-u", "origin", branch)
-        if result.returncode == 0:
-            lines.append(f"Push: pushed {branch} to origin.")
-        else:
-            lines.append(f"Push: push failed: {(result.stderr or result.stdout).strip()}")
-            code = 1
+        lines.append(f"Push: push failed: {(result.stderr or result.stdout).strip()}")
+        code = 1
     return code, lines
 
 

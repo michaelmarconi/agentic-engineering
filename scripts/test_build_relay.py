@@ -73,6 +73,11 @@ class Relay(unittest.TestCase):
                    "tool_input": {"skill": "code-review", "args": "medium main...HEAD"},
                    "tool_response": {"success": True, "result": report}}, session)
 
+    def all_reviews(self, session="s1"):
+        self.code_review(session=session)
+        self.security_review(session=session)
+        self.plan_review(session=session)
+
     def check(self, session="s1"):
         return self.hook({"hook_event_name": "PreToolUse", "tool_name": "Agent", "tool_use_id": "check",
                           "tool_input": {"subagent_type": "sdlc:build-correction-checker",
@@ -95,23 +100,31 @@ class Checker(Relay):
         self.assertIn(f"Reviewed commit: {reviewed}", prompt)
         self.assertIn("rubric.md", prompt)
 
-    def test_skipped_review_named(self):
+    def test_refused_without_the_security_review(self):
         self.code_review()
         self.plan_review()
-        self.commit("Correct")
-        prompt = self.check()["updatedInput"]["prompt"]
-        self.assertIn("=== SECURITY REVIEW REPORT ===\nNot run.", prompt)
-
-    def test_refused_without_the_plan_review(self):
-        self.code_review()
         self.commit("Correct")
         result = self.check()
         self.assertEqual(result["permissionDecision"], "deny")
+        self.assertIn("security review", result["permissionDecisionReason"])
         self.assertIn("show the person", result["permissionDecisionReason"])
 
-    def test_refused_when_nothing_was_committed_since(self):
-        self.code_review()
+    def test_refused_without_the_code_review(self):
+        self.security_review()
         self.plan_review()
+        self.commit("Correct")
+        self.assertIn("code review", self.check()["permissionDecisionReason"])
+
+    def test_refused_without_the_plan_review(self):
+        self.code_review()
+        self.security_review()
+        self.commit("Correct")
+        result = self.check()
+        self.assertEqual(result["permissionDecision"], "deny")
+        self.assertIn("build review", result["permissionDecisionReason"])
+
+    def test_refused_when_nothing_was_committed_since(self):
+        self.all_reviews()
         result = self.check()
         self.assertEqual(result["permissionDecision"], "deny")
         self.assertIn("commit", result["permissionDecisionReason"])
@@ -119,6 +132,8 @@ class Checker(Relay):
     def test_later_reviews_replace_earlier_ones_of_another_commit(self):
         self.plan_review("old plan finding")
         self.commit("More work")
+        self.code_review()
+        self.security_review()
         self.plan_review("new plan finding")
         self.commit("Correct")
         prompt = self.check()["updatedInput"]["prompt"]
@@ -133,6 +148,7 @@ class Checker(Relay):
 
 class Corrections(Relay):
     def test_security_agent_without_a_type_counted(self):
+        self.code_review()
         self.agent("", f"Document: {PLAN}\nRun /security-review and report.", "security finding")
         self.plan_review()
         self.commit("Correct")
@@ -140,9 +156,10 @@ class Corrections(Relay):
 
     def test_empty_code_review_result_not_kept(self):
         self.code_review(report="")
+        self.security_review()
         self.plan_review()
         self.commit("Correct")
-        self.assertIn("=== CODE REVIEW REPORT ===\nNot run.", self.check()["updatedInput"]["prompt"])
+        self.assertIn("code review", self.check()["permissionDecisionReason"])
 
     def test_review_in_the_background_refused(self):
         result = self.hook({"hook_event_name": "PreToolUse", "tool_name": "Agent", "tool_use_id": "bg",
@@ -152,7 +169,7 @@ class Corrections(Relay):
         self.assertIn("foreground", result["permissionDecisionReason"])
 
     def test_one_correction_check_only(self):
-        self.plan_review()
+        self.all_reviews()
         self.commit("Correct")
         self.assertEqual(self.check()["permissionDecision"], "allow")
         self.hook({"hook_event_name": "PostToolUse", "tool_name": "Agent", "tool_use_id": "check",
@@ -166,8 +183,7 @@ class Corrections(Relay):
 class LeftAlone(Relay):
     def test_reviews_outside_a_build_not_kept(self):
         fresh_session.save("s2", {"fresh": True, "messages": 1})
-        self.code_review(session="s2")
-        self.plan_review(session="s2")
+        self.all_reviews(session="s2")
         self.commit("Correct")
         self.assertEqual(self.check(session="s2")["permissionDecision"], "deny")
 

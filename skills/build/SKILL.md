@@ -54,14 +54,17 @@ Check each of these before changing anything, and stop with the reason if one fa
    running `/practices` first. If the person carries on without it, ask them now, in one
    message, for everything you cannot build without, such as how to run the tests and the
    linters, so nothing needs asking once the build is under way.
-5. **The branch is right and clean.** Find the default branch: the branch `origin/HEAD` names,
-   or `main` or `master` when there is none. If anything is uncommitted, stop, so the person's
+5. **The branch is right and clean.** The repository needs a remote named `origin` whose default
+   branch is known: `git symbolic-ref refs/remotes/origin/HEAD` names it. If there is no
+   `origin`, ask the person to add one. If `origin/HEAD` is not set, ask them to run
+   `git remote set-head origin -a`; never run it yourself, since it changes their repository.
+   The security review and the hand-over both need it. If anything is uncommitted, stop, so the person's
    own work is never mixed into the build. If you are on the default branch, create and switch
    to `build/<plan file name without its date and .md>`; on any other branch, build there, since
    some places that run Claude Code choose the branch name for you.
-6. **The reviews can run.** `/code-review` must be among the skills you can use, and
-   `/security-review` needs a remote named `origin`. If either is missing, say so now: you can
-   still build, but the skipped review keeps the plan from being marked `✅ Built`.
+6. **The reviews can run.** `/code-review` and `/security-review` must both be among the skills
+   you can use, since every build has all three reviews. If either is missing, stop and say
+   which, so the person can allow it.
 
 Then run the tests once. Note any that already fail for the summary, and do not try to fix them.
 
@@ -132,16 +135,15 @@ in the summary.
 
 ## Handing over
 
-However the build ends, hand over with the script, which commits anything left, pushes when
-there is an `origin` remote, and reports exactly what happened:
+However the build ends, hand over with the script, which commits anything left, pushes the branch
+to `origin`, and reports exactly what happened:
 
 ```
 python3 "${CLAUDE_SKILL_DIR}/scripts/hand_over.py" --plan <the plan's path> --message "<what the last commit holds>" [--reviews-passed]
 ```
 
-Pass `--reviews-passed` only when all three reviews ran and passed, or passed after the
-corrections were checked, and nothing was raised: the script then marks the plan `✅ Built`. A
-review that was skipped has not passed, so it holds the plan back too. In every other case the plan
+Pass `--reviews-passed` only when all three reviews passed, or the correction check passed, and
+nothing was raised: the script then marks the plan `✅ Built`. In every other case the plan
 stays `🟢 Ready to build`, and the person sorts out what is open, then runs `/build` again on the
 branch.
 
@@ -152,7 +154,7 @@ End with a short summary for the person:
 - the test and lint commands you ran, with their final output, and any tests that failed before
   you started;
 - each choice you made, with its reason;
-- what each review found, what was corrected, and any review skipped and why;
+- what each review found, and what was corrected;
 - the script's report, word for word;
 - each requirement left for the person to check, and a reminder to verify the work, for example
   with Claude Code's `/verify`, before merging.

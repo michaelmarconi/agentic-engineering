@@ -26,6 +26,9 @@ claude plugin install sdlc@sdlc
 Add `--scope project` to the `install` command to share the plugin with everyone working in a
 repository.
 
+`/build` also needs the repository to have a remote named `origin`, such as GitHub, since it
+pushes the branch it builds there.
+
 ### Update
 
 ```bash

@@ -19,10 +19,10 @@ fresh_session.py), and keeps:
 Each is kept with the commit checked out when it ran. A report of a later commit starts a new
 set, so the checker only ever gets reports of one commit.
 
-Before the `build-correction-checker` starts, it appends the three reports (a review that did not
-run is shown as "Not run."), the reviewed commit and the rubric to read, between fixed
-`=== ... ===` lines, and approves the start. It refuses the start, with a reason Claude sees, when
-the request has no `Document:` line, when no build review report is on record, or when nothing
+Before the `build-correction-checker` starts, it appends the three reports, the reviewed commit
+and the rubric to read, between fixed `=== ... ===` lines, and approves the start. It refuses the
+start, with a reason Claude sees, when the request has no `Document:` line, when any of the three
+reports of the reviewed commit is missing, or when nothing
 has been committed since the reviews, and deletes the record once the checker has run, so the
 corrections are checked only once. A review started in the background is refused, since its
 report would arrive after the hook has seen it finish. Records live in $CLAUDE_PLUGIN_DATA/builds/<session>.json
@@ -152,14 +152,16 @@ def start_checker(session, tool_input):
         return refuse("Start the build correction checker with `Document: <plan path>` as the "
                       "first line of its request, the same line the build reviewer was given.")
     record = load(session)
-    if not record or "plan" not in record["reports"]:
-        return refuse("No build review report is on record in this session, so the corrections "
-                      "cannot be checked. Do not review again: stop and show the person the "
-                      "reports you have and this reason.")
+    missing = [title.lower().replace(" report", "") for part, title in PARTS
+               if not record or part not in record["reports"]]
+    if missing:
+        return refuse(f"No {' or '.join(missing)} report of the reviewed commit is on record in this "
+                      "session, so the corrections cannot be checked. Do not review again: stop "
+                      "and show the person the reports you have and this reason.")
     if head() == record["commit"]:
         return refuse("Nothing has been committed since the reviews. Commit the corrections "
                       "first, then start the build correction checker.")
-    blocks = [f"=== {title} ===\n{record['reports'].get(part, 'Not run.')}\n=== END {title} ==="
+    blocks = [f"=== {title} ===\n{record['reports'][part]}\n=== END {title} ==="
               for part, title in PARTS]
     extra = (f"\n\n=== REVIEWED COMMIT ===\nReviewed commit: {record['commit']}\n"
              "=== END REVIEWED COMMIT ===\n\n" + "\n\n".join(blocks) +

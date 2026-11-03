@@ -5,9 +5,10 @@ Claude Code runs this as a PreToolUse hook on Bash. It acts only in a session wh
 allowed to start (recorded by fresh_session.py). There it refuses a shell command that runs
 `git commit` while the default branch is checked out, or `git push` while it is checked out or
 naming it as the branch to push to, such as `HEAD:main`, or pushing every branch with `--all` or
-`--mirror`. It follows a `git checkout` or `git switch` earlier in the same command. The default branch is the one
-`origin/HEAD` names, or `main` or `master` when there is none. Every other command, and every
-command outside a build, is left alone.
+`--mirror`. It follows a `git checkout` or `git switch` of a branch earlier in the same command,
+but not one that restores files. The default branch is the one `origin/HEAD` names, or `main` or
+`master` when there is none. Every other command, and every command outside a build, is left
+alone.
 
 A commit or push made some other way, such as from a script the command runs, is not seen;
 the hand-over script refuses the default branch itself.
@@ -74,14 +75,25 @@ def names_branch(words, branches):
     return None
 
 
-def switched_to(name, words):
-    """The branch a `git checkout` or `git switch` moves to, or None."""
-    words = [w for w in words if w != "--"]
+def is_branch(cwd, word):
+    """Whether a word names a local branch, or a branch of origin that checkout would track."""
+    return any(git_output(cwd, "show-ref", "--verify", "--quiet", ref) is not None
+               for ref in (f"refs/heads/{word}", f"refs/remotes/origin/{word}"))
+
+
+def switched_to(cwd, words):
+    """The branch a `git checkout` or `git switch` moves to, or None.
+
+    Words after `--` are files, and a lone word counts only if a branch of that name exists, so
+    `git checkout README.md` restores a file rather than switching branch.
+    """
+    if "--" in words:
+        words = words[:words.index("--")]
     for flag in ("-b", "-B", "-c", "-C", "--orphan"):
         if flag in words and words.index(flag) + 1 < len(words):
             return words[words.index(flag) + 1]
     plain = [w for w in words if not w.startswith("-")]
-    return plain[0] if len(plain) == 1 else None
+    return plain[0] if len(plain) == 1 and is_branch(cwd, plain[0]) else None
 
 
 def problem(event):
@@ -97,7 +109,7 @@ def problem(event):
     current = git_output(cwd, "symbolic-ref", "--quiet", "--short", "HEAD")
     for name, words in calls:
         if name in ("checkout", "switch"):
-            current = switched_to(name, words) or current
+            current = switched_to(cwd, words) or current
         elif name == "commit" and current in branches:
             return REASON.format(branch=current)
         elif name == "push":

@@ -32,6 +32,9 @@ class Repo(unittest.TestCase):
         self.put(PLAN, plan())
         self.git("add", "-A")
         self.git("commit", "-q", "-m", "Start")
+        self.bare = self.add_origin()
+        self.git("push", "-q", "origin", "main")
+        self.git("remote", "set-head", "origin", "main")
         self.git("checkout", "-q", "-b", "build/thing")
         self.old_env = dict(os.environ)
         os.environ.update(ENV)
@@ -93,7 +96,6 @@ class Commit(Repo):
 
     def test_refused_on_the_remote_default_branch(self):
         self.git("checkout", "-q", "-b", "trunk")
-        self.add_origin()
         self.git("push", "-q", "origin", "trunk")
         self.git("symbolic-ref", "refs/remotes/origin/HEAD", "refs/remotes/origin/trunk")
         code, out = self.run_it()
@@ -148,21 +150,32 @@ class Built(Repo):
 
 
 class Push(Repo):
-    def test_pushed_when_there_is_an_origin(self):
-        bare = self.add_origin()
+    def test_pushed_to_origin(self):
+        bare = self.bare
         self.put("src/thing.py", "print('thing')\n")
         code, out = self.run_it("--reviews-passed")
         self.assertEqual(code, 0)
         self.assertEqual(self.git("rev-parse", "build/thing", cwd=bare), self.git("rev-parse", "HEAD"))
         self.assertIn("pushed", out)
 
-    def test_not_pushed_without_an_origin(self):
+    def test_refused_without_an_origin(self):
+        self.git("remote", "remove", "origin")
+        self.put("src/thing.py", "print('thing')\n")
+        code, out = self.run_it("--reviews-passed")
+        self.assertEqual(code, 2)
+        self.assertEqual(self.subjects(), ["Start"])
+        self.assertIn("status: 🟢 Ready to build\n", self.read(PLAN))
+        self.assertIn("no remote named `origin`", out)
+
+    def test_refused_without_the_remote_default_branch(self):
+        self.git("symbolic-ref", "--delete", "refs/remotes/origin/HEAD")
         code, out = self.run_it()
-        self.assertEqual(code, 0)
-        self.assertIn("no remote named origin", out)
+        self.assertEqual(code, 2)
+        self.assertEqual(self.subjects(), ["Start"])
+        self.assertIn("git remote set-head origin -a", out)
 
     def test_failed_push_reported(self):
-        self.git("remote", "add", "origin", os.path.join(self.tmp.name, "missing.git"))
+        self.git("remote", "set-url", "origin", os.path.join(self.tmp.name, "missing.git"))
         self.put("src/thing.py", "print('thing')\n")
         code, out = self.run_it()
         self.assertEqual(code, 1)
