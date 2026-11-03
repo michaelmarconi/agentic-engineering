@@ -300,8 +300,10 @@ def check(payload):
 def lifecycle_problem(path, kind, statuses, rules, before, after, old, new, written):
     name = os.path.basename(path)
     if old not in statuses and new not in statuses:
-        if kind == "ADR" and not before and new is not None:
-            return f"{name}: a new ADR must be written as `{DRAFT}`, not '{new}'."
+        # A new document is refused any lifecycle status, even one only another kind uses, as
+        # `✅ Built` on a spec; a new ADR is refused any status at all.
+        if not before and new is not None and (kind == "ADR" or meant(new, WORDS.values())):
+            return f"{name}: a new {kind} must be written as `{DRAFT}`, not '{new}'."
         return None
     if sum(is_key(line, "status") for line in frontmatter(after) or []) > 1:
         return f"{name}: the frontmatter has more than one `status:` line; keep one."

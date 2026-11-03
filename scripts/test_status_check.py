@@ -108,6 +108,10 @@ class NewSpec(Workspace):
     def test_new_spec_created_by_edit_checked(self):
         self.assertIsNotNone(self.edit("", spec("👍 Accepted")))
 
+    def test_new_spec_with_another_kind_of_status_refused(self):
+        for value in ("🟢 Ready to build", "✅ Built", "Built", "❌ Rejected"):
+            self.assertIn("Draft", self.write(spec(value)), value)
+
     def test_byte_order_mark(self):
         self.assertIsNone(self.write("\ufeff" + spec()))
 
@@ -613,6 +617,9 @@ class Plan(PlanWorkspace):
 
     def test_new_ready_refused(self):
         self.assertIn("Draft", self.write(plan("🟢 Ready to build")))
+
+    def test_new_plan_with_another_kind_of_status_refused(self):
+        self.assertIn("Draft", self.write(plan("👍 Accepted")))
 
     def test_losing_status_refused(self):
         self.put(plan())
