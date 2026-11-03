@@ -1,6 +1,0 @@
-schema_version: "1.1"
-name: spec-ready-ok
-expected_outcome: |
-  The spec has no open questions, so after the reviewer passes it, its status is set to Ready to build.
-context:
-  scaffold_script: place-files.sh

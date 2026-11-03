@@ -125,7 +125,7 @@ stateDiagram-v2
   `✅ Built`.
 
 A plugin hook refuses `🟢 Ready to build` unless Open questions is empty, every spec it names is
-`🟢 Ready to build` or `✅ Built` and has each named requirement, every ADR it names is
+`👍 Accepted` and has each named requirement, every ADR it names is
 `👍 Accepted`, and no other plan that is not `✅ Built` names the same requirement. If a
 spec or ADR it names changes after you sign off, the plan is no longer settled: update it, and
 sign it off again.

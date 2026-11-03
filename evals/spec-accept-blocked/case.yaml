@@ -1,5 +1,5 @@
 schema_version: "1.1"
-name: spec-ready-blocked
+name: spec-accept-blocked
 expected_outcome: |
   The spec stays Draft because its Open questions section is not empty, and the answer names the open questions that need answering first.
 context:
