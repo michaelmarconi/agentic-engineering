@@ -117,7 +117,7 @@ To raise one, `/build` stops and hands over with the question written down. It n
 build nobody is watching would otherwise carry on for hours on the wrong assumption.[^unattended]
 
 Every other choice, such as names, how the code is split up, or which helper to use, `/build`
-makes and carries on, and the summary lists each one with its reason, so you can see what was
+makes itself and carries on, and the summary lists each one with its reason, so you can see what was
 decided for you.
 
 ## Review
