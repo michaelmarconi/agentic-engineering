@@ -51,12 +51,14 @@ practices say, because each needs a person:
 Run `/sdlc:build docs/plans/<plan>.md` as the first thing in a new session. Before it changes
 anything, `/build` checks:
 
-- **The session is fresh.** `/build` runs only when you type it, never on Claude's own initiative,
-  and only as the first thing you type in a session, or the first after `/clear`. A long planning
+- **The session is fresh.** `/build` starts only in answer to the first message you send in a
+  session, or the first after `/clear`, whether you type the command or ask in your own words. A
+  long planning
   conversation is a poor start for building: Anthropic's own advice is to start a fresh session to
   build from a written spec,[^fresh] so the build begins with a clean context and a written
   definition of done. A plugin hook enforces this, and if it refuses, it says why. In a Claude
-  project, a new session is a new thread.
+  project, a new session is a new thread, and the note that opens a thread does not count as your
+  message.
 - **The plan is ready.** It is `🟢 Ready to build`. A `✅ Built` plan is refused: a plan is built
   once.
 - **Nothing it relies on has changed.** Every spec the plan names is still `👍 Accepted`, and every
