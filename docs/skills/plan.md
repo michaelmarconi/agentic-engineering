@@ -33,8 +33,8 @@ docs/plans/
 ```
 
 The date shows when each plan was first written, so an old plan nobody built is easy to spot.
-Several plans can be open at once, for work going on in parallel, but no two plans that are not `✅
-Built` may name the same requirement: if a plan already covers it, `/plan` offers to change that
+Several plans can be open at once, for work going on in parallel, but no two plans that are not
+`✅ Built` may name the same requirement: if a plan already covers it, `/plan` offers to change that
 plan instead.
 
 A plan is the one document that refers to specs and ADRs, by link, because it is not kept for

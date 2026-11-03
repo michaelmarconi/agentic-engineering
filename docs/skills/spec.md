@@ -71,13 +71,13 @@ stateDiagram-v2
   stands. If `/spec` changes anything after you asked, even a small fix you allowed in advance, it
   shows you the change and waits for your reply before setting `👍 Accepted`.
 
-The status describes the document, not the software, so building the spec does not change it: a
+The status describes the document, not the software, so building the software the spec describes does not change it: a
 status about the software would stop being true, without anyone noticing, as the code changes. To
 find out whether the software meets a spec, check the software against it.
 
-Changing a `👍 Accepted` spec returns it to `📝 Draft`. A spec still holding a status specs had
-before, `🟢 Ready to build` or `✅ Built`, goes back to `📝 Draft` the same way before it can be
-accepted. A capability that is no longer wanted has
+Changing a `👍 Accepted` spec returns it to `📝 Draft`. An older spec whose status is
+`🟢 Ready to build` or `✅ Built`, which specs no longer use, must be set back to `📝 Draft` before
+it can be accepted. A capability that is no longer wanted has
 its spec deleted; git keeps the history.[^openspec]
 
 Three things keep specs in this shape:
