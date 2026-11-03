@@ -12,6 +12,7 @@ Claude Code runs this on four hook events:
   A typed `/build` or `/sdlc:build` is blocked unless it is the first message counted.
 - PreToolUse on Skill: starting `build` or `sdlc:build` is refused unless the session is fresh
   and exactly one message has been counted, which covers asking in plain words.
+- A /build that is allowed to start is recorded, so the branch guard knows a build is running.
 - SessionEnd: the session's record is deleted.
 
 Records live in $CLAUDE_PLUGIN_DATA/sessions/<session id>.json. Without $CLAUDE_PLUGIN_DATA, or
@@ -82,6 +83,12 @@ def fresh(record):
     return bool(record) and record.get("fresh") is True and record.get("messages") == 1
 
 
+def building(session):
+    """True if /build was started in this session, for the branch guard."""
+    record = load(session)
+    return bool(record) and record.get("building") is True
+
+
 def on_start(event):
     session = event.get("session_id")
     source = event.get("source")
@@ -101,8 +108,11 @@ def on_prompt(event):
     if from_person(prompt):
         record["messages"] = record.get("messages", 0) + 1
         save(session, record)
-    if TYPED_BUILD.match(prompt) and not fresh(record):
-        return {"decision": "block", "reason": REASON}
+    if TYPED_BUILD.match(prompt):
+        if not fresh(record):
+            return {"decision": "block", "reason": REASON}
+        record["building"] = True
+        save(session, record)
     return None
 
 
@@ -110,7 +120,11 @@ def on_skill(event):
     tool_input = event.get("tool_input") or {}
     if not isinstance(tool_input, dict) or tool_input.get("skill") not in BUILD_SKILLS:
         return None
-    if fresh(load(event.get("session_id"))):
+    session = event.get("session_id")
+    record = load(session)
+    if fresh(record):
+        record["building"] = True
+        save(session, record)
         return None
     return {"hookSpecificOutput": {"hookEventName": "PreToolUse", "permissionDecision": "deny",
                                    "permissionDecisionReason": REASON}}

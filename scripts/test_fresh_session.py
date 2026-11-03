@@ -115,6 +115,32 @@ class Words(Hooks):
         self.assert_refused_skill(self.skill("build"))
 
 
+class Building(Hooks):
+    def test_build_started_by_skill_recorded(self):
+        self.start()
+        self.say("build it")
+        self.skill()
+        self.assertTrue(fresh_session.building("s1"))
+
+    def test_build_typed_recorded(self):
+        self.start()
+        self.say("/sdlc:build docs/plans/x.md")
+        self.assertTrue(fresh_session.building("s1"))
+
+    def test_no_build_recorded_otherwise(self):
+        self.start()
+        self.say("hi")
+        self.skill("sdlc:spec")
+        self.assertFalse(fresh_session.building("s1"))
+
+    def test_refused_build_not_recorded(self):
+        self.start()
+        self.say("hi")
+        self.say("build it")
+        self.skill()
+        self.assertFalse(fresh_session.building("s1"))
+
+
 class Sessions(Hooks):
     def test_clear_makes_it_fresh_again(self):
         self.start()
