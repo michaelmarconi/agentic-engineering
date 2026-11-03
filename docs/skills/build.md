@@ -8,14 +8,7 @@ that page first for the documents, skills and agents it mentions.
 ## What `/build` does
 
 `/build` takes one plan that you have signed off, writes the code and tests it describes on a
-branch of its own, has the result reviewed, and hands the branch back to you. It stops there. Three
-things stay with you, because each needs a person or depends on how your team works:
-
-- **Verifying:** starting the product and using it, the way a person would, to check it does
-  what was asked. A build may run on a machine that cannot run the product, with nobody
-  watching, so this is a separate step. Claude Code's own `/verify` does it.[^verify]
-- **Opening a pull request**, if your team works that way.
-- **Merging** the branch into the main branch.
+branch of its own, has the result reviewed, and hands the branch back to you.
 
 ```mermaid
 flowchart LR
@@ -28,6 +21,17 @@ flowchart LR
     Verify ~~~ Pad["#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;"]
     style Pad fill:none,stroke:none
 ```
+
+## What `/build` does not do
+
+`/build` stops once it has handed the branch back. These steps stay with you, because each needs
+a person or depends on how your team works:
+
+- **Verifying:** starting the product and using it, the way a person would, to check it does
+  what was asked. A build may run on a machine that cannot run the product, with nobody
+  watching, so this is a separate step. Claude Code's own `/verify` does it.[^verify]
+- **Opening a pull request**, if your team works that way.
+- **Merging** the branch into the main branch.
 
 ## Before it starts
 
