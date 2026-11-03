@@ -16,7 +16,7 @@ flowchart LR
     Branch --> Build[Build: tests first, commit as it goes]
     Build --> Review[Three reviews]
     Review --> Correct[Correct once, then check the corrections]
-    Correct --> Hand[Mark the plan Built and hand over]
+    Correct --> Hand[Hand over, marking the plan Built if every review passed]
     Hand -.->|you| Verify[Verify, then merge]
     Verify ~~~ Pad["#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;"]
     style Pad fill:none,stroke:none
@@ -94,7 +94,7 @@ seen the conversation:
 
 `/build` corrects what the reviews find, once, and has the corrections checked, the same way
 documents are reviewed (see [Review process](../lifecycle.md#review-process)). If the check fails,
-`/build` stops and shows you the reports.
+`/build` still hands over, as below, but does not mark the plan Built.
 
 ## Handing over
 
@@ -102,6 +102,13 @@ When the reviews pass, `/build` sets the plan to `✅ Built`, commits, and pushe
 repository has a remote. A small script does this, not Claude, and reports exactly what happened,
 including the branch name and any failure to push. `/build` never opens a pull request and never
 merges.
+
+A plan is marked `✅ Built` only when every review passes. If the corrections fail their check, the
+script still commits and pushes, so no work is lost, but the plan stays `🟢 Ready to build`, and the
+summary lists each finding still open and what `/build` tried. Sort them out however suits you:
+with Claude directly, by changing a spec or ADR, or by deciding a finding is wrong. Then rerun
+`/build` on the branch. It resumes, reviews again, and marks the plan Built once every review
+passes. If you think a finding is wrong, say so when you rerun it.
 
 It ends with a short summary: what was built, what the reviews found and what was corrected, and
 a reminder to verify the work before merging.
