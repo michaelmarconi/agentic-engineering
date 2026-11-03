@@ -27,9 +27,8 @@ flowchart LR
 `/build` follows your project's practices: how to set up, build, test and run the product, how
 branches and commits are named, and what must pass before work is merged. It finds them where
 Claude Code finds any project instructions: in `CLAUDE.md`, or in `AGENTS.md` when there is no
-`CLAUDE.md` or when `CLAUDE.md` imports it.[^memory] Where the project says nothing, `/build` works
-it out from the repository, as Claude does for any task, and says in its summary what it assumed.
-A later skill, `/practices`, will ask you about your practices and write them down. A choice
+`CLAUDE.md` or when `CLAUDE.md` imports it.[^memory] The `/practices` skill, run when you set a
+project up, asks you about them and records them under a `## Practices` heading there. A choice
 between alternatives, such as which test framework to use, is an ADR (architecture decision
 record) instead.
 
@@ -58,6 +57,10 @@ anything, `/build` checks:
 - **Nothing it relies on has changed.** Every spec the plan names is still `👍 Accepted`, and every
   ADR is still `👍 Accepted`. If one has changed since you signed the plan off, `/build` stops and
   says which.
+- **Your practices are recorded.** `/build` looks for the `## Practices` heading. If it is
+  missing, it suggests running `/practices` first. If you carry on without it, `/build` asks you
+  now for anything it cannot build without, such as how to run the tests, so nothing needs asking
+  once the build is under way.
 - **It is not on the main branch.** `/build` never builds on your repository's default branch. If
   you are on it, it makes a branch named after the plan. If you are already on another branch, it
   builds there, since some places that run Claude Code, such as its cloud sessions, choose the
