@@ -66,6 +66,16 @@ If a build stops halfway, for whatever reason, start a new session on the same b
 `/build` with the same plan again. It reads what the branch already holds, compares it with the
 plan and carries on.
 
+## Following your project's practices
+
+`/build` follows your project's practices: how to set up, build, test and run the product, how
+branches and commits are named, and what must pass before work is merged. It finds them where
+Claude Code finds any project instructions: in `CLAUDE.md`, or in `AGENTS.md` when there is no
+`CLAUDE.md` or when `CLAUDE.md` imports it.[^memory] Where the project says nothing, `/build` works
+it out from the repository, as Claude does for any task, and says in its summary what it assumed.
+A later skill, `/practices`, will ask you about your practices and write them down. A choice
+between alternatives, such as which test framework to use, is an ADR instead.
+
 ## Review
 
 When the code is written, three reviews check it side by side, each run by an agent that has not
@@ -112,3 +122,4 @@ changes. To find out whether the software meets a spec, check the software again
 [^codereview]: Claude Code documentation, [Best practices: give Claude a check to run](https://code.claude.com/docs/en/best-practices#give-claude-a-check-to-run):
     `/code-review` "reviews the diff in a fresh subagent that never saw your conversation".
 [^specreview]: Claude Code documentation, [Best practices: review against your spec](https://code.claude.com/docs/en/best-practices#review-against-your-spec).
+[^memory]: Claude Code documentation, [How Claude remembers your project](https://code.claude.com/docs/en/memory#agents-md).
