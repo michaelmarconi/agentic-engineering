@@ -1,0 +1,212 @@
+#!/usr/bin/env python3
+"""Hand the build's correction checker the three review reports and the commit they reviewed.
+
+After its three reviews, /build corrects what they found, once, commits, and starts the
+`build-correction-checker` agent. The checker needs the reports word for word, and the commit
+the reviews saw, so it can read exactly what the corrections changed. A model copying the reports
+could reword them, so this hook keeps them and adds them to the checker's request itself, as
+review_relay.py does for documents.
+
+Claude Code runs it on PreToolUse and PostToolUse for the Agent and Skill tools, and on
+SessionEnd. It acts only in a session where /build was allowed to start (recorded by
+fresh_session.py), and keeps:
+
+- the report of Claude Code's `/code-review`, from the Skill tool's result;
+- the report of the agent that runs `/security-review`: an agent whose request's first line is
+  `Document: <plan>` and whose second line starts `Run /security-review`;
+- the report of the `build-reviewer` agent, whose request's first line is `Document: <plan>`.
+
+Each is kept with the commit checked out when it ran. A report of a later commit starts a new
+set, so the checker only ever gets reports of one commit.
+
+Before the `build-correction-checker` starts, it appends the three reports (a review that did not
+run is shown as "Not run."), the reviewed commit and the rubric to read, between fixed
+`=== ... ===` lines, and approves the start. It refuses the start, with a reason Claude sees, when
+the request has no `Document:` line, when no build review report is on record, or when nothing
+has been committed since the reviews. Records live in $CLAUDE_PLUGIN_DATA/builds/<session>.json
+and are deleted when the session ends. Anything else, and any input it cannot read, is left alone.
+"""
+
+import argparse
+import json
+import os
+import re
+import shutil
+import subprocess
+import sys
+
+import fresh_session
+
+ROOT = os.environ.get("CLAUDE_PLUGIN_ROOT") or os.path.normpath(
+    os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
+RUBRIC = os.path.join(ROOT, "skills", "build", "references", "rubric.md")
+CHECKER = "build-correction-checker"
+PARTS = (("code", "CODE REVIEW REPORT"), ("security", "SECURITY REVIEW REPORT"),
+         ("plan", "BUILD REVIEW REPORT"))
+
+
+def project():
+    return os.environ.get("CLAUDE_PROJECT_DIR") or os.getcwd()
+
+
+def head():
+    try:
+        result = subprocess.run(["git", "-C", project(), "rev-parse", "HEAD"], capture_output=True, text=True)
+    except OSError:
+        return None
+    return result.stdout.strip() if result.returncode == 0 else None
+
+
+def record_path(session):
+    data = os.environ.get("CLAUDE_PLUGIN_DATA")
+    if not data:
+        return None
+    safe = re.sub(r"[^A-Za-z0-9_-]", "_", session)
+    return os.path.join(data, "builds", safe + ".json")
+
+
+def load(session):
+    try:
+        with open(record_path(session), encoding="utf-8") as f:
+            record = json.load(f)
+    except (OSError, TypeError, ValueError):
+        return None
+    return record if isinstance(record, dict) and isinstance(record.get("reports"), dict) else None
+
+
+def save(session, record):
+    path = record_path(session)
+    if not path:
+        return
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(record, f)
+
+
+def for_commit(session, commit):
+    record = load(session)
+    if not record or record.get("commit") != commit:
+        record = {"commit": commit, "reports": {}, "started": {}}
+    record.setdefault("started", {})
+    return record
+
+
+def first_lines(prompt):
+    lines = prompt.strip().splitlines() if isinstance(prompt, str) else []
+    named = lines[0][len("Document:"):].strip() if lines and lines[0].startswith("Document:") else None
+    return named, (lines[1].strip() if len(lines) > 1 else "")
+
+
+def part_of(tool_input):
+    agent = str(tool_input.get("subagent_type") or "").split(":")[-1]
+    named, second = first_lines(tool_input.get("prompt"))
+    if not named:
+        return None
+    if agent == "build-reviewer":
+        return "plan"
+    if agent == "general-purpose" and second.startswith("Run /security-review"):
+        return "security"
+    return None
+
+
+def text_of(response):
+    if isinstance(response, dict):
+        if isinstance(response.get("result"), str):
+            return response["result"]
+        blocks = response.get("content") or []
+        return "".join(b.get("text") or "" for b in blocks if isinstance(b, dict))
+    return response if isinstance(response, str) else ""
+
+
+def refuse(reason):
+    return {"hookSpecificOutput": {"hookEventName": "PreToolUse", "permissionDecision": "deny",
+                                   "permissionDecisionReason": reason}}
+
+
+def start_checker(session, tool_input):
+    prompt = tool_input.get("prompt") or ""
+    named, _ = first_lines(prompt)
+    if not named:
+        return refuse("Start the build correction checker with `Document: <plan path>` as the "
+                      "first line of its request, the same line the build reviewer was given.")
+    record = load(session)
+    if not record or "plan" not in record["reports"]:
+        return refuse("No build review report is on record in this session, so the corrections "
+                      "cannot be checked. Do not review again: stop and show the person the "
+                      "reports you have and this reason.")
+    if head() == record["commit"]:
+        return refuse("Nothing has been committed since the reviews. Commit the corrections "
+                      "first, then start the build correction checker.")
+    blocks = [f"=== {title} ===\n{record['reports'].get(part, 'Not run.')}\n=== END {title} ==="
+              for part, title in PARTS]
+    extra = (f"\n\n=== REVIEWED COMMIT ===\nReviewed commit: {record['commit']}\n"
+             "=== END REVIEWED COMMIT ===\n\n" + "\n\n".join(blocks) +
+             f"\n\n=== FILES TO READ ===\nRubric: {RUBRIC}\n=== END FILES TO READ ===\n")
+    return {"hookSpecificOutput": {"hookEventName": "PreToolUse", "permissionDecision": "allow",
+                                   "updatedInput": dict(tool_input, prompt=prompt + extra)}}
+
+
+def handle(event):
+    session = str(event.get("session_id") or "unknown")
+    when = event.get("hook_event_name")
+    if when == "SessionEnd":
+        path = record_path(session)
+        if path and os.path.exists(path):
+            os.remove(path)
+        return None
+    tool_input = event.get("tool_input")
+    if not isinstance(tool_input, dict):
+        return None
+    tool = event.get("tool_name")
+    checker = str(tool_input.get("subagent_type") or "").split(":")[-1] == CHECKER
+    if tool in ("Agent", "Task") and checker and when == "PreToolUse":
+        return start_checker(session, tool_input)
+    if not fresh_session.building(session) or not record_path(session):
+        return None
+    if tool == "Skill":
+        if when == "PostToolUse" and str(tool_input.get("skill")).split(":")[-1] == "code-review":
+            record = for_commit(session, head())
+            record["reports"]["code"] = text_of(event.get("tool_response"))
+            save(session, record)
+        return None
+    if tool not in ("Agent", "Task"):
+        return None
+    part = part_of(tool_input)
+    if not part:
+        return None
+    call = str(event.get("tool_use_id") or part)
+    if when == "PreToolUse":
+        record = for_commit(session, head())
+        record["started"][call] = part
+        save(session, record)
+    elif when == "PostToolUse":
+        record = load(session)
+        report = text_of(event.get("tool_response"))
+        if record and record["started"].get(call) == part and report.strip():
+            record["reports"][part] = report
+            save(session, record)
+    return None
+
+
+def main(argv=None):
+    parser = argparse.ArgumentParser(
+        description=__doc__.split("\n\n")[0],
+        epilog=__doc__.split("\n\n", 1)[1] + "\nReads one hook event as JSON from stdin. Prints a "
+               "PreToolUse decision as JSON, or nothing. Always exits 0.",
+        formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser.parse_args(argv)
+    try:
+        event = json.load(sys.stdin)
+    except ValueError:
+        return 0
+    try:
+        out = handle(event) if isinstance(event, dict) else None
+    except Exception:  # never block a step over a fault in this hook
+        out = None
+    if out:
+        print(json.dumps(out))
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
