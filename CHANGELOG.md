@@ -6,6 +6,27 @@ What changed in each version of the plugin, newest first. Versions follow
 past a major version: it says what you need to change in your documents. Until 1.0.0, any
 minor version may need such a change, and its entry says so.
 
+## [0.12.0] - 2026-11-03
+
+### Changed
+
+- Specs now have the statuses `📝 Draft` and `👍 Accepted`. A spec's status says whether you
+  have accepted its text; it describes the document, never the software, because a status about
+  the software would stop being true, without anyone noticing, as the code changes. To find out
+  whether the software meets a spec, check the software against it. `/sdlc:spec` sets
+  `👍 Accepted` when you sign a spec off, under the same rules `🟢 Ready to build` had, and any
+  change returns it to `📝 Draft`.
+- A plan can be `🟢 Ready to build` only when every spec it names is `👍 Accepted`.
+- The hook refuses a new spec or plan written with another kind of document's status, such as a
+  new spec written as `✅ Built`.
+
+### What you need to change
+
+- A spec that is `🟢 Ready to build` or `✅ Built` keeps that status until it is next changed,
+  and the hook does not check it until then. Before `/sdlc:spec` can accept it, set it back to
+  `📝 Draft`, then accept it again; a plan that names it cannot be `🟢 Ready to build` until it
+  is `👍 Accepted`.
+
 ## [0.11.0] - 2026-10-29
 
 ### Added
