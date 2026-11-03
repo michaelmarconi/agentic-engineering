@@ -88,7 +88,7 @@ reloading, and checks the bell shows 1 and then no number.
 
 ## Constraints
 
-- Clicking a notification in the list keeps the person on the same page.
+- None.
 
 ## Open questions
 

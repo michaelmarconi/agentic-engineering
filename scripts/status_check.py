@@ -6,8 +6,8 @@ JSON from stdin and, for a *.spec.md under the project's docs/specs/ or a *.md u
 docs/adrs/ or a *.md directly in its docs/plans/ (the project being $CLAUDE_PROJECT_DIR, or the
 current directory if unset),
 works out what the file would contain after the edit and compares it with what is on disk now.
-Every status carries its emoji, emoji first: a spec or a plan is `📝 Draft`, `🟢 Ready to build`
-or `✅ Built`; an ADR is `📝 Draft`, `👍 Accepted`, `❌ Rejected` or `↪️ Superseded`. The U+FE0F that
+Every status carries its emoji, emoji first: a spec is `📝 Draft` or `👍 Accepted`, describing the
+document, never the software; a plan is `📝 Draft`, `🟢 Ready to build` or `✅ Built`; an ADR is `📝 Draft`, `👍 Accepted`, `❌ Rejected` or `↪️ Superseded`. The U+FE0F that
 some keyboards add after an emoji is optional. It refuses a status written by its word alone or
 with the wrong emoji, and names the value to write. A document written before the emoji, whose
 status is a bare word such as `Accepted`, counts as having that status, and an edit that only adds
@@ -18,11 +18,13 @@ For a spec it refuses:
 
 - a spec that had a lifecycle status losing it;
 - a spec that had none being given any status but `📝 Draft`, so new specs start as Draft;
-- setting `✅ Built`: only the build step may, and it does not exist yet;
-- `🟢 Ready to build` or `✅ Built` to anything but `📝 Draft`;
-- `🟢 Ready to build` while the Open questions section is not empty or "None.", or in the same
-  edit as any other change;
-- a change to a `🟢 Ready to build` or `✅ Built` spec that does not return it to `📝 Draft`.
+- `👍 Accepted` while the Open questions section is missing or holds anything but "None.", or in
+  the same edit as any other change;
+- a change to a `👍 Accepted` spec that does not return it to `📝 Draft`.
+
+A spec still holding `🟢 Ready to build` or `✅ Built`, statuses specs had before, is no longer
+checked until it is set back to `📝 Draft`, which is allowed; setting it to `👍 Accepted` straight
+away is refused.
 
 For an ADR (architecture decision record) it refuses:
 
@@ -44,7 +46,7 @@ For a plan it refuses:
 - `🟢 Ready to build` in the same edit as any other change, or while the Open questions section is
   missing or not empty or "None.";
 - `🟢 Ready to build` unless the plan names something to build, each spec listed under Specs
-  exists, is `🟢 Ready to build` or `✅ Built` and has a `### Requirement:` heading for each
+  exists, is `👍 Accepted` and has a `### Requirement:` heading for each
   `- Requirement:` line beneath it, each ADR listed under ADRs exists and is `👍 Accepted`, and no
   other plan in the folder that is not `✅ Built` names the same requirement of the same spec.
   References are paths relative to the plan;
@@ -67,6 +69,7 @@ import sys
 DRAFT, READY, BUILT = "📝 Draft", "🟢 Ready to build", "✅ Built"
 ACCEPTED, REJECTED, SUPERSEDED = "👍 Accepted", "❌ Rejected", "↪️ Superseded"
 STATUSES = (DRAFT, READY, BUILT)
+SPEC_STATUSES = (DRAFT, ACCEPTED)
 ADR_STATUSES = (DRAFT, ACCEPTED, REJECTED, SUPERSEDED)
 # Each status by its word alone, as documents written before the emoji hold it.
 WORDS = {value.split(" ", 1)[1]: value for value in STATUSES + ADR_STATUSES}
@@ -256,7 +259,7 @@ def check(payload):
     if not path:
         return None
     if is_spec(path):
-        kind, statuses, rules = "spec", STATUSES, spec_rules
+        kind, statuses, rules = "spec", SPEC_STATUSES, spec_rules
     elif is_adr(path):
         kind, statuses, rules = "ADR", ADR_STATUSES, adr_rules
     elif is_plan(path):
@@ -297,14 +300,17 @@ def check(payload):
 def lifecycle_problem(path, kind, statuses, rules, before, after, old, new, written):
     name = os.path.basename(path)
     if old not in statuses and new not in statuses:
-        if kind == "ADR" and not before and new is not None:
-            return f"{name}: a new ADR must be written as `{DRAFT}`, not '{new}'."
+        # A new document is refused any lifecycle status, even one only another kind uses, as
+        # `✅ Built` on a spec; a new ADR is refused any status at all.
+        if not before and new is not None and (kind == "ADR" or meant(new, WORDS.values())):
+            return f"{name}: a new {kind} must be written as `{DRAFT}`, not '{new}'."
         return None
     if sum(is_key(line, "status") for line in frontmatter(after) or []) > 1:
         return f"{name}: the frontmatter has more than one `status:` line; keep one."
     if new not in statuses:
         found = f"'{new}'" if new else "none"
-        return f"{name}: the {kind} needs `status:` frontmatter set to {listed(statuses)} (found {found})."
+        about = " A spec's status describes the document, not the software." if kind == "spec" else ""
+        return f"{name}: the {kind} needs `status:` frontmatter set to {listed(statuses)} (found {found}).{about}"
     if old not in statuses and new != DRAFT:
         if old:
             return f"{name}: '{old}' is not a lifecycle status; set the {kind} to `{DRAFT}` first."
@@ -314,29 +320,23 @@ def lifecycle_problem(path, kind, statuses, rules, before, after, old, new, writ
 
 def spec_rules(path, before, after, old, new):
     name = os.path.basename(path)
-    if old not in STATUSES:
+    if old not in SPEC_STATUSES:
         return None
     if new == old:
         if new != DRAFT and without_status(after) != without_status(before):
             return (
                 f"{name}: this spec is `{old}`, so changing it must also set its status back to "
-                f"`{DRAFT}`, because what was agreed or built no longer matches."
+                f"`{DRAFT}`, for the person to accept it again."
             )
         return None
-    if new == BUILT:
-        return (
-            f"{name}: only the build step sets `{BUILT}`, once its review finds every requirement "
-            "verified. Leave the status as it is."
-        )
-    if old in (READY, BUILT) and new != DRAFT:
-        return f"{name}: a `{old}` spec can only go back to `{DRAFT}`, not to `{new}`."
-    if new == READY and without_status(after) != without_status(before or ""):
-        return (
-            f"{name}: set `{READY}` on its own, as the last edit after a passing review; "
-            "this edit also changes the spec's content."
-        )
-    if new == READY and has_open_questions(after):
-        return open_questions_refusal(name, after, READY, "spec")
+    if new == ACCEPTED:
+        if without_status(after) != without_status(before or ""):
+            return (
+                f"{name}: set `{ACCEPTED}` on its own, as the last edit after a passing review; "
+                "this edit also changes the spec's content."
+            )
+        if has_open_questions(after):
+            return open_questions_refusal(name, after, ACCEPTED, "spec")
     return None
 
 
@@ -435,9 +435,9 @@ def reference_problem(path, text):
         spec_text = read(spec_path)
         if spec_text is None:
             return f"the spec {link} does not exist"
-        status = lifecycle_status(spec_text, STATUSES)
-        if status not in (READY, BUILT):
-            return f"the spec {link} {described(status)}, not `{READY}` or `{BUILT}`"
+        status = lifecycle_status(spec_text, SPEC_STATUSES)
+        if status != ACCEPTED:
+            return f"the spec {link} {described(status)}, not `{ACCEPTED}`"
         if not names:
             return f"no requirement is named under {link}; list each one as `- Requirement: <name>`"
         headings = {m.group(1) for m in map(REQUIREMENT_HEADING.match, spec_text.splitlines()) if m}

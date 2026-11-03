@@ -98,15 +98,19 @@ class NewSpec(Workspace):
     def test_new_draft_allowed(self):
         self.assertIsNone(self.write(spec()))
 
-    def test_new_ready_refused(self):
-        self.assertIn("Draft", self.write(spec("🟢 Ready to build")))
+    def test_new_accepted_refused(self):
+        self.assertIn("Draft", self.write(spec("👍 Accepted")))
 
     def test_file_without_lifecycle_status_left_alone(self):
         self.assertIsNone(self.write("# Thing\n"))
         self.assertIsNone(self.write(spec("Approved")))
 
     def test_new_spec_created_by_edit_checked(self):
-        self.assertIsNotNone(self.edit("", spec("✅ Built")))
+        self.assertIsNotNone(self.edit("", spec("👍 Accepted")))
+
+    def test_new_spec_with_another_kind_of_status_refused(self):
+        for value in ("🟢 Ready to build", "✅ Built", "Built", "❌ Rejected"):
+            self.assertIn("Draft", self.write(spec(value)), value)
 
     def test_byte_order_mark(self):
         self.assertIsNone(self.write("\ufeff" + spec()))
@@ -127,7 +131,7 @@ class NewSpec(Workspace):
 
     def test_spec_in_subfolder_checked(self):
         sub = os.path.join(self.tmp.name, "docs", "specs", "billing", "invoice.spec.md")
-        self.assertIsNotNone(self.write(spec("✅ Built"), path=sub))
+        self.assertIsNotNone(self.write(spec("👍 Accepted"), path=sub))
 
 
 class Transitions(Workspace):
@@ -141,62 +145,62 @@ class Transitions(Workspace):
 
     def test_spec_without_status_cannot_skip_draft(self):
         self.put("# Thing\n")
-        self.assertIn("Draft", self.write(spec("🟢 Ready to build")))
+        self.assertIn("Draft", self.write(spec("👍 Accepted")))
 
     def test_legacy_file_edit_allowed(self):
         self.put("# Thing\n")
         self.assertIsNone(self.edit("Thing", "Other"))
 
     def test_status_like_body_line_counts_as_change(self):
-        self.put(spec("✅ Built", rule="status: 404"))
+        self.put(spec("👍 Accepted", rule="status: 404"))
         self.assertIn("Draft", self.edit("status: 404", "status: 410"))
 
-    def test_draft_to_ready_without_questions_allowed(self):
+    def test_draft_to_accepted_without_questions_allowed(self):
         self.put(spec())
-        self.assertIsNone(self.edit("status: 📝 Draft", "status: 🟢 Ready to build"))
+        self.assertIsNone(self.edit("status: 📝 Draft", "status: 👍 Accepted"))
 
-    def test_draft_to_ready_with_other_changes_refused(self):
+    def test_draft_to_accepted_with_other_changes_refused(self):
         self.put(spec())
-        self.assertIn("on its own", self.write(spec("🟢 Ready to build", rule="The system SHALL do Y.")))
+        self.assertIn("on its own", self.write(spec("👍 Accepted", rule="The system SHALL do Y.")))
 
-    def test_ready_without_open_questions_section_named_in_refusal(self):
+    def test_accepted_without_open_questions_section_named_in_refusal(self):
         self.put(spec().split("\n## Open questions")[0])
-        self.assertIn("no Open questions section", self.edit("status: 📝 Draft", "status: 🟢 Ready to build"))
+        self.assertIn("no Open questions section", self.edit("status: 📝 Draft", "status: 👍 Accepted"))
 
-    def test_draft_to_ready_with_questions_refused(self):
+    def test_draft_to_accepted_with_questions_refused(self):
         self.put(spec(questions="- Who approves?"))
-        self.assertIn("open questions", self.edit("status: 📝 Draft", "status: 🟢 Ready to build"))
+        self.assertIn("open questions", self.edit("status: 📝 Draft", "status: 👍 Accepted"))
 
-    def test_setting_built_refused(self):
-        self.put(spec("🟢 Ready to build"))
-        self.assertIn("Built", self.edit("status: 🟢 Ready to build", "status: ✅ Built"))
+    def test_statuses_about_the_software_refused(self):
+        self.put(spec())
+        for status in ("🟢 Ready to build", "✅ Built"):
+            reason = self.edit("status: 📝 Draft", f"status: {status}")
+            self.assertIn("`👍 Accepted`", reason)
 
-    def test_changing_ready_spec_without_draft_refused(self):
-        self.put(spec("🟢 Ready to build"))
+    def test_changing_accepted_spec_without_draft_refused(self):
+        self.put(spec("👍 Accepted"))
         self.assertIn("Draft", self.edit("do X", "do Y"))
 
-    def test_changing_built_spec_without_draft_refused(self):
-        self.put(spec("✅ Built"))
-        self.assertIn("Draft", self.edit("do X", "do Y"))
-
-    def test_changing_built_spec_back_to_draft_allowed(self):
-        self.put(spec("✅ Built"))
+    def test_changing_accepted_spec_back_to_draft_allowed(self):
+        self.put(spec("👍 Accepted"))
         self.assertIsNone(self.write(spec("📝 Draft", rule="The system SHALL do Y.")))
 
-    def test_built_to_ready_refused(self):
-        self.put(spec("✅ Built"))
-        self.assertIsNotNone(self.edit("status: ✅ Built", "status: 🟢 Ready to build"))
+    def test_rewriting_accepted_spec_unchanged_allowed(self):
+        self.put(spec("👍 Accepted"))
+        self.assertIsNone(self.write(spec("👍 Accepted")))
 
-    def test_rewriting_ready_spec_unchanged_allowed(self):
-        self.put(spec("🟢 Ready to build"))
-        self.assertIsNone(self.write(spec("🟢 Ready to build")))
+    def test_spec_with_a_status_from_before_must_go_back_to_draft(self):
+        for status in ("🟢 Ready to build", "✅ Built"):
+            self.put(spec(status))
+            self.assertIn("Draft", self.edit(f"status: {status}", "status: 👍 Accepted"))
+            self.assertIsNone(self.edit(f"status: {status}", "status: 📝 Draft"))
 
     def test_draft_edit_allowed(self):
         self.put(spec())
         self.assertIsNone(self.edit("do X", "do Y"))
 
     def test_edit_that_cannot_be_matched_refused_on_lifecycle_spec(self):
-        self.put(spec("✅ Built").replace("do X", "do ’X’"))
+        self.put(spec("👍 Accepted").replace("do X", "do ’X’"))
         self.assertIn("exactly", self.edit("do 'X'", "do 'Y'"))
 
     def test_edit_that_cannot_be_matched_allowed_on_other_files(self):
@@ -205,23 +209,23 @@ class Transitions(Workspace):
 
     def test_empty_file_filled_by_edit_checked(self):
         self.put("")
-        self.assertIsNotNone(self.edit("", spec("✅ Built")))
+        self.assertIsNotNone(self.edit("", spec("👍 Accepted")))
 
     def test_new_file_by_multiedit_checked(self):
         result = status_check.check(
             {
                 "tool_name": "MultiEdit",
-                "tool_input": {"file_path": self.path, "edits": [{"old_string": "", "new_string": spec("✅ Built")}]},
+                "tool_input": {"file_path": self.path, "edits": [{"old_string": "", "new_string": spec("👍 Accepted")}]},
             }
         )
         self.assertIsNotNone(result)
 
     def test_second_status_line_refused(self):
         self.put(spec())
-        self.assertIn("one", self.edit("status: 📝 Draft", "status: 📝 Draft\nstatus: 🟢 Ready to build"))
+        self.assertIn("one", self.edit("status: 📝 Draft", "status: 📝 Draft\nstatus: 👍 Accepted"))
 
     def test_replace_all(self):
-        self.put(spec("🟢 Ready to build", rule="X SHALL X."))
+        self.put(spec("👍 Accepted", rule="X SHALL X."))
         self.assertIsNotNone(self.edit("X", "Z", replace_all=True))
 
     def test_multiedit(self):
@@ -232,7 +236,7 @@ class Transitions(Workspace):
                 "tool_input": {
                     "file_path": self.path,
                     "edits": [
-                        {"old_string": "status: 📝 Draft", "new_string": "status: 🟢 Ready to build"},
+                        {"old_string": "status: 📝 Draft", "new_string": "status: 👍 Accepted"},
                         {"old_string": "questions\n\nNone.", "new_string": "questions\n\n- Who approves?"},
                     ],
                 },
@@ -469,7 +473,7 @@ class Emoji(Workspace):
 
     def test_wrong_emoji_refused(self):
         self.put(spec())
-        self.assertIn("`🟢 Ready to build`", self.edit("status: 📝 Draft", "status: ✅ Ready to build"))
+        self.assertIn("`👍 Accepted`", self.edit("status: 📝 Draft", "status: ✅ Accepted"))
 
     def test_emoji_without_space_refused(self):
         self.assertIsNotNone(self.write(spec("📝Draft")))
@@ -479,13 +483,13 @@ class Emoji(Workspace):
         self.assertEqual(status_check.status_of("---\nstatus: ✅\ufe0f Built\n---\n"), "✅ Built")
 
     def test_old_plain_status_moves_over(self):
-        self.put(spec("Ready to build"))
-        self.assertIsNone(self.edit("status: Ready to build", "status: 🟢 Ready to build"))
+        self.put(spec("Accepted"))
+        self.assertIsNone(self.edit("status: Accepted", "status: 👍 Accepted"))
 
     def test_old_plain_status_keeps_its_rules(self):
-        self.put(spec("Ready to build"))
-        self.assertIn("Draft", self.write(spec("🟢 Ready to build", rule="The system SHALL do Y.")))
-        self.assertIsNone(self.edit("status: Ready to build", "status: 📝 Draft"))
+        self.put(spec("Accepted"))
+        self.assertIn("Draft", self.write(spec("👍 Accepted", rule="The system SHALL do Y.")))
+        self.assertIsNone(self.edit("status: Accepted", "status: 📝 Draft"))
 
     def test_old_plain_status_must_move_over_when_edited(self):
         self.put(spec("Draft"))
@@ -504,7 +508,7 @@ class Emoji(Workspace):
         self.assertEqual(status_check.lifecycle_status("---\nstatus: Accepted\n---\n", statuses), "Accepted")
 
     def test_new_spec_refusal_quotes_what_was_written(self):
-        self.assertIn("'Ready to build'", self.write(spec("Ready to build")))
+        self.assertIn("'Accepted'", self.write(spec("Accepted")))
 
     def test_lookalike_space_shown(self):
         self.assertIn("\\xa0", self.write(spec("📝\u00a0Draft")))
@@ -540,11 +544,11 @@ class AdrEmoji(AdrWorkspace):
         self.put(adr("Accepted"))
         self.assertIn("never edited", self.edit("fast enough", "fast and cheap enough"))
 
-    def test_body_edit_of_old_built_spec_must_return_to_draft(self):
+    def test_body_edit_of_old_accepted_spec_must_return_to_draft(self):
         self.put(adr())
         os.remove(self.path)
         self.path = os.path.join(self.tmp.name, "docs", "specs", "thing.spec.md")
-        self.put(spec("Built"))
+        self.put(spec("Accepted"))
         self.assertIn("back to `📝 Draft`", self.edit("do X", "do Y"))
 
     def test_adding_the_variation_selector_allowed(self):
@@ -594,7 +598,7 @@ class PlanWorkspace(Workspace):
         super().setUp()
         self.spec_path = self.path
         self.path = os.path.join(self.tmp.name, "docs", "plans", "2026-10-29-thing-release.md")
-        self.put_at(self.spec_path, spec("🟢 Ready to build"))
+        self.put_at(self.spec_path, spec("👍 Accepted"))
 
     def put_at(self, path, text):
         os.makedirs(os.path.dirname(path), exist_ok=True)
@@ -613,6 +617,9 @@ class Plan(PlanWorkspace):
 
     def test_new_ready_refused(self):
         self.assertIn("Draft", self.write(plan("🟢 Ready to build")))
+
+    def test_new_plan_with_another_kind_of_status_refused(self):
+        self.assertIn("Draft", self.write(plan("👍 Accepted")))
 
     def test_losing_status_refused(self):
         self.put(plan())
@@ -649,9 +656,10 @@ class Plan(PlanWorkspace):
         self.put_at(self.spec_path, spec())
         self.assertIn("Draft", self.ready())
 
-    def test_ready_allowed_on_a_built_spec(self):
-        self.put_at(self.spec_path, spec("✅ Built"))
-        self.assertIsNone(self.ready())
+    def test_ready_refused_on_a_spec_with_a_status_from_before(self):
+        for status in ("🟢 Ready to build", "✅ Built"):
+            self.put_at(self.spec_path, spec(status))
+            self.assertIn("`👍 Accepted`", self.ready())
 
     def test_ready_needs_each_requirement_in_its_spec(self):
         reason = self.ready(specs="- [Thing](../specs/thing.spec.md)\n  - Requirement: Y")
@@ -686,7 +694,7 @@ class Plan(PlanWorkspace):
         self.assertIsNone(self.ready())
 
     def test_another_plan_for_another_requirement_allowed(self):
-        self.put_at(self.spec_path, spec("🟢 Ready to build", rule="The system SHALL do X.\n\n### Requirement: Y\n\nThe system SHALL do Y."))
+        self.put_at(self.spec_path, spec("👍 Accepted", rule="The system SHALL do X.\n\n### Requirement: Y\n\nThe system SHALL do Y."))
         other = os.path.join(self.tmp.name, "docs", "plans", "2026-10-01-earlier.md")
         self.put_at(other, plan(specs="- [Thing](../specs/thing.spec.md)\n  - Requirement: Y"))
         self.assertIsNone(self.ready())
@@ -762,9 +770,9 @@ class Command(Workspace):
         )
 
     def test_refusal_exits_2_with_reason_on_stderr(self):
-        done = self.run_hook({"tool_name": "Write", "tool_input": {"file_path": self.path, "content": spec("✅ Built")}})
+        done = self.run_hook({"tool_name": "Write", "tool_input": {"file_path": self.path, "content": spec("👍 Accepted")}})
         self.assertEqual(done.returncode, 2)
-        self.assertIn("Built", done.stderr)
+        self.assertIn("Draft", done.stderr)
 
     def test_allowed_exits_0_silently(self):
         done = self.run_hook({"tool_name": "Write", "tool_input": {"file_path": self.path, "content": spec()}})

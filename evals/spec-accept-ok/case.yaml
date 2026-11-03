@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: spec-accept-ok
+expected_outcome: |
+  The spec has no open questions, so after the reviewer passes it, its status is set to Accepted.
+context:
+  scaffold_script: place-files.sh

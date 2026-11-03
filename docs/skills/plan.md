@@ -33,8 +33,8 @@ docs/plans/
 ```
 
 The date shows when each plan was first written, so an old plan nobody built is easy to spot.
-Several plans can be open at once, for work going on in parallel, but no two plans that are not `✅
-Built` may name the same requirement: if a plan already covers it, `/plan` offers to change that
+Several plans can be open at once, for work going on in parallel, but no two plans that are not
+`✅ Built` may name the same requirement: if a plan already covers it, `/plan` offers to change that
 plan instead.
 
 A plan is the one document that refers to specs and ADRs, by link, because it is not kept for
@@ -125,7 +125,7 @@ stateDiagram-v2
   `✅ Built`.
 
 A plugin hook refuses `🟢 Ready to build` unless Open questions is empty, every spec it names is
-`🟢 Ready to build` or `✅ Built` and has each named requirement, every ADR it names is
+`👍 Accepted` and has each named requirement, every ADR it names is
 `👍 Accepted`, and no other plan that is not `✅ Built` names the same requirement. If a
 spec or ADR it names changes after you sign off, the plan is no longer settled: update it, and
 sign it off again.

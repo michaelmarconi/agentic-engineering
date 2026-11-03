@@ -30,9 +30,8 @@ the person says and from `docs/specs/` and `docs/adrs/`. Each requirement is a
 
 - If the work builds no requirement and follows no ADR, such as tidying code, a routine upgrade or
   a quick fix, it needs no plan. Say so, suggest doing it straight from the conversation, and stop.
-- If a spec it builds is not `🟢 Ready to build` or `✅ Built`, or an ADR it follows is not
-  `👍 Accepted`, stop and say which one, and what is left to settle in it. A plan builds only on
-  settled documents, and you never change a spec or an ADR from here.
+- If a spec it builds or an ADR it follows is not `👍 Accepted`, stop and say which one, and
+  what is left to settle in it. A plan builds only on settled documents, and you never change a spec or an ADR from here.
 - Read the frontmatter and Specs section of each plan in `docs/plans/`. If one that is not
   `✅ Built` already names a requirement this work builds, say so and offer to change that plan
   instead; no two unbuilt plans may name the same requirement.
