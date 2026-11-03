@@ -55,7 +55,8 @@ anything, `/build` checks:
 `/build` works through the plan's steps. For each requirement the plan names, it first writes
 tests from the spec's scenarios and sees them fail, then writes the code that makes them pass. It
 follows every `👍 Accepted` ADR (architecture decision record) the plan names, and any other whose
-Confirmation section says it applies to the code being changed. It commits as it goes, so the branch always holds the work so far.
+Confirmation section says it applies to the code being changed. It commits as it goes, so the
+branch always holds the work so far.
 
 If a build stops halfway, for whatever reason, start a new session on the same branch and run
 `/build` with the same plan again. It reads what the branch already holds, compares it with the
@@ -98,8 +99,7 @@ a large build.
 
 A spec's status does not change when it is built. It describes the document, not the software,
 because a status about the software would stop being true, without anyone noticing, as the code
-changes.
-To find out whether the software meets a spec, check the software against it.
+changes. To find out whether the software meets a spec, check the software against it.
 
 [^verify]: Claude Code documentation, [Run and verify your app](https://code.claude.com/docs/en/skills#run-and-verify-your-app).
 [^fresh]: Claude Code documentation, [Best practices: brainstorm with Claude first](https://code.claude.com/docs/en/best-practices#brainstorm-with-claude-first):
