@@ -109,7 +109,8 @@ a reminder to verify the work before merging.
 ## After a build
 
 A `✅ Built` plan is kept as a record of what was built and how, like a superseded ADR. It is never
-edited again, and nothing deletes it. For more work on the same requirements, write a new plan,
+edited again, and whoever looks after the repository decides when, if ever, to delete it. For
+more work on the same requirements, write a new plan,
 or make small corrections by working with Claude directly, which is the usual way to tidy up after
 a large build.
 
