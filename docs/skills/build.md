@@ -25,6 +25,8 @@ flowchart LR
     Review --> Correct[Correct once, then check the corrections]
     Correct --> Hand[Mark the plan Built and hand over]
     Hand -.->|you| Verify[Verify, then merge]
+    Verify ~~~ Pad["#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;"]
+    style Pad fill:none,stroke:none
 ```
 
 ## Before it starts
