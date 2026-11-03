@@ -12,12 +12,17 @@ branch of its own, has the result reviewed, and hands the branch back to you.
 
 ```mermaid
 flowchart LR
-    Check[Check before starting] --> Branch[Use or make a build branch]
+    Check[Check before starting] -->|a check fails| Stop[Stop and say why]
+    Check --> Branch[Use or make a build branch]
     Branch --> Build[Build: tests first, commit as it goes]
     Build --> Review[Three reviews]
     Review --> Correct[Correct once, then check the corrections]
-    Correct --> Hand[Hand over, marking the plan Built if every review passed]
+    Correct -->|passed| Built[Mark the plan Built]
+    Built --> Hand[Hand over the branch]
+    Correct -->|failed| Hand
     Hand -.->|you| Verify[Verify, then merge]
+    Hand -.->|you, if findings are open| Sort[Sort them out, then rerun /build]
+    Sort -.-> Check
     Verify ~~~ Pad["#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;"]
     style Pad fill:none,stroke:none
 ```
