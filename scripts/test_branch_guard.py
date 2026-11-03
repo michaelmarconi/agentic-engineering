@@ -83,6 +83,23 @@ class DuringABuild(Guard):
         self.git("checkout", "-q", "-b", "build/thing")
         self.assertIsNone(self.bash("git commit -m x && git push -u origin build/thing"))
 
+    def test_branch_made_in_the_same_command_allowed(self):
+        self.assertIsNone(self.bash("git checkout -b build/thing && git add -A && git commit -m x"))
+        self.assertIsNone(self.bash("git switch -c build/thing; git commit -m x"))
+
+    def test_switching_to_the_default_branch_in_the_command_refused(self):
+        self.git("checkout", "-q", "-b", "build/thing")
+        self.assert_refused(self.bash("git checkout main && git commit -m x"))
+
+    def test_pushing_every_branch_refused(self):
+        self.git("checkout", "-q", "-b", "build/thing")
+        self.assert_refused(self.bash("git push --all origin"))
+        self.assert_refused(self.bash("git push --mirror origin"))
+
+    def test_refusal_names_the_branch_pushed_to(self):
+        self.git("checkout", "-q", "-b", "build/thing")
+        self.assertIn("`master`", self.bash("git push origin master")["permissionDecisionReason"])
+
     def test_other_commands_allowed(self):
         self.assertIsNone(self.bash("git status && python3 -m unittest"))
         self.assertIsNone(self.bash("git log --format=%s | grep commit"))

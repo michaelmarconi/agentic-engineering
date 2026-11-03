@@ -74,7 +74,8 @@ anything, `/build` checks:
   push to the default branch.
 - **The reviews can run.** Claude must be allowed to start `/code-review`, which a setting can turn
   off, and `/security-review` needs a remote named `origin`. If either is missing, `/build` says so
-  now, skips that review, and repeats it in the summary.
+  now, skips that review, and repeats it in the summary. A skipped review has not passed, so the
+  plan is not marked `✅ Built`.
 
 Finally, it runs your tests once. Any test that already fails is noted for the summary, and
 `/build` does not try to fix it.

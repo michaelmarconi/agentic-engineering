@@ -4,7 +4,8 @@
 Claude Code runs this as a PreToolUse hook on Bash. It acts only in a session where /build was
 allowed to start (recorded by fresh_session.py). There it refuses a shell command that runs
 `git commit` while the default branch is checked out, or `git push` while it is checked out or
-naming it as the branch to push to, such as `HEAD:main`. The default branch is the one
+naming it as the branch to push to, such as `HEAD:main`, or pushing every branch with `--all` or
+`--mirror`. It follows a `git checkout` or `git switch` earlier in the same command. The default branch is the one
 `origin/HEAD` names, or `main` or `master` when there is none. Every other command, and every
 command outside a build, is left alone.
 
@@ -63,28 +64,50 @@ def git_calls(command):
 
 
 def names_branch(words, branches):
-    for word in words:
+    """The default branch a push names as its target, or None."""
+    for word in (w for w in words if not w.startswith("-")):
         target = word.split(":", 1)[-1].lstrip("+")
         if target.startswith("refs/heads/"):
             target = target[len("refs/heads/"):]
         if target in branches:
-            return True
-    return False
+            return target
+    return None
+
+
+def switched_to(name, words):
+    """The branch a `git checkout` or `git switch` moves to, or None."""
+    words = [w for w in words if w != "--"]
+    for flag in ("-b", "-B", "-c", "-C", "--orphan"):
+        if flag in words and words.index(flag) + 1 < len(words):
+            return words[words.index(flag) + 1]
+    plain = [w for w in words if not w.startswith("-")]
+    return plain[0] if len(plain) == 1 else None
 
 
 def problem(event):
     if event.get("tool_name") != "Bash" or not fresh_session.building(event.get("session_id")):
         return None
     command = str((event.get("tool_input") or {}).get("command") or "")
-    calls = [c for c in git_calls(command) if c[0] in ("commit", "push")]
-    if not calls:
+    calls = git_calls(command)
+    if not any(name in ("commit", "push") for name, _ in calls):
         return None
     cwd = event.get("cwd") or "."
     branches = defaults(cwd)
+    # Follow the command's own branch changes, so `git checkout -b x && git commit` is judged on x.
     current = git_output(cwd, "symbolic-ref", "--quiet", "--short", "HEAD")
     for name, words in calls:
-        if current in branches or (name == "push" and names_branch(words[1:], branches)):
-            return REASON.format(branch=sorted(branches)[0] if current not in branches else current)
+        if name in ("checkout", "switch"):
+            current = switched_to(name, words) or current
+        elif name == "commit" and current in branches:
+            return REASON.format(branch=current)
+        elif name == "push":
+            if current in branches:
+                return REASON.format(branch=current)
+            if "--all" in words or "--mirror" in words:
+                return REASON.format(branch=" or ".join(sorted(branches)))
+            named = names_branch(words[1:], branches)
+            if named:
+                return REASON.format(branch=named)
     return None
 
 

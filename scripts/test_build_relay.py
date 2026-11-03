@@ -131,6 +131,38 @@ class Checker(Relay):
         self.assertEqual(result["permissionDecision"], "deny")
 
 
+class Corrections(Relay):
+    def test_security_agent_without_a_type_counted(self):
+        self.agent("", f"Document: {PLAN}\nRun /security-review and report.", "security finding")
+        self.plan_review()
+        self.commit("Correct")
+        self.assertIn("security finding", self.check()["updatedInput"]["prompt"])
+
+    def test_empty_code_review_result_not_kept(self):
+        self.code_review(report="")
+        self.plan_review()
+        self.commit("Correct")
+        self.assertIn("=== CODE REVIEW REPORT ===\nNot run.", self.check()["updatedInput"]["prompt"])
+
+    def test_review_in_the_background_refused(self):
+        result = self.hook({"hook_event_name": "PreToolUse", "tool_name": "Agent", "tool_use_id": "bg",
+                            "tool_input": {"subagent_type": "sdlc:build-reviewer", "run_in_background": True,
+                                           "prompt": f"Document: {PLAN}\nBase: main\nReview this build."}})
+        self.assertEqual(result["permissionDecision"], "deny")
+        self.assertIn("foreground", result["permissionDecisionReason"])
+
+    def test_one_correction_check_only(self):
+        self.plan_review()
+        self.commit("Correct")
+        self.assertEqual(self.check()["permissionDecision"], "allow")
+        self.hook({"hook_event_name": "PostToolUse", "tool_name": "Agent", "tool_use_id": "check",
+                   "tool_input": {"subagent_type": "sdlc:build-correction-checker",
+                                  "prompt": f"Document: {PLAN}\nCheck the corrections."},
+                   "tool_response": {"content": [{"type": "text", "text": "Result: FAIL"}]}})
+        self.commit("Correct again")
+        self.assertEqual(self.check()["permissionDecision"], "deny")
+
+
 class LeftAlone(Relay):
     def test_reviews_outside_a_build_not_kept(self):
         fresh_session.save("s2", {"fresh": True, "messages": 1})

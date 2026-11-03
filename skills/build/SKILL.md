@@ -60,8 +60,8 @@ Check each of these before changing anything, and stop with the reason if one fa
    to `build/<plan file name without its date and .md>`; on any other branch, build there, since
    some places that run Claude Code choose the branch name for you.
 6. **The reviews can run.** `/code-review` must be among the skills you can use, and
-   `/security-review` needs a remote named `origin`. If either is missing, say so now, skip that
-   review later, and say so again in the summary.
+   `/security-review` needs a remote named `origin`. If either is missing, say so now: you can
+   still build, but the skipped review keeps the plan from being marked `✅ Built`.
 
 Then run the tests once. Note any that already fail for the summary, and do not try to fix them.
 
@@ -139,9 +139,9 @@ there is an `origin` remote, and reports exactly what happened:
 python3 "${CLAUDE_SKILL_DIR}/scripts/hand_over.py" --plan <the plan's path> --message "<what the last commit holds>" [--reviews-passed]
 ```
 
-Pass `--reviews-passed` only when every review that ran passed, or passed after the corrections
-were checked, and nothing was raised: the script then marks the plan `✅ Built`. A skipped
-review does not hold it back; the summary says it was skipped. In every other case the plan
+Pass `--reviews-passed` only when all three reviews ran and passed, or passed after the
+corrections were checked, and nothing was raised: the script then marks the plan `✅ Built`. A
+review that was skipped has not passed, so it holds the plan back too. In every other case the plan
 stays `🟢 Ready to build`, and the person sorts out what is open, then runs `/build` again on the
 branch.
 

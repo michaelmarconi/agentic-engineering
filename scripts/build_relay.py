@@ -23,17 +23,24 @@ Before the `build-correction-checker` starts, it appends the three reports (a re
 run is shown as "Not run."), the reviewed commit and the rubric to read, between fixed
 `=== ... ===` lines, and approves the start. It refuses the start, with a reason Claude sees, when
 the request has no `Document:` line, when no build review report is on record, or when nothing
-has been committed since the reviews. Records live in $CLAUDE_PLUGIN_DATA/builds/<session>.json
+has been committed since the reviews, and deletes the record once the checker has run, so the
+corrections are checked only once. A review started in the background is refused, since its
+report would arrive after the hook has seen it finish. Records live in $CLAUDE_PLUGIN_DATA/builds/<session>.json
 and are deleted when the session ends. Anything else, and any input it cannot read, is left alone.
 """
 
 import argparse
+import contextlib
 import json
 import os
 import re
-import shutil
 import subprocess
 import sys
+
+try:
+    import fcntl
+except ImportError:  # Windows: run without the lock rather than fail every agent start.
+    fcntl = None
 
 import fresh_session
 
@@ -63,6 +70,21 @@ def record_path(session):
         return None
     safe = re.sub(r"[^A-Za-z0-9_-]", "_", session)
     return os.path.join(data, "builds", safe + ".json")
+
+
+@contextlib.contextmanager
+def locked(session):
+    """Hold the session's lock: the three reviews start and finish side by side.
+
+    Untested, since only a race could show it and no test relies on timing (AGENTS.md rule 5)."""
+    path = record_path(session)
+    if not path or not fcntl:
+        yield
+        return
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path + ".lock", "w") as handle:
+        fcntl.flock(handle, fcntl.LOCK_EX)
+        yield
 
 
 def load(session):
@@ -98,7 +120,7 @@ def first_lines(prompt):
 
 
 def part_of(tool_input):
-    agent = str(tool_input.get("subagent_type") or "").split(":")[-1]
+    agent = str(tool_input.get("subagent_type") or "general-purpose").split(":")[-1]
     named, second = first_lines(tool_input.get("prompt"))
     if not named:
         return None
@@ -151,23 +173,35 @@ def handle(event):
     when = event.get("hook_event_name")
     if when == "SessionEnd":
         path = record_path(session)
-        if path and os.path.exists(path):
-            os.remove(path)
+        for leftover in (path, path + ".lock") if path else ():
+            if os.path.exists(leftover):
+                os.remove(leftover)
         return None
     tool_input = event.get("tool_input")
     if not isinstance(tool_input, dict):
         return None
     tool = event.get("tool_name")
     checker = str(tool_input.get("subagent_type") or "").split(":")[-1] == CHECKER
-    if tool in ("Agent", "Task") and checker and when == "PreToolUse":
-        return start_checker(session, tool_input)
+    if tool in ("Agent", "Task") and checker:
+        if when == "PreToolUse":
+            return start_checker(session, tool_input)
+        if when == "PostToolUse":
+            # One correction check per review: a second would follow a second round of corrections.
+            with locked(session):
+                path = record_path(session)
+                if path and os.path.exists(path):
+                    os.remove(path)
+        return None
     if not fresh_session.building(session) or not record_path(session):
         return None
     if tool == "Skill":
-        if when == "PostToolUse" and str(tool_input.get("skill")).split(":")[-1] == "code-review":
-            record = for_commit(session, head())
-            record["reports"]["code"] = text_of(event.get("tool_response"))
-            save(session, record)
+        report = text_of(event.get("tool_response")).strip()
+        if (when == "PostToolUse" and str(tool_input.get("skill")).split(":")[-1] == "code-review"
+                and report and not report.startswith("Launching skill")):
+            with locked(session):
+                record = for_commit(session, head())
+                record["reports"]["code"] = report
+                save(session, record)
         return None
     if tool not in ("Agent", "Task"):
         return None
@@ -175,16 +209,20 @@ def handle(event):
     if not part:
         return None
     call = str(event.get("tool_use_id") or part)
-    if when == "PreToolUse":
-        record = for_commit(session, head())
-        record["started"][call] = part
-        save(session, record)
-    elif when == "PostToolUse":
-        record = load(session)
-        report = text_of(event.get("tool_response"))
-        if record and record["started"].get(call) == part and report.strip():
-            record["reports"][part] = report
+    if when == "PreToolUse" and tool_input.get("run_in_background"):
+        return refuse("Start each review in the foreground, not in the background, so its report "
+                      "is kept for the correction check.")
+    with locked(session):
+        if when == "PreToolUse":
+            record = for_commit(session, head())
+            record["started"][call] = part
             save(session, record)
+        elif when == "PostToolUse":
+            record = load(session)
+            report = text_of(event.get("tool_response"))
+            if record and record["started"].get(call) == part and report.strip():
+                record["reports"][part] = report
+                save(session, record)
     return None
 
 
