@@ -22,15 +22,24 @@ flowchart LR
     style Pad fill:none,stroke:none
 ```
 
-## What `/build` does not do
+## Your practices, and where `/build` stops
 
-`/build` stops once it has handed the branch back. These steps stay with you, because each needs
-a person or depends on how your team works:
+`/build` follows your project's practices: how to set up, build, test and run the product, how
+branches and commits are named, and what must pass before work is merged. It finds them where
+Claude Code finds any project instructions: in `CLAUDE.md`, or in `AGENTS.md` when there is no
+`CLAUDE.md` or when `CLAUDE.md` imports it.[^memory] Where the project says nothing, `/build` works
+it out from the repository, as Claude does for any task, and says in its summary what it assumed.
+A later skill, `/practices`, will ask you about your practices and write them down. A choice
+between alternatives, such as which test framework to use, is an ADR (architecture decision
+record) instead.
+
+`/build` stops once it has handed the branch back. These steps stay with you, done the way your
+practices say, because each needs a person:
 
 - **Verifying:** starting the product and using it, the way a person would, to check it does
   what was asked. A build may run on a machine that cannot run the product, with nobody
   watching, so this is a separate step. Claude Code's own `/verify` does it.[^verify]
-- **Opening a pull request**, if your team works that way.
+- **Opening a pull request**, if you use them.
 - **Merging** the branch into the main branch.
 
 ## Before it starts
@@ -58,23 +67,13 @@ anything, `/build` checks:
 
 `/build` works through the plan's steps. For each requirement the plan names, it first writes
 tests from the spec's scenarios and sees them fail, then writes the code that makes them pass. It
-follows every `👍 Accepted` ADR (architecture decision record) the plan names, and any other whose
-Confirmation section says it applies to the code being changed. It commits as it goes, so the
+follows every `👍 Accepted` ADR the plan names, and any other whose Confirmation section says it
+applies to the code being changed. It commits as it goes, so the
 branch always holds the work so far.
 
 If a build stops halfway, for whatever reason, start a new session on the same branch and run
 `/build` with the same plan again. It reads what the branch already holds, compares it with the
 plan and carries on.
-
-## Following your project's practices
-
-`/build` follows your project's practices: how to set up, build, test and run the product, how
-branches and commits are named, and what must pass before work is merged. It finds them where
-Claude Code finds any project instructions: in `CLAUDE.md`, or in `AGENTS.md` when there is no
-`CLAUDE.md` or when `CLAUDE.md` imports it.[^memory] Where the project says nothing, `/build` works
-it out from the repository, as Claude does for any task, and says in its summary what it assumed.
-A later skill, `/practices`, will ask you about your practices and write them down. A choice
-between alternatives, such as which test framework to use, is an ADR instead.
 
 ## Review
 
