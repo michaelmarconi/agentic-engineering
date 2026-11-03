@@ -51,7 +51,7 @@ class SessionMap(unittest.TestCase):
         self.assertNotIn("systemMessage", out)
 
     def test_prints_map_for_a_spec_written_before_the_emoji(self):
-        self.put("docs/specs/invoice.spec.md", "---\nstatus: Ready to build\n---\n# Invoice\n")
+        self.put("docs/specs/invoice.spec.md", "---\nstatus: Accepted\n---\n# Invoice\n")
         self.assertIn("hookSpecificOutput", self.output())
 
     def test_prints_map_when_brief_exists(self):
