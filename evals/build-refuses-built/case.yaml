@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: build-refuses-built
+expected_outcome: |
+  The plan is already Built, so the build refuses, since a plan is built once. Nothing is written or committed.
+context:
+  scaffold_script: place-files.sh

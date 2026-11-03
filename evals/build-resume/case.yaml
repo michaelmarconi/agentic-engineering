@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: build-resume
+expected_outcome: |
+  The branch build/word-count already holds Count words, built and tested, from a build that stopped. Run again on that branch, the build adds only Missing file and leaves the earlier tests as they are.
+context:
+  scaffold_script: place-files.sh
