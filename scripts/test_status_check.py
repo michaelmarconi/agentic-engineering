@@ -741,7 +741,23 @@ class Plan(PlanWorkspace):
 
     def test_setting_built_refused(self):
         self.put(plan("🟢 Ready to build"))
-        self.assertIn("build step", self.edit("status: 🟢 Ready to build", "status: ✅ Built"))
+        self.assertIn("hand-over", self.edit("status: 🟢 Ready to build", "status: ✅ Built"))
+
+    def test_built_plan_never_changed(self):
+        self.put(plan("✅ Built"))
+        self.assertIn("record", self.edit("Do the thing.", "Do it."))
+
+    def test_built_plan_never_set_back_to_draft(self):
+        self.put(plan("✅ Built"))
+        self.assertIn("record", self.edit("status: ✅ Built", "status: 📝 Draft"))
+
+    def test_built_plan_from_before_the_emoji_gets_it(self):
+        self.put(plan("Built"))
+        self.assertIsNone(self.edit("status: Built", "status: ✅ Built"))
+
+    def test_built_plan_never_rewritten(self):
+        self.put(plan("✅ Built"))
+        self.assertIn("record", self.write(plan("📝 Draft")))
 
     def test_changing_ready_plan_without_draft_refused(self):
         self.put(plan("🟢 Ready to build"))
