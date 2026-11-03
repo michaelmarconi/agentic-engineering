@@ -102,7 +102,8 @@ flowchart LR
     Spec --> Plan
     ADR --> Plan
     Plan --> Build
-    Build --> Code[Code on the main branch]
+    Build --> Branch[A branch, for you to verify]
+    Branch -->|you merge| Code[Code on the main branch]
     Code -.-> Audit
     Audit -.->|drift| Spec
     Audit ~~~ Pad["#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;"]
@@ -116,7 +117,7 @@ flowchart LR
 | [`/spike`](docs/skills/spike.md) | Settles an unknown with a throwaway experiment | Not built yet |
 | [`/adr`](docs/skills/adr.md) | Records one technical decision | Built |
 | [`/plan`](docs/skills/plan.md) | Scopes a piece of work against its specs and ADRs | Built |
-| [`/build`](docs/skills/build.md) | Builds a plan, has it reviewed and merges it | Not built yet |
+| [`/build`](docs/skills/build.md) | Builds a plan on a branch, has it reviewed and hands it back | Built |
 | [`/audit`](docs/skills/audit.md) | Finds where the code and its documents have drifted apart | Not built yet |
 | [`/issue`](docs/skills/issue.md) | Reports a problem with this plugin, so its fix is tested | Built |
 

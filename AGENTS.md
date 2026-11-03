@@ -10,7 +10,8 @@ everything else is judgement.
 ## Principles
 
 1. **Independent in spirit.** The plugin is the unit of distribution, not the skill. A skill
-   does one job and never invokes or assumes a prior run of another skill; it may use a document
+   does one job and never invokes or assumes a prior run of another of the plugin's skills,
+   though it may use Claude Code's own skills and agents, such as `/code-review`; it may use a document
    another skill produces when one is present, but must work when it is not. Skills may share
    what the plugin provides: its agents, hooks, scripts and `docs/lifecycle.md`.
 2. **Small.** Every word earns its place. Write only what Claude would not do unaided, and say it
@@ -103,7 +104,7 @@ everything else is judgement.
    NEVER. Reserve those words for hard limits.
 10. **Safe by default.** A skill never commits, pushes, publishes, deletes or sends anything
    outside the working tree unless the user asks for it in that session. Running `/build` is
-   that request for its merge.
+   that request for its commits and the push of its own branch; nothing ever merges.
 11. **Generic.** Skills assume no particular language, framework, repo layout or host, beyond
     the lifecycle's own folders under `docs/`. Paths a skill writes to are stated in the skill
     and kept to a minimum.

@@ -1,7 +1,5 @@
 # `/build`
 
-*Not built yet. This page describes the agreed design.*
-
 `/build` is the skill for building one plan. It is one step of [the SDLC](../../README.md); read
 that page first for the documents, skills and agents it mentions.
 
