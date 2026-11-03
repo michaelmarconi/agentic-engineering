@@ -51,11 +51,11 @@ practices say, because each needs a person:
 Run `/sdlc:build docs/plans/<plan>.md` as the first thing in a new session. Before it changes
 anything, `/build` checks:
 
-- **The session is fresh.** `/build` runs only in a session that started with `/build`. A long
-  planning conversation is a poor start for building: Anthropic's own advice is to start a fresh
-  session to build from a written spec,[^fresh] so the build begins with a clean context and a
-  written definition of done. A plugin hook enforces this by checking how much the conversation
-  has grown, and if it refuses, it says why and asks you to start a new session. In a Claude
+- **The session is fresh.** `/build` runs only when you type it, never on Claude's own initiative,
+  and only as the first thing you type in a session, or the first after `/clear`. A long planning
+  conversation is a poor start for building: Anthropic's own advice is to start a fresh session to
+  build from a written spec,[^fresh] so the build begins with a clean context and a written
+  definition of done. A plugin hook enforces this, and if it refuses, it says why. In a Claude
   project, a new session is a new thread.
 - **The plan is ready.** It is `🟢 Ready to build`. A `✅ Built` plan is refused: a plan is built
   once.
@@ -66,57 +66,104 @@ anything, `/build` checks:
   missing, it suggests running `/practices` first. If you carry on without it, `/build` asks you
   now for anything it cannot build without, such as how to run the tests, so nothing needs asking
   once the build is under way.
-- **It is not on the main branch.** `/build` never builds on your repository's default branch. If
-  you are on it, it makes a branch named after the plan. If you are already on another branch, it
-  builds there, since some places that run Claude Code, such as its cloud sessions, choose the
-  branch name for you.
+- **It is on a branch of its own, with nothing left uncommitted.** `/build` never builds on your
+  repository's default branch. If you are on it, it makes a branch named after the plan. If you are
+  already on another branch, it builds there, since some places that run Claude Code, such as its
+  cloud sessions, choose the branch name for you. If anything is uncommitted, it stops, so your
+  own work never gets mixed into the build. While it runs, a plugin hook refuses any commit or
+  push to the default branch.
+- **The reviews can run.** Claude must be allowed to start `/code-review`, which a setting can turn
+  off, and `/security-review` needs a remote named `origin`. If either is missing, `/build` says so
+  now, skips that review, and repeats it in the summary.
+
+Finally, it runs your tests once. Any test that already fails is noted for the summary, and
+`/build` does not try to fix it.
 
 ## Building
 
-`/build` works through the plan's steps. For each requirement the plan names, it first writes
-tests from the spec's scenarios and sees them fail, then writes the code that makes them pass. It
-follows every `👍 Accepted` ADR the plan names, and any other whose Confirmation section says it
-applies to the code being changed. It commits as it goes, so the
-branch always holds the work so far.
+`/build` works through the requirements the plan names. For each one, it first writes tests from
+the spec's scenarios and sees them fail, then writes the code that makes them pass. It then runs
+your whole test suite and your linters, as your practices say, before moving on, so it notices at
+once if the new code breaks something already built. It follows every `👍 Accepted` ADR the plan
+names, and any other whose Confirmation section says it applies to the code being changed. It
+commits as it goes, so the branch always holds the work so far.
+
+Two rules hold throughout:
+
+- **A test is never weakened to make the code pass.** `/build` changes a test only to make it
+  check its scenario more closely.
+- **Two attempts, then stop.** If a requirement's tests still fail after two attempts, `/build`
+  stops and hands over with the failure written down, rather than keep retrying an approach that fails.
+  Anthropic gives the same advice: after two failed corrections, start again rather than try a
+  third.[^twice]
 
 If a build stops halfway, for whatever reason, start a new session on the same branch and run
 `/build` with the same plan again. It reads what the branch already holds, compares it with the
 plan and carries on.
+
+### Decisions
+
+A plan cannot foresee everything, so `/build` meets choices as it goes. It may make a choice itself
+only if the choice would not need an ADR or a change to a spec. That means it raises any choice
+that would:
+
+- be a lasting choice between real alternatives, such as a library, a data format, or the shape
+  of an interface: that is what an ADR is for, and only you accept ADRs;
+- change what a user sees in a way the spec does not settle;
+- be hard to undo later, such as a database schema, a public interface, or data already stored;
+- stretch or contradict a spec, an ADR, or your practices.
+
+To raise one, `/build` stops and hands over with the question written down. It never guesses. A
+build nobody is watching would otherwise carry on for hours on the wrong assumption.[^unattended]
+
+Every other choice, such as names, how the code is split up, or which helper to use, `/build`
+makes and carries on, and the summary lists each one with its reason, so you can see what was
+decided for you.
 
 ## Review
 
 When the code is written, three reviews check it side by side, each run by an agent that has not
 seen the conversation:
 
-- **Code:** Claude Code's own `/code-review`,[^codereview] comparing the branch with the main branch,
-  looking for bugs.
-- **Security:** Claude Code's own `/security-review`, looking for security holes. It needs the
-  repository to have a remote; without one, `/build` skips it and says so.
+- **Code:** Claude Code's own `/code-review`,[^codereview] looking for bugs. `/build` always runs
+  it at `medium` effort, and always compares the whole branch with the main branch, so a rerun
+  reviews the whole build, not just its latest commits.[^localreview]
+- **Security:** Claude Code's own `/security-review`, looking for security holes.
 - **Plan:** the plugin's build reviewer. It checks that each requirement the plan names is built,
-  with a test for each of its scenarios; that nothing unrequested was added; and that the code
-  follows the ADRs it must. This is the review Anthropic suggests writing yourself: against your
-  spec, reporting gaps that affect correctness and skipping style.[^specreview]
+  with a test that checks each of its scenarios as the spec words it; that nothing unrequested was
+  added; that the code follows the ADRs it must; and that no choice that should have been raised
+  was made quietly. This is the review Anthropic suggests writing yourself: against your spec,
+  reporting gaps that affect correctness and skipping style.[^specreview]
+
+A reviewer asked to find problems will always find something, so the reviews pass once every bug
+or security hole they report has been corrected. Findings about tidiness or style are listed in the
+summary but do not stop the plan being marked `✅ Built`.[^specreview]
 
 `/build` corrects what the reviews find, once, and has the corrections checked, the same way
-documents are reviewed (see [Review process](../lifecycle.md#review-process)). If the check fails,
-`/build` still hands over, as below, but does not mark the plan Built.
+documents are reviewed (see [Review process](../lifecycle.md#review-process)). It then runs your
+tests and linters again.
 
 ## Handing over
 
-When the reviews pass, `/build` sets the plan to `✅ Built`, commits, and pushes the branch if the
-repository has a remote. A small script does this, not Claude, and reports exactly what happened,
-including the branch name and any failure to push. `/build` never opens a pull request and never
-merges.
+However the build ends, a small script commits and pushes the branch if the repository has a
+remote. It does this, not Claude, and reports exactly what happened, including the branch name and
+any failure to push. `/build` never opens a pull request and never merges.
 
-A plan is marked `✅ Built` only when every review passes. If the corrections fail their check, the
-script still commits and pushes, so no work is lost, but the plan stays `🟢 Ready to build`, and the
-summary lists each finding still open and what `/build` tried. Sort them out however suits you:
-with Claude directly, by changing a spec or ADR, or by deciding a finding is wrong. Then rerun
+The plan is set to `✅ Built` only when every review has passed. If the build stopped instead,
+because the corrections failed their check, a requirement's tests still failed after two attempts,
+or a choice needed raising, the plan stays `🟢 Ready to build`. Sort out what is open however suits
+you: with Claude directly, by changing a spec or ADR, or by deciding a finding is wrong. Then rerun
 `/build` on the branch. It resumes, reviews again, and marks the plan Built once every review
 passes. If you think a finding is wrong, say so when you rerun it.
 
-It ends with a short summary: what was built, what the reviews found and what was corrected, and
-a reminder to verify the work before merging.
+It ends with a short summary:
+
+- what was built, or why it stopped and what is open;
+- the test and lint commands it ran, with their output, and any tests that were failing before it
+  started;
+- the decisions it made for you, each with its reason;
+- what the reviews found, what was corrected, and any review it skipped;
+- a reminder to verify the work before merging.
 
 ## After a build
 
@@ -137,4 +184,9 @@ changes. To find out whether the software meets a spec, check the software again
 [^codereview]: Claude Code documentation, [Best practices: give Claude a check to run](https://code.claude.com/docs/en/best-practices#give-claude-a-check-to-run):
     `/code-review` "reviews the diff in a fresh subagent that never saw your conversation".
 [^specreview]: Claude Code documentation, [Best practices: review against your spec](https://code.claude.com/docs/en/best-practices#review-against-your-spec).
+[^twice]: Claude Code documentation, [Best practices: steer the session](https://code.claude.com/docs/en/best-practices#steer-the-session):
+    "after two failed corrections run `/clear` and write a better prompt instead of a third."
+[^unattended]: Claude Code documentation, [Best practices: let Claude run without you](https://code.claude.com/docs/en/best-practices#let-claude-run-without-you):
+    "you find out the next morning that it spent the whole night building on the wrong assumption."
+[^localreview]: Claude Code documentation, [Review locally with /code-review](https://code.claude.com/docs/en/code-review-local).
 [^memory]: Claude Code documentation, [How Claude remembers your project](https://code.claude.com/docs/en/memory#agents-md).
