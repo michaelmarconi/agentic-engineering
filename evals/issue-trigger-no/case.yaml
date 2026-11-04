@@ -1,5 +1,0 @@
-schema_version: "1.1"
-name: issue-trigger-no
-expected_outcome: |
-  The issue skill is not invoked: a flaky test in the person's own project is an issue for their
-  repository, not for the sdlc plugin.
