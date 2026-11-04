@@ -56,6 +56,11 @@ repository:
 Each document except the brief has a status, such as `📝 Draft` or `🟢 Ready to build`, which says how far
 along it is.
 
+Beside the documents, a project can record its **practices**: how it is set up, built, tested and
+released, and the rules Claude follows while working on it. They are written for Claude and other
+coding tools, in the project instructions Claude Code reads at the start of every session, and added one topic
+at a time when you need them (see [`/practices`](docs/skills/practices.md)).
+
 One rule matters when you edit documents by hand: the brief, specs and ADRs never refer to each
 other, whether by hyperlink, path or title, because either end can change or be deleted without
 the other being touched, and the reference quietly goes stale. Only a plan, which is removed
@@ -81,7 +86,7 @@ The plugin gives Claude three kinds of help to work with these documents:
 
 Every document a skill writes is checked by a reviewer agent before you see it, and by a
 language checker that checks someone new to your project could follow its words. Apart from the
-documents, the plugin adds nothing to your repository, unless you choose to install it for
+documents and the practices you ask it to record, the plugin adds nothing to your repository, unless you choose to install it for
 everyone working there (see [Install](#install)).
 
 [The lifecycle rules](docs/lifecycle.md) hold the whole lifecycle: every document's statuses, the
@@ -102,6 +107,7 @@ flowchart LR
     Spec --> Plan
     ADR --> Plan
     Plan --> Build
+    Practices -.-> Build
     Build --> Code[Code on the main branch]
     Code -.-> Audit
     Audit -.->|drift| Spec
@@ -116,6 +122,7 @@ flowchart LR
 | [`/spike`](docs/skills/spike.md) | Settles an unknown with a throwaway experiment | Not built yet |
 | [`/adr`](docs/skills/adr.md) | Records one technical decision | Built |
 | [`/plan`](docs/skills/plan.md) | Scopes a piece of work against its specs and ADRs | Built |
+| [`/practices`](docs/skills/practices.md) | Records how the project does things, one topic at a time, for agents to follow | Not built yet |
 | [`/build`](docs/skills/build.md) | Builds a plan, has it reviewed and merges it | Not built yet |
 | [`/audit`](docs/skills/audit.md) | Finds where the code and its documents have drifted apart | Not built yet |
 | [`/issue`](docs/skills/issue.md) | Reports a problem with this plugin, so its fix is tested | Built |
