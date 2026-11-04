@@ -1,7 +1,8 @@
 ---
 type: regex
 target: trace
-pattern: '=== END REVIEW REPORT ===(\\n|\n)+=== WORDING REPORT ==='
+pattern: 'subagent_type[^,]{0,8}sdlc:correction-checker(?![\s\S]*=== WORDING REPORT ===)'
+match: not_contains
 weight: 1
 ---
-The correction checker was handed the wording report by the relay hook.
+If the correction checker ran, the relay hook handed it the wording report.

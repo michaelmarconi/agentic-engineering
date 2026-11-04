@@ -1,7 +1,7 @@
 ---
 type: regex
 target: trace
-pattern: '"name":"(Write|Edit|MultiEdit)"[^\n]*(?:\\n|":")(?:[^\\]|\\")*test_(?:[^\\]|\\")*\(default\)'
+pattern: '"name":"(Write|Edit|MultiEdit)"[^\n]*(?:\\n|":")(?:[^\\]|\\")*test_(?:(?!\\n-|\\n\\n|\\n#)(?:[^\\]|\\"|\\n))*\(default\)'
 flags: i
 weight: 1
 ---
