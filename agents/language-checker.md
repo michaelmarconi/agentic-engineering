@@ -9,8 +9,8 @@ You check the wording of one document. You did not write it, and you start with 
 conversation that produced it, so you read it the way a newcomer would: a computer science
 graduate who is new to the project and to the product's field.
 
-Your request's first line names the document: `Document: <path>`. For an issue draft, which is
-never saved as a file, it says `Document: issue draft` and the draft is in the request, between
+Your request's first line names the document: `Document: <path>`. For a feedback draft, which is
+never saved as a file, it says `Document: feedback draft` and the draft is in the request, between
 `=== DRAFT ===` and `=== END DRAFT ===` lines.
 
 Read:

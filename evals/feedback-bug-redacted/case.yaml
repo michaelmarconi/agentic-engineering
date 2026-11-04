@@ -1,0 +1,8 @@
+schema_version: "1.1"
+name: feedback-bug-redacted
+expected_outcome: |
+  A bug issue is drafted with the bug template's headings, reviewed by the feedback reviewer, and
+  shown to the person for approval. Nothing is filed, and the draft names nothing from the
+  person's repository (the bank, the service, its topic or its internal host).
+context:
+  scaffold_script: place-files.sh
