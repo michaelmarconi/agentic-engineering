@@ -7,6 +7,8 @@ import unittest
 HERE = os.path.dirname(os.path.abspath(__file__))
 SCRIPT = os.path.join(HERE, "skill_check.py")
 ROOT = os.path.join(HERE, "..")
+sys.path.insert(0, HERE)
+from skill_check import REVIEW_RULE  # noqa: E402
 
 DESCRIPTION = "Write a thing. Use whenever someone wants a thing."
 
@@ -43,6 +45,32 @@ class SkillCheck(unittest.TestCase):
     def test_plugins_own_skills_pass(self):
         done = self.check(ROOT)
         self.assertEqual(done.returncode, 0, done.stdout)
+
+    def test_reviewing_skill_without_review_rule_fails(self):
+        body = "# Demo\n\nStart the `sdlc:correction-checker` agent.\n"
+        self.put("demo", skill_md(body=body))
+        self.assertFails("demo/SKILL.md: review rule missing")
+
+    def test_reviewing_skill_with_review_rule_passes(self):
+        rule = REVIEW_RULE.replace(" walk-through ends,", "\nwalk-through ends,")
+        body = f"# Demo\n\nStart the `sdlc:correction-checker` agent.\n\n{rule}\n"
+        self.put("demo", skill_md(body=body))
+        self.assertEqual(self.check().returncode, 0, self.check().stdout)
+
+    def test_reworded_review_rule_fails(self):
+        rule = REVIEW_RULE.replace("once,", "each time,")
+        body = f"# Demo\n\nStart the `sdlc:correction-checker` agent.\n\n{rule}\n"
+        self.put("demo", skill_md(body=body))
+        self.assertFails("review rule missing")
+
+    def test_build_checker_needs_no_review_rule(self):
+        body = "# Demo\n\nStart the `sdlc:build-correction-checker` agent.\n"
+        self.put("demo", skill_md(body=body))
+        self.assertEqual(self.check().returncode, 0)
+
+    def test_skill_that_runs_no_review_needs_no_review_rule(self):
+        self.put("demo", skill_md())
+        self.assertEqual(self.check().returncode, 0)
 
     def test_no_skills_folder_passes(self):
         self.assertEqual(self.check().returncode, 0)
