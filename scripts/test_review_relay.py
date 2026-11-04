@@ -14,6 +14,16 @@ REPORT = "Result: FAIL\n\n| Check | Result | Evidence |\n|---|---|---|\n| 2. Sto
 DRAFT = "Title: Review stops early\n\nBody line one.\nBody line two.\n"
 WORDING = "Result: FAIL\n\nFindings:\n- \"rides along\": rewrite as \"is sent with\"\n"
 LANGUAGE = "sdlc:language-checker"
+# In a Claude project thread a subagent reports through its SubagentHandback tool: the Agent
+# tool's result then carries the report in handbackReport, and its content only says where it went.
+POINTER = ('This agent\'s report was delivered to you as a message from "a1b2c3" (its '
+           'SubagentHandback call). Read it there; it is not repeated here.')
+
+
+def handed_back(report):
+    """An Agent tool result whose report came through a hand-back."""
+    return {"status": "completed", "agentId": "a1b2c3", "handback": "send",
+            "handbackReport": {"text": report}, "content": [{"type": "text", "text": POINTER}]}
 
 
 def issue_request(draft, kind="bug"):
@@ -473,6 +483,38 @@ class Relay(unittest.TestCase):
                  "tool_input": {"subagent_type": "sdlc:spec-reviewer", "prompt": f"Document: {SPEC}\nGo."},
                  "tool_response": {"content": [{"type": "text", "text": None}]}}
         self.assertIsNone(self.run_hook(event))
+
+    # Project threads: the report comes through a hand-back
+
+    def post(self, agent, prompt, response):
+        """Finish an agent run whose tool result is given whole."""
+        return self.run_hook({"hook_event_name": "PostToolUse", "session_id": self.session,
+                              "tool_name": "Agent", "tool_use_id": f"{agent}-{prompt}",
+                              "tool_input": {"subagent_type": agent, "prompt": prompt},
+                              "tool_response": response})
+
+    def test_reports_handed_back_reach_the_checker_word_for_word(self):
+        self.put(SPEC, "v1\n")
+        review, check = f"Document: {SPEC}\nReview this spec.", f"Document: {SPEC}\nCheck the wording."
+        self.agent("PreToolUse", "sdlc:spec-reviewer", review)
+        self.post("sdlc:spec-reviewer", review, handed_back(REPORT))
+        self.agent("PreToolUse", LANGUAGE, check)
+        self.post(LANGUAGE, check, handed_back(WORDING))
+        self.put(SPEC, "v2\n")
+        prompt = self.assertAllowed(self.check())["prompt"]
+        self.assertIn("=== REVIEW REPORT ===\n" + REPORT + "\n=== END REVIEW REPORT ===", prompt)
+        self.assertIn("=== WORDING REPORT ===\n" + WORDING + "\n=== END WORDING REPORT ===", prompt)
+        self.assertNotIn("SubagentHandback", prompt)
+
+    def test_a_hand_back_that_delivered_nothing_is_no_report(self):
+        self.put(SPEC, "v1\n")
+        review = f"Document: {SPEC}\nReview this spec."
+        self.agent("PreToolUse", "sdlc:spec-reviewer", review)
+        self.post("sdlc:spec-reviewer", review, {"handback": "withheld",
+                                                 "content": [{"type": "text", "text": POINTER}]})
+        self.language()
+        self.put(SPEC, "v2\n")
+        self.assertRefused(self.check(), "stop and show the person")
 
     # /issue: the draft is never on disk
 

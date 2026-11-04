@@ -28,6 +28,15 @@ minor version may need such a change, and its entry says so.
 - Smaller corrections across the README, the lifecycle rules and the skill pages, so they agree
   with each other and with the skills.
 
+## [0.14.1] - 2026-11-04
+
+### Fixed
+
+- In a Claude project thread, the correction check failed every time: an agent's report reaches
+  Claude there as a separate message, and the hooks that keep review reports saved only the
+  tool's note saying where the report went. They now keep the report itself, for document
+  reviews and for `/sdlc:build`'s reviews.
+
 ## [0.14.0] - 2026-11-04
 
 ### Added
