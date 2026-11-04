@@ -101,7 +101,9 @@ will use. Whenever the repository and the practices disagree, the overview says 
   testing, security and releasing, each with the questions to ask and the choices most teams
   make, so you can start from what usually works. Any other topic works the same way: ask for
   one, such as "I want to define how decisions are approved", and `/practices` gives it a topic
-  file and a line in the core, like any other.
+  file and a line in the core, like any other. The skill says so as it goes: the overview ends by
+  inviting a topic of your own, and within a topic it asks whether there is anything else you want
+  recorded, so you are never limited to its questions.
 - **Nothing is required.** Running `/practices` is optional, and so is every topic. A question you
   don't answer is left out, never written as a guess, so it shows as not recorded in the overview.
 - **Suggests a default when you have no view.** The answers are yours. If you have no view on a
