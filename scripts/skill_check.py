@@ -31,10 +31,10 @@ RESERVED = ("anthropic", "claude")
 MAX_NAME, MAX_DESCRIPTION, MAX_LINES, MAX_TOKENS = 64, 1024, 500, 5000
 REVIEWS = "sdlc:correction-checker"
 REVIEW_RULE = (
-    "While you are walking through questions with the person, write each answer in without "
-    "reviewing. Run the sequence again once, when the walk-through ends, either because no "
-    "questions are left or because the person stops. A change the person asks for at any other "
-    "time is reviewed once it is made."
+    "While you are walking through questions with the person, do not review after each "
+    "answer: run the sequence once when the walk-through ends, either because no questions "
+    "are left or because the person stops. A change the person makes or asks for at any other"
+    " time is reviewed once it is made."
 )
 
 

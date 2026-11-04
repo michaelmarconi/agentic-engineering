@@ -96,9 +96,9 @@ more, and each round of corrections brings new mistakes.
    again; what happens next is their call.
 
 After the sequence, edit the brief only when the person asks. While you are walking through
-questions with the person, write each answer in without reviewing. Run the sequence again once, when
-the walk-through ends, either because no questions are left or because the person stops. A change
-the person asks for at any other time is reviewed once it is made.
+questions with the person, do not review after each answer: run the sequence once when the
+walk-through ends, either because no questions are left or because the person stops. A change the
+person makes or asks for at any other time is reviewed once it is made.
 
 Whether the check passed or failed, end with the hand-over. It is what the person acts on, so make
 it hard to miss anything. Give them the brief's path, the review and wording reports and the check's

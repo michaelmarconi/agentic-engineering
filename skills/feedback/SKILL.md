@@ -99,11 +99,11 @@ reads them to keep a copy of the draft as reviewed, outside the person's reposit
    the draft no further, and show the person the draft and the check's report. Do not review or
    correct again; what happens next is their call.
 
-While you are walking through questions with the person, write each answer in without reviewing. Run
-the sequence again once, when the walk-through ends, either because no questions are left or because
-the person stops. A change the person asks for at any other time is reviewed once it is made. A
-draft whose review or check failed is filed only if the person, with the reports in front of them,
-says to file it anyway: it is their information to share.
+While you are walking through questions with the person, do not review after each answer: run the
+sequence once when the walk-through ends, either because no questions are left or because the person
+stops. A change the person makes or asks for at any other time is reviewed once it is made. A draft
+whose review or check failed is filed only if the person, with the reports in front of them, says to
+file it anyway: it is their information to share.
 
 ## File
 

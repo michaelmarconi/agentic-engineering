@@ -146,9 +146,9 @@ since the core and a topic file must agree.
    happens next is their call.
 
 After the sequence, edit the practices only when the person asks. While you are walking through
-questions with the person, write each answer in without reviewing. Run the sequence again once, when
-the walk-through ends, either because no questions are left or because the person stops. A change
-the person asks for at any other time is reviewed once it is made.
+questions with the person, do not review after each answer: run the sequence once when the
+walk-through ends, either because no questions are left or because the person stops. A change the
+person makes or asks for at any other time is reviewed once it is made.
 
 Whether the check passed or failed, end with the hand-over. Give the person the files you changed,
 the review and wording reports and the check's report, if there was one. Then say how many items

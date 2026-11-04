@@ -53,12 +53,15 @@ class SkillCheck(unittest.TestCase):
 
     def test_reviewing_skill_with_review_rule_passes(self):
         rule = REVIEW_RULE.replace(" walk-through ends,", "\nwalk-through ends,")
+        self.assertNotEqual(rule, REVIEW_RULE)
         body = f"# Demo\n\nStart the `sdlc:correction-checker` agent.\n\n{rule}\n"
         self.put("demo", skill_md(body=body))
-        self.assertEqual(self.check().returncode, 0, self.check().stdout)
+        done = self.check()
+        self.assertEqual(done.returncode, 0, done.stdout)
 
     def test_reworded_review_rule_fails(self):
-        rule = REVIEW_RULE.replace("once,", "each time,")
+        rule = REVIEW_RULE.replace("run the sequence once", "run the sequence each time")
+        self.assertNotEqual(rule, REVIEW_RULE)
         body = f"# Demo\n\nStart the `sdlc:correction-checker` agent.\n\n{rule}\n"
         self.put("demo", skill_md(body=body))
         self.assertFails("review rule missing")
