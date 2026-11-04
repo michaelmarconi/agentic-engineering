@@ -54,6 +54,9 @@ everything else is judgement.
      decision for the person into an open question, leaves suggestions alone and changes
      nothing else. A failed correction check stops and shows the person; there is never a
      second review of the skill's own corrections.
+   - When the sequence runs again is the same for every such skill: each holds `REVIEW_RULE`
+     from `scripts/skill_check.py` word for word, and the script fails a skill that names
+     `sdlc:correction-checker` without it.
    - The hand-over gives the person the reports, the number of items they must settle, and the
      first of them; suggestions are listed apart as optional.
    - A document with a status has an Open questions section, last apart from a spike record's

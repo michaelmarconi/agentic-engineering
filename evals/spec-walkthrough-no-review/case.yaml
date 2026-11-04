@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: spec-walkthrough-no-review
+expected_outcome: |
+  The person answers the first of the spec's three open questions during the walk-through. The answer is written into the spec and the question removed, with no review started, and the reply asks the next open question.
+context:
+  scaffold_script: place-files.sh

@@ -133,10 +133,12 @@ more, and each round of corrections brings new mistakes.
    the ADR no further, and show the person the check's report. Do not review or correct
    again; what happens next is their call.
 
-After the sequence, edit the ADR only when the person asks. When they change it or ask you to,
-run the sequence again on the changed ADR. With several ADRs, take each through the sequence
-on its own. Setting a status on the person's word is not a change to the ADR's content and
-needs no new review.
+After the sequence, edit the ADR only when the person asks. While you are walking through questions
+with the person, do not review after each answer: run the sequence once when the walk-through ends,
+either because no questions are left or because the person stops. A change the person makes or asks
+for at any other time is reviewed once it is made. With several ADRs, take each through the sequence
+on its own. Setting a status on the person's word is not a change to the ADR's content and needs no
+new review.
 
 Whether the check passed or failed, end with the hand-over. It is what the person acts on, so make
 it hard to miss anything. Give them the ADR's path, the review and wording reports and the check's

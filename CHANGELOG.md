@@ -6,7 +6,7 @@ What changed in each version of the plugin, newest first. Versions follow
 past a major version: it says what you need to change in your documents. Until 1.0.0, any
 minor version may need such a change, and its entry says so.
 
-## [0.20.0] - 2026-11-04
+## [0.21.0] - 2026-11-04
 
 ### Added
 
@@ -26,6 +26,17 @@ minor version may need such a change, and its entry says so.
 - `/sdlc:spec`, `/sdlc:adr`, `/sdlc:brief` and `/sdlc:plan` never refer to a spike record, so it
   can be deleted at any time. `/sdlc:spec` and `/sdlc:adr` can draft from a finished record, and
   state its evidence in their own words.
+
+## [0.20.0] - 2026-11-04
+
+### Changed
+
+- Skills that write documents no longer review after every answer. While you walk through open
+  questions, the review runs once when the walk-through ends, because no questions are left or
+  you stop. A change you make or ask for at any other time is still reviewed once it is made. The lifecycle page's Review process says when a review
+  runs, and a script check makes every such skill, including future ones, carry the same rule.
+- The README says to install the plugin before starting the session you will use it in, since a
+  plugin installed partway through a session only loads in the next one.
 
 ## [0.19.0] - 2026-11-04
 

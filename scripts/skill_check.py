@@ -9,7 +9,11 @@ For each skills/<folder>/SKILL.md under the given plugin root (default: this plu
   neither reserved word, "anthropic" or "claude";
 - `description` is 1-1,024 characters with no angle brackets;
 - the body after the frontmatter is under 500 lines and about 5,000 tokens at most, estimated
-  as one token per four characters.
+  as one token per four characters;
+- a skill that runs the review sequence on a document, which it shows by naming the shared
+  `sdlc:correction-checker` agent, holds REVIEW_RULE word for word (line breaks may differ), so
+  every such skill reviews at the same points, as the lifecycle page's Review process says.
+  /build, whose checker is `sdlc:build-correction-checker`, reviews code and is not held to it.
 
 Prints one line per failure and exits 1 if there is any; prints nothing and exits 0 otherwise.
 Its tests run it on this plugin, so `python3 -m unittest discover -s scripts` fails on a skill
@@ -25,6 +29,13 @@ ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
 NAME = re.compile(r"[a-z0-9]+(-[a-z0-9]+)*")
 RESERVED = ("anthropic", "claude")
 MAX_NAME, MAX_DESCRIPTION, MAX_LINES, MAX_TOKENS = 64, 1024, 500, 5000
+REVIEWS = "sdlc:correction-checker"
+REVIEW_RULE = (
+    "While you are walking through questions with the person, do not review after each "
+    "answer: run the sequence once when the walk-through ends, either because no questions "
+    "are left or because the person stops. A change the person makes or asks for at any other"
+    " time is reviewed once it is made."
+)
 
 
 def frontmatter(text):
@@ -75,6 +86,9 @@ def problems(folder, text):
     tokens = len(body) // 4
     if tokens > MAX_TOKENS:
         found.append(f"body is about {tokens:,} tokens, over about 5,000 tokens")
+    if REVIEWS in body and REVIEW_RULE not in " ".join(body.split()):
+        found.append("review rule missing: a skill that runs the review sequence must hold "
+                     "skill_check.REVIEW_RULE word for word")
     return found
 
 

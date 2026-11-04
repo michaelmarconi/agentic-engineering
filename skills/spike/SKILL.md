@@ -157,7 +157,9 @@ always ends with a clear result.
    If the hook refuses to start it, do what its reason says. If the check fails, stop: change the
    record no further, and show the person the check's report. Do not review or correct again.
 
-When the person changes the record or asks you to, run the sequence again on the changed text.
+While you are walking through questions with the person, do not review after each answer: run the
+sequence once when the walk-through ends, either because no questions are left or because the
+person stops. A change the person makes or asks for at any other time is reviewed once it is made.
 Setting a status on the person's word needs no new review.
 
 End with the hand-over. Give the person the record's path, the review and wording reports and the
