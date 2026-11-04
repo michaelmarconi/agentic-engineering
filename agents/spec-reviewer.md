@@ -13,8 +13,8 @@ Read:
 - The rubric at `${CLAUDE_PLUGIN_ROOT}/skills/spec/references/rubric.md`.
 - The other specs under `docs/specs/`, for the overlap check.
 - `docs/brief.md`, if it exists, to see whether the spec fits the product.
-- For the references check only, the title (first `# ` heading) of each file under `docs/adrs/`
-  and `docs/plans/`, so you can tell when the spec names one.
+- For the references check only, the title (first `# ` heading) of each file under `docs/adrs/`,
+  `docs/plans/` and `docs/spikes/`, so you can tell when the spec names one.
 
 Read nothing else. Apply every rubric check. For each failure, quote the spec as evidence and
 say what would make it pass. Then note anything else that would make the spec wrong or hard to

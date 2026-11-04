@@ -29,7 +29,10 @@ If `docs/brief.md` exists, read it so the spec fits the product.
 Usually the person has already talked the idea through in this conversation. Draft from that,
 and from whatever they point you to, such as code, tickets or notes; research what else you
 need, as that is part of writing a spec. Where the conversation changed its mind, the latest
-word wins. Only when there is nothing to draw on, ask about the idea first.
+word wins. Given a finished spike record from `docs/spikes/`, draft from its Answer and Where it
+goes, stating its evidence in the spec's own words, such as "all 20 sample files opened": a spike
+record may be deleted at any time, so the spec never names it. Only when there is nothing to draw
+on, ask about the idea first.
 
 Then ask about what the draft or the review leaves open: say how many questions there are, ask
 only the first (a conflict with another spec, or a decision the review says needs the person,
@@ -53,7 +56,7 @@ settled: the spec should still hold if the choice changes, and tell the person y
 If it is already decided, suggest recording it as an ADR (architecture decision record); if not,
 make it an open question. When an unknown can only be settled by trying something, suggest a
 spike: a throwaway experiment. When the person wants the spec to refer to the brief, another
-spec, an ADR or a plan, by hyperlink, path or title, leave it out (rubric check 11) and tell them
+spec, an ADR, a plan or a spike record, by hyperlink, path or title, leave it out (rubric check 11) and tell them
 why: that document can change or be deleted without this spec being touched, so the reference
 would go stale.
 

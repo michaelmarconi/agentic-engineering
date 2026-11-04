@@ -35,7 +35,8 @@ checking, and quotes the ADR as evidence for every failure.
    `👍 Accepted`, with both ends then naming each other. While the replacement is still
    `📝 Draft`, the ADR it replaces stays `👍 Accepted` with no `superseded-by:`; that passes.
 10. **References.** The ADR refers only to other ADRs, and names them by number. It does not
-    refer to a spec, the brief or a plan in any way: no hyperlink, path or title. Those change
+    refer to a spec, the brief, a plan or a spike record in any way: no hyperlink, path or title;
+    a spike's measurements are stated in the ADR's own words. Those change
     while an ADR does not, so the reference would go stale.
 11. **No overlap.** No other `📝 Draft` or `👍 Accepted` ADR in `docs/adrs/` decides the same thing or
     contradicts this one, unless this one supersedes it.
