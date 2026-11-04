@@ -1,6 +1,7 @@
 ---
-status: 👍 Accepted
+status: ↪️ Superseded
 date: 2026-10-28
+superseded-by: 0017
 ---
 
 # Accept a change only when its automated tests pass on every supported AI model
