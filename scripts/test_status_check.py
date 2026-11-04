@@ -885,6 +885,10 @@ class Spike(SpikeWorkspace):
     def test_a_comment_holding_a_fence_in_runs_is_empty(self):
         self.assertIsNone(self.write(record(runs="<!-- For example:\n```\n### Run 1\n```\n-->\n")))
 
+    def test_an_unclosed_comment_mark_in_runs_is_text(self):
+        self.put(record("🟢 Ready to run", runs=RUN))
+        self.assertIn("run script", self.write(record("🟢 Ready to run", runs=RUN + "\n<!--\n")))
+
     def test_answered_needs_a_run_that_ran(self):
         not_run = "### Run 1\n\n2026-11-04 15:02, Linux, a cloud session, code `a91c03e7b2d4`, did not run\n\n```\nx\n```\n"
         self.put(record("🟢 Ready to run", runs=not_run))

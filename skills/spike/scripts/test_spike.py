@@ -494,7 +494,7 @@ class SecondReview(Project):
     def test_credential_variables_are_still_kept_back(self):
         for name in ("ANTHROPIC_API_KEY", "GH_TOKEN", "AWS_SECRET_ACCESS_KEY", "PGPASSWORD", "CLAUDE_CODE_OAUTH_TOKEN",
                      "NPM_AUTH_TOKEN", "DATABASE_PASSWORD", "GOOGLE_APPLICATION_CREDENTIALS"):
-            self.assertTrue(spike.SECRET_NAME.search(name), name)
+            self.assertTrue(spike.looks_secret(name), name)
 
     def test_more_private_key_shapes_are_redacted(self):
         for block in ("-----BEGIN PGP PRIVATE KEY BLOCK-----\nlQOYBGabc123\n-----END PGP PRIVATE KEY BLOCK-----",
@@ -526,6 +526,20 @@ class SecondReview(Project):
         runs = "\n".join(self.runs())
         self.assertIn("[secret: API_KEY] [secret: SHORT]", runs)
         self.assertIn("2 values hidden", runs)
+
+    def test_session_tokens_are_still_kept_back(self):
+        for name in ("OP_SESSION_my", "AWS_SESSION_TOKEN", "ACCESS_TOKEN_SOCK"):
+            self.assertTrue(spike.looks_secret(name), name)
+        for name in ("DBUS_SESSION_BUS_ADDRESS", "SESSION_MANAGER", "TERM_SESSION_ID", "XDG_SESSION_TYPE",
+                     "SSH_AUTH_SOCK", "GIT_AUTHOR_NAME"):
+            self.assertFalse(spike.looks_secret(name), name)
+
+    def test_overlapping_secrets_are_hidden_whole(self):
+        self.put(record(command="cat out.txt", secrets="`SHORT`", code="```text\n# file: out.txt\nxyzabcdef123456\n```"))
+        self.run_spike(env={"SHORT": "xyzab", "MY_TOKEN": "abcdef123456"})
+        runs = "\n".join(self.runs())
+        for piece in ("xyz", "cdef123456"):
+            self.assertNotIn(piece, runs)
 
     def test_removes_leftovers_from_the_other_folder_too(self):
         self.put(record("💡 Answered"), name="finished")
