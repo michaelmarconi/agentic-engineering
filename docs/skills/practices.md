@@ -53,8 +53,9 @@ their instructions the same way.[^tools]
     a file that is only named when it decides it needs it, so each line says when that is.[^memory]
 - **Topic files**: `docs/practices/<topic>.md`, one for each topic with more to say than a line or
   two in the core, such as testing, database changes or releasing. Each is at most 200 lines,
-  again this plugin's own budget, the same as Anthropic advises for the whole instructions file. A topic file names no further files the agent must read, so it reads at most one topic file
-  for a task.
+  again this plugin's own budget, the same as Anthropic advises for the whole instructions file.
+  A topic file names no further files the agent must read, so it reads at most one topic file for
+  a task.
 
 The core and the topic files never import other files. An import loads the whole file into every
 session, and a file you don't control, such as the README, can grow without limit.
