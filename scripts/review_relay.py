@@ -19,7 +19,7 @@ uses `Document: feedback draft` and carries the draft between `=== DRAFT ===` an
 `=== END DRAFT ===` lines in the request.
 
 Every review has two parts that run side by side: the skill's own reviewer (spec, brief, adr, plan,
-feedback or practices) and the shared language checker, which checks the wording (see docs/adrs/0013).
+feedback, practices or spike) and the shared language checker, which checks the wording (see docs/adrs/0013).
 
 - Before either starts, it saves the document's text. A part joins the latest review of that
   document if it is of the same text apart from spacing and has no report from this part yet, so
@@ -40,7 +40,9 @@ feedback or practices) and the shared language checker, which checks the wording
   none is on record in this session, or when the document is unchanged since its review. No
   refusal asks for another review, which the lifecycle never repeats: when a report is missing,
   it tells Claude to stop and show the person.
-- When the checker finishes, it deletes that document's saved review; at the end of the session
+- When the checker finishes, it deletes that document's saved review, so a later review of the
+  same document, such as a spike record's verdict review after its design review, starts a new
+  cycle; at the end of the session
   it deletes all of the session's.
 
 Saved reviews live in $CLAUDE_PLUGIN_DATA/reviews/<session>/, outside the project, one file per
@@ -74,11 +76,12 @@ LIFECYCLE = os.path.join(ROOT, "docs", "lifecycle.md")
 KEPT = 3  # reviews kept per document
 # Each reviewer's skill, and the project files its checker may read to judge a changed sentence.
 REVIEWERS = {
-    "spec-reviewer": ("spec", ["docs/brief.md", "docs/specs/", "docs/adrs/", "docs/plans/"]),
-    "brief-reviewer": ("brief", ["docs/specs/", "docs/adrs/", "docs/plans/"]),
-    "adr-reviewer": ("adr", ["docs/adrs/"]),
+    "spec-reviewer": ("spec", ["docs/brief.md", "docs/specs/", "docs/adrs/", "docs/plans/", "docs/spikes/"]),
+    "brief-reviewer": ("brief", ["docs/specs/", "docs/adrs/", "docs/plans/", "docs/spikes/"]),
+    "adr-reviewer": ("adr", ["docs/adrs/", "docs/spikes/"]),
     "feedback-reviewer": ("feedback", []),
-    "plan-reviewer": ("plan", ["docs/specs/", "docs/adrs/", "docs/plans/"]),
+    "plan-reviewer": ("plan", ["docs/specs/", "docs/adrs/", "docs/plans/", "docs/spikes/"]),
+    "spike-reviewer": ("spike", ["docs/specs/", "docs/adrs/"]),
     "practices-reviewer": ("practices", ["docs/practices/", "docs/adrs/", "CLAUDE.md",
                                          "the repository's build, dependency, CI and setup files"]),
 }
