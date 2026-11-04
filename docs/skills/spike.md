@@ -164,10 +164,14 @@ exactly what the experiment produced:
   earlier run, and nothing outside the record, reaches it. Nothing a run changes is written back.
 - It adds each run to Runs: the date, the operating system and whether it ran on your machine or
   in a cloud session, a short hash of the code it ran, and the output word for word. It replaces
-  the value of each secret the Experiment names with its name, and shortens very long output,
-  saying what it left out. Claude never retypes a result. Replacing values misses a secret that
-  the code prints in another form, such as encoded, so the review checks that no code prints a
-  secret at all.
+  the value of each secret the Experiment names, and of any variable in Claude Code's environment
+  whose name looks like a credential, with its name, and common shapes of credentials, such as
+  access tokens and private keys, with a note of what kind they were; the run says how many
+  values it hid. Variables that look like credentials don't reach the experiment at all unless
+  the Experiment names them. It shortens very long output, saying what it left out, and stops a
+  run still going after 9 minutes. Claude never retypes a result. Hiding values misses a secret
+  that the code prints in another form, such as encoded, so the review checks that no code prints
+  a secret at all.
 - It deletes the working folder after each run, and any folder this project left over for a spike
   record that is finished or deleted.
 
