@@ -7,7 +7,7 @@ it with you in any repository you install it in.
 
 ## Install
 
-Tested with Claude Code on Sonnet 5.5 and Opus 5.5 (see [Models](#models)).
+Tested with Claude Code on Opus 5.5 (see [Models](#models)).
 
 In Claude Code:
 
@@ -140,8 +140,8 @@ differently on another. The plugin handles this in three ways.
 - **Every change is tested on each supported model.** Each skill has evals: scripted
   conversations whose results are checked automatically, some by simple text matching and some by
   a second Claude acting as judge, always Sonnet. A change is released only if its evals pass
-  on Sonnet 5.5 and on Opus 5.5, the models listed under [Install](#install). When a new model
-  comes out, the evals are run on it before it is added to that list.
+  on Opus 5.5, the model listed under [Install](#install). Other models may work but are
+  untested; when one is added to that list, the evals are run on it first.
 
 ## Contributing
 
