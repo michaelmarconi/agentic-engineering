@@ -1,7 +1,8 @@
 """Tests for spike.py, run against spike records and git repositories made in temporary folders.
 
 Every experiment here is a deterministic shell command, and web inputs use file:// addresses, so
-nothing depends on timing or the network.
+nothing depends on timing or the network. The time limit on a run is left untested: the only way
+to test it is by timing, which AGENTS.md rule 5 forbids.
 """
 
 import hashlib
@@ -242,6 +243,56 @@ class Runs(Project):
         self.assertIn("a,b", "\n".join(self.runs()))
 
 
+class Corrections(Project):
+    """Behaviours added after the code review of the first version."""
+
+    def test_runs_go_at_the_end_of_the_runs_section(self):
+        self.put(record() + "\n## Notes\n\nKept last.\n")
+        self.run_spike()
+        done = self.run_spike()
+        self.assertEqual(done.returncode, 0, done.stderr)
+        text = self.text()
+        self.assertTrue(text.rstrip().endswith("Kept last."))
+        self.assertIn("### Run 2", "\n".join(self.runs()))
+
+    def test_run_headings_in_output_do_not_count(self):
+        self.put(record(command="printf '### Run 1\\n'"))
+        self.run_spike()
+        self.run_spike()
+        runs = "\n".join(self.runs())
+        self.assertRegex(runs, r"(?m)^### Run 2$")
+        self.assertNotRegex(runs, r"(?m)^### Run 3$")
+
+    def test_keeps_an_edit_made_while_it_ran(self):
+        self.put(record(command="python3 edit.py"))
+        script = (f"import pathlib\np = pathlib.Path({self.path()!r})\n"
+                  "p.write_text(p.read_text().replace('## Open questions\\n\\nNone.', '## Open questions\\n\\n- Edited.'))\n")
+        self.put(record(command="python3 edit.py", code=f"```python\n# file: edit.py\n{script}```"))
+        self.assertEqual(self.run_spike().returncode, 0)
+        self.assertIn("- Edited.", self.text())
+        self.assertIn("### Run 1", self.text())
+
+    def test_variables_that_look_secret_do_not_reach_the_experiment(self):
+        self.put(record(command="env"))
+        self.run_spike(env={"GITHUB_TOKEN": "tok-123456", "MY_API_KEY": "key-654321", "PLAIN": "visible-1"})
+        runs = "\n".join(self.runs())
+        self.assertNotIn("tok-123456", runs)
+        self.assertNotIn("key-654321", runs)
+        self.assertIn("visible-1", runs)
+
+    def test_a_named_secret_still_reaches_the_experiment(self):
+        self.put(record(command='test -n "$MY_API_KEY" && echo has-key', secrets="`MY_API_KEY`"))
+        self.run_spike(env={"MY_API_KEY": "key-654321"})
+        self.assertIn("has-key", "\n".join(self.runs()))
+
+    def test_a_secret_holding_another_is_hidden_whole(self):
+        self.put(record(command='echo "$API_KEY"', secrets="`API_USER`, `API_KEY`"))
+        self.run_spike(env={"API_USER": "acme", "API_KEY": "acme-9f3k"})
+        runs = "\n".join(self.runs())
+        self.assertIn("[secret: API_KEY]", runs)
+        self.assertNotIn("9f3k", runs)
+
+
 class WorkingFolder(Project):
     def test_deleted_after_each_run(self):
         self.put(record())
@@ -329,6 +380,17 @@ class FromACommit(Project):
         done = self.run_spike()
         self.assertEqual(done.returncode, 1)
         self.assertIn("samples/none.txt", done.stderr)
+
+    def test_a_link_out_of_the_copy_is_refused_without_a_traceback(self):
+        os.symlink("/tmp", os.path.join(self.project, "link"))
+        self.git("add", "-A")
+        self.git("commit", "-q", "-m", "Link")
+        commit = self.git("rev-parse", "--short", "HEAD")
+        self.put(record(commit=f"`{commit}`", code="```sh\n# file: link/escape.sh\necho ok\n```"))
+        done = self.run_spike()
+        self.assertEqual(done.returncode, 1)
+        self.assertNotIn("Traceback", done.stderr)
+        self.assertFalse(os.path.exists("/tmp/escape.sh"))
 
     def test_a_diff_without_a_commit_is_refused(self):
         self.put(record(code=self.diff()))

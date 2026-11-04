@@ -876,6 +876,17 @@ class Spike(SpikeWorkspace):
         self.put(record("🟢 Ready to run", runs=run))
         self.assertIn("run script", self.edit("fine", "great"))
 
+    def test_a_comment_mark_inside_run_output_still_counts_as_a_run(self):
+        runs = ("### Run 1\n\nLinux\n\n```\n<!-- start\n```\n\n### Run 2\n\nLinux, exit code 0\n\n```\nok\n```\n\n"
+                "### Run 3\n\nLinux\n\n```\nend -->\n```\n")
+        self.put(record("🟢 Ready to run", runs=runs))
+        self.assertIn("run script", self.edit("exit code 0", "exit code 1"))
+
+    def test_answered_needs_a_run(self):
+        self.put(record("🟢 Ready to run"))
+        self.assertIn("no runs", self.move("🟢 Ready to run", "💡 Answered"))
+        self.assertIsNone(self.move("🟢 Ready to run", "❔ Not answered"))
+
     def test_finish_on_its_own_allowed(self):
         for status in ("💡 Answered", "❔ Not answered"):
             self.put(record("🟢 Ready to run", answer="No.", runs=RUN))
