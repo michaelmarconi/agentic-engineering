@@ -33,6 +33,8 @@ Each step has a skill: instructions Claude follows for that step, which you run 
 command. The plugin's skills are named `/sdlc:<name>`, such as `/sdlc:spec`; this page leaves out
 the `sdlc:` prefix. Some skills are not built yet, and only those Claude Code lists exist.
 
+First you decide what to build:
+
 ```mermaid
 flowchart LR
     Brief --> Spec
@@ -40,14 +42,33 @@ flowchart LR
     Spike -->|facts| Spec
     Spike -->|choices| ADR
     Spec -->|decisions| ADR
+    ADR ~~~ Pad["#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;"]
+    style Pad fill:none,stroke:none
+```
+
+Then you build it, verify it and merge it:
+
+```mermaid
+flowchart LR
     Spec --> Plan
     ADR --> Plan
     Plan --> Build
     Build --> Branch[A branch, for you to verify]
     Branch -->|you merge| Code[Code on the main branch]
-    Code -.-> Audit
+    Code ~~~ Pad["#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;"]
+    style Pad fill:none,stroke:none
+```
+
+Some skills are not steps in that order; you run them whenever you need them:
+
+```mermaid
+flowchart LR
+    Practices -.->|followed by| Plan
+    Practices -.->|followed by| Build
+    Code[Code on the main branch] -.-> Audit
     Audit -.->|drift| Spec
-    Audit ~~~ Pad["#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;"]
+    Audit -.->|drift| ADR
+    ADR ~~~ Pad["#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;"]
     style Pad fill:none,stroke:none
 ```
 

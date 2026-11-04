@@ -98,7 +98,7 @@ repository that uses the lifecycle.
 
 ## Skills
 
-Each step of the lifecycle has a skill. In the order you would use them:
+Each step of the lifecycle has a skill. First you decide what to build:
 
 ```mermaid
 flowchart LR
@@ -107,14 +107,20 @@ flowchart LR
     Spike -->|facts| Spec
     Spike -->|choices| ADR
     Spec -->|decisions| ADR
+    ADR ~~~ Pad["#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;"]
+    style Pad fill:none,stroke:none
+```
+
+Then you build it, verify it and merge it:
+
+```mermaid
+flowchart LR
     Spec --> Plan
     ADR --> Plan
     Plan --> Build
     Build --> Branch[A branch, for you to verify]
     Branch -->|you merge| Code[Code on the main branch]
-    Code -.-> Audit
-    Audit -.->|drift| Spec
-    Audit ~~~ Pad["#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;"]
+    Code ~~~ Pad["#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;"]
     style Pad fill:none,stroke:none
 ```
 
@@ -128,6 +134,18 @@ flowchart LR
 | [`/build`](docs/skills/build.md) | Builds a plan on a branch, has it reviewed and hands it back | Built |
 
 Three skills are not steps in that order; you run them whenever you need them:
+
+```mermaid
+flowchart LR
+    Practices -.->|followed by| Plan
+    Practices -.->|followed by| Build
+    Code[Code on the main branch] -.-> Audit
+    Audit -.->|drift| Spec
+    Audit -.->|drift| ADR
+    Issue -.->|a problem with the plugin| Maintainers[The plugin's maintainers]
+    Maintainers ~~~ Pad["#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;"]
+    style Pad fill:none,stroke:none
+```
 
 | Skill | What it does | Status |
 |---|---|---|
