@@ -32,6 +32,9 @@ claude plugin marketplace add michaelmarconi/sdlc
 claude plugin install sdlc@sdlc
 ```
 
+Install the plugin before you start the session you will use it in: a plugin installed partway
+through a session only loads in the next one.
+
 Add `--scope project` to the `install` command to install the plugin for everyone working in a
 repository. This records it in the repository's `.claude/settings.json`.
 

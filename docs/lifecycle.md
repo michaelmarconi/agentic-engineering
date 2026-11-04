@@ -198,6 +198,17 @@ stops and shows you why, rather than trying again.
 | **Decision** | A finding only you can settle, such as which of two readings you meant. It becomes an open question in the document. |
 | **Suggestion** | A finding you might act on. It never holds a document back. |
 
+A review runs at these points:
+
+- when the skill has written its first draft, before you see it;
+- when a walk-through of open questions ends, because none are left or you stop: answers you
+  give along the way are not reviewed one by one;
+- when you make or ask for a change at any other time, once it is made;
+- when you ask for a document to be reviewed.
+
+A status that needs a passing review, such as `👍 Accepted`, is set only after a review of the text
+as it stands has passed.
+
 There are no repeated rounds of review and correction. We measured this on specs with planted
 mistakes: one review finds nearly every one, and each further round of corrections brings new
 problems. The wording has its own checker because we measured that too: a checker that does
