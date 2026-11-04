@@ -8,7 +8,7 @@ plugin and how to install it.
 
 ## Documents
 
-The lifecycle keeps its thinking in four kinds of document, each a Markdown file in your
+The lifecycle keeps its thinking in five kinds of document, each a Markdown file in your
 repository. Every document except the brief has a status, the `status:` field in its frontmatter,
 which says how far along it is.
 
@@ -26,6 +26,12 @@ which says how far along it is.
   part of a spec or an ADR. Statuses: `📝 Draft` → `🟢 Ready to build` → `✅ Built`; any change
   returns it to `📝 Draft`. A `✅ Built` plan is kept as the record of what was built, and never
   changed again.
+- **Spike record**, `docs/spikes/YYYY-MM-DD-<question>.md`, in one flat folder: one question
+  settled by a throwaway experiment, with the experiment's code and what each run produced.
+  Statuses: `📝 Draft` → `🟢 Ready to run` → `💡 Answered` or `❔ Not answered`; `🟢 Ready to run`
+  → `📝 Draft` only before the first run. Once `🟢 Ready to run`, its question, what would answer
+  it and its experiment are fixed, and only the run script adds runs. A finished spike record is
+  never changed again, and may be deleted whenever nobody needs it.
 
 ## Steps
 
@@ -35,8 +41,9 @@ the `sdlc:` prefix. Some skills are not built yet, and only those Claude Code li
 
 - `/brief` writes or changes the brief.
 - `/spec` writes or changes the spec for one capability.
-- `/spike` settles an unknown by a throwaway experiment, when one is needed. A fact goes back into
-  the spec; a choice becomes an ADR.
+- `/spike` settles an unknown by a throwaway experiment, when one is needed, and writes it up as a
+  spike record. A fact goes back into the spec; a choice becomes an ADR. `/spike` edits neither:
+  you take the answer to `/spec` or `/adr`.
 - `/adr` records one technical decision.
 - `/plan` scopes a piece of work against the specs and ADRs it delivers.
 - `/build` builds a plan on a branch of its own, has it reviewed, and pushes the branch to your
@@ -102,20 +109,27 @@ flowchart LR
   final, reviewed text. No skill or agent does it for them.
 - **References never go stale.** Documents refer to one another only where neither end can go
   stale: a plan to the specs and ADRs it builds, since a `✅ Built` plan is a record of how they stood
-  when it was built, and an ADR to other ADRs by number, since a decided ADR is never edited or
-  moved. Otherwise the brief, specs and ADRs never refer to one another in
+  when it was built; a spike record to the spec or ADR whose question it answers, since a finished
+  spike record is a record of how that document stood; and an ADR to other ADRs by number, since a
+  decided ADR is never edited or moved. Nothing refers to a plan or a spike record. Otherwise the
+  brief, specs and ADRs never refer to one another in
   any way, whether by hyperlink, path or title, because either end can change or be deleted
-  without the other being touched, and the reference would quietly go stale.
+  without the other being touched, and the reference would quietly go stale. A spec or ADR that
+  uses a spike's answer states its evidence in its own words.
 - **No separate design document.** `👍 Accepted` ADRs and the code are the design.
 - **Every document carries its own status.** A plan holds nothing later work needs: a decision
   later work must follow is an ADR.
 - **No document moves forward with open questions.** Anything only a person can settle is
   written into the document's Open questions, not left in the conversation. A spec or an ADR becomes
-  `👍 Accepted`, and a plan `🟢 Ready to build` only when that section
-  is empty.
+  `👍 Accepted`, a plan `🟢 Ready to build`, and a spike record `🟢 Ready to run`, `💡 Answered` or
+  `❔ Not answered` only when that section is empty.
 - **Only legal status moves.** Only the moves listed under [Documents](#documents) are allowed,
-  and only `/build` sets a plan `✅ Built`. A plugin hook refuses illegal spec, ADR and plan status changes, and
-  edits to decided ADRs, made with Claude's file-editing tools.
+  and only `/build` sets a plan `✅ Built`. A plugin hook refuses illegal spec, ADR, plan and spike
+  record status changes, edits to decided ADRs and finished spike records, and edits to a spike
+  record's fixed parts and runs, made with Claude's file-editing tools.
+- **Only an experiment answers a spike.** Documentation, other people's reports and reasoning help
+  design an experiment, but a spike's answer rests only on what its runs produced, compared with
+  the result agreed before the first run.
 - **A plan builds only on settled documents.** A plan is `🟢 Ready to build` only when each spec
   and each ADR it touches is `👍 Accepted`. No two
   plans that are not `✅ Built` name the same requirement.
