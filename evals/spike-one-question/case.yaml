@@ -1,0 +1,7 @@
+schema_version: "1.1"
+name: spike-one-question
+expected_outcome: |
+  Given two questions, the skill says there are two, takes them one at a time, and writes one
+  spike record.
+context:
+  scaffold_script: place-files.sh

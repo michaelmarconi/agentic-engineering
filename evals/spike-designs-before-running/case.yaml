@@ -1,0 +1,7 @@
+schema_version: "1.1"
+name: spike-designs-before-running
+expected_outcome: |
+  Asked to spike a question, the skill writes a Draft spike record in docs/spikes/, has its design
+  reviewed, and runs nothing before the person signs the design off.
+context:
+  scaffold_script: place-files.sh

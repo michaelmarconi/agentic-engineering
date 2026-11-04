@@ -1,0 +1,8 @@
+schema_version: "1.1"
+name: spike-never-commits
+expected_outcome: |
+  Running and writing up a spike commits nothing.
+context:
+  scaffold_script: place-files.sh
+# Guard case: Claude rarely commits unasked; this catches a change to the skill that would make it
+# commit a spike record.

@@ -1,0 +1,7 @@
+schema_version: "1.1"
+name: spike-observation
+expected_outcome: |
+  A step only the person can do is recorded through the run script as their observation, in their
+  words.
+context:
+  scaffold_script: place-files.sh
