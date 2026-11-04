@@ -6,7 +6,9 @@ experiment produced and never retyped (ADR 0020). It writes the record itself, s
 which refuses every other change to Runs, never sees it.
 
 Each call is one run. It refuses unless the record is `🟢 Ready to run`. It builds a fresh working
-folder at <data>/spikes/<hash of the project path>-<record name>/, outside the repository:
+folder at <data>/spikes/<hash of the project path>-<record name>/, outside the repository, or, when
+the data folder can't be written, as in a sandbox, in a folder only this user can open in the
+system's temporary folder, sdlc-spikes-<user id>/:
 
 1. When the Experiment names a commit (`- Starts from commit:`), the folder is filled with
    `git archive <commit>`, so neither the working tree nor .git is ever changed, and any ```diff
@@ -24,16 +26,17 @@ CLAUDE_CODE_REMOTE variable), a 12-character SHA-256 hash of the Code section, t
 code, and the output in a code fence longer than any run of backticks in it. The value of each
 secret named in `- Secrets:`, and of any variable whose name looks like a credential and whose
 value is 8 characters or more, is replaced by `[secret: NAME]`, and the common shapes of
-credentials, such as GitHub, AWS, Slack and `sk-` keys, web tokens, Bearer headers and private
-keys, by `[redacted: <kind>]`; the run's heading says how many values were hidden; output over 500
+credentials, such as GitHub, AWS, Slack and `sk-` keys, web tokens, bearer headers and private
+keys, by `[redacted: <kind>]`, in an observation too; the run's heading says how many values were
+hidden; output over 500
 lines keeps its first and last 200, saying how many were left out. Variables whose names look like
 credentials, such as *_TOKEN or *_KEY, are kept from the experiment unless named under Secrets. A
-run still going after 9 minutes is stopped and recorded as such. A secret that is not set is
+run still going 9 minutes after the script started, building the folder included, is stopped with
+everything it started, and recorded as such. A secret that is not set is
 recorded as a run that did not happen, saying which, without running anything. With --observation,
 it records the person's words, marked as their observation, instead.
 
-When the data folder can't be written, as in a sandbox, the working folders go in the system's
-temporary folder instead, under sdlc-spikes/. Finally it deletes the working folder, and any folder this project left in <data>/spikes/ for a
+Finally it deletes the working folder, and any folder this project left in either place for a
 record that is finished or no longer exists. Other projects' folders are never touched.
 """
 
@@ -45,9 +48,11 @@ import os
 import platform
 import re
 import shutil
+import signal
 import subprocess
 import sys
 import tarfile
+import time
 import tempfile
 import urllib.parse
 import urllib.request
@@ -62,7 +67,12 @@ FINISHED = (ANSWERED, NOT_ANSWERED)
 MAX_LINES, KEPT_LINES = 500, 200
 TIME_LIMIT = 540  # seconds: under the 10 minutes Claude Code's shell tool allows a command
 # Names of environment variables that hold credentials; only those named under Secrets reach a run.
-SECRET_NAME = re.compile(r"KEY|TOKEN|SECRET|PASSWORD|PASSWD|CREDENTIAL|AUTH|PRIVATE|SESSION|COOKIE", re.I)
+# A word of the name, between underscores, must be one of these, or the name must end in one of
+# the first five, as PGPASSWORD does; so GIT_AUTHOR_NAME and DBUS_SESSION_BUS_ADDRESS don't match.
+# A socket's path, such as SSH_AUTH_SOCK, is not a credential.
+SECRET_NAME = re.compile(r"^(?!.*_SOCK$)(?:.*(?:KEY|TOKEN|SECRET|PASSWORD|PASSWD)$|"
+                         r"(?:.*_)?(?:API_?KEY|KEY|KEYS|TOKEN|SECRET|SECRETS|PASSWORD|PASSWD|PASS|PAT|"
+                         r"CREDENTIAL|CREDENTIALS|AUTH|OAUTH|PRIVATE|COOKIE|COOKIES)(?:_.*)?$)", re.I)
 FILE_LINE = re.compile(r"^\s*(?:#|//|--|;|%|/\*|<!--)?\s*file:\s*(\S+)")
 CODE_SPAN = re.compile(r"(?<!`)(`+)(?!`)(.+?)(?<!`)\1(?!`)")
 NONE = {"", "none", "none."}
@@ -136,23 +146,44 @@ def project_key(project):
     return hashlib.sha256(os.path.abspath(project).encode("utf-8")).hexdigest()[:12]
 
 
-def spikes_root(data):
-    """<data>/spikes, or <temporary folder>/sdlc-spikes when the data folder can't be written,
-    as in a sandbox that blocks the plugin's own folders."""
-    root = os.path.join(os.path.abspath(data), "spikes")
+def fallback_root():
+    """The folder used when the data folder can't be written: one in the system's temporary
+    folder that only this user can open, so other users can neither read the experiment nor
+    put anything in its place."""
+    return os.path.join(tempfile.gettempdir(), f"sdlc-spikes-{os.getuid()}")
+
+
+def writable(folder):
     try:
-        os.makedirs(root, exist_ok=True)
-        return root
+        os.makedirs(folder, exist_ok=True)
+        os.rmdir(tempfile.mkdtemp(dir=folder))
+        return True
     except OSError:
-        fallback = os.path.join(tempfile.gettempdir(), "sdlc-spikes")
-        os.makedirs(fallback, exist_ok=True)
-        return fallback
+        return False
 
 
-def work_folder(data, record_path):
-    """The working folder for one record: <data>/spikes/<project hash>-<record name>/."""
+def spikes_root(data):
+    """<data>/spikes, or fallback_root() when that can't be written, as in a sandbox that blocks
+    the plugin's own folders."""
+    root = os.path.join(os.path.abspath(data), "spikes")
+    if writable(root):
+        return root
+    fallback = fallback_root()
+    try:
+        os.makedirs(fallback, mode=0o700, exist_ok=True)
+        info = os.lstat(fallback)
+    except OSError as error:
+        raise RecordError(f"neither {root} nor {fallback} can be written ({error})")
+    if not os.path.isdir(fallback) or os.path.islink(fallback) or info.st_uid != os.getuid() \
+            or info.st_mode & 0o077:
+        raise RecordError(f"{fallback} is not a folder only you can open; delete it and run again")
+    return fallback
+
+
+def work_folder(data, record_path, root=None):
+    """The working folder for one record: <spikes root>/<project hash>-<record name>/."""
     name = os.path.splitext(os.path.basename(record_path))[0]
-    return os.path.join(spikes_root(data), f"{project_key(project_of(record_path))}-{name}")
+    return os.path.join(root or spikes_root(data), f"{project_key(project_of(record_path))}-{name}")
 
 
 def inside(folder, name):
@@ -205,6 +236,11 @@ def plan(text):
     }
 
 
+def left(deadline):
+    """Seconds left before the run's time limit, at least 1."""
+    return max(1, deadline - time.monotonic())
+
+
 def git(project, *args, **kwargs):
     return subprocess.run(["git", "-C", project, *args], capture_output=True, **kwargs)
 
@@ -216,7 +252,7 @@ def fill(folder, project, steps):
         if git(project, "cat-file", "-e", f"{commit}^{{commit}}").returncode != 0:
             raise RecordError(f"commit {commit} is not in this repository; if it is a shallow clone, fetch it first, "
                               f"for example with `git fetch --unshallow`")
-        archive = git(project, "archive", "--format=tar", commit)
+        archive = git(project, "archive", "--format=tar", commit, timeout=left(steps["deadline"]))
         if archive.returncode != 0:
             raise RecordError(f"git archive {commit} failed: {archive.stderr.decode(errors='replace').strip()}")
         try:
@@ -233,7 +269,7 @@ def fill(folder, project, steps):
             raise RecordError(f"could not copy commit {commit} into the working folder ({error})")
     for diff in steps["diffs"]:
         applied = subprocess.run(["git", "apply", "--whitespace=nowarn", "-"], cwd=folder, input=diff.encode("utf-8"),
-                                 capture_output=True)
+                                 capture_output=True, timeout=left(steps["deadline"]))
         if applied.returncode != 0:
             raise RecordError(f"the diff in Code does not apply to commit {steps['commit']}: "
                               f"{applied.stderr.decode(errors='replace').strip()}")
@@ -249,7 +285,8 @@ def fill(folder, project, steps):
         if "://" in name:
             target = inside(folder, os.path.basename(urllib.parse.urlparse(name).path.rstrip("/")) or "input")
             try:
-                with urllib.request.urlopen(name, timeout=60) as response, open(target, "wb") as f:
+                with urllib.request.urlopen(name, timeout=min(60, left(steps["deadline"]))) as response, \
+                        open(target, "wb") as f:
                     shutil.copyfileobj(response, f)
             except (OSError, ValueError) as error:
                 raise RecordError(f"could not fetch the input {name} ({error})")
@@ -282,20 +319,24 @@ def where():
 
 
 def remove_leftovers(data, record_path):
-    """Delete this project's working folders whose records are finished or gone."""
-    spikes = spikes_root(data)
+    """Delete this project's working folders, in either place, whose records are finished or gone."""
     prefix = project_key(project_of(record_path)) + "-"
     folder = os.path.dirname(os.path.abspath(record_path))
-    for name in sorted(os.listdir(spikes)) if os.path.isdir(spikes) else []:
-        if not name.startswith(prefix):
-            continue
-        record = os.path.join(folder, name[len(prefix):] + ".md")
+    for spikes in (os.path.join(os.path.abspath(data), "spikes"), fallback_root()):
         try:
-            status = status_of(read_record(record)) if os.path.exists(record) else None
-        except RecordError:
+            names = sorted(os.listdir(spikes)) if os.path.isdir(spikes) and not os.path.islink(spikes) else []
+        except OSError:
             continue
-        if status is None or status in FINISHED:
-            shutil.rmtree(os.path.join(spikes, name), ignore_errors=True)
+        for name in names:
+            if not name.startswith(prefix):
+                continue
+            record = os.path.join(folder, name[len(prefix):] + ".md")
+            try:
+                status = status_of(read_record(record)) if os.path.exists(record) else None
+            except RecordError:
+                continue
+            if status is None or status in FINISHED:
+                shutil.rmtree(os.path.join(spikes, name), ignore_errors=True)
 
 
 def append_run(path, heading_line, body):
@@ -304,6 +345,8 @@ def append_run(path, heading_line, body):
     text = read_record(path)
     if status_of(text) != READY_TO_RUN:
         raise RecordError(f"the record stopped being `{READY_TO_RUN}` while the experiment ran; nothing was recorded")
+    with open(path, encoding="utf-8", newline="") as f:
+        newline = "\r\n" if "\r\n" in f.read() else "\n"
     lines = text.splitlines()
     allowed = headings_allowed(lines)
     start = next((i for i, line in enumerate(lines) if allowed[i] and line.strip().lower() == "## runs"), None)
@@ -315,7 +358,7 @@ def append_run(path, heading_line, body):
     before = "\n".join(lines[:end]).rstrip("\n")
     after = "\n".join(lines[end:])
     new = before + "\n\n" + entry + ("\n" + after + "\n" if after else "")
-    with open(path, "w", encoding="utf-8") as f:
+    with open(path, "w", encoding="utf-8", newline=newline) as f:
         f.write(new)
     return entry
 
@@ -328,13 +371,15 @@ def experiment_env(secrets):
 
 # Common shapes of credentials, hidden wherever they appear in a run's output.
 CREDENTIALS = [
-    ("private key", re.compile(r"-----BEGIN [A-Z ]*PRIVATE KEY-----.*?-----END [A-Z ]*PRIVATE KEY-----", re.S)),
+    # To its END line, or to the end of the output when that line never came, as in a stopped run.
+    ("private key", re.compile(r"-----BEGIN [A-Z ]*PRIVATE KEY[A-Z ]*-----.*?(?:-----END [A-Z ]*PRIVATE KEY[A-Z ]*-----|\Z)",
+                               re.S)),
     ("GitHub token", re.compile(r"\b(?:gh[pousr]_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,})")),
     ("AWS key", re.compile(r"\b(?:AKIA|ASIA)[A-Z0-9]{16}\b")),
     ("Slack token", re.compile(r"\bxox[abposr]-[A-Za-z0-9-]{10,}")),
     ("API key", re.compile(r"\bsk-[A-Za-z0-9_-]{20,}")),
     ("web token", re.compile(r"\beyJ[A-Za-z0-9_-]{5,}\.eyJ[A-Za-z0-9_-]{5,}\.[A-Za-z0-9_-]{10,}")),
-    ("bearer token", re.compile(r"(?<=Bearer )[A-Za-z0-9._~+/=-]{12,}")),
+    ("bearer token", re.compile(r"(?i:(?P<keep>\bbearer\s+))[A-Za-z0-9._~+/=-]{12,}")),
 ]
 
 
@@ -347,27 +392,38 @@ def hide(output, secrets):
     hidden = 0
     # An unnamed variable's value is hidden only when long enough to be a credential, so flags
     # such as `1` or `true` are left alone.
-    names = [name for name, value in os.environ.items()
-             if value and (name in secrets or (SECRET_NAME.search(name) and len(value) >= 8))]
-    for name in sorted(names, key=lambda n: len(os.environ[n]), reverse=True):
-        hidden += output.count(os.environ[name])
-        output = output.replace(os.environ[name], f"[secret: {name}]")
+    values = {}
+    for name, value in os.environ.items():
+        if value and (name in secrets or (SECRET_NAME.search(name) and len(value) >= 8)):
+            values.setdefault(value, name)
+    if values:
+        # One pass, longest value first, so a replacement is never searched again.
+        pattern = re.compile("|".join(re.escape(value) for value in sorted(values, key=len, reverse=True)))
+        output, hidden = pattern.subn(lambda match: f"[secret: {values[match.group(0)]}]", output)
     for kind, pattern in CREDENTIALS:
-        output, count = pattern.subn(f"[redacted: {kind}]", output)
+        output, count = pattern.subn(lambda match: (match.groupdict().get("keep") or "") + f"[redacted: {kind}]",
+                                     output)
         hidden += count
     return output, hidden
 
 
+def hidden_note(hidden):
+    return f", {hidden} value{'s' if hidden != 1 else ''} hidden" if hidden else ""
+
+
 def run(record_path, data, observation=None):
     """Run the experiment once, or record an observation; return the Runs entry added."""
+    deadline = time.monotonic() + TIME_LIMIT
     if not data:
         raise RecordError('the plugin\'s data folder is empty: pass --data "${CLAUDE_PLUGIN_DATA}"')
     text = read_record(record_path)
     steps = plan(text)
+    steps["deadline"] = deadline
     stamp = f"{where()}, code `{steps['hash']}`"
     if observation is not None:
-        return append_run(record_path, f"{stamp}, the person's observation, passed on by Claude",
-                          fenced(observation))
+        words, hidden = hide(observation, steps["secrets"])
+        return append_run(record_path, f"{stamp}, the person's observation, passed on by Claude{hidden_note(hidden)}",
+                          fenced(words))
     if steps["command"] is None:
         raise RecordError("the Experiment's `- Command:` is \"None.\", so each run is the person's observation: "
                           "pass their words with --observation")
@@ -375,24 +431,44 @@ def run(record_path, data, observation=None):
     if missing:
         return append_run(record_path, f"{stamp}, did not run",
                           fenced(f"Did not run: the secret {', '.join(missing)} is not set in Claude Code's environment."))
-    folder = work_folder(data, record_path)
+    folder = work_folder(data, record_path, spikes_root(data))
     shutil.rmtree(folder, ignore_errors=True)
-    os.makedirs(folder)
     try:
-        fill(folder, project_of(record_path), steps)
+        os.makedirs(folder)
+    except OSError as error:
+        raise RecordError(f"could not make the working folder {folder} ({error})")
+    stopped = f"stopped after {TIME_LIMIT // 60} minutes without finishing"
+    try:
         try:
-            done = subprocess.run(["sh", "-c", steps["command"]], cwd=folder, stdout=subprocess.PIPE,
-                                  stderr=subprocess.STDOUT, stdin=subprocess.DEVNULL,
-                                  env=experiment_env(steps["secrets"]), timeout=TIME_LIMIT)
-            output, ended = done.stdout, f"exit code {done.returncode}"
-        except subprocess.TimeoutExpired as stopped:
-            output, ended = stopped.stdout or b"", f"stopped after {TIME_LIMIT // 60} minutes without finishing"
+            fill(folder, project_of(record_path), steps)
+        except subprocess.TimeoutExpired:
+            output, ended = b"", stopped + ", before the command started"
+        else:
+            output, ended = execute(steps["command"], folder, experiment_env(steps["secrets"]), left(deadline))
+            ended = ended or stopped
     finally:
         shutil.rmtree(folder, ignore_errors=True)
         remove_leftovers(data, record_path)
     text_output, hidden = hide(output.decode("utf-8", errors="replace"), steps["secrets"])
-    note = f", {hidden} value{'s' if hidden != 1 else ''} hidden" if hidden else ""
-    return append_run(record_path, f"{stamp}, {ended}{note}", fenced(shorten(text_output)))
+    return append_run(record_path, f"{stamp}, {ended}{hidden_note(hidden)}", fenced(shorten(text_output)))
+
+
+def execute(command, folder, env, timeout):
+    """Run the command in its own process group: (output, "exit code N"), or (output so far, None)
+    when it ran out of time, after stopping everything it started, so nothing it left running
+    keeps the secrets once the run is recorded."""
+    process = subprocess.Popen(["sh", "-c", command], cwd=folder, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                               stdin=subprocess.DEVNULL, env=env, start_new_session=True)
+    try:
+        output, _ = process.communicate(timeout=timeout)
+        return output, f"exit code {process.returncode}"
+    except subprocess.TimeoutExpired:
+        try:
+            os.killpg(process.pid, signal.SIGKILL)
+        except OSError:
+            pass
+        output, _ = process.communicate()
+        return output or b"", None
 
 
 def main(argv=None):

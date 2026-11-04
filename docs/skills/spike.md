@@ -154,7 +154,9 @@ exactly what the experiment produced:
 
 - It refuses to run unless the record is `🟢 Ready to run`.
 - It writes each code block to the file it names, and copies in each input the Experiment names,
-  in a working folder in the plugin's own data folder, outside your repository. It runs the
+  in a working folder in the plugin's own data folder, outside your repository. Where that folder
+  can't be written, as in a sandbox, it uses a folder in the system's temporary folder that only
+  you can open. It runs the
   Experiment's command there with the POSIX shell. When the question is about how an approach
   works in your own code, the working folder holds a copy of the commit the Experiment names,
   with the record's diff applied, so the same copy can be made again in a later session or on a
@@ -167,9 +169,10 @@ exactly what the experiment produced:
   the value of each secret the Experiment names, and of any variable in Claude Code's environment
   whose name looks like a credential, with its name, and common shapes of credentials, such as
   access tokens and private keys, with a note of what kind they were; the run says how many
-  values it hid. Variables that look like credentials don't reach the experiment at all unless
-  the Experiment names them. It shortens very long output, saying what it left out, and stops a
-  run still going after 9 minutes. Claude never retypes a result. Hiding values misses a secret
+  values it hid. It hides them in your observations too. Variables that look like credentials
+  don't reach the experiment at all unless the Experiment names them. It shortens very long
+  output, saying what it left out, and stops a run, and everything the run started, still going
+  9 minutes after the script began. Claude never retypes a result. Hiding values misses a secret
   that the code prints in another form, such as encoded, so the review checks that no code prints
   a secret at all.
 - It deletes the working folder after each run, and any folder this project left over for a spike

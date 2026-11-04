@@ -16,7 +16,7 @@ The script prints `1 row(s), 3 fields` on every run.
 
 ## Experiment
 
-Reads a one-line sample, held in the code, whose middle field is not quoted and holds a line
+Reads a short sample, held in the code, whose middle field is not quoted and holds a line
 break, and prints how many rows and fields it found, or `FAILED` when the field is split. The
 team asked for five runs, one for each laptop it will be checked on later, so it runs five times;
 a split on any run already answers the question, so it stops there.

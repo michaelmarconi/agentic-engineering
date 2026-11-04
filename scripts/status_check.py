@@ -647,20 +647,50 @@ def adr_rules(path, before, after, old, new):
 def runs(text):
     """The Runs section without HTML comments or surrounding blank lines; "" when it holds none.
 
-    Comments are dropped only outside fenced code blocks, so a run's output can never hide
-    another run.
+    A comment starts only outside fenced code blocks, so a run's output can never hide another
+    run, and a fence inside a comment is part of the comment.
     """
-    lines = section(text, "Runs") or []
-    kept, outside = [], []
-    for line, allowed in zip(lines, headings_allowed(lines)):
-        if allowed:
-            outside.append(line)
+    kept, fence, comment = [], None, False
+    for line in section(text, "Runs") or []:
+        if fence is not None:
+            kept.append(line)
+            match = FENCE.match(line)
+            if match and match.group(1)[0] == fence[0] and len(match.group(1)) >= len(fence) \
+                    and not match.group(2).strip():
+                fence = None
             continue
-        kept.append(re.sub(r"<!--.*?-->", "", "\n".join(outside), flags=re.S))
-        kept.append(line)
-        outside = []
-    kept.append(re.sub(r"<!--.*?-->", "", "\n".join(outside), flags=re.S))
+        match = FENCE.match(line)
+        if not comment and match:
+            fence = match.group(1)
+            kept.append(line)
+            continue
+        rest, out = line, ""
+        while rest:
+            if comment:
+                end = rest.find("-->")
+                if end < 0:
+                    break
+                rest, comment = rest[end + 3:], False
+            else:
+                start = rest.find("<!--")
+                if start < 0:
+                    out += rest
+                    break
+                out, rest, comment = out + rest[:start], rest[start + 4:], True
+        kept.append(out)
     return "\n".join(kept).strip()
+
+
+def ran(text):
+    """Whether Runs holds a run that happened: one whose heading line doesn't say "did not run"."""
+    lines = runs(text).splitlines()
+    allowed = headings_allowed(lines)
+    for i, line in enumerate(lines):
+        if allowed[i] and re.fullmatch(r"### Run \d+\s*", line):
+            stamp = next((later for later in lines[i + 1:] if later.strip()), "")
+            if not stamp.rstrip().endswith("did not run"):
+                return True
+    return False
 
 
 def spike_rules(path, before, after, old, new):
@@ -701,7 +731,7 @@ def spike_rules(path, before, after, old, new):
             )
         if has_open_questions(after):
             return open_questions_refusal(name, after, new, "spike record")
-        if new == ANSWERED and not runs(after):
+        if new == ANSWERED and not ran(after):
             return (
                 f"{name}: it has no runs, so it cannot be `{ANSWERED}`: only an experiment's runs "
                 f"answer a spike. Run it through the run script, or end it `{NOT_ANSWERED}`."
