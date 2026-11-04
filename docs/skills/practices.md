@@ -77,13 +77,29 @@ An example of the core, for a recipe-sharing website built in Python:
 
 ## Using `/practices`
 
-Run `/practices` when you set a project up, again after the first build, and whenever the way you
-work changes.
+You don't set all your practices up front. You add them one topic at a time, as you need them: the
+commands to check work before the first build, testing in more depth once there is code to test,
+deployment when there is somewhere to deploy to.
 
-- **Works through a fixed list of topics.** The plugin decides what to ask about, so nothing is
-  forgotten: testing, branches and commits, reviews and merging, releasing, and the rest. The
-  answers are yours. If you have no view on a topic, it offers the common choice and says it is a
-  default.
+- **On its own, `/practices` gives an overview, then leads you in.** It lists the topics, each as
+  recorded, not recorded yet, or out of step with the repository, such as "tests exist, but no
+  test command is recorded". It then suggests the one topic that matters most now, judged from the
+  repository and the plans waiting to be built, and offers to start on it. Say yes, pick another
+  or stop there. A topic nothing yet needs, such as deployment before there is anything to deploy,
+  is not suggested.
+- **`/practices <topic>` goes straight to one topic**, such as `/practices testing`. It covers that
+  topic alone and stops, so a run is a short conversation, not a long interview. Run it on the
+  same topic later to improve it: it starts from what is recorded and proposes changes.
+- **Its topics are suggestions, not a complete list.** The plugin offers a list of common topics,
+  such as testing, security and releasing, each with the questions and common choices it knows,
+  so it can lead you towards good practice gently. Any other topic works the same way: ask for
+  one, such as "I want to define how decisions are approved", and `/practices` gives it a topic
+  file and a line in the core, like any other.
+- **Only one part is needed to build.** `/build` cannot check its work without the Check your
+  work commands, so those are the only practices it asks for. Everything else is optional until
+  you want it.
+- **Offers defaults, not rules.** The answers are yours. If you have no view on a question, it
+  offers the common choice and says it is a default.
 - **Starts from the repository.** Much of it is already there: build files, test setup,
   continuous integration settings, your README. `/practices` reads them first and proposes what it
   finds, so you confirm rather than dictate. Anything it cannot find, or is not sure of, it asks.
@@ -96,9 +112,9 @@ work changes.
   neither `CLAUDE.md` nor `AGENTS.md`, it creates `CLAUDE.md`. It never commits: you look at the
   change and commit it.
 
-On a new, empty repository there are no commands to find yet, so the first run records your
-team's habits, such as test-first working and how branches are named. Run `/practices` again after
-the first build, and it proposes the commands the build set up.
+On a new, empty repository there are no commands to find yet, so the first topic is usually how
+your team works, such as test-first working and how branches are named. After the first build,
+the overview shows the commands are missing and offers to record them.
 
 `/build` uses your practices but never changes them. It looks for the `## Practices` heading, and
 if it is missing, suggests running `/practices` first (see [`/build`](build.md)).
