@@ -107,7 +107,7 @@ will use.
   topic alone and stops, so a run is a short conversation. Run it on the same topic later to
   improve it: it starts from what is recorded and proposes changes.
 - **Its topics are suggestions, not a complete list.** The plugin offers common topics, such as
-  testing, security and releasing, each with the questions to ask and the choices most teams
+  testing, continuous integration, security and releasing, each with the questions to ask and the choices most teams
   make. Any other topic works the same way: ask for one, such as "I want to define how decisions
   are approved", and `/practices` gives it a topic file and a line in the core. It says so as it
   goes: the overview ends by inviting a topic of your own, and within a topic it asks whether
