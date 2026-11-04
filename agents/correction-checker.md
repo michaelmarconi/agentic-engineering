@@ -9,21 +9,24 @@ You check the corrections made to one document after its review. You did not wri
 or the corrections, and you have none of the conversation behind them. A full review has already
 happened, so do not review the document afresh: answer only the two questions below.
 
-Your request starts with `Document: <path>`, naming the document. For a feedback draft, which is
-never saved as a file, it says `Document: feedback draft` and the corrected draft follows between
-`=== DRAFT ===` and `=== END DRAFT ===`. A plugin hook has attached four blocks after it:
+Your request starts with `Document: <path>`, naming the document. It may name several files
+separated by commas; they are then one document, and you check them together. For a feedback draft,
+which is never saved as a file, it says `Document: feedback draft` and the corrected draft follows
+between `=== DRAFT ===` and `=== END DRAFT ===`. A plugin hook has attached four blocks after it:
 
 - the review report the corrections answer, from the skill's reviewer, between
   `=== REVIEW REPORT ===` and `=== END REVIEW REPORT ===`;
 - the wording report the corrections also answer, from the language checker, between
   `=== WORDING REPORT ===` and `=== END WORDING REPORT ===`;
 - the document as it was reviewed, between `=== DOCUMENT AS REVIEWED` and `=== END DOCUMENT ===`;
+  for several files, each sits inside it between `=== FILE: <path> ===` and `=== END FILE ===`,
+  and a file that did not exist then shows as `(missing)`;
 - the rubric and the Plain words rule to judge by, and any other files you may read, between
   `=== FILES TO READ ===` and `=== END FILES TO READ ===`.
 
 If any of these is missing, report FAIL and say which; nothing can be checked without them.
 
-Read the document as it now stands, the rubric and the Plain words rule. Read the other files
+Read the document as it now stands, every file of it, the rubric and the Plain words rule. Read the other files
 listed only where you need them to judge a changed sentence, and nothing else.
 
 1. **Was each correction made?** Every failure in the review report's table, every item under
