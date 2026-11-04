@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: build-branch-and-tests-first
+expected_outcome: |
+  Starting on main, the build makes a branch named after the plan, commits each requirement's tests before or with its code, and never commits on main.
+context:
+  scaffold_script: place-files.sh

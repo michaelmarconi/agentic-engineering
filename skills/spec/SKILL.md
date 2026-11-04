@@ -1,6 +1,6 @@
 ---
 name: spec
-description: Write or change a spec, the living document that says what one capability of a product should do and how we will know it does, as EARS rules with Given/When/Then scenarios. Use whenever someone wants to specify, describe or pin down a feature or behaviour before building it, change what an existing feature should do, answer a spec's open questions, or mark a spec ready to build, even if they don't say "spec".
+description: Write or change a spec, the living document that says what one capability of a product should do and how we will know it does, as EARS rules with Given/When/Then scenarios. Use whenever someone wants to specify, describe or pin down a feature or behaviour before building it, change what an existing feature should do, answer a spec's open questions, or accept a spec, signing it off as ready to build, even if they don't say "spec".
 ---
 
 # Spec
@@ -72,24 +72,25 @@ the choice is to keep the meaning, so the next review can see it is settled.
 
 ## Status
 
-The `status:` frontmatter says how far the spec is: `📝 Draft`, `🟢 Ready to build` or `✅ Built`,
-written exactly so, emoji first. A status written as a bare word, from before the emoji, gets its
+The `status:` frontmatter says whether the person has accepted the spec's text: `📝 Draft` or
+`👍 Accepted`, written exactly so, emoji first. It describes the document, never the software:
+whether the software meets the spec is found by checking the software against it. A status written as a bare word, from before the emoji, gets its
 emoji in your next edit.
 
-- Write new and changed specs as `📝 Draft`. Changing a spec that is `🟢 Ready to build` or
-  `✅ Built` returns it to `📝 Draft`, because what was agreed or built no longer matches: set the
-  status to `📝 Draft` first, as a plugin hook refuses any other change to such a spec.
-- Set `🟢 Ready to build` only when the person asks for it, the spec has no open questions (rubric
+- Write new and changed specs as `📝 Draft`. Changing a spec that is `👍 Accepted` returns it to
+  `📝 Draft`, because what was accepted no longer matches: set the status to `📝 Draft` first, as a
+  plugin hook refuses any other change to such a spec. A spec still holding `🟢 Ready to build` or
+  `✅ Built`, statuses specs had before, goes back to `📝 Draft` the same way.
+- Set `👍 Accepted` only when the person asks for it, the spec has no open questions (rubric
   check 9), nothing is left under the review's Needs a person, and the review below has ended
   with a pass on the spec as it stands, from the review itself or from the correction check
-  after it; make it its own, last edit, after that review. `🟢 Ready to build` means the
+  after it; make it its own, last edit, after that review. `👍 Accepted` means the
   person agreed to this text, so if you wrote or changed anything they have not seen since, show it and
   wait for their reply first; agreement given before they saw it does not count, even a request
-  to fix small things and carry on. So never set `🟢 Ready to build` in the same reply as a change to the
+  to fix small things and carry on. So never set `👍 Accepted` in the same reply as a change to the
   spec's content. If questions
   remain, say how many, ask the first and leave the spec as `📝 Draft`, even if the person says they do not matter:
   offer to settle them now instead.
-- Never set `✅ Built`. Only the build step does, once its review finds every requirement verified.
 
 ## Review
 

@@ -1,0 +1,176 @@
+---
+name: build
+description: Build one plan that the person has signed off (a docs/plans/ file whose status is Ready to build) on a branch of its own, tests first, requirement by requirement; have the result reviewed for bugs, security holes and fit with the plan; correct once; and hand the branch back, committed and pushed, with the plan marked Built when every review passed. Use whenever someone asks to build, implement or carry out a plan, or to resume a build that stopped, even if they don't say "/build". Not for planning work (a plan), writing what a feature should do (a spec), or changes made without a plan, and never for opening pull requests or merging.
+---
+
+# Build
+
+You build one plan: the code and tests it describes, on a branch of its own. Then you have the
+work reviewed, correct it once, and hand the branch back. The person verifies the software,
+opens any pull request and merges; you never do those.
+
+## Rules that hold for the whole build
+
+These hold from the first step to the last, however long the build runs.
+
+- **Never weaken a test to make code pass.** Change a test only to make it check its scenario
+  more closely. A test whose expected value plainly contradicts its scenario in the spec, such as
+  a typo, may be corrected to the spec's value: say so in the summary. A test that cannot pass as
+  its scenario is worded is a finding to raise, not a test to loosen, skip or delete.
+- **Two attempts, then stop.** If a requirement's tests still fail after two attempts at the
+  code, stop and hand over with the failure written down. A third attempt at an approach that
+  has failed twice rarely works, and a fresh start with the failure in hand does better.
+- **Raise choices that are not yours; make the rest.** You may decide anything that would not
+  need an ADR (architecture decision record) or a change to a spec. Stop and raise, never guess,
+  any choice that would:
+  - be a lasting choice between real alternatives, such as a library, a data format or the
+    shape of an interface, that no listed ADR, spec, line under Decisions or existing code
+    already settles;
+  - change what a user sees in a way the spec does not settle;
+  - be hard to undo, such as a database schema, a public interface or data already stored;
+  - stretch or contradict a spec, an ADR or the project's practices.
+
+  Nobody may be watching, and a build that guesses can spend hours on the wrong assumption.
+  Names, how the code is split up and which helper to use are yours, and so are the wording of
+  error messages, exit codes and sensible handling of odd input: make each such choice, carry
+  on, and note it with its reason for the summary.
+- **Correct obvious defects without asking.** Anything plainly wrong is yours to correct, whether
+  or not a spec mentions it: a crash or unhandled error, bad input such as a missing argument or
+  an unreadable file that is not refused plainly, an error reported in the wrong place, a resource
+  left open. Refuse bad input in the way the code around it already reports errors, add a test
+  for each correction where you can, and list each one in the summary. Lean towards correcting:
+  stopping a build to ask about something obvious costs more than a small overstep. Raise only a
+  real product choice, where a reasonable person could want something else, such as accepting
+  the input in some new way or adding an option. If you would recommend one answer to a question
+  you are about to raise, and it is easy to change later, take it, list it in the summary, and
+  carry on.
+- **Never commit on the default branch, and never open a pull request or merge.** A plugin hook
+  refuses a commit or push to the default branch while you build.
+- **Change no spec, ADR or brief, and the plan only through the hand-over script.**
+
+Before building, read [references/rubric.md](references/rubric.md): it is the list of checks the
+build reviewer will apply, so building to it leaves less to correct. Read it with the Read tool.
+
+## Before starting
+
+Check each of these before changing anything, and stop with the reason if one fails:
+
+1. **The session is fresh.** A plugin hook lets `/build` start only in answer to the person's first
+   message in a session, or the first after `/clear`. If it refuses, pass its reason on.
+2. **The plan is ready.** It is a file in `docs/plans/` with status `🟢 Ready to build`. A
+   `✅ Built` plan is built once and never again: say so, and suggest a new plan for more work.
+3. **Nothing it relies on has changed.** Every spec it lists is `👍 Accepted` and still has each
+   `### Requirement:` it names, and every ADR it lists is `👍 Accepted`. If not, name which.
+4. **Find the practices.** Look for a `## Practices` heading in `CLAUDE.md`, or in `AGENTS.md`
+   when there is no `CLAUDE.md` or `CLAUDE.md` imports it, and read any file it says to read
+   before a task like this one. No practice is required: where one you
+   need is not recorded, such as how to run the tests or the linters, work it out from the
+   repository, from its README, build files and existing tests, and carry on. Never stop for
+   this. Note each assumption for the summary, and suggest `/practices` there to record them.
+5. **The branch is right and clean.** The repository needs a remote named `origin` whose default
+   branch is known: `git symbolic-ref refs/remotes/origin/HEAD` names it. If there is no
+   `origin`, ask the person to add one. If `origin/HEAD` is not set, ask them to run
+   `git remote set-head origin -a`; never run it yourself, since it changes their repository.
+   The security review and the hand-over both need it. If anything is uncommitted, stop, so the
+   person's own work is never mixed into the build. If you are on the default branch, create and
+   switch to a branch named as the practices say, or else `build/<plan file name without its
+   date and .md>`; on any other branch, build there, since
+   some places that run Claude Code choose the branch name for you.
+6. **The reviews can run.** `/code-review` and `/security-review` must both be among the skills
+   you can use, since every build has all three reviews. If either is missing, stop and say
+   which, so the person can allow it.
+
+Then run the tests once. Note any that already fail for the summary, and do not try to fix them.
+
+## Building
+
+If the branch already holds work for this plan, from a build that stopped, read the commits and
+the code, find which requirements are already built with passing tests, and carry on from
+there.
+
+Work through the requirements the plan names, one at a time, in the order the Plan section
+suggests. For each requirement:
+
+1. Write the tests first, one or more per scenario, setting up its GIVEN, doing its WHEN and
+   checking its THEN with the scenario's own values. Run them and see them fail, so you know
+   they test something. Commit them.
+2. Write the code that makes them pass, following the Plan section, each line under Decisions,
+   each ADR the plan lists, and any other `👍 Accepted` ADR whose Confirmation section says it
+   applies to the code you change.
+3. Run the whole test suite and the linters, as the practices say, so you notice at once if the
+   new code breaks something already built. Commit.
+
+A requirement whose Verified by line names a demonstration needs no test: build it, and list it
+in the summary as left for the person to check. Commit with plain messages that say what changed,
+and nothing about the build itself.
+
+## Review
+
+When every requirement is built, start the three reviews in one message, so they run side by
+side, each in the foreground:
+
+- the `code-review` skill, with the arguments `medium <default branch>...HEAD`, so it reviews
+  the whole branch, not just the latest commits;
+- a `general-purpose` agent with this request, first two lines exactly as shown, since a plugin
+  hook reads them to keep its report:
+
+  ```
+  Document: <the plan's path>
+  Run /security-review on the current branch, then reply with its report word for word.
+  ```
+
+- the `sdlc:build-reviewer` agent with this request:
+
+  ```
+  Document: <the plan's path>
+  Base: <default branch>
+  Review this build.
+  ```
+
+The reviews pass when the code and security reviews report no bug or security hole and the
+build reviewer's result is PASS. Findings about tidiness or style never stop a build: list them
+in the summary.
+
+1. **Correct, once.** If a review found anything, read the rubric again and correct only the
+   bugs, the security holes, and each failed check and item under Other findings in the build
+   review. A choice under Needs a person is the person's: leave it unsettled in the code and
+   raise it. Run the tests and linters, and commit the corrections.
+2. **Check the corrections.** Start the `sdlc:build-correction-checker` agent in the foreground
+   with this request, and add nothing to it: a hook attaches the reports and the commit they
+   reviewed, word for word.
+
+   ```
+   Document: <the plan's path>
+   Check the corrections.
+   ```
+
+   If the hook refuses to start it, do what its reason says. If the check fails, stop: change
+   nothing more, and hand over with its report. Never review or correct a second time.
+
+## Handing over
+
+However the build ends, hand over with the script, which commits anything left, pushes the branch
+to `origin`, and reports exactly what happened:
+
+```
+python3 "${CLAUDE_SKILL_DIR}/scripts/hand_over.py" --plan <the plan's path> --message "<what the last commit holds>" [--reviews-passed]
+```
+
+Pass `--reviews-passed` only when all three reviews passed, or the correction check passed, and
+nothing was raised: the script then marks the plan `✅ Built`. In every other case the plan
+stays `🟢 Ready to build`, and the person sorts out what is open, then runs `/build` again on the
+branch.
+
+End with a short summary for the person:
+
+- what was built, or why the build stopped and what is open, with any question to raise asked
+  plainly;
+- the test and lint commands you ran, with their final output, and any tests that failed before
+  you started;
+- each choice you made, with its reason, and each practice you had to work out from the
+  repository, with a suggestion to record it with `/practices`;
+- each defect you corrected that no spec mentions, so the person can add it to the spec;
+- what each review found, and what was corrected;
+- the script's report, word for word;
+- each requirement left for the person to check, and a reminder to verify the work, for example
+  with Claude Code's `/verify`, before merging.

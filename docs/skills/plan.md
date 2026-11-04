@@ -11,10 +11,10 @@ decision records) have already settled. It names the requirements the work deliv
 decisions the code must follow, and how the work will be done. It is the bridge between the
 documents that say what and why and the code that carries them out.
 
-A plan is short-lived: once its work is built it is marked `✅ Built`, and it is not kept for good,
-because the code, the specs and the ADRs are what last. So a plan must never hold anything that
-would be lost with it, such as a technical decision later work has to follow. That belongs in an
-ADR.
+A plan is built once: when [`/build`](build.md) has built it and every review has passed, it is
+marked `✅ Built` and kept, unchanged, as the record of what was built and how. Later work gets a
+new plan. So a plan must never hold anything later work has to follow, such as a technical
+decision. That belongs in an ADR.
 
 Not every change needs a plan. Tidying code, a routine upgrade or a quick fix that builds no
 requirement and follows no ADR is done straight from a conversation, with Claude's ordinary
@@ -33,8 +33,8 @@ docs/plans/
 ```
 
 The date shows when each plan was first written, so an old plan nobody built is easy to spot.
-Several plans can be open at once, for work going on in parallel, but no two plans that are not `✅
-Built` may name the same requirement: if a plan already covers it, `/plan` offers to change that
+Several plans can be open at once, for work going on in parallel, but no two plans that are not
+`✅ Built` may name the same requirement: if a plan already covers it, `/plan` offers to change that
 plan instead.
 
 A plan is the one document that refers to specs and ADRs, by link, because it is not kept for
@@ -120,12 +120,11 @@ stateDiagram-v2
 - `📝 Draft`: being explored, discussed and written.
 - `🟢 Ready to build`: you have signed off the plan as it stands. Any later change returns it to
   `📝 Draft`, for you to sign off again.
-- `✅ Built`: the work the plan describes is built. How a plan becomes `✅ Built`, how that is
-  checked, and when a `✅ Built` plan is removed are settled later; until then the hook refuses
-  `✅ Built`.
+- `✅ Built`: `/build` built the work and every review passed. Only `/build`'s hand-over script
+  sets it, and the hook refuses any change to a `✅ Built` plan.
 
 A plugin hook refuses `🟢 Ready to build` unless Open questions is empty, every spec it names is
-`🟢 Ready to build` or `✅ Built` and has each named requirement, every ADR it names is
+`👍 Accepted` and has each named requirement, every ADR it names is
 `👍 Accepted`, and no other plan that is not `✅ Built` names the same requirement. If a
 spec or ADR it names changes after you sign off, the plan is no longer settled: update it, and
 sign it off again.

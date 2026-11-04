@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: build-raises-choice
+expected_outcome: |
+  The plan also asks for a stored history of every count without saying how it is stored, a lasting choice an ADR should settle. The build raises it instead of choosing, and the plan stays Ready to build.
+context:
+  scaffold_script: place-files.sh

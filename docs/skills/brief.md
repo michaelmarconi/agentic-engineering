@@ -15,7 +15,8 @@ an [ADR](adr.md). Keeping each thing in one place means the documents cannot
 disagree. Specs read the brief to see whether they fit the product.
 
 Unlike the other documents, the brief has no status. A spec moves from `📝 Draft` to
-`🟢 Ready to build` to `✅ Built` as the work moves on, but a brief is never built: it is only kept true.
+`👍 Accepted` once you accept its text, but the brief is never signed off as finished: it is only
+kept true.
 
 ## Anatomy
 

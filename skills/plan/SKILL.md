@@ -8,8 +8,8 @@ description: Plan one piece of work that builds requirements of settled specs or
 A plan says how one piece of work will build part of what the specs and ADRs have already
 settled: the requirements it delivers, the decisions the code must follow, and how the work will be
 done. Plans live in one flat folder, `docs/plans/`, as `YYYY-MM-DD-<title>.md`, dated the day the
-plan is first written. A plan is short-lived: once its work is built it is marked `✅ Built` and later
-removed, so it never holds anything later work needs. A technical decision later work has to follow
+plan is first written. A plan is built once: `/build` marks it `✅ Built` and it is then kept unchanged as a
+record, so it never holds anything later work needs. A technical decision later work has to follow
 belongs in an ADR, not here.
 
 Before writing, read [references/rubric.md](references/rubric.md): it is the list of checks the
@@ -30,9 +30,8 @@ the person says and from `docs/specs/` and `docs/adrs/`. Each requirement is a
 
 - If the work builds no requirement and follows no ADR, such as tidying code, a routine upgrade or
   a quick fix, it needs no plan. Say so, suggest doing it straight from the conversation, and stop.
-- If a spec it builds is not `🟢 Ready to build` or `✅ Built`, or an ADR it follows is not
-  `👍 Accepted`, stop and say which one, and what is left to settle in it. A plan builds only on
-  settled documents, and you never change a spec or an ADR from here.
+- If a spec it builds or an ADR it follows is not `👍 Accepted`, stop and say which one, and
+  what is left to settle in it. A plan builds only on settled documents, and you never change a spec or an ADR from here.
 - Read the frontmatter and Specs section of each plan in `docs/plans/`. If one that is not
   `✅ Built` already names a requirement this work builds, say so and offer to change that plan
   instead; no two unbuilt plans may name the same requirement.

@@ -13,7 +13,11 @@ import json
 import os
 import sys
 
-from status_check import STATUSES, lifecycle_status
+from status_check import SPEC_STATUSES, STATUSES, lifecycle_status
+
+# A spec counts with a status specs had before, too, so its project still gets the rules that say
+# how to bring it up to date.
+KNOWN = SPEC_STATUSES + STATUSES
 
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
 MAP = os.path.join(ROOT, "docs", "lifecycle.md")
@@ -27,7 +31,7 @@ def uses_lifecycle(project):
             if name.endswith(".spec.md"):
                 try:
                     with open(os.path.join(folder, name), encoding="utf-8") as f:
-                        if lifecycle_status(f.read(), STATUSES) in STATUSES:
+                        if lifecycle_status(f.read(), KNOWN) in KNOWN:
                             return True
                 except (OSError, UnicodeDecodeError):
                     pass

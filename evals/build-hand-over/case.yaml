@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: build-hand-over
+expected_outcome: |
+  Every review passes, so the plan is marked Built, the build branch is pushed to origin, and nothing is merged or pushed to main.
+context:
+  scaffold_script: place-files.sh

@@ -6,6 +6,63 @@ What changed in each version of the plugin, newest first. Versions follow
 past a major version: it says what you need to change in your documents. Until 1.0.0, any
 minor version may need such a change, and its entry says so.
 
+## [0.13.0] - 2026-11-04
+
+### Added
+
+- `/sdlc:build` builds one `🟢 Ready to build` plan on a branch of its own, tests first,
+  requirement by requirement. It then has the work checked by three reviews side by side: Claude
+  Code's own `/code-review` and `/security-review`, and a build reviewer that checks the work
+  against the plan, its specs and ADRs. It corrects what they find once, has the corrections
+  checked, and hands the branch back, committed and pushed. It never opens a pull request and
+  never merges: verifying the software, opening a pull request and merging stay with you.
+- `/sdlc:build` starts only in answer to the first message of a session, or the first after
+  `/clear`, so a build always begins with a clean context. A plugin hook enforces this.
+- Before starting, `/sdlc:build` checks that the plan is ready, that the specs and ADRs it names
+  are still `👍 Accepted`, that nothing is uncommitted, that the repository has a remote named
+  `origin` whose default branch git knows, and that `/code-review` and `/security-review` can
+  run. It stops and says why if any check fails.
+- While a build runs, a plugin hook refuses any commit or push to the default branch.
+- `/sdlc:build` leans towards carrying on rather than asking. It corrects obvious defects, such
+  as a crash on input no spec mentions, chooses error wording and exit codes, takes its own
+  recommendation on choices that are easy to change later, and works out from the repository any
+  practice that is not recorded, such as how to run the tests. Its summary lists each of these.
+  It stops only for a real product choice or something hard to undo.
+- A hand-over script commits what is left, marks the plan `✅ Built` when every review passed,
+  and pushes the branch, reporting exactly what it did.
+
+### Changed
+
+- A `✅ Built` plan is kept as the record of what was built and how, and is never changed. Only
+  `/sdlc:build`'s hand-over script sets `✅ Built`; the hook refuses it from anywhere else.
+- The plugin is now tested on Opus 5.5 only. Its reviewers still run on Sonnet.
+
+### What you need to change
+
+- To use `/sdlc:build`, your repository needs a remote named `origin`. If `git` does not know
+  its default branch, run `git remote set-head origin -a` once.
+
+## [0.12.0] - 2026-11-03
+
+### Changed
+
+- Specs now have the statuses `📝 Draft` and `👍 Accepted`. A spec's status says whether you
+  have accepted its text; it describes the document, never the software, because a status about
+  the software would stop being true, without anyone noticing, as the code changes. To find out
+  whether the software meets a spec, check the software against it. `/sdlc:spec` sets
+  `👍 Accepted` when you sign a spec off, under the same rules `🟢 Ready to build` had, and any
+  change returns it to `📝 Draft`.
+- A plan can be `🟢 Ready to build` only when every spec it names is `👍 Accepted`.
+- The hook refuses a new spec or plan written with another kind of document's status, such as a
+  new spec written as `✅ Built`.
+
+### What you need to change
+
+- A spec that is `🟢 Ready to build` or `✅ Built` keeps that status until it is next changed,
+  and the hook does not check it until then. Before `/sdlc:spec` can accept it, set it back to
+  `📝 Draft`, then accept it again; a plan that names it cannot be `🟢 Ready to build` until it
+  is `👍 Accepted`.
+
 ## [0.11.0] - 2026-10-29
 
 ### Added

@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: build-trigger-yes
+expected_outcome: |
+  The build skill starts for a plan that is ready to build.
+context:
+  scaffold_script: place-files.sh

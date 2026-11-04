@@ -13,8 +13,7 @@ checking, and quotes the plan as evidence for every failure.
    lists at least one ADR, so the plan always builds something.
 3. **ADRs.** Each entry under ADRs is a reference to an ADR under `docs/adrs/` that exists, by its
    number, title and path, or the section says only "None."
-4. **Settled.** Each spec listed is `🟢 Ready to build` or `✅ Built`, and each ADR listed is
-   `👍 Accepted`.
+4. **Settled.** Each spec and each ADR listed is `👍 Accepted`.
 5. **Decisions.** Decisions holds one line for each decision, saying what was decided and why, or
    only "None." No line is a decision that later work must follow: that needs an ADR, so it is an
    open question until the ADR is `👍 Accepted` and listed under ADRs.
