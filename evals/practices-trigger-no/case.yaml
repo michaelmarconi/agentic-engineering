@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: practices-trigger-no
+expected_outcome: |
+  Writing a spec is not recording practices: the practices skill is not invoked.
+context:
+  scaffold_script: place-files.sh

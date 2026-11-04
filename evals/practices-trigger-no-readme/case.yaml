@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: practices-trigger-no-readme
+expected_outcome: |
+  A README section is written for people, not a practice for agents: the practices skill is not invoked.
+context:
+  scaffold_script: place-files.sh

@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: practices-asks-anything-else
+expected_outcome: |
+  /practices testing with every answer given. Before finishing the topic, the skill asks whether there is anything else to record.
+context:
+  scaffold_script: place-files.sh

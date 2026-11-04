@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: practices-one-at-a-time
+expected_outcome: |
+  /practices testing with nothing answered. The skill reads the repository, says how many questions it has, and asks only the first, starting with a summary of what the repository shows and ending with a proposal.
+context:
+  scaffold_script: place-files.sh

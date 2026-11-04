@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: practices-improves-recorded
+expected_outcome: |
+  Testing is recorded, but the core says `uv run pytest` and the topic file says `python -m pytest tests/`. A rerun on testing starts from what is recorded, points out the disagreement and asks which is right before changing anything.
+context:
+  scaffold_script: place-files.sh

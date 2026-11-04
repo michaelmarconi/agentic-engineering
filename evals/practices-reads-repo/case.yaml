@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: practices-reads-repo
+expected_outcome: |
+  /practices checking work, with every proposal accepted. The skill reads pyproject.toml and the CI file, and writes the core into a new AGENTS.md with its three parts in order, the real test and lint commands, and a CLAUDE.md that imports AGENTS.md.
+context:
+  scaffold_script: place-files.sh

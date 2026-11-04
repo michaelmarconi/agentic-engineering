@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: practices-topic-file
+expected_outcome: |
+  /practices testing with every answer given. The skill writes docs/practices/testing.md, one line in the core saying when to read it, and nothing else under docs/practices/; the topic file stands alone, naming no other file to read.
+context:
+  scaffold_script: place-files.sh

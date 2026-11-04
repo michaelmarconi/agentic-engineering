@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: practices-own-topic
+expected_outcome: |
+  The person asks to record how decisions are approved, which is not a suggested topic. The skill handles it like any other: a topic file under docs/practices/ and one line in the core naming it.
+context:
+  scaffold_script: place-files.sh

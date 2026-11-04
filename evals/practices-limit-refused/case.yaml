@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: practices-limit-refused
+expected_outcome: |
+  The core is already 49 lines. Asked to add six more rules to it, Claude's edit that would take the core past 50 lines is refused by the plugin's hook, so the core stays within the limit.
+context:
+  scaffold_script: place-files.sh
