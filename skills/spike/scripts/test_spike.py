@@ -331,6 +331,14 @@ class Redaction(Project):
 
 
 class WorkingFolder(Project):
+    def test_falls_back_to_the_temporary_folder_when_data_cannot_be_written(self):
+        blocked = os.path.join(self.tmp.name, "blocked")
+        pathlib.Path(blocked).write_text("a file, so no folder can be made inside it")
+        self.put(record(command="pwd"))
+        done = self.run_spike(data=blocked, env={"TMPDIR": self.tmp.name})
+        self.assertEqual(done.returncode, 0, done.stderr)
+        self.assertIn(os.path.join(self.tmp.name, "sdlc-spikes"), "\n".join(self.runs()))
+
     def test_deleted_after_each_run(self):
         self.put(record())
         self.run_spike()

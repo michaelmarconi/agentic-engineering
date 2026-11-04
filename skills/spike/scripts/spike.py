@@ -32,7 +32,8 @@ run still going after 9 minutes is stopped and recorded as such. A secret that i
 recorded as a run that did not happen, saying which, without running anything. With --observation,
 it records the person's words, marked as their observation, instead.
 
-Finally it deletes the working folder, and any folder this project left in <data>/spikes/ for a
+When the data folder can't be written, as in a sandbox, the working folders go in the system's
+temporary folder instead, under sdlc-spikes/. Finally it deletes the working folder, and any folder this project left in <data>/spikes/ for a
 record that is finished or no longer exists. Other projects' folders are never touched.
 """
 
@@ -47,6 +48,7 @@ import shutil
 import subprocess
 import sys
 import tarfile
+import tempfile
 import urllib.parse
 import urllib.request
 
@@ -134,10 +136,23 @@ def project_key(project):
     return hashlib.sha256(os.path.abspath(project).encode("utf-8")).hexdigest()[:12]
 
 
+def spikes_root(data):
+    """<data>/spikes, or <temporary folder>/sdlc-spikes when the data folder can't be written,
+    as in a sandbox that blocks the plugin's own folders."""
+    root = os.path.join(os.path.abspath(data), "spikes")
+    try:
+        os.makedirs(root, exist_ok=True)
+        return root
+    except OSError:
+        fallback = os.path.join(tempfile.gettempdir(), "sdlc-spikes")
+        os.makedirs(fallback, exist_ok=True)
+        return fallback
+
+
 def work_folder(data, record_path):
     """The working folder for one record: <data>/spikes/<project hash>-<record name>/."""
     name = os.path.splitext(os.path.basename(record_path))[0]
-    return os.path.join(os.path.abspath(data), "spikes", f"{project_key(project_of(record_path))}-{name}")
+    return os.path.join(spikes_root(data), f"{project_key(project_of(record_path))}-{name}")
 
 
 def inside(folder, name):
@@ -268,7 +283,7 @@ def where():
 
 def remove_leftovers(data, record_path):
     """Delete this project's working folders whose records are finished or gone."""
-    spikes = os.path.join(os.path.abspath(data), "spikes")
+    spikes = spikes_root(data)
     prefix = project_key(project_of(record_path)) + "-"
     folder = os.path.dirname(os.path.abspath(record_path))
     for name in sorted(os.listdir(spikes)) if os.path.isdir(spikes) else []:

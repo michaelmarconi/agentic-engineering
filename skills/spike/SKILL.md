@@ -56,7 +56,10 @@ Write every new record as `📝 Draft`; then run the design review.
 
 ## Run
 
-Only a `🟢 Ready to run` record runs, and only through the run script, which writes each run into
+Asked to run a `📝 Draft` record, run its design review instead, even when the person asks to
+skip it, and say the experiment runs once they sign off the reviewed design: the sign-off rests on
+the review, and running first would let the results shape the question. Only a `🟢 Ready to run`
+record runs, and only through the run script, which writes each run into
 Runs word for word, so the record shows exactly what the experiment produced. Never run the
 experiment's code any other way, never retype or summarise a result into the record, and never
 edit Runs: a plugin hook refuses it. For each run:
