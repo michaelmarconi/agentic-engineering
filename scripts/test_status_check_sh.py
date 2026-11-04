@@ -48,6 +48,11 @@ class WithoutPython(unittest.TestCase):
         self.assertEqual(result.returncode, 2)
         self.assertIn("needs Python 3", result.stderr)
 
+    def test_refuses_a_spike_record_edit(self):
+        result = self.run_hook("/repo/docs/spikes/2026-11-04-tiff-files-open.md")
+        self.assertEqual(result.returncode, 2)
+        self.assertIn("needs Python 3", result.stderr)
+
     def test_refuses_whatever_the_folders_case(self):
         self.assertEqual(self.run_hook("/repo/Docs/ADRs/0001-x.md").returncode, 2)
 
