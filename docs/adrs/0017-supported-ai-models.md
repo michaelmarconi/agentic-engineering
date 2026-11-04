@@ -25,8 +25,8 @@ plugin is tested now.
 ## Considered Options
 
 - **Keep testing on Sonnet and Opus.** Rejected: the maintainer does not use the plugin on
-  Sonnet and sees it as outdated next to Opus, Anthropic's newer and stronger model, so a second test run on every change costs time and
-  money for a model nobody we know of relies on.
+  Sonnet and sees it as outdated next to Opus, so a second test run on every change costs time
+  and money for a model nobody we know of relies on.
 - **Test on every model Anthropic offers.** Rejected: each extra model adds the full cost of a test
   run, including for models nobody uses with the plugin.
 - **List Opus as the only supported model in the README, and merge a change only when the tests
