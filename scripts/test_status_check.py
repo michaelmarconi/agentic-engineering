@@ -889,6 +889,11 @@ class Spike(SpikeWorkspace):
         self.put(record("🟢 Ready to run", runs=RUN))
         self.assertIn("run script", self.write(record("🟢 Ready to run", runs=RUN + "\n<!--\n")))
 
+    def test_several_comments_on_a_line_are_all_dropped(self):
+        for runs, expected in (("a <!-- x --> b <!-- y --> c", "a  b  c"), ("<!-- a\nb --> c <!-- d --> e", "c  e"),
+                               ("xx <!-- a --> <!-- b --> tail", "xx   tail")):
+            self.assertEqual(status_check.runs(record(runs=runs)), expected, runs)
+
     def test_answered_needs_a_run_that_ran(self):
         not_run = "### Run 1\n\n2026-11-04 15:02, Linux, a cloud session, code `a91c03e7b2d4`, did not run\n\n```\nx\n```\n"
         self.put(record("🟢 Ready to run", runs=not_run))
