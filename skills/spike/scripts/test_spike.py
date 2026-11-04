@@ -293,6 +293,43 @@ class Corrections(Project):
         self.assertNotIn("9f3k", runs)
 
 
+class Redaction(Project):
+    def test_known_credential_shapes_are_redacted(self):
+        samples = {
+            "github": "ghp_" + "a" * 36, "aws": "AKIA" + "B" * 16, "key": "sk-ant-" + "c" * 30,
+            "slack": "xoxb-1234-5678-" + "d" * 20, "jwt": "eyJhbGciOi.eyJzdWIiOi" + "e" * 10 + ".sig" + "f" * 20,
+        }
+        printed = "\\n".join(samples.values())
+        self.put(record(command=f"printf '{printed}\\nBearer abcdefghijklmnop1234\\n'"))
+        self.run_spike()
+        runs = "\n".join(self.runs())
+        for kind, value in samples.items():
+            self.assertNotIn(value, runs, kind)
+        self.assertNotIn("abcdefghijklmnop1234", runs)
+        self.assertIn("[redacted:", runs)
+        self.assertRegex(runs, r"\d+ values? hidden")
+
+    def test_a_private_key_block_is_redacted(self):
+        block = "-----BEGIN PRIVATE KEY-----\\nMIIEvQIBADANBg\\n-----END PRIVATE KEY-----"
+        self.put(record(command=f"printf '{block}\\n'"))
+        self.run_spike()
+        self.assertNotIn("MIIEvQIBADANBg", "\n".join(self.runs()))
+
+    def test_a_credential_variable_found_another_way_is_hidden(self):
+        self.put(record(command="cat token.txt", code="```text\n# file: token.txt\nplain-value-998877\n```"))
+        self.run_spike(env={"DEPLOY_TOKEN": "plain-value-998877"})
+        runs = "\n".join(self.runs())
+        self.assertNotIn("plain-value-998877", runs)
+        self.assertIn("[secret: DEPLOY_TOKEN]", runs)
+
+    def test_ordinary_output_is_untouched(self):
+        self.put(record(command="printf 'skip-this 12 rows\\n'"))
+        self.run_spike()
+        runs = "\n".join(self.runs())
+        self.assertIn("skip-this 12 rows", runs)
+        self.assertNotIn("hidden", runs)
+
+
 class WorkingFolder(Project):
     def test_deleted_after_each_run(self):
         self.put(record())
