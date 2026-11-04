@@ -68,8 +68,8 @@ LIFECYCLE = os.path.join(ROOT, "docs", "lifecycle.md")
 KEPT = 3  # reviews kept per document
 # Each reviewer's skill, and the project files its checker may read to judge a changed sentence.
 REVIEWERS = {
-    "spec-reviewer": ("spec", ["docs/brief.md", "docs/specs/"]),
-    "brief-reviewer": ("brief", []),
+    "spec-reviewer": ("spec", ["docs/brief.md", "docs/specs/", "docs/adrs/", "docs/plans/"]),
+    "brief-reviewer": ("brief", ["docs/specs/", "docs/adrs/", "docs/plans/"]),
     "adr-reviewer": ("adr", ["docs/adrs/"]),
     "issue-reviewer": ("issue", []),
     "plan-reviewer": ("plan", ["docs/specs/", "docs/adrs/", "docs/plans/"]),
