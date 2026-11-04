@@ -41,6 +41,8 @@ flowchart LR
     Spec --> Plan
     ADR --> Plan
     Plan --> Build
+    ADR -.-> Practices
+    Practices -.-> Plan
     Practices -.-> Build
     Build --> Code[Code on the main branch]
     Code -.-> Audit
@@ -55,12 +57,13 @@ flowchart LR
   the spec; a choice becomes an ADR.
 - `/adr` records one technical decision.
 - `/plan` scopes a piece of work against the specs and ADRs it delivers.
-- `/practices` records how the project does things, such as the commands that check the work and
-  the rules an agent follows, one topic at a time. Practices are not a lifecycle document and have
-  no status: they live in the project instructions Claude Code loads, written for agents, and
-  `/build` follows them.
 - `/build` builds a plan, has it reviewed and merges it into the main branch.
 - `/audit` finds drift, where the code and its documents disagree, at any time.
+- `/practices` records how the project does things, such as the commands that check the work and
+  the rules an agent follows, one topic at a time. It is not a step in the sequence: run it
+  whenever you need it. Practices are not a lifecycle document and have no status: they live in
+  the project instructions Claude Code loads, written for agents, and `/plan` and `/build` follow
+  them.
 
 ## Principles
 
