@@ -53,8 +53,8 @@ repository:
 - **Spec:** what one capability of the product should do, and how we will know it does. A
   product has many.
 - **ADR** (architecture decision record): one technical decision and why it was made.
-- **Plan:** a piece of work that builds part of a spec or an ADR. Once built, it is marked built
-  and later removed.
+- **Plan:** a piece of work that builds part of a spec or an ADR. Once built, it is marked
+  `✅ Built` and kept, unchanged, as the record of what was built.
 
 Each document except the brief has a status, such as `📝 Draft` or `🟢 Ready to build`, which says how far
 along it is.
@@ -65,10 +65,11 @@ other coding tools: the essentials in `AGENTS.md`, which Claude Code reads at th
 session, and longer topics in `docs/practices/`. They are added one topic at a time when you need
 them (see [`/practices`](docs/skills/practices.md)).
 
-One rule matters when you edit documents by hand: the brief, specs and ADRs never refer to each
-other, whether by hyperlink, path or title, because either end can change or be deleted without
-the other being touched, and the reference quietly goes stale. Only a plan, which is removed
-once built, refers to the specs and ADRs it builds, and an ADR refers to the one it replaces.
+One rule matters when you edit documents by hand: the brief, specs and ADRs never refer to a
+document of another kind, whether by hyperlink, path or title, because either end can change or
+be deleted without the other being touched, and the reference quietly goes stale. Only a plan,
+which once built is a fixed record, refers to the specs and ADRs it builds. An ADR may refer to
+other ADRs by number, since a decided ADR is never edited or moved.
 
 The plugin gives Claude three kinds of help to work with these documents:
 
@@ -76,8 +77,8 @@ The plugin gives Claude three kinds of help to work with these documents:
   `/spec`. The plugin's skills are named `/sdlc:spec` and so on; this page leaves out the
   `sdlc:` prefix.
 - **Agents:** separate Claude instances that start with no memory of your conversation and only
-  the tools they need, so their work is not swayed by it. A skill hands them work such as building
-  a plan or reviewing a document.
+  the tools they need, so their work is not swayed by it. A skill hands them work such as reviewing
+  a document or a build.
 - **Hooks:** small scripts Claude Code runs automatically at set moments. This plugin uses them
   to give Claude the lifecycle rules when a session starts in a repository that uses it, and to
   refuse spec, ADR and plan edits Claude makes that the lifecycle does not allow, such as an illegal
@@ -85,7 +86,9 @@ The plugin gives Claude three kinds of help to work with these documents:
   the document as it was reviewed, word for word, keeping them in the plugin's own data folder
   outside your repository until the check is done. Another lets the plugin's skills and agents
   read the plugin's own files, such as a rubric, without asking you each time; it approves
-  reads inside the plugin's folder only. They need Python 3: without it, Claude's edits to your
+  reads inside the plugin's folder only. For `/build`, hooks also let it start only in a fresh
+  session, refuse commits and pushes to the main branch while it runs, and hand its review
+  reports to its correction checker. They need Python 3: without it, Claude's edits to your
   specs, ADRs and plans are refused until you install it.
 
 Every document a skill writes is checked by a reviewer agent before you see it, and by a

@@ -30,7 +30,7 @@ checking, and quotes the plan as evidence for every failure.
 10. **No overlap.** No other plan under `docs/plans/` that is `📝 Draft` or `🟢 Ready to build`
     names a requirement that this plan names.
 
-The reviewer also passes on plan mode's advice for the Plan section as suggestions, never as
+The reviewer also passes on this advice for the Plan section as suggestions, never as
 failures: start with why the work is being done and what it leaves for later; give one
 recommended approach, not the alternatives; name the files that matter and the code to reuse;
 keep it short enough to scan but detailed enough to carry out.

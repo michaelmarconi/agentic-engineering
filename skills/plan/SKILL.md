@@ -117,9 +117,10 @@ each round of corrections brings new mistakes.
    If both pass with nothing under Needs a person, go straight to handing over.
 2. **Correct, once.** Read the rubric and the Plain words rule again, then correct only what the
    reports list: each failed check and each item under Other findings in the review report, and
-   each finding in the wording report. A decision under Needs a person, such as a technical choice
-   the Plan section makes that is not under Decisions, or a wording item whose meaning only the
-   person knows, is theirs to settle: leave the text it concerns as it is and never guess. Leave
+   each finding in the wording report. A wording item under Needs a person, whose meaning only
+   the person knows, is a decision like any other. A decision under Needs a person, such as a
+   technical choice the Plan section makes that is not under Decisions, becomes an entry in the
+   plan's Open questions, never a guess at the answer: leave the text it concerns as it is. Leave
    suggestions alone and change nothing else, since an edit beyond the reports is the likeliest
    way to break something. Wait until every edit has succeeded. If nothing in the reports was
    yours to correct, there is nothing to check: go straight to handing over.
@@ -142,9 +143,9 @@ to the plan's content and needs no new review.
 
 Whether the check passed or failed, end with the hand-over. It is what the person acts on, so make
 it hard to miss anything. Give them the plan's path, the review and wording reports and the
-check's report, if there was one, leaving out the decisions they list for the person. Then say how
-many items must be settled before the plan can be ready to build: the decisions the reports leave
-to the person, the plan's open questions, and any correction the check found not made or broken.
+check's report, if there was one, leaving out the decisions they list for the person, which are
+now in the plan's Open questions. Then say how many items must be settled before the plan can be
+ready to build: its open questions, plus any correction the check found not made or broken.
 Say you will take them one at a time, rather than asking whether to, and ask the first only, as a
 single question, giving any examples as possible answers rather than further questions; if the
 person has said not to ask now, ask nothing. Name the count only, not the items: each comes up

@@ -6,6 +6,28 @@ What changed in each version of the plugin, newest first. Versions follow
 past a major version: it says what you need to change in your documents. Until 1.0.0, any
 minor version may need such a change, and its entry says so.
 
+## [0.17.0] - 2026-11-04
+
+### Changed
+
+- `/sdlc:plan` writes a reviewer's decision that only you can make into the plan's Open
+  questions, as `/sdlc:spec` and `/sdlc:adr` already do, so the plan cannot be marked
+  `🟢 Ready to build` until you have settled it.
+- The spec and brief reviewers now see the titles of your ADRs and plans, so they catch a
+  reference to one by its title.
+- The lifecycle rules now say an ADR may refer to any other ADR by number, as the ADR reviewer
+  already allowed.
+
+### Fixed
+
+- The README and the `/plan` page no longer say a built plan is removed: it is kept for good, as
+  the lifecycle says.
+- The docs no longer describe `/audit` as working, or the language checker as part of
+  `/sdlc:build`'s review.
+- `/sdlc:spec`'s description no longer calls accepting a spec "ready to build".
+- Smaller corrections across the README, the lifecycle rules and the skill pages, so they agree
+  with each other and with the skills.
+
 ## [0.16.0] - 2026-11-04
 
 ### Changed

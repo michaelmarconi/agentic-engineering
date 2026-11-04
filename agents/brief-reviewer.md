@@ -13,6 +13,8 @@ Read:
 - The rubric at `${CLAUDE_PLUGIN_ROOT}/skills/brief/references/rubric.md`.
 - Each document in the repository that the brief links to, for check 9. List links outside the
   repository under Not checked; they do not affect the result.
+- For the references check only, the title (first `# ` heading) of each file under `docs/specs/`,
+  `docs/adrs/` and `docs/plans/`, so you can tell when the brief names one.
 
 Read nothing else. Apply every rubric check. For each failure, quote the brief as evidence and
 say what would make it pass. Then note anything else that would mislead someone writing specs

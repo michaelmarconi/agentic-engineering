@@ -42,7 +42,7 @@ the `sdlc:` prefix. Some skills are not built yet, and only those Claude Code li
 - `/build` builds a plan on a branch of its own, has it reviewed, and pushes the branch to your
   remote.
   Verifying the software, opening a pull request and merging stay with you.
-- `/audit` finds drift, where the code and its documents disagree, at any time.
+- `/audit` (not built yet) will find drift, where the code and its documents disagree, at any time.
 - `/practices` records how the project does things, such as the commands that check the work and
   the rules an agent follows, one topic at a time. It is not a step in the sequence: run it
   whenever you need it. Practices are not a lifecycle document and have no status: their essentials
@@ -102,8 +102,8 @@ flowchart LR
   final, reviewed text. No skill or agent does it for them.
 - **References never go stale.** Documents refer to one another only where neither end can go
   stale: a plan to the specs and ADRs it builds, since a `✅ Built` plan is a record of how they stood
-  when it was built, and an ADR to the
-  ADR it supersedes or that supersedes it. The brief, specs and ADRs never refer to one another in
+  when it was built, and an ADR to other ADRs by number, since a decided ADR is never edited or
+  moved. Otherwise the brief, specs and ADRs never refer to one another in
   any way, whether by hyperlink, path or title, because either end can change or be deleted
   without the other being touched, and the reference would quietly go stale.
 - **No separate design document.** `👍 Accepted` ADRs and the code are the design.
@@ -158,9 +158,9 @@ mistakes, so every document a skill writes is checked by a reviewer agent before
 it. The reviewer is a separate Claude that starts fresh, without the conversation, so it judges
 the page as a newcomer would. It checks the document against the skill's rubric: a short list of
 pass-or-fail checks, such as "each requirement has exactly one rule". The same rubric guides the
-skill while it writes. Beside it, at the same time, the language checker, shared by every skill,
-reads the document for words a newcomer could not follow, by the [Plain words](#plain-words)
-rule.
+skill while it writes. Beside it, at the same time, the language checker, shared by every skill
+that writes a document, reads the document for words a newcomer could not follow, by the
+[Plain words](#plain-words) rule.
 
 Every review follows the same fixed sequence:
 
@@ -180,9 +180,9 @@ flowchart LR
 |---|---|---|---|
 | **Draft** | The drafting agent: Claude running the skill, with you | Writes the document from your conversation | The document |
 | **Review** | The skill's reviewer, such as `agents/spec-reviewer.md` | Checks the whole document against the skill's rubric | The review report: pass or fail for each check, quoting the check and the words that break it |
-| | `agents/language-checker.md`, shared by every skill, at the same time | Checks every phrase of the document against the [Plain words](#plain-words) rule | The wording report: pass or fail, quoting each phrase that breaks the rule |
+| | `agents/language-checker.md`, shared by every skill that writes a document, at the same time | Checks every phrase of the document against the [Plain words](#plain-words) rule | The wording report: pass or fail, quoting each phrase that breaks the rule |
 | **Correct** | The drafting agent | Makes each correction from both reports once; a decision only you can make becomes an open question, never a guess | The corrected document |
-| **Correction check** | `agents/correction-checker.md`, shared by every skill | Checks only that each correction was made and that none broke anything; anything else it notices is a suggestion | The correction report: pass or fail |
+| **Correction check** | `agents/correction-checker.md`, shared by every skill that writes a document | Checks only that each correction was made and that none broke anything; anything else it notices is a suggestion | The correction report: pass or fail |
 | **Sign-off** | You | Read the document and the reports, settle the open questions, and set the status | The document at its next status |
 
 If both reports pass with nothing left for you to decide, the skill hands the document to you
@@ -204,7 +204,8 @@ problems. The wording has its own checker because we measured that too: a checke
 only that job found more of the jargon we added on purpose than the same rule added to each
 rubric.
 
-`/build` follows the same sequence for code: the build agent corrects what the reviewers find
-once, and a correction check follows. A clean review or a passing correction check marks the plan
-`✅ Built`; a failing correction check stops and hands the branch back with its report. Either way
+`/build` follows the same sequence for code, with its own reviewers and its own correction
+checker, `agents/build-correction-checker.md`, and no language checker, since it writes code.
+`/build` corrects what the reviewers find once, and a correction check follows. A clean review or
+a passing correction check marks the plan `✅ Built`; a failing correction check stops and hands the branch back with its report. Either way
 the work stays on its branch until you merge it.

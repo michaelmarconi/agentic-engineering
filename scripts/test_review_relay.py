@@ -143,6 +143,22 @@ class Relay(unittest.TestCase):
         self.assertIn(os.path.join(ROOT, "skills", "plan", "references", "rubric.md"), prompt)
         self.assertIn("docs/specs/, docs/adrs/, docs/plans/", prompt)
 
+    def test_checker_of_a_spec_may_read_the_documents_a_reference_could_name(self):
+        self.put(SPEC, "v1\n")
+        self.review()
+        self.put(SPEC, "v2\n")
+        prompt = self.assertAllowed(self.check())["prompt"]
+        self.assertIn("docs/brief.md, docs/specs/, docs/adrs/, docs/plans/", prompt)
+
+    def test_checker_of_the_brief_may_read_the_documents_a_reference_could_name(self):
+        brief = "docs/brief.md"
+        self.put(brief, "v1\n")
+        self.review(agent="sdlc:brief-reviewer", prompt=f"Document: {brief}\nReview the brief.")
+        self.put(brief, "v2\n")
+        prompt = self.assertAllowed(self.check(prompt=f"Document: {brief}\nCheck."))["prompt"]
+        self.assertIn(os.path.join(ROOT, "skills", "brief", "references", "rubric.md"), prompt)
+        self.assertIn("docs/specs/, docs/adrs/, docs/plans/", prompt)
+
     def test_names_without_the_plugin_prefix_work_too(self):
         self.put(SPEC, "v1\n")
         self.review(agent="spec-reviewer")
