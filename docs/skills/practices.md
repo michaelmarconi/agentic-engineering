@@ -106,8 +106,12 @@ will use. Whenever the repository and the practices disagree, the overview says 
   recorded, so you are never limited to its questions.
 - **Nothing is required.** Running `/practices` is optional, and so is every topic. A question you
   don't answer is left out, never written as a guess, so it shows as not recorded in the overview.
-- **Suggests a default when you have no view.** The answers are yours. If you have no view on a
-  question, it suggests the choice most teams make and marks it in the practices as a default.
+- **Suggests a default when you have no view, from current advice.** The answers are yours. If you
+  have no view on a question, it offers to look up current advice on the web, for your language
+  and tools, rather than rely on what Claude already knows, which may be out of date. It then
+  suggests a default, names the sources it used, and marks the default as one in the practices. If
+  you decline, or the session cannot reach the web, it says its suggestion comes from Claude's own
+  knowledge.
 - **Reads the repository first.** Much of it is already there: build files, test setup,
   continuous integration settings, your README. `/practices` reads them and proposes what it
   finds, so you confirm rather than dictate. Anything it cannot find, or is not sure of, it asks.
