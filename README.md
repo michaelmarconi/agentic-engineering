@@ -98,8 +98,21 @@ repository that uses the lifecycle.
 
 ## Skills
 
-Each step of the lifecycle has a skill. The steps fall into two phases, and a few skills sit
-outside them.
+Each step of the lifecycle has a skill:
+
+| Skill | When | What it does | Status |
+|---|---|---|---|
+| [`/brief`](docs/skills/brief.md) | Deciding | Writes or changes the product brief with you | Built |
+| [`/spec`](docs/skills/spec.md) | Deciding | Writes or changes the spec for one capability | Built |
+| [`/spike`](docs/skills/spike.md) | Deciding | Settles an unknown with a throwaway experiment | Not built yet |
+| [`/adr`](docs/skills/adr.md) | Deciding | Records one technical decision | Built |
+| [`/plan`](docs/skills/plan.md) | Building | Scopes a piece of work against its specs and ADRs | Built |
+| [`/build`](docs/skills/build.md) | Building | Builds a plan on a branch, has it reviewed and hands it back | Built |
+| [`/practices`](docs/skills/practices.md) | Any time | Records how the project does things, one topic at a time, for agents to follow | Not built yet |
+| [`/audit`](docs/skills/audit.md) | Any time | Finds where the code and its documents have drifted apart | Not built yet |
+| [`/issue`](docs/skills/issue.md) | Any time | Reports a problem with this plugin, so its fix is tested | Built |
+
+The steps fall into two phases, and a few skills sit outside them.
 
 ### Deciding what to build
 
@@ -139,18 +152,6 @@ flowchart LR
     Maintainers ~~~ Pad["#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;"]
     style Pad fill:none,stroke:none
 ```
-
-| Skill | When | What it does | Status |
-|---|---|---|---|
-| [`/brief`](docs/skills/brief.md) | Deciding | Writes or changes the product brief with you | Built |
-| [`/spec`](docs/skills/spec.md) | Deciding | Writes or changes the spec for one capability | Built |
-| [`/spike`](docs/skills/spike.md) | Deciding | Settles an unknown with a throwaway experiment | Not built yet |
-| [`/adr`](docs/skills/adr.md) | Deciding | Records one technical decision | Built |
-| [`/plan`](docs/skills/plan.md) | Building | Scopes a piece of work against its specs and ADRs | Built |
-| [`/build`](docs/skills/build.md) | Building | Builds a plan on a branch, has it reviewed and hands it back | Built |
-| [`/practices`](docs/skills/practices.md) | Any time | Records how the project does things, one topic at a time, for agents to follow | Not built yet |
-| [`/audit`](docs/skills/audit.md) | Any time | Finds where the code and its documents have drifted apart | Not built yet |
-| [`/issue`](docs/skills/issue.md) | Any time | Reports a problem with this plugin, so its fix is tested | Built |
 
 ## Models
 

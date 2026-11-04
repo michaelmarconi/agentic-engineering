@@ -33,6 +33,24 @@ Each step has a skill: instructions Claude follows for that step, which you run 
 command. The plugin's skills are named `/sdlc:<name>`, such as `/sdlc:spec`; this page leaves out
 the `sdlc:` prefix. Some skills are not built yet, and only those Claude Code lists exist.
 
+- `/brief` writes or changes the brief.
+- `/spec` writes or changes the spec for one capability.
+- `/spike` settles an unknown by a throwaway experiment, when one is needed. A fact goes back into
+  the spec; a choice becomes an ADR.
+- `/adr` records one technical decision.
+- `/plan` scopes a piece of work against the specs and ADRs it delivers.
+- `/build` builds a plan on a branch of its own, has it reviewed, and pushes the branch to your
+  remote.
+  Verifying the software, opening a pull request and merging stay with you.
+- `/audit` finds drift, where the code and its documents disagree, at any time.
+- `/practices` records how the project does things, such as the commands that check the work and
+  the rules an agent follows, one topic at a time. It is not a step in the sequence: run it
+  whenever you need it. Practices are not a lifecycle document and have no status: they live in
+  the project instructions Claude Code loads, written for agents, so every skill sees them, and
+  `/build` follows them.
+
+The steps fall into two phases, and some skills sit outside them.
+
 ### Deciding what to build
 
 ```mermaid
@@ -70,24 +88,6 @@ flowchart LR
     ADR ~~~ Pad["#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;"]
     style Pad fill:none,stroke:none
 ```
-
-### What each skill does
-
-- `/brief` writes or changes the brief.
-- `/spec` writes or changes the spec for one capability.
-- `/spike` settles an unknown by a throwaway experiment, when one is needed. A fact goes back into
-  the spec; a choice becomes an ADR.
-- `/adr` records one technical decision.
-- `/plan` scopes a piece of work against the specs and ADRs it delivers.
-- `/build` builds a plan on a branch of its own, has it reviewed, and pushes the branch to your
-  remote.
-  Verifying the software, opening a pull request and merging stay with you.
-- `/audit` finds drift, where the code and its documents disagree, at any time.
-- `/practices` records how the project does things, such as the commands that check the work and
-  the rules an agent follows, one topic at a time. It is not a step in the sequence: run it
-  whenever you need it. Practices are not a lifecycle document and have no status: they live in
-  the project instructions Claude Code loads, written for agents, so every skill sees them, and
-  `/build` follows them.
 
 ## Principles
 
