@@ -43,9 +43,6 @@ flowchart LR
     Spec --> Plan
     ADR --> Plan
     Plan --> Build
-    ADR -.-> Practices
-    Practices -.-> Plan
-    Practices -.-> Build
     Build --> Branch[A branch, for you to verify]
     Branch -->|you merge| Code[Code on the main branch]
     Code -.-> Audit
@@ -53,9 +50,6 @@ flowchart LR
     Audit ~~~ Pad["#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;"]
     style Pad fill:none,stroke:none
 ```
-
-Dotted lines are not steps in the order: practices record how to use what an ADR chose, and plans
-and builds follow them; an audit can run at any time.
 
 - `/brief` writes or changes the brief.
 - `/spec` writes or changes the spec for one capability.
