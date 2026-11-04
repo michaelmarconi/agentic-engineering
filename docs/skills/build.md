@@ -125,6 +125,13 @@ Every other choice, such as names, how the code is split up, or which helper to 
 makes itself and carries on, and the summary lists each one with its reason, so you can see what was
 decided for you.
 
+`/build` leans towards correcting rather than asking. Anything plainly wrong, such as a crash
+when no file name is given or an error reported in the wrong place, it corrects whether or not a
+spec mentions it, with a test where it can, and lists each correction in its summary so you can
+add it to the spec. Stopping a build to ask about something obvious costs more than a small
+overstep. It raises the case with you only when what should happen instead is a real product
+choice that a reasonable person could want made differently.
+
 ## Review
 
 When the code is written, three reviews check it side by side, each run by an agent that has not
@@ -141,12 +148,8 @@ seen the conversation:
   reporting gaps that affect correctness and skipping style.[^specreview]
 
 A reviewer asked to find problems will always find something, so the reviews pass once every bug
-or security hole they report has been corrected. A bug here means code that breaks what a spec,
-the plan or an existing test says. A reviewer will also find input no spec covers, such as a
-crash when no file name is given. `/build` does not decide that behaviour for you: it lists each
-such gap in the spec in its summary, so you can add it to the spec and the next build covers it,
-tests first. Gaps in the spec and findings about tidiness or style are listed in the summary but
-do not stop the plan being marked `✅ Built`. A security hole is always corrected.[^specreview]
+or security hole they report has been corrected. Findings about tidiness or style are listed in the
+summary but do not stop the plan being marked `✅ Built`.[^specreview]
 
 `/build` corrects what the reviews find, once, and has the corrections checked, the same way
 documents are reviewed (see [Review process](../lifecycle.md#review-process)). It then runs your

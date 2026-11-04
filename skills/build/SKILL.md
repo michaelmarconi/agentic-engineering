@@ -32,6 +32,14 @@ These hold from the first step to the last, however long the build runs.
   Nobody may be watching, and a build that guesses can spend hours on the wrong assumption.
   Names, how the code is split up and which helper to use are yours: make each such choice,
   carry on, and note it with its reason for the summary.
+- **Correct obvious defects without asking.** Anything plainly wrong is yours to correct, whether
+  or not a spec mentions it: a crash or unhandled error, bad input such as a missing argument or
+  an unreadable file that is not refused plainly, an error reported in the wrong place, a resource
+  left open. Refuse bad input in the way the code around it already reports errors, add a test
+  for each correction where you can, and list each one in the summary. Lean towards correcting:
+  stopping a build to ask about something obvious costs more than a small overstep. Raise only a
+  real product choice, where a reasonable person could want something else, such as accepting
+  the input in some new way or adding an option.
 - **Never commit on the default branch, and never open a pull request or merge.** A plugin hook
   refuses a commit or push to the default branch while you build.
 - **Change no spec, ADR or brief, and the plan only through the hand-over script.**
@@ -114,12 +122,8 @@ side, each in the foreground:
   ```
 
 The reviews pass when the code and security reviews report no bug or security hole and the
-build reviewer's result is PASS. A code review finding is a bug only when the code breaks what a
-spec, the plan or an existing test says. A finding about input or a situation that no spec
-covers, such as a crash when no file is given, is a gap in the spec, not a bug: do not correct
-it, since that would decide behaviour nobody specified, and list it in the summary as a gap to
-add to the spec. Gaps in the spec, and findings about tidiness or style, never stop a build.
-A security hole is always corrected.
+build reviewer's result is PASS. Findings about tidiness or style never stop a build: list them
+in the summary.
 
 1. **Correct, once.** If a review found anything, read the rubric again and correct only the
    bugs, the security holes, and each failed check and item under Other findings in the build
@@ -158,9 +162,8 @@ End with a short summary for the person:
 - the test and lint commands you ran, with their final output, and any tests that failed before
   you started;
 - each choice you made, with its reason;
+- each defect you corrected that no spec mentions, so the person can add it to the spec;
 - what each review found, and what was corrected;
-- each gap in the spec the reviews found, with a suggestion to add it to the spec, so the next
-  build covers it tests first;
 - the script's report, word for word;
 - each requirement left for the person to check, and a reminder to verify the work, for example
   with Claude Code's `/verify`, before merging.
