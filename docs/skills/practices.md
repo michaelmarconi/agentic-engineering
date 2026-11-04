@@ -150,8 +150,8 @@ Before you see the changes, `/practices` has its reviewer agent check them again
 pass-or-fail checks, such as: each command matches what the repository holds, no secret is
 written down, and no choice between alternatives is made there instead of in an ADR. A script
 checks the 50-line and 200-line limits and that nothing is imported. At the same time, the
-language checker, an agent shared by every skill that writes a document, reads the changes for words a newcomer could not
-follow, by the [Plain words](../lifecycle.md#plain-words) rule. Both are corrected once, as for
+language checker, an agent shared by every skill that writes a document, reads the changes for
+words a newcomer could not follow, by the [Plain words](../lifecycle.md#plain-words) rule. Both are corrected once, as for
 every document (see [Review process](../lifecycle.md#review-process)).
 
 [^tools]: [Claude Code](https://code.claude.com/docs/en/memory), [Cursor](https://docs.cursor.com/context/rules),
