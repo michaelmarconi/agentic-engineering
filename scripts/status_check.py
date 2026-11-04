@@ -676,7 +676,8 @@ def runs(text):
             kept.append(line)
             i += 1
             continue
-        carry, i = line[:start] + lines[end[0]][end[1] + 3:], end[0]
+        closing = line if end[0] == i else lines[end[0]]
+        carry, i = line[:start] + closing[end[1] + 3:], end[0]
     return "\n".join(kept).strip()
 
 
