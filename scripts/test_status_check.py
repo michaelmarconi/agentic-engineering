@@ -871,6 +871,11 @@ class Spike(SpikeWorkspace):
         self.assertIn("run script", self.write(record("🟢 Ready to run", runs=RUN.replace("ok", "fine"))))
         self.assertIn("run script", self.write(record("🟢 Ready to run")))
 
+    def test_headings_inside_run_output_stay_in_runs(self):
+        run = "### Run 1\n\nLinux, exit code 0\n\n````\n## Notes\n\nfine\n````\n"
+        self.put(record("🟢 Ready to run", runs=run))
+        self.assertIn("run script", self.edit("fine", "great"))
+
     def test_finish_on_its_own_allowed(self):
         for status in ("💡 Answered", "❔ Not answered"):
             self.put(record("🟢 Ready to run", answer="No.", runs=RUN))

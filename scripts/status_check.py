@@ -374,17 +374,41 @@ def spec_rules(path, before, after, old, new):
     return None
 
 
+FENCE = re.compile(r"^ {0,3}(`{3,}|~{3,})(.*)$")
+
+
+def headings_allowed(lines):
+    """For each line, False if it is inside a fenced code block or is a fence, where a heading is only text."""
+    fence, allowed = None, []
+    for line in lines:
+        match = FENCE.match(line)
+        if fence is None and match:
+            fence = match.group(1)
+        elif fence is not None and match and match.group(1)[0] == fence[0] and len(match.group(1)) >= len(fence) \
+                and not match.group(2).strip():
+            fence = None
+        else:
+            allowed.append(fence is None)
+            continue
+        allowed.append(False)
+    return allowed
+
+
 def section(text, heading):
-    """The lines of the `## <heading>` section, or None if the text has none."""
+    """The lines of the `## <heading>` section, or None if the text has none.
+
+    A line inside a fenced code block, such as a run's output, never starts or ends a section.
+    """
     lines = text.splitlines()
-    starts = [i for i, line in enumerate(lines) if line.strip().lower() == "## " + heading.lower()]
+    allowed = headings_allowed(lines)
+    starts = [i for i, line in enumerate(lines) if allowed[i] and line.strip().lower() == "## " + heading.lower()]
     if not starts:
         return None
     body = []
-    for line in lines[starts[0] + 1:]:
-        if line.startswith("# ") or line.startswith("## "):
+    for i in range(starts[0] + 1, len(lines)):
+        if allowed[i] and (lines[i].startswith("# ") or lines[i].startswith("## ")):
             break
-        body.append(line)
+        body.append(lines[i])
     return body
 
 
