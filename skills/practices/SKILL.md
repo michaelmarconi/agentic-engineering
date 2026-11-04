@@ -69,8 +69,10 @@ about and what the repository shows, so someone who does not know the repository
 end it with a proposal they can accept, change or reject; give any examples as possible answers,
 not further questions. Ask the next once the first is settled. If the person has said not to ask,
 write what is settled and ask nothing. Otherwise, even when their answers covered everything,
-finish the topic by asking whether there is anything else about it they want recorded: the topics
-file is only a starting point, and they know what it misses.
+finish the topic by asking whether there is anything else about it they want recorded, in the
+hand-over if you have written the files: the topics file is only a starting point, and they know
+what it misses. Being asked to ask only what you must does not waive this question; only being
+told not to ask anything does.
 
 - **No view.** When the person has no view on a question, ask whether to look up current advice
   on the web for their language and tools, rather than searching unasked. If they agree, name
