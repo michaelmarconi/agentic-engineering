@@ -150,7 +150,46 @@ class Relay(unittest.TestCase):
         self.review()
         self.put(SPEC, "v2\n")
         prompt = self.assertAllowed(self.check())["prompt"]
-        self.assertIn("docs/brief.md, docs/specs/, docs/adrs/, docs/plans/", prompt)
+        self.assertIn("docs/brief.md, docs/specs/, docs/adrs/, docs/plans/, docs/spikes/", prompt)
+
+    def test_checkers_of_other_documents_may_read_spike_records(self):
+        for agent, path in (("adr", "docs/adrs/0001-use-x.md"), ("plan", "docs/plans/2026-10-29-x.md"),
+                            ("brief", "docs/brief.md")):
+            self.put(path, "v1\n")
+            self.review(agent=f"sdlc:{agent}-reviewer", prompt=f"Document: {path}\nReview.")
+            self.put(path, "v2\n")
+            prompt = self.assertAllowed(self.check(prompt=f"Document: {path}\nCheck."))["prompt"]
+            self.assertIn("docs/spikes/", prompt.split("=== END DOCUMENT ===")[-1], agent)
+
+    def test_checker_of_a_spike_record_is_told_the_spike_rubric_and_where_answers_go(self):
+        record = "docs/spikes/2026-11-04-x.md"
+        self.put(record, "v1\n")
+        self.review(agent="sdlc:spike-reviewer", prompt=f"Document: {record}\nReview this spike record's design.")
+        self.put(record, "v2\n")
+        prompt = self.assertAllowed(self.check(prompt=f"Document: {record}\nCheck."))["prompt"]
+        self.assertIn(os.path.join(ROOT, "skills", "spike", "references", "rubric.md"), prompt)
+        self.assertIn("docs/specs/, docs/adrs/", prompt)
+
+    def test_a_spike_records_verdict_check_gets_the_verdict_review(self):
+        record = "docs/spikes/2026-11-04-x.md"
+        design, verdict = REPORT.replace("Story", "One question"), REPORT.replace("Story", "Answer follows")
+        reviewer = "sdlc:spike-reviewer"
+        check = f"Document: {record}\nCheck the corrections."
+        self.put(record, "design v1\n")
+        self.review(agent=reviewer, prompt=f"Document: {record}\nReview this spike record's design.", report=design)
+        self.put(record, "design v2\n")
+        self.assertIn(design, self.assertAllowed(self.check(prompt=check))["prompt"])
+        self.assertIsNone(self.agent("PostToolUse", "sdlc:correction-checker", check, response="Result: PASS"))
+        self.put(record, "verdict v1\n")
+        self.review(agent=reviewer, prompt=f"Document: {record}\nReview this spike record's verdict.",
+                    report=verdict, wording=WORDING.replace("rides along", "hits the wall"))
+        self.put(record, "verdict v2\n")
+        prompt = self.assertAllowed(self.check(prompt=check))["prompt"]
+        self.assertIn(verdict, prompt)
+        self.assertNotIn(design, prompt)
+        self.assertIn("hits the wall", prompt)
+        self.assertIn("verdict v1", prompt)
+        self.assertNotIn("design v", prompt)
 
     def test_checker_of_the_brief_may_read_the_documents_a_reference_could_name(self):
         brief = "docs/brief.md"

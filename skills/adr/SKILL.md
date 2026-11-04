@@ -33,8 +33,10 @@ the decision answers.
 
 Usually the person has already talked the decision through in this conversation. Draft from
 that, and from whatever they point you to; research what else you need, such as how the options
-compare. Where the conversation changed its mind, the latest word wins. Only when there is
-nothing to draw on, ask what needs deciding first.
+compare. Where the conversation changed its mind, the latest word wins. Given a finished
+spike record from `docs/spikes/`, put its measurements into Considered options in the ADR's own
+words, such as "read all 12 of 12 transactions": a spike record may be deleted at any time, so the
+ADR never names it. Only when there is nothing to draw on, ask what needs deciding first.
 
 One ADR holds one decision, because a decision is superseded whole: if part of a record could
 change while the rest stands, the two parts would have to be untangled later. When the
@@ -55,8 +57,8 @@ An open question is settled only by the person's answer: write the answer into t
 is about, then remove the question. Never remove or reword a question without that answer;
 moving it to another section, or noting that someone will decide later, leaves it open.
 
-Context states the need in words. Never refer to a spec, the brief or a plan in any way, by
-hyperlink, path or title, and never edit them, even when the person asks you to note the
+Context states the need in words. Never refer to a spec, the brief, a plan or a spike record in
+any way, by hyperlink, path or title, and never edit them, even when the person asks you to note the
 decision there: they change while an ADR does not, so the reference would go stale, and the
 lifecycle allows no references between them. Tell the person so. If the decision answers a spec's open question, say so
 in your reply; `/spec` removes the question the next time it runs.

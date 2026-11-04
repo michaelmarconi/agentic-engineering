@@ -100,6 +100,9 @@ Run `/adr` and say what you want: record a decision, accept or reject one, or re
 - **Replacing a decision.** A new ADR names the one it replaces. The old one stays `👍 Accepted`
   until you accept the new one; then it becomes `↪️ Superseded`. If you reject the new one, the old one
   stands.
+- **Uses spike records.** Given a finished [spike record](spike.md), `/adr` puts its measurements
+  into the Considered Options in its own words. The ADR never refers to the record, which may be
+  deleted.
 - **Leaves specs alone.** `/adr` never edits or refers to a spec. If the decision answers a
   spec's open question, it tells you, and `/spec` removes the question the next time you run it.
 

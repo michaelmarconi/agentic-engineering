@@ -10,14 +10,14 @@ value bare, is skipped. It reports:
 
 - a code span naming a status by its word with no emoji or the wrong one, such as `Accepted`
   or `status: Accepted`;
-- "Ready to build" without its emoji in front, anywhere, since that phrase only ever means the
-  status, and outside a code span or fenced code block even with it;
+- "Ready to build" or "Ready to run" without its emoji in front, anywhere, since those phrases
+  only ever mean the status, and outside a code span or fenced code block even with it;
 - a status with its emoji outside a code span or fenced code block, since emojis never sit in
   running prose.
 
 U+FE0F after an emoji is optional throughout, as it is for the status-check hook.
 
-Draft, Built, Accepted, Rejected and Superseded on their own are ordinary words too, so prose
+Draft, Built, Accepted, Rejected, Superseded, Answered and Not answered on their own are ordinary words too, so prose
 that names those statuses without backticks is left to the reader.
 """
 
@@ -27,10 +27,11 @@ import re
 import sys
 
 from doc_references import CODE_SPAN, ROOT, marked_lines, markdown_files
-from status_check import READY, VARIATION, WITHOUT_VARIATION, WORDS, frontmatter, meant
+from status_check import READY, READY_TO_RUN, VARIATION, WITHOUT_VARIATION, WORDS, frontmatter, meant
 
 SKIPPED = {("CHANGELOG.md",), ("evals",), ("evals-failed-check",), ("docs", "adrs")}
-PHRASE = READY.split(" ", 1)[1]
+# Phrases that only ever mean a status, with the full value each stands for.
+PHRASES = {value.split(" ", 1)[1]: value for value in (READY, READY_TO_RUN)}
 # Statuses compare without U+FE0F, which is optional after an emoji.
 EMOJI_VALUE = re.compile("|".join(re.escape(value) for value in WITHOUT_VARIATION))
 STATUS_KEY = re.compile(r"status\s*:\s*", re.IGNORECASE)
@@ -45,8 +46,9 @@ def skipped(relative):
 
 
 def loose_phrases(text):
-    """How often "Ready to build" appears in `text`, without U+FE0F, with no emoji in front."""
-    return EMOJI_VALUE.sub("", text).count(PHRASE)
+    """The status phrases in `text`, without U+FE0F, with no emoji in front, once per appearance."""
+    bare = EMOJI_VALUE.sub("", text)
+    return [phrase for phrase in PHRASES for _ in range(bare.count(phrase))]
 
 
 def span_problems(content):
@@ -56,9 +58,7 @@ def span_problems(content):
     full = meant(value, WORDS.values())
     if full and value != full.replace(VARIATION, ""):
         return [f"`{content}` should be `{(key.group(0) if key else '') + full}`"]
-    if loose_phrases(bare):
-        return [f"`{content}` should name `{READY}`"]
-    return []
+    return [f"`{content}` should name `{PHRASES[phrase]}`" for phrase in dict.fromkeys(loose_phrases(bare))]
 
 
 def paragraph_problems(first, lines):
@@ -73,8 +73,8 @@ def paragraph_problems(first, lines):
     for offset, line in enumerate(prose.replace(VARIATION, "").split("\n")):
         for value in EMOJI_VALUE.findall(line):
             yield first + offset, f"'{WITHOUT_VARIATION[value]}' should be in backticks"
-        for _ in range(loose_phrases(line)):
-            yield first + offset, f"'{PHRASE}' should be `{READY}`"
+        for phrase in loose_phrases(line):
+            yield first + offset, f"'{phrase}' should be `{PHRASES[phrase]}`"
 
 
 def problems(root):
@@ -101,8 +101,8 @@ def problems(root):
             if number <= last:
                 continue
             if fenced:
-                if loose_phrases(line.replace(VARIATION, "")):
-                    found.append(f"{relative}:{number}: '{PHRASE}' should be '{READY}'")
+                for phrase in dict.fromkeys(loose_phrases(line.replace(VARIATION, ""))):
+                    found.append(f"{relative}:{number}: '{phrase}' should be '{PHRASES[phrase]}'")
             elif line.strip():
                 follows = paragraphs and paragraphs[-1][0] + len(paragraphs[-1][1]) == number
                 if follows and not BLOCK_START.match(line):

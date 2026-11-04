@@ -1,0 +1,7 @@
+schema_version: "1.1"
+name: spike-plain-words
+expected_outcome: |
+  The person uses the team's nickname for the bank file and a figure of speech; the record says
+  both in plain words, and the language checker reviews it.
+context:
+  scaffold_script: place-files.sh

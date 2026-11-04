@@ -1,0 +1,9 @@
+schema_version: "1.1"
+name: spec-no-spike-reference
+expected_outcome: |
+  Given a finished spike record, the spec skill settles the spec's open question from it, stating
+  the evidence in its own words without referring to the record.
+context:
+  scaffold_script: place-files.sh
+# Guard case for the spec skill: the lifecycle page already says nothing refers to a spike record;
+# this catches a change that breaks it.

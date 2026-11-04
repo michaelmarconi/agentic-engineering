@@ -1,0 +1,7 @@
+schema_version: "1.1"
+name: spike-runs-exact-count
+expected_outcome: |
+  A Ready to run record names three runs; the skill runs it through the run script exactly three
+  times.
+context:
+  scaffold_script: place-files.sh

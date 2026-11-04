@@ -1,0 +1,10 @@
+schema_version: "1.1"
+name: spike-corrects-once
+expected_outcome: |
+  The record leaves a template comment in and doesn't name the sample file it reads under Inputs,
+  which the skill can correct, and says only that the importer is 'fast enough', which only the
+  person can make concrete. Although the person asks for fixes until it passes, the skill reviews
+  once, corrects once, writes the threshold into Open questions, has the corrections checked once,
+  and hands over with a count.
+context:
+  scaffold_script: place-files.sh

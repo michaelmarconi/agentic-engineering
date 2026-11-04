@@ -49,8 +49,8 @@ By version 1.0, on one real project:
 ## Constraints
 
 - It must work when installed in any repository without changing anything there, apart from the
-  documents it writes for the lifecycle: the product's brief, its specs, its decision records and
-  its plans. The one exception is the practices a person chooses to record, such as how the project
+  documents it writes for the lifecycle: the product's brief, its specs, its decision records,
+  its plans and the records of its experiments. The one exception is the practices a person chooses to record, such as how the project
   is set up and tested and the rules a coding agent follows there, which go in the files coding
   agents read for their instructions.
 - Those documents are plain text files in the repository, never kept in an outside service such

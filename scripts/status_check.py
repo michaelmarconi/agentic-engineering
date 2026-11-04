@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
-"""Refuse spec, ADR and plan status changes the lifecycle does not allow.
+"""Refuse spec, ADR, plan and spike record status changes the lifecycle does not allow.
 
 Claude Code runs this as a PreToolUse hook on Write, Edit and MultiEdit. It reads the hook's
 JSON from stdin and, for a *.spec.md under the project's docs/specs/ or a *.md under its
-docs/adrs/ or a *.md directly in its docs/plans/ (the project being $CLAUDE_PROJECT_DIR, or the
-current directory if unset),
+docs/adrs/ or a *.md directly in its docs/plans/ or docs/spikes/ (the project being
+$CLAUDE_PROJECT_DIR, or the current directory if unset),
 works out what the file would contain after the edit and compares it with what is on disk now.
 Every status carries its emoji, emoji first: a spec is `📝 Draft` or `👍 Accepted`, describing the
-document, never the software; a plan is `📝 Draft`, `🟢 Ready to build` or `✅ Built`; an ADR is `📝 Draft`, `👍 Accepted`, `❌ Rejected` or `↪️ Superseded`. The U+FE0F that
+document, never the software; a plan is `📝 Draft`, `🟢 Ready to build` or `✅ Built`; an ADR is `📝 Draft`, `👍 Accepted`, `❌ Rejected` or `↪️ Superseded`; a spike record is `📝 Draft`, `🟢 Ready to run`, `💡 Answered` or `❔ Not answered`. The U+FE0F that
 some keyboards add after an emoji is optional. It refuses a status written by its word alone or
 with the wrong emoji, and names the value to write. A document written before the emoji, whose
 status is a bare word such as `Accepted`, counts as having that status, and an edit that only adds
@@ -55,6 +55,23 @@ For a plan it refuses:
   References are paths relative to the plan;
 - a change to a `🟢 Ready to build` plan that does not return it to `📝 Draft`.
 
+For a spike record it refuses:
+
+- a record that had a lifecycle status losing it, and a new record with any status but `📝 Draft`
+  or with anything in its Runs section;
+- any change to the Runs section, at any status: only the run script (skills/spike/scripts/spike.py)
+  writes runs, writing the file itself, so this hook never sees it;
+- any move but `📝 Draft` to `🟢 Ready to run`, `🟢 Ready to run` back to `📝 Draft` while Runs is
+  empty, and `🟢 Ready to run` to `💡 Answered` or `❔ Not answered`;
+- a move forward in the same edit as any other change, or while the Open questions section is
+  missing or not empty or "None.", and `💡 Answered` while Runs holds no run;
+- a change to the Question, What would answer it or Experiment section of a `🟢 Ready to run`
+  record that does not return it to `📝 Draft`;
+- any change to a `💡 Answered` or `❔ Not answered` record, which is final. Deleting it is not an
+  edit, so it is never refused.
+
+HTML comments in the Runs section outside its code fences do not count as runs.
+
 Whether a person really accepted an ADR or signed off a plan is beyond a hook; the skill asks them.
 
 A file that has no lifecycle status before or after the edit, nor one named by its word, is left
@@ -70,12 +87,16 @@ import re
 import sys
 
 DRAFT, READY, BUILT = "📝 Draft", "🟢 Ready to build", "✅ Built"
+READY_TO_RUN, ANSWERED, NOT_ANSWERED = "🟢 Ready to run", "💡 Answered", "❔ Not answered"
+SPIKE_STATUSES = (DRAFT, READY_TO_RUN, ANSWERED, NOT_ANSWERED)
+FINISHED = (ANSWERED, NOT_ANSWERED)
+FIXED_PARTS = ("Question", "What would answer it", "Experiment")
 ACCEPTED, REJECTED, SUPERSEDED = "👍 Accepted", "❌ Rejected", "↪️ Superseded"
 STATUSES = (DRAFT, READY, BUILT)
 SPEC_STATUSES = (DRAFT, ACCEPTED)
 ADR_STATUSES = (DRAFT, ACCEPTED, REJECTED, SUPERSEDED)
 # Each status by its word alone, as documents written before the emoji hold it.
-WORDS = {value.split(" ", 1)[1]: value for value in STATUSES + ADR_STATUSES}
+WORDS = {value.split(" ", 1)[1]: value for value in STATUSES + ADR_STATUSES + SPIKE_STATUSES}
 # U+FE0F asks for an emoji to be drawn in colour; some keyboards add it and some don't.
 VARIATION = "\ufe0f"
 WITHOUT_VARIATION = {value.replace(VARIATION, ""): value for value in WORDS.values()}
@@ -83,6 +104,7 @@ NEW_HINT = {
     "spec": "If you are moving an existing spec, move it with `git mv`, which keeps its status.",
     "ADR": "Only the person accepts or rejects a decision, once they have seen it reviewed.",
     "plan": f"Set `{READY}` on its own once the person signs the plan off.",
+    "spike record": f"Set `{READY_TO_RUN}` on its own once the person signs the design off.",
 }
 EMPTY_ANSWERS = {"", "none", "none."}
 FOOTNOTE = re.compile(r"^\[[^\]]+\]:")
@@ -114,6 +136,13 @@ def is_plan(path):
     """True for a *.md directly in docs/plans/ in the project, whatever the folders' case."""
     parts = project_parts(path)
     return (len(parts) == 3 and [part.lower() for part in parts[:2]] == ["docs", "plans"]
+            and parts[-1].lower().endswith(".md"))
+
+
+def is_spike(path):
+    """True for a *.md directly in docs/spikes/ in the project, whatever the folders' case."""
+    parts = project_parts(path)
+    return (len(parts) == 3 and [part.lower() for part in parts[:2]] == ["docs", "spikes"]
             and parts[-1].lower().endswith(".md"))
 
 
@@ -267,6 +296,8 @@ def check(payload):
         kind, statuses, rules = "ADR", ADR_STATUSES, adr_rules
     elif is_plan(path):
         kind, statuses, rules = "plan", STATUSES, plan_rules
+    elif is_spike(path):
+        kind, statuses, rules = "spike record", SPIKE_STATUSES, spike_rules
     else:
         return None
     before = None
@@ -343,17 +374,80 @@ def spec_rules(path, before, after, old, new):
     return None
 
 
+FENCE = re.compile(r"^ {0,3}(`{3,}|~{3,})(.*)$")
+
+
+def closes_fence(line, fence):
+    """Whether `line` closes a block opened by `fence`: the same character, at least as long, nothing after."""
+    match = FENCE.match(line)
+    return bool(match and match.group(1)[0] == fence[0] and len(match.group(1)) >= len(fence)
+                and not match.group(2).strip())
+
+
+def scan(lines):
+    """One pass over the original lines: (fenced, comments).
+
+    fenced[i] is True for a fence line or a line inside a fenced code block. comments lists each
+    HTML comment as ((line, column), (line, column after its `-->`)). A comment starts with `<!--`
+    outside a fenced block and ends at the next `-->`, across lines and fences; a fence counts
+    only at the start of a line outside a comment. A `<!--` with no `-->` after it is text, and so
+    is everything after it. Nothing is read twice, so cutting a comment out can't make a new one.
+    """
+    fenced, comments = [False] * len(lines), []
+    fence, opened, i, column, comments_possible = None, None, 0, 0, True
+    while True:
+        while i < len(lines):
+            line = lines[i]
+            if column == 0 and opened is None:
+                if fence is not None:
+                    fenced[i] = True
+                    if closes_fence(line, fence):
+                        fence = None
+                    i += 1
+                    continue
+                match = FENCE.match(line)
+                if match:
+                    fence, fenced[i] = match.group(1), True
+                    i += 1
+                    continue
+            mark = "-->" if opened else "<!--"
+            found = line.find(mark, column) if comments_possible else -1
+            if found < 0:
+                i, column = i + 1, 0
+            elif opened:
+                comments.append((opened, (i, found + 3)))
+                opened, column = None, found + 3
+            else:
+                opened, column = (i, found), found + 4
+        if opened is None:
+            return fenced, comments
+        # Unclosed: read again from the line after it, as text with no comments.
+        fence, i, column, comments_possible = None, opened[0] + 1, 0, False
+        opened = None
+
+
+def headings_allowed(lines):
+    """For each line, False if it is a fence, inside a fenced code block or starts inside an HTML
+    comment, where a heading is only text."""
+    fenced, comments = scan(lines)
+    return [not fenced[i] and not any(start < (i, 0) < end for start, end in comments) for i in range(len(lines))]
+
+
 def section(text, heading):
-    """The lines of the `## <heading>` section, or None if the text has none."""
+    """The lines of the `## <heading>` section, or None if the text has none.
+
+    A line inside a fenced code block, such as a run's output, never starts or ends a section.
+    """
     lines = text.splitlines()
-    starts = [i for i, line in enumerate(lines) if line.strip().lower() == "## " + heading.lower()]
+    allowed = headings_allowed(lines)
+    starts = [i for i, line in enumerate(lines) if allowed[i] and line.strip().lower() == "## " + heading.lower()]
     if not starts:
         return None
     body = []
-    for line in lines[starts[0] + 1:]:
-        if line.startswith("# ") or line.startswith("## "):
+    for i in range(starts[0] + 1, len(lines)):
+        if allowed[i] and (lines[i].startswith("# ") or lines[i].startswith("## ")):
             break
-        body.append(line)
+        body.append(lines[i])
     return body
 
 
@@ -587,6 +681,91 @@ def adr_rules(path, before, after, old, new):
         f"{name}: an ADR cannot go from `{old}` to `{new}`. `{DRAFT}` becomes `{ACCEPTED}` or "
         f"`{REJECTED}`; `{ACCEPTED}` becomes `{SUPERSEDED}`; nothing else changes."
     )
+
+
+def runs(text):
+    """The Runs section without HTML comments or surrounding blank lines; "" when it holds none.
+
+    Comments are found by scan(), so a run's output can never hide another run, and an unclosed
+    `<!--` can never hide a run added below it.
+    """
+    lines = section(text, "Runs") or []
+    _, comments = scan(lines)
+    starts = [0]
+    for line in lines:
+        starts.append(starts[-1] + len(line) + 1)
+    joined, kept, at = "\n".join(lines), [], 0
+    for (line, column), (end_line, end_column) in comments:
+        kept.append(joined[at:starts[line] + column])
+        at = starts[end_line] + end_column
+    kept.append(joined[at:])
+    return "".join(kept).strip()
+
+
+def ran(text):
+    """Whether Runs holds a run that happened: one whose heading line doesn't say "did not run"."""
+    lines = runs(text).splitlines()
+    allowed = headings_allowed(lines)
+    for i, line in enumerate(lines):
+        if allowed[i] and re.fullmatch(r"### Run \d+\s*", line):
+            stamp = next((later for later in lines[i + 1:] if later.strip()), "")
+            if not stamp.rstrip().endswith("did not run"):
+                return True
+    return False
+
+
+def spike_rules(path, before, after, old, new):
+    name = os.path.basename(path)
+    if old not in SPIKE_STATUSES:
+        if runs(after):
+            return f"{name}: a new spike record starts with Runs empty; only the run script adds runs."
+        return None
+    if old in FINISHED:
+        if after == before:
+            return None
+        return (
+            f"{name}: this spike record is `{old}`, which is final, so it is never changed. "
+            "Another try at the question is a new spike record."
+        )
+    if runs(after) != runs(before):
+        return (
+            f"{name}: only the run script writes the Runs section, so the results are exactly what "
+            "the experiment produced. Leave Runs as it is and run the experiment through the script."
+        )
+    moves = {DRAFT: (READY_TO_RUN,), READY_TO_RUN: (DRAFT, ANSWERED, NOT_ANSWERED)}
+    if new != old and new not in moves[old]:
+        return (
+            f"{name}: a spike record cannot go from `{old}` to `{new}`. `{DRAFT}` becomes "
+            f"`{READY_TO_RUN}`; `{READY_TO_RUN}` becomes `{ANSWERED}` or `{NOT_ANSWERED}`, or "
+            f"`{DRAFT}` before the first run."
+        )
+    if new == DRAFT and old == READY_TO_RUN and runs(before):
+        return (
+            f"{name}: the experiment has already run, so the record cannot go back to `{DRAFT}` "
+            "after the first run. A different question or experiment is a new spike record."
+        )
+    if new in (READY_TO_RUN,) + FINISHED and new != old:
+        if without_status(after) != without_status(before):
+            return (
+                f"{name}: set `{new}` on its own, as the last edit after a passing review and the "
+                "person's sign-off; this edit also changes the record's content."
+            )
+        if has_open_questions(after):
+            return open_questions_refusal(name, after, new, "spike record")
+        if new == ANSWERED and not ran(after):
+            return (
+                f"{name}: it has no runs, so it cannot be `{ANSWERED}`: only an experiment's runs "
+                f"answer a spike. Run it through the run script, or end it `{NOT_ANSWERED}`."
+            )
+    if old == new == READY_TO_RUN:
+        changed = [part for part in FIXED_PARTS if section(after, part) != section(before, part)]
+        if changed:
+            return (
+                f"{name}: the record is `{READY_TO_RUN}`, so its {', '.join(changed)} section is "
+                f"fixed. To change it before the first run, also set the status back to `{DRAFT}` "
+                "for the person to sign off again."
+            )
+    return None
 
 
 def main(argv=None):

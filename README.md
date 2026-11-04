@@ -46,9 +46,11 @@ reviewed, corrects it and shows you the result to sign off.
 1. `/sdlc:brief` writes the product brief: what the product is, who it is for and why.
 2. `/sdlc:spec` writes the spec for one capability: what it should do, and how you will know it
    does.
-3. `/sdlc:adr` records any technical decision the spec needs.
-4. `/sdlc:plan` plans a piece of work against the spec and its decisions.
-5. `/sdlc:build` builds the plan on a branch, tests first, and has the result reviewed. Start it
+3. `/sdlc:spike` settles any unknown the spec or a decision can't settle without trying
+   something, with a throwaway experiment. Skip it when nothing is unknown.
+4. `/sdlc:adr` records any technical decision the spec needs.
+5. `/sdlc:plan` plans a piece of work against the spec and its decisions.
+6. `/sdlc:build` builds the plan on a branch, tests first, and has the result reviewed. Start it
    in a fresh session, or after `/clear`.
 
 You can also ask in your own words, such as "write a spec for invoice reminders". Claude picks
@@ -56,7 +58,7 @@ the matching skill.
 
 ## How it works
 
-The lifecycle keeps four kinds of document:
+The lifecycle keeps five kinds of document:
 
 | Document | Where | What it holds |
 |---|---|---|
@@ -64,6 +66,7 @@ The lifecycle keeps four kinds of document:
 | Spec | `docs/specs/` | What one capability should do, and how we will know it does. |
 | ADR (architecture decision record) | `docs/adrs/` | One technical decision and why it was made. |
 | Plan | `docs/plans/` | One piece of work that builds part of a spec or an ADR, kept once built as the record of what was built. |
+| Spike record | `docs/spikes/` | One question settled by a throwaway experiment: the experiment, what it produced and the answer. |
 
 Each document except the brief has a status, such as `📝 Draft` or `🟢 Ready to build`. A
 project can also record its **practices**, such as how it is built, tested and released, in
@@ -88,19 +91,22 @@ documents by hand.
 |---|---|
 | [`/sdlc:brief`](docs/skills/brief.md) | Writes or changes the product brief |
 | [`/sdlc:spec`](docs/skills/spec.md) | Writes or changes the spec for one capability |
+| [`/sdlc:spike`](docs/skills/spike.md) | Settles one unknown with a throwaway experiment |
 | [`/sdlc:adr`](docs/skills/adr.md) | Records one technical decision |
 | [`/sdlc:plan`](docs/skills/plan.md) | Plans a piece of work against its specs and ADRs |
 | [`/sdlc:build`](docs/skills/build.md) | Builds a plan on a branch, has it reviewed and hands it back |
 | [`/sdlc:practices`](docs/skills/practices.md) | Records how the project does things, one topic at a time |
 | [`/sdlc:feedback`](docs/skills/feedback.md) | Drafts a GitHub issue about the plugin itself |
 
-Planned: [`/sdlc:spike`](docs/skills/spike.md), to settle an unknown with a throwaway
-experiment, and [`/sdlc:audit`](docs/skills/audit.md), to find where code and documents have
-drifted apart.
+Planned: [`/sdlc:audit`](docs/skills/audit.md), to find where code and documents have drifted
+apart.
 
 ```mermaid
 flowchart LR
     Brief --> Spec
+    Spec -->|unknowns| Spike
+    Spike -->|facts| Spec
+    Spike -->|choices| ADR
     Spec -->|decisions| ADR
     Spec --> Plan
     ADR --> Plan

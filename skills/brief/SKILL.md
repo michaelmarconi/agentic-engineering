@@ -36,8 +36,8 @@ what they are building and for whom first.
 Write only what they said or showed you, as rubric check 8 describes, and link each fact taken from
 a document to it, as check 9 does. What they haven't said becomes an open question, each asking one
 thing: "What do they do today, and how long does it take?" is two questions. When they want the
-brief to refer to a spec, an ADR (architecture decision record) or a plan, by hyperlink, path or
-title, leave it out (check 10) and tell them why: that document can change or be deleted without the
+brief to refer to a spec, an ADR (architecture decision record), a plan or a spike record, by
+hyperlink, path or title, leave it out (check 10) and tell them why: that document can change or be deleted without the
 brief being touched, so the reference would go stale. When they mention something that belongs to a
 later stage (rubric checks 2 and 7), leave it out and tell them where it goes: how one capability
 behaves goes in its spec, so suggest `/spec`; a technology or design they have decided goes in an

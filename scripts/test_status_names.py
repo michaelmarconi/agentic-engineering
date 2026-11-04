@@ -38,6 +38,26 @@ class StatusNames(unittest.TestCase):
                                 "An ADR is `👍 Accepted`, `❌ Rejected` or `↪️ Superseded`.\n")
         self.assertPasses()
 
+    def test_spike_record_values_pass(self):
+        self.write("README.md", "A record goes `📝 Draft`, `🟢 Ready to run`, `💡 Answered` or `❔ Not answered`.\n")
+        self.assertPasses()
+
+    def test_spike_word_without_emoji_fails_with_the_value(self):
+        self.write("docs/a.md", "Set `Not answered`.\n")
+        self.assertFails("docs/a.md:1", "`❔ Not answered`")
+
+    def test_ready_to_run_outside_backticks_fails(self):
+        self.write("docs/a.md", "Mark it Ready to run.\n")
+        self.assertFails("docs/a.md:1", "Ready to run")
+
+    def test_ready_to_run_in_a_longer_code_span_fails(self):
+        self.write("docs/a.md", "Set `status: Ready to run now`.\n")
+        self.assertFails("`🟢 Ready to run`")
+
+    def test_spike_emoji_status_outside_backticks_fails(self):
+        self.write("docs/a.md", "It ends 💡 Answered.\n")
+        self.assertFails("docs/a.md:1")
+
     def test_backticked_word_without_emoji_fails_with_the_value(self):
         self.write("docs/a.md", "Intro.\n\nSet it to `Accepted`.\n")
         self.assertFails("docs/a.md:3", "`👍 Accepted`")

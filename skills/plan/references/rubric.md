@@ -24,7 +24,8 @@ checking, and quotes the plan as evidence for every failure.
 7. **No code.** The Plan section holds no code: no code blocks and no lines of code, though it
    may name files, functions and commands.
 8. **References.** The plan refers only to the specs and ADRs it lists, and to files in the code.
-   It does not refer to the brief or to another plan in any way: no hyperlink, path or title.
+   It does not refer to the brief, to another plan or to a spike record in any way: no
+   hyperlink, path or title.
 9. **Ready means ready.** A plan with status `🟢 Ready to build` or `✅ Built` has an Open
    questions section that is empty or says only "None."
 10. **No overlap.** No other plan under `docs/plans/` that is `📝 Draft` or `🟢 Ready to build`

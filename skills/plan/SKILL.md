@@ -76,8 +76,8 @@ file name and the template's comments removed:
   files that matter and the code to reuse. It holds no code, and no decision that is not under
   Decisions or ADRs; a new one found while writing goes back to the person as a question first.
 
-The plan refers only to the specs and ADRs it lists, and to the code. Never refer to the brief or
-another plan, and never edit a spec or an ADR, even when the person asks you to note something
+The plan refers only to the specs and ADRs it lists, and to the code. Never refer to the brief,
+another plan or a spike record, and never edit a spec or an ADR, even when the person asks you to note something
 there: tell them it belongs in that document's own skill.
 
 ## Status

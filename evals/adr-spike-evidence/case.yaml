@@ -1,0 +1,9 @@
+schema_version: "1.1"
+name: adr-spike-evidence
+expected_outcome: |
+  Given a finished spike record, the ADR skill records the decision with the spike's measurement
+  in its own words, without referring to the record.
+context:
+  scaffold_script: place-files.sh
+# Guard case for the ADR skill: the lifecycle page already says nothing refers to a spike record;
+# this catches a change that breaks it.

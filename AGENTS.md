@@ -59,10 +59,11 @@ everything else is judgement.
      `sdlc:correction-checker` without it.
    - The hand-over gives the person the reports, the number of items they must settle, and the
      first of them; suggestions are listed apart as optional.
-   - A document with a status ends with an Open questions section. The skill writes there
+   - A document with a status has an Open questions section, last apart from a spike record's
+     Code and Runs, which follow it so the record reads as prose first. The skill writes there
      whatever only the person can settle, and never moves the document forward while the
      section holds anything. The status hook (`scripts/status_check.py`) refuses such a move
-     for specs, ADRs and plans; a new document type with a status adds its rule there.
+     for specs, ADRs, plans and spike records; a new document type with a status adds its rule there.
 5. **Evaluated.** Every skill ships with evals under the plugin's `evals/`, in the case-folder
    layout that skill-creator writes and `claude plugin eval` runs. Write the rubric first, then
    the evals: each rubric check is also an eval assertion, so one rubric both tests the skill and
@@ -124,11 +125,13 @@ everything else is judgement.
     working here. Files written for Claude, such as a `SKILL.md`, a rubric or an agent, may use
     the lifecycle's own terms, since Claude reads them with the lifecycle page in hand.
 14. **Statuses by their exact value.** A document status is its emoji and its word: `📝 Draft`,
-    `🟢 Ready to build`, `✅ Built`, `👍 Accepted`, `❌ Rejected` and `↪️ Superseded`. The
+    `🟢 Ready to build`, `✅ Built`, `👍 Accepted`, `❌ Rejected`, `↪️ Superseded`, `🟢 Ready to run`,
+    `💡 Answered` and `❔ Not answered`. The
     status line holds that value bare. Everywhere else, name a status in backticks with its emoji,
     exactly as the status line has it, so a reader can find it and copy it; never put an emoji in
     running prose. `scripts/test_status_names.py` catches a backticked status that is wrong, and
-    the words of `🟢 Ready to build` left unformatted; the other words are ordinary English too,
+    the words of `🟢 Ready to build` and `🟢 Ready to run` left unformatted; the other words are
+    ordinary English too,
     so those are yours to catch.
 
 ## This repository's own documents

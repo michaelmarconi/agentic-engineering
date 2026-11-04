@@ -779,6 +779,189 @@ class Plan(PlanWorkspace):
         self.assertIsNone(self.write("# Notes\n", path=path))
 
 
+def record(status="📝 Draft", question="Can the library read our TIFF files?", answer_if="All 20 open.",
+           experiment="Opens each file. Runs: 1.\nCommand: `python3 check.py`", answer="", questions="None.",
+           code="```python\n# file: check.py\nprint('ok')\n```", runs=""):
+    return (
+        "---\n"
+        f"status: {status}\n"
+        "---\n\n# Can the library read our TIFF files?\n\n"
+        f"## Question\n\n{question}\n\n## What would answer it\n\n{answer_if}\n\n"
+        f"## Experiment\n\n{experiment}\n\n## Answer\n\n{answer}\n\n## Surprises\n\n\n\n"
+        f"## Where it goes\n\n\n\n## Open questions\n\n{questions}\n\n## Code\n\n{code}\n\n"
+        f"## Runs\n\n{runs}"
+    )
+
+
+RUN = "### Run 1\n\n2026-11-04 15:02, Linux, a cloud session, code `a91c03e7b2d4`\n\n```\nok\n```\n"
+
+
+class SpikeWorkspace(Workspace):
+    def setUp(self):
+        super().setUp()
+        self.path = os.path.join(self.tmp.name, "docs", "spikes", "2026-11-04-tiff-files-open.md")
+
+    def move(self, old, new):
+        return self.edit(f"status: {old}", f"status: {new}")
+
+
+class Spike(SpikeWorkspace):
+    def test_new_draft_allowed(self):
+        self.assertIsNone(self.write(record()))
+
+    def test_new_record_with_runs_refused(self):
+        self.assertIn("Runs", self.write(record(runs=RUN)))
+
+    def test_new_record_not_draft_refused(self):
+        for status in ("🟢 Ready to run", "💡 Answered", "❔ Not answered"):
+            self.assertIn("📝 Draft", self.write(record(status)), status)
+
+    def test_template_comment_in_runs_is_empty(self):
+        self.assertIsNone(self.write(record(runs="<!-- Only the run script writes here. -->\n")))
+
+    def test_draft_edits_allowed(self):
+        self.put(record())
+        self.assertIsNone(self.edit("All 20 open.", "All 20 open, with the right page count."))
+
+    def test_ready_on_its_own_allowed(self):
+        self.put(record())
+        self.assertIsNone(self.move("📝 Draft", "🟢 Ready to run"))
+
+    def test_ready_with_open_questions_refused(self):
+        self.put(record(questions="- Which scanner?"))
+        self.assertIn("open questions", self.move("📝 Draft", "🟢 Ready to run"))
+
+    def test_ready_without_open_questions_section_refused(self):
+        self.put(record().replace("## Open questions", "## Notes"))
+        self.assertIn("no Open questions section", self.move("📝 Draft", "🟢 Ready to run"))
+
+    def test_ready_with_other_changes_refused(self):
+        self.put(record())
+        self.assertIn("on its own", self.write(record("🟢 Ready to run", answer_if="All 19 open.")))
+
+    def test_draft_cannot_be_finished(self):
+        self.put(record())
+        for status in ("💡 Answered", "❔ Not answered"):
+            self.assertIn("cannot go from", self.move("📝 Draft", status), status)
+
+    def test_fixed_parts_of_ready_record_refused(self):
+        for part in ("question", "answer_if", "experiment"):
+            self.put(record("🟢 Ready to run"))
+            changed = record("🟢 Ready to run", **{part: "Something else."})
+            self.assertIn("fixed", self.write(changed), part)
+
+    def test_fixed_parts_change_with_return_to_draft_allowed(self):
+        self.put(record("🟢 Ready to run"))
+        self.assertIsNone(self.write(record(answer_if="All 19 open.")))
+
+    def test_return_to_draft_after_a_run_refused(self):
+        self.put(record("🟢 Ready to run", runs=RUN))
+        self.assertIn("after the first run", self.move("🟢 Ready to run", "📝 Draft"))
+
+    def test_code_and_verdict_of_ready_record_allowed(self):
+        self.put(record("🟢 Ready to run", runs=RUN))
+        self.assertIsNone(self.edit("print('ok')", "print('fixed')"))
+        self.assertIsNone(self.write(record("🟢 Ready to run", answer="No.", runs=RUN)))
+
+    def test_changing_runs_refused_at_every_status(self):
+        for status in ("📝 Draft", "🟢 Ready to run"):
+            self.put(record(status))
+            self.assertIn("run script", self.write(record(status, runs=RUN)), status)
+        self.put(record("🟢 Ready to run", runs=RUN))
+        self.assertIn("run script", self.write(record("🟢 Ready to run", runs=RUN.replace("ok", "fine"))))
+        self.assertIn("run script", self.write(record("🟢 Ready to run")))
+
+    def test_headings_inside_run_output_stay_in_runs(self):
+        run = "### Run 1\n\nLinux, exit code 0\n\n````\n## Notes\n\nfine\n````\n"
+        self.put(record("🟢 Ready to run", runs=run))
+        self.assertIn("run script", self.edit("fine", "great"))
+
+    def test_a_comment_mark_inside_run_output_still_counts_as_a_run(self):
+        runs = ("### Run 1\n\nLinux\n\n```\n<!-- start\n```\n\n### Run 2\n\nLinux, exit code 0\n\n```\nok\n```\n\n"
+                "### Run 3\n\nLinux\n\n```\nend -->\n```\n")
+        self.put(record("🟢 Ready to run", runs=runs))
+        self.assertIn("run script", self.edit("exit code 0", "exit code 1"))
+
+    def test_a_comment_holding_a_fence_in_runs_is_empty(self):
+        self.assertIsNone(self.write(record(runs="<!-- For example:\n```\n### Run 1\n```\n-->\n")))
+
+    def test_an_unclosed_comment_mark_in_runs_is_text(self):
+        self.put(record("🟢 Ready to run", runs=RUN))
+        self.assertIn("run script", self.write(record("🟢 Ready to run", runs=RUN + "\n<!--\n")))
+
+    def test_several_comments_on_a_line_are_all_dropped(self):
+        for runs, expected in (("a <!-- x --> b <!-- y --> c", "a  b  c"), ("<!-- a\nb --> c <!-- d --> e", "c  e"),
+                               ("xx <!-- a --> <!-- b --> tail", "xx   tail")):
+            self.assertEqual(status_check.runs(record(runs=runs)), expected, runs)
+
+    def test_cutting_a_comment_never_makes_a_new_one(self):
+        self.assertEqual(status_check.runs(record(runs="<!<!---->---->")), "<!---->")
+        self.put(record("🟢 Ready to run", runs="<!<!---->-- Run 1 passed -->\n"))
+        self.assertIn("run script", self.edit("passed", "FAILED"))
+
+    def test_cutting_a_comment_never_makes_a_fence(self):
+        self.assertEqual(status_check.runs(record(runs="<!---->```<!---->")), "```")
+        runs = "<!---->```\n\n```\n<!--\n### Run 1\npassed\n-->\n```\n"
+        self.put(record("🟢 Ready to run", runs=runs))
+        self.assertIn("run script", self.edit("passed", "FAILED"))
+
+    def test_a_heading_inside_a_comment_never_ends_runs(self):
+        self.put(record("🟢 Ready to run", runs="<!--\n## x\n-->\n" + RUN))
+        self.assertIn("run script", self.edit("```\nok\n```", "```\nfine\n```"))
+
+    def test_answered_needs_a_run_that_ran(self):
+        not_run = "### Run 1\n\n2026-11-04 15:02, Linux, a cloud session, code `a91c03e7b2d4`, did not run\n\n```\nx\n```\n"
+        self.put(record("🟢 Ready to run", runs=not_run))
+        self.assertIn("no runs", self.move("🟢 Ready to run", "💡 Answered"))
+        self.assertIsNone(self.move("🟢 Ready to run", "❔ Not answered"))
+
+    def test_answered_needs_a_run(self):
+        self.put(record("🟢 Ready to run"))
+        self.assertIn("no runs", self.move("🟢 Ready to run", "💡 Answered"))
+        self.assertIsNone(self.move("🟢 Ready to run", "❔ Not answered"))
+
+    def test_finish_on_its_own_allowed(self):
+        for status in ("💡 Answered", "❔ Not answered"):
+            self.put(record("🟢 Ready to run", answer="No.", runs=RUN))
+            self.assertIsNone(self.move("🟢 Ready to run", status), status)
+
+    def test_finish_with_other_changes_refused(self):
+        self.put(record("🟢 Ready to run", runs=RUN))
+        self.assertIn("on its own", self.write(record("💡 Answered", answer="No.", runs=RUN)))
+
+    def test_finish_with_open_questions_refused(self):
+        self.put(record("🟢 Ready to run", questions="- Is one run enough?", runs=RUN))
+        self.assertIn("open questions", self.move("🟢 Ready to run", "💡 Answered"))
+
+    def test_finished_record_never_changed(self):
+        for status in ("💡 Answered", "❔ Not answered"):
+            self.put(record(status, answer="No.", runs=RUN))
+            self.assertIn("never changed", self.edit("No.", "Yes."), status)
+            self.assertIn("never changed", self.move(status, "📝 Draft"), status)
+
+    def test_finished_records_cannot_swap(self):
+        self.put(record("💡 Answered", answer="No.", runs=RUN))
+        self.assertIn("never changed", self.move("💡 Answered", "❔ Not answered"))
+
+    def test_status_word_without_emoji_refused(self):
+        self.assertIn("`📝 Draft`", self.write(record("Draft")))
+        self.put(record())
+        self.assertIn("`🟢 Ready to run`", self.move("📝 Draft", "Ready to run"))
+
+    def test_record_losing_its_status_refused(self):
+        self.put(record())
+        self.assertIn("needs `status:`", self.write(record().replace("status: 📝 Draft\n", "")))
+
+    def test_other_files_in_spikes_ignored(self):
+        self.assertIsNone(self.write("# Notes\n", os.path.join(self.tmp.name, "docs", "spikes", "README.txt")))
+        nested = os.path.join(self.tmp.name, "docs", "spikes", "old", "x.md")
+        self.assertIsNone(self.write(record("💡 Answered", runs=RUN), nested))
+
+    def test_plan_status_on_a_record_refused(self):
+        self.put(record())
+        self.assertIsNotNone(self.move("📝 Draft", "🟢 Ready to build"))
+
+
 class Command(Workspace):
     def run_hook(self, payload):
         return subprocess.run(
