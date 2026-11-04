@@ -161,6 +161,26 @@ class Corrections(Relay):
         self.commit("Correct")
         self.assertIn("code review", self.check()["permissionDecisionReason"])
 
+    def test_reports_handed_back_are_attached(self):
+        # In a Claude project thread the report comes in handbackReport; content only points to it.
+        pointer = "This agent's report was delivered to you as a message (its SubagentHandback call)."
+        self.code_review()
+        for agent, prompt, report in [
+                ("general-purpose", f"Document: {PLAN}\nRun /security-review and report.", "security finding"),
+                ("sdlc:build-reviewer", f"Document: {PLAN}\nBase: main\nReview this build.", "plan finding")]:
+            tool_input = {"subagent_type": agent, "prompt": prompt}
+            self.hook({"hook_event_name": "PreToolUse", "tool_name": "Agent", "tool_use_id": agent,
+                       "tool_input": tool_input})
+            self.hook({"hook_event_name": "PostToolUse", "tool_name": "Agent", "tool_use_id": agent,
+                       "tool_input": tool_input,
+                       "tool_response": {"handback": "send", "handbackReport": {"text": report},
+                                         "content": [{"type": "text", "text": pointer}]}})
+        self.commit("Correct")
+        prompt = self.check()["updatedInput"]["prompt"]
+        self.assertIn("security finding", prompt)
+        self.assertIn("plan finding", prompt)
+        self.assertNotIn("SubagentHandback", prompt)
+
     def test_review_in_the_background_refused(self):
         result = self.hook({"hook_event_name": "PreToolUse", "tool_name": "Agent", "tool_use_id": "bg",
                             "tool_input": {"subagent_type": "sdlc:build-reviewer", "run_in_background": True,
