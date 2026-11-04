@@ -95,9 +95,8 @@ deployment when there is somewhere to deploy to.
   so it can lead you towards good practice gently. Any other topic works the same way: ask for
   one, such as "I want to define how decisions are approved", and `/practices` gives it a topic
   file and a line in the core, like any other.
-- **Only one part is needed to build.** `/build` cannot check its work without the Check your
-  work commands, so those are the only practices it asks for. Everything else is optional until
-  you want it.
+- **Nothing is required.** Running `/practices` is optional, and so is every topic. Where a
+  practice is not recorded, `/build` works it out from the repository and says what it assumed.
 - **Offers defaults, not rules.** The answers are yours. If you have no view on a question, it
   offers the common choice and says it is a default.
 - **Starts from the repository.** Much of it is already there: build files, test setup,
