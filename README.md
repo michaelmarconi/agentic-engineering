@@ -136,9 +136,9 @@ also [open an issue](https://github.com/michaelmarconi/sdlc/issues) directly.
 
 ## Contributing
 
-Read [AGENTS.md](AGENTS.md) first. It holds the rules every skill is built to, how skills are
-tested, and the checks a change must pass. The plugin's own design decisions are recorded in
-[docs/adrs/](docs/adrs/).
+Feedback comes in through `/sdlc:feedback` or an issue; pull requests are not accepted from
+outside the project. [CONTRIBUTING.md](CONTRIBUTING.md) says why, and where the rules for
+working on the plugin live.
 
 ## Licence
 
