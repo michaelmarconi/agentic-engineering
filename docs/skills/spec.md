@@ -80,7 +80,7 @@ Changing a `👍 Accepted` spec returns it to `📝 Draft`. An older spec whose 
 it can be accepted. A capability that is no longer wanted has
 its spec deleted; git keeps the history.[^openspec]
 
-Three things keep specs in this shape:
+Two things keep specs in this shape, and a third is planned:
 
 - **Review.** Before you see a spec, `/spec` has its reviewer agent check it against a short
   list of pass-or-fail checks: the sections are all there, each requirement has one EARS rule,
@@ -97,7 +97,7 @@ Three things keep specs in this shape:
   change to a `👍 Accepted` spec that does not return it to `📝 Draft`, any other status, or a
   status without its emoji. Plans get the same kind of check; see
   [`/plan`](plan.md).
-- **Audit.** [`/audit`](audit.md) finds specs and code that no longer agree, such
+- **Audit** (not built yet). [`/audit`](audit.md) will find specs and code that no longer agree, such
   as after a spec was edited by hand, which the hook does not see.
 
 ## Using `/spec`

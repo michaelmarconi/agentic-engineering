@@ -11,8 +11,8 @@ any further arguments given. The plugin itself is never changed. The run's resul
 to evals-failed-check/results/ and the temporary folder is deleted.
 
 Example:
-  python3 scripts/failed_check_evals.py --case 'spec-*' --model sonnet --judge-model sonnet \\
-      --scaffold --allow-tools Write Edit
+  python3 scripts/failed_check_evals.py --case 'spec-*' --model opus --judge-model sonnet \\
+      --scaffold --allow-tools Write Edit -j 4 --ablation none
 """
 
 import argparse

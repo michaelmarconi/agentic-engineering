@@ -7,8 +7,8 @@ the reviews saw, so it can read exactly what the corrections changed. A model co
 could reword them, so this hook keeps them and adds them to the checker's request itself, as
 review_relay.py does for documents.
 
-Claude Code runs it on PreToolUse and PostToolUse for the Agent and Skill tools, and on
-SessionEnd. It acts only in a session where /build was allowed to start (recorded by
+Claude Code runs it on PreToolUse for the Agent tool, on PostToolUse for the Agent and Skill
+tools, and on SessionEnd. It acts only in a session where /build was allowed to start (recorded by
 fresh_session.py), and keeps:
 
 - the report of Claude Code's `/code-review`, from the Skill tool's result;

@@ -15,7 +15,7 @@ status: 📝 Draft
 ## ADRs
 
 <!-- Each decision the code must follow, or "None." -->
-- [<NNNN> <ADR title>](../adrs/<NNNN-title>.md)
+- [<NNNN> <ADR title>](../adrs/<NNNN-subject>.md)
 
 ## Decisions
 

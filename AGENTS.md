@@ -34,7 +34,8 @@ everything else is judgement.
    - A rubric at `skills/<name>/references/rubric.md`: a short list of named checks, each pass
      or fail. The skill reads it while writing and again before correcting; the reviewer reads
      it while checking.
-   - A reviewer agent at `agents/<name>-reviewer.md`, with read-only tools. It starts fresh,
+   - A reviewer agent at `agents/<name>-reviewer.md`, with read-only tools (a reviewer of code
+     may also run the commands its definition names). It starts fresh,
      reads the rubric through `${CLAUDE_PLUGIN_ROOT}`, and reads only the files its own
      definition names. It reports pass or fail for each check, quoting the evidence for each
      failure, then Other findings, Needs a person and Suggestions.
@@ -58,7 +59,7 @@ everything else is judgement.
    - A document with a status ends with an Open questions section. The skill writes there
      whatever only the person can settle, and never moves the document forward while the
      section holds anything. The status hook (`scripts/status_check.py`) refuses such a move
-     for specs and ADRs; a new document type with a status adds its rule there.
+     for specs, ADRs and plans; a new document type with a status adds its rule there.
 5. **Evaluated.** Every skill ships with evals under the plugin's `evals/`, in the case-folder
    layout that skill-creator writes and `claude plugin eval` runs. Write the rubric first, then
    the evals: each rubric check is also an eval assertion, so one rubric both tests the skill and
@@ -67,7 +68,8 @@ everything else is judgement.
    - One case per distinct behaviour the skill promises.
    - Trigger cases for the description: prompts that should and should not invoke it.
    - Each case must pass with the skill and fail, or score clearly worse, without it. A case
-     that passes either way tests nothing. Two kinds of case are the exception: cases that
+     that passes either way tests nothing. Show this once, when the case is written, with a run
+     without `--ablation none`; routine runs leave the comparison off (see Workflow). Two kinds of case are the exception: cases that
      should not trigger the skill, which pass without it by design, and guard cases for a
      rubric check Claude already meets unaided, which catch a change that breaks it. Name the
      guard's reason in its case.yaml.
@@ -99,7 +101,8 @@ everything else is judgement.
    case (starting from its proposed eval, if it has one), fix it with skill-creator, put
    `Fixes #<number>` in the fix's commit message, so GitHub closes the issue when the commit
    reaches main, and bump the version as the Workflow section says. An improvement to the
-   lifecycle itself, rather than to one skill, is specified with `/spec` first.
+   lifecycle itself, rather than to one skill, is agreed first as a change to
+   `docs/lifecycle.md`, or as an ADR when it is a decision about how the plugin is built.
 9. **Explain, don't shout.** Give the reason behind an instruction instead of stacking MUST and
    NEVER. Reserve those words for hard limits.
 10. **Safe by default.** A skill never commits, pushes, publishes, deletes or sends anything
@@ -171,7 +174,8 @@ evals-failed-check/    # cases for what a skill does when the correction check f
 agents/
   <name>-reviewer.md   # one reviewer per skill that writes documents
   language-checker.md  # checks the wording beside every reviewer, for every skill
-  correction-checker.md # checks the corrections after a review, for every skill
+  correction-checker.md # checks the corrections after a review, for every skill that writes a document
+  build-correction-checker.md # checks the corrections after a build's reviews
 hooks/
   hooks.json           # session map, status checks, the review relay, reads of the plugin's own files, fresh sessions for /build, the build branch guard, the build review relay
 scripts/               # scripts the hooks run, the skill, version, reference and status-name checks, and their tests

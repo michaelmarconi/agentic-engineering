@@ -30,7 +30,7 @@ These hold from the first step to the last, however long the build runs.
   - be hard to undo, such as a database schema, a public interface or data already stored;
   - stretch or contradict a spec, an ADR or the project's practices.
 
-  Nobody may be watching, and a build that guesses can spend hours on the wrong assumption.
+  A guess can carry a long build down the wrong path before anyone looks.
   Names, how the code is split up and which helper to use are yours, and so are the wording of
   error messages, exit codes and sensible handling of odd input: make each such choice, carry
   on, and note it with its reason for the summary.

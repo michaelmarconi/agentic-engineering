@@ -15,6 +15,7 @@ flowchart LR
     Branch --> Build[Build: tests first, commit as it goes]
     Build --> Review[Three reviews]
     Review --> Correct[Correct once, then check the corrections]
+    Review -->|no findings| Built
     Correct -->|passed| Built[Mark the plan Built]
     Built --> Hand[Hand over the branch]
     Correct -->|failed| Hand
@@ -39,8 +40,8 @@ record) instead.
 practices say, because each needs a person:
 
 - **Verifying:** starting the product and using it, the way a person would, to check it does
-  what was asked. A build may run on a machine that cannot run the product, with nobody
-  watching, so this is a separate step. Claude Code's own `/verify` does it.[^verify]
+  what was asked. A build may run on a machine that cannot run the product, so this is a
+  separate step. Claude Code's own `/verify` does it.[^verify]
 - **Opening a pull request**, if you use them.
 - **Merging** the branch into the main branch.
 
@@ -121,7 +122,7 @@ that would:
 - stretch or contradict a spec, an ADR, or your practices.
 
 To raise one, `/build` stops and hands over with the question written down. It never guesses. A
-build nobody is watching would otherwise carry on for hours on the wrong assumption.[^unattended]
+guess can carry a long build down the wrong path before anyone looks.[^assumption]
 
 Every other choice, such as names, how the code is split up, which helper to use, the wording of
 an error message or an exit code, `/build` makes itself and carries on, and the summary lists
@@ -167,7 +168,7 @@ The plan is set to `✅ Built` only when every review has passed. If the build s
 because the corrections failed their check, a requirement's tests still failed after two attempts,
 or a choice needed raising, the plan stays `🟢 Ready to build`. Sort out what is open however suits
 you: with Claude directly, by changing a spec or ADR, or by deciding a finding is wrong. Then rerun
-`/build` on the branch. It resumes, reviews again, and marks the plan Built once every review
+`/build` on the branch. It resumes, reviews again, and marks the plan `✅ Built` once every review
 passes. If you think a finding is wrong, say so when you rerun it.
 
 It ends with a short summary:
@@ -200,7 +201,7 @@ changes. To find out whether the software meets a spec, check the software again
 [^specreview]: Claude Code documentation, [Best practices: review against your spec](https://code.claude.com/docs/en/best-practices#review-against-your-spec).
 [^twice]: Claude Code documentation, [Best practices: steer the session](https://code.claude.com/docs/en/best-practices#steer-the-session):
     "after two failed corrections run `/clear` and write a better prompt instead of a third."
-[^unattended]: Claude Code documentation, [Best practices: let Claude run without you](https://code.claude.com/docs/en/best-practices#let-claude-run-without-you):
+[^assumption]: Claude Code documentation, [Best practices: let Claude run without you](https://code.claude.com/docs/en/best-practices#let-claude-run-without-you):
     "you find out the next morning that it spent the whole night building on the wrong assumption."
 [^localreview]: Claude Code documentation, [Review locally with /code-review](https://code.claude.com/docs/en/code-review-local).
 [^memory]: Claude Code documentation, [How Claude remembers your project](https://code.claude.com/docs/en/memory#agents-md).

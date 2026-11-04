@@ -19,7 +19,7 @@ decision. That belongs in an ADR.
 Not every change needs a plan. Tidying code, a routine upgrade or a quick fix that builds no
 requirement and follows no ADR is done straight from a conversation, with Claude's ordinary
 planning if it helps. If you run `/plan` on such work, it tells you so. Should that work ever
-contradict a spec, `/audit` reports it.
+contradict a spec, `/audit` will report it, once it is built.
 
 ## Where plans live
 
@@ -37,8 +37,8 @@ Several plans can be open at once, for work going on in parallel, but no two pla
 `✅ Built` may name the same requirement: if a plan already covers it, `/plan` offers to change that
 plan instead.
 
-A plan is the one document that refers to specs and ADRs, by link, because it is not kept for
-good and so its references cannot go stale. Nothing refers to a plan.
+A plan is the one document that refers to specs and ADRs, because once built it is a fixed
+record of how they stood, so its references cannot go stale. Nothing refers to a plan.
 
 ## Anatomy
 
@@ -54,7 +54,7 @@ good and so its references cannot go stale. Nothing refers to a plan.
 
 Everything except the Plan section has a fixed form, because it is checked: the Specs and ADRs
 against the documents they name, and Decisions by you at sign-off. The Plan section is free in
-shape: a one-line fix might be a single paragraph, a large feature might have sections for why,
+shape: a small change to one requirement might be a single paragraph, a large feature might have sections for why,
 approach, risks and steps. It follows this advice: start with why the work is being done and what
 it leaves for later; give one recommended approach, not the alternatives; name the files that
 matter and the existing code to reuse; and keep it short enough to scan but detailed enough to
@@ -164,7 +164,9 @@ is `🟢 Ready to build` has no open questions; only specs and ADRs are referred
 no code; and no decision is made in the Plan section that is missing from Decisions or ADRs. The
 reviewer may suggest how to improve the Plan section itself, but those suggestions never hold a
 plan back. The reviewer sees only the plan and the documents it names, not your conversation, so it
-judges the page as a newcomer would. `/plan` corrects what the reviewer finds, once, and has the
+judges the page as a newcomer would. At the same time, a language checker reads it for words a
+newcomer could not follow, by the [Plain words](../lifecycle.md#plain-words) rule. `/plan`
+corrects what both find, once, and has the
 corrections checked (see [Review process](../lifecycle.md#review-process)); then you get the plan
 with the reports.
 
