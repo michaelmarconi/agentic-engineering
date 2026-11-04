@@ -68,11 +68,19 @@ MAX_LINES, KEPT_LINES = 500, 200
 TIME_LIMIT = 540  # seconds: under the 10 minutes Claude Code's shell tool allows a command
 # Names of environment variables that hold credentials; only those named under Secrets reach a run.
 # A word of the name, between underscores, must be one of these, or the name must end in one of
-# the first five, as PGPASSWORD does; so GIT_AUTHOR_NAME and DBUS_SESSION_BUS_ADDRESS don't match.
-# A socket's path, such as SSH_AUTH_SOCK, is not a credential.
-SECRET_NAME = re.compile(r"^(?!.*_SOCK$)(?:.*(?:KEY|TOKEN|SECRET|PASSWORD|PASSWD)$|"
-                         r"(?:.*_)?(?:API_?KEY|KEY|KEYS|TOKEN|SECRET|SECRETS|PASSWORD|PASSWD|PASS|PAT|"
+# the first five, as PGPASSWORD does; so GIT_AUTHOR_NAME doesn't match.
+SECRET_NAME = re.compile(r"^(?:.*(?:KEY|TOKEN|SECRET|PASSWORD|PASSWD)$|"
+                         r"(?:.*_)?(?:API_?KEY|KEY|KEYS|TOKEN|SECRET|SECRETS|PASSWORD|PASSWD|PASS|PAT|SESSION|"
                          r"CREDENTIAL|CREDENTIALS|AUTH|OAUTH|PRIVATE|COOKIE|COOKIES)(?:_.*)?$)", re.I)
+# Names that match but that systems set for things that are not credentials.
+NOT_SECRET = re.compile(r"^(?:SSH_AUTH_SOCK|DBUS_SESSION_BUS_ADDRESS|SESSION_MANAGER|TERM_SESSION_ID|"
+                        r"XDG_SESSION_[A-Z]+)$")
+
+
+def looks_secret(name):
+    return bool(SECRET_NAME.search(name)) and not NOT_SECRET.match(name)
+
+
 FILE_LINE = re.compile(r"^\s*(?:#|//|--|;|%|/\*|<!--)?\s*file:\s*(\S+)")
 CODE_SPAN = re.compile(r"(?<!`)(`+)(?!`)(.+?)(?<!`)\1(?!`)")
 NONE = {"", "none", "none."}
@@ -366,7 +374,7 @@ def append_run(path, heading_line, body):
 def experiment_env(secrets):
     """Claude Code's environment, without the variables that look like credentials unless the
     Experiment names them under Secrets."""
-    return {name: value for name, value in os.environ.items() if name in secrets or not SECRET_NAME.search(name)}
+    return {name: value for name, value in os.environ.items() if name in secrets or not looks_secret(name)}
 
 
 # Common shapes of credentials, hidden wherever they appear in a run's output.
@@ -394,12 +402,28 @@ def hide(output, secrets):
     # such as `1` or `true` are left alone.
     values = {}
     for name, value in os.environ.items():
-        if value and (name in secrets or (SECRET_NAME.search(name) and len(value) >= 8)):
+        if value and (name in secrets or (looks_secret(name) and len(value) >= 8)):
             values.setdefault(value, name)
-    if values:
-        # One pass, longest value first, so a replacement is never searched again.
-        pattern = re.compile("|".join(re.escape(value) for value in sorted(values, key=len, reverse=True)))
-        output, hidden = pattern.subn(lambda match: f"[secret: {values[match.group(0)]}]", output)
+    # Every place any value appears, overlapping places joined, so no part of one is left showing;
+    # a joined place is named after its longest value.
+    places = []
+    for value, name in values.items():
+        start = output.find(value)
+        while start >= 0:
+            places.append([start, start + len(value), len(value), name])
+            start = output.find(value, start + 1)
+    joined = []
+    for place in sorted(places):
+        if joined and place[0] < joined[-1][1]:
+            last = joined[-1]
+            last[1] = max(last[1], place[1])
+            if place[2] > last[2]:
+                last[2], last[3] = place[2], place[3]
+        else:
+            joined.append(place)
+    for start, end, _, name in reversed(joined):
+        output = output[:start] + f"[secret: {name}]" + output[end:]
+    hidden = len(joined)
     for kind, pattern in CREDENTIALS:
         output, count = pattern.subn(lambda match: (match.groupdict().get("keep") or "") + f"[redacted: {kind}]",
                                      output)
@@ -455,20 +479,24 @@ def run(record_path, data, observation=None):
 
 def execute(command, folder, env, timeout):
     """Run the command in its own process group: (output, "exit code N"), or (output so far, None)
-    when it ran out of time, after stopping everything it started, so nothing it left running
-    keeps the secrets once the run is recorded."""
-    process = subprocess.Popen(["sh", "-c", command], cwd=folder, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-                               stdin=subprocess.DEVNULL, env=env, start_new_session=True)
-    try:
-        output, _ = process.communicate(timeout=timeout)
-        return output, f"exit code {process.returncode}"
-    except subprocess.TimeoutExpired:
+    when it ran out of time. Everything left in the group is stopped when the command ends, so
+    nothing it started keeps the secrets once the run is recorded. The output goes to a file, not
+    a pipe, so a process that leaves the group can't keep the script waiting."""
+    with tempfile.TemporaryFile() as log:
+        process = subprocess.Popen(["sh", "-c", command], cwd=folder, stdout=log, stderr=subprocess.STDOUT,
+                                   stdin=subprocess.DEVNULL, env=env, start_new_session=True)
+        try:
+            process.wait(timeout=timeout)
+            ended = f"exit code {process.returncode}"
+        except subprocess.TimeoutExpired:
+            ended = None
         try:
             os.killpg(process.pid, signal.SIGKILL)
         except OSError:
             pass
-        output, _ = process.communicate()
-        return output or b"", None
+        process.wait()
+        log.seek(0)
+        return log.read(), ended
 
 
 def main(argv=None):

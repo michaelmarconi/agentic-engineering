@@ -648,36 +648,35 @@ def runs(text):
     """The Runs section without HTML comments or surrounding blank lines; "" when it holds none.
 
     A comment starts only outside fenced code blocks, so a run's output can never hide another
-    run, and a fence inside a comment is part of the comment.
+    run, and a fence inside a comment is part of the comment. A `<!--` with no `-->` after it is
+    text, so it can never hide a run added below it.
     """
-    kept, fence, comment = [], None, False
-    for line in section(text, "Runs") or []:
+    lines = section(text, "Runs") or []
+    kept, fence, i, carry = [], None, 0, None
+    while i < len(lines):
+        line, carry = (lines[i] if carry is None else carry), None
         if fence is not None:
             kept.append(line)
             match = FENCE.match(line)
             if match and match.group(1)[0] == fence[0] and len(match.group(1)) >= len(fence) \
                     and not match.group(2).strip():
                 fence = None
+            i += 1
             continue
         match = FENCE.match(line)
-        if not comment and match:
-            fence = match.group(1)
+        start = line.find("<!--")
+        if match or start < 0:
+            fence = match.group(1) if match else None
             kept.append(line)
+            i += 1
             continue
-        rest, out = line, ""
-        while rest:
-            if comment:
-                end = rest.find("-->")
-                if end < 0:
-                    break
-                rest, comment = rest[end + 3:], False
-            else:
-                start = rest.find("<!--")
-                if start < 0:
-                    out += rest
-                    break
-                out, rest, comment = out + rest[:start], rest[start + 4:], True
-        kept.append(out)
+        end = (i, line.find("-->", start + 4)) if "-->" in line[start + 4:] else next(
+            ((j, lines[j].find("-->")) for j in range(i + 1, len(lines)) if "-->" in lines[j]), None)
+        if end is None:
+            kept.append(line)
+            i += 1
+            continue
+        carry, i = line[:start] + lines[end[0]][end[1] + 3:], end[0]
     return "\n".join(kept).strip()
 
 
