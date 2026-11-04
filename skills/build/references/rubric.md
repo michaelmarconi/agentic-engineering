@@ -36,7 +36,7 @@ failure. "The build" is every commit on the branch that the default branch does 
    stretches or contradicts a spec, an ADR or the project's practices. Names, how the code is
    split up and which helper to use are `/build`'s to choose, and so is correcting an obvious
    defect, unless what should happen instead is a real product choice that a reasonable person
-   could want made differently.
+   could want made differently, and so is any choice that is easy to change later, when the summary lists it.
 9. **Documents untouched.** The build changes no spec, ADR or brief, and changes the plan only to
    set its status.
 

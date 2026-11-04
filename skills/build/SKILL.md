@@ -41,7 +41,9 @@ These hold from the first step to the last, however long the build runs.
   for each correction where you can, and list each one in the summary. Lean towards correcting:
   stopping a build to ask about something obvious costs more than a small overstep. Raise only a
   real product choice, where a reasonable person could want something else, such as accepting
-  the input in some new way or adding an option.
+  the input in some new way or adding an option. If you would recommend one answer to a question
+  you are about to raise, and it is easy to change later, take it, list it in the summary, and
+  carry on.
 - **Never commit on the default branch, and never open a pull request or merge.** A plugin hook
   refuses a commit or push to the default branch while you build.
 - **Change no spec, ADR or brief, and the plan only through the hand-over script.**
