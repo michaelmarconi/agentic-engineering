@@ -45,11 +45,11 @@ the `sdlc:` prefix. Some skills are not built yet, and only those Claude Code li
 - `/audit` finds drift, where the code and its documents disagree, at any time.
 - `/practices` records how the project does things, such as the commands that check the work and
   the rules an agent follows, one topic at a time. It is not a step in the sequence: run it
-  whenever you need it. Practices are not a lifecycle document and have no status: they live in
-  the project instructions Claude Code loads, written for agents, so every skill sees them, and
-  `/build` follows them.
+  whenever you need it. Practices are not a lifecycle document and have no status: their essentials
+  live in `AGENTS.md`, which Claude Code loads, and longer topics in `docs/practices/`. They are
+  written for agents, so every skill sees them, and `/build` follows them.
 
-The steps fall into two phases, and some skills sit outside them.
+The steps fall into two phases, and the other skills belong to neither.
 
 ### Deciding what to build
 

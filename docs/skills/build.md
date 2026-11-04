@@ -32,7 +32,8 @@ branches and commits are named, and what must pass before work is merged. It fin
 Claude Code finds any project instructions: in `CLAUDE.md`, or in `AGENTS.md` when there is no
 `CLAUDE.md` or when `CLAUDE.md` imports it.[^memory] The `/practices` skill, run whenever you want
 to record or change a practice, asks you about them and records them under a `## Practices` heading
-there. A choice between alternatives, such as which test framework to use, is an ADR (architecture
+in `AGENTS.md`, with longer topics in `docs/practices/`, and makes sure `CLAUDE.md` imports
+`AGENTS.md`. A choice between alternatives, such as which test framework to use, is an ADR (architecture
 decision record) instead.
 
 `/build` stops once it has handed the branch back. These steps stay with you, done the way your
