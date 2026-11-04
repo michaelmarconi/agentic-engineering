@@ -63,7 +63,6 @@ Some skills are not steps in that order; you run them whenever you need them:
 
 ```mermaid
 flowchart LR
-    Practices -.->|followed by| Plan
     Practices -.->|followed by| Build
     Code[Code on the main branch] -.-> Audit
     Audit -.->|drift| Spec
@@ -85,8 +84,8 @@ flowchart LR
 - `/practices` records how the project does things, such as the commands that check the work and
   the rules an agent follows, one topic at a time. It is not a step in the sequence: run it
   whenever you need it. Practices are not a lifecycle document and have no status: they live in
-  the project instructions Claude Code loads, written for agents, and `/plan` and `/build` follow
-  them.
+  the project instructions Claude Code loads, written for agents, so every skill sees them, and
+  `/build` follows them.
 
 ## Principles
 

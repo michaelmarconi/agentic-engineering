@@ -137,7 +137,6 @@ Three skills are not steps in that order; you run them whenever you need them:
 
 ```mermaid
 flowchart LR
-    Practices -.->|followed by| Plan
     Practices -.->|followed by| Build
     Code[Code on the main branch] -.-> Audit
     Audit -.->|drift| Spec

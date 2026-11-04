@@ -4,8 +4,9 @@
 
 `/practices` is the skill for recording how your project does things, so that a coding agent
 building it works the way your team does: the commands it uses to check its work, the rules it
-follows, and where to find more detail. It is one step of [the SDLC](../../README.md); read that
-page first for the documents, skills and agents it mentions.
+follows, and where to find more detail. It is part of [the SDLC](../../README.md) but not one of
+its steps: you run it whenever you need it. Read that page first for the documents, skills and
+agents it mentions.
 
 ## What practices are
 
