@@ -33,7 +33,7 @@ Each step has a skill: instructions Claude follows for that step, which you run 
 command. The plugin's skills are named `/sdlc:<name>`, such as `/sdlc:spec`; this page leaves out
 the `sdlc:` prefix. Some skills are not built yet, and only those Claude Code lists exist.
 
-First you decide what to build:
+### Deciding what to build
 
 ```mermaid
 flowchart LR
@@ -46,7 +46,7 @@ flowchart LR
     style Pad fill:none,stroke:none
 ```
 
-Then you build it, verify it and merge it:
+### Building it
 
 ```mermaid
 flowchart LR
@@ -59,7 +59,7 @@ flowchart LR
     style Pad fill:none,stroke:none
 ```
 
-Some skills are not steps in that order; you run them whenever you need them:
+### Any time
 
 ```mermaid
 flowchart LR
@@ -70,6 +70,8 @@ flowchart LR
     ADR ~~~ Pad["#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;"]
     style Pad fill:none,stroke:none
 ```
+
+### What each skill does
 
 - `/brief` writes or changes the brief.
 - `/spec` writes or changes the spec for one capability.
