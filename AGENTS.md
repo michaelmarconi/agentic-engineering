@@ -201,7 +201,8 @@ Nothing else belongs at the root without a reason recorded in the change that ad
   you changed them or any skill: `python3 -m unittest discover -s scripts`. All must pass.
 - Run the evals for each skill you changed, once per supported model, with Sonnet as judge:
   `claude plugin eval . --case '<name>-*' --model <model> --judge-model sonnet --scaffold --allow-tools Write Edit -j 4 --ablation none`;
-  without the grant, cases that write documents can't pass.
+  without the grant, cases that write documents can't pass. A case whose prompt allows WebSearch
+  or WebFetch needs them in the grant too, or the tools are withheld and the case proves nothing.
   `--ablation none` turns off the no-plugin comparison runs, which show how much a skill adds
   but don't decide whether a case passes; turn it back on (drop the flag) to measure that, for
   example before 1.0. `-j 4` runs four cases at once.

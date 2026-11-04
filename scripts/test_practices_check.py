@@ -134,9 +134,17 @@ class PracticesCheck(unittest.TestCase):
     def test_an_import_outside_the_core_is_left_alone(self):
         self.assertIsNone(self.write("AGENTS.md", "# Agents\n@README.md\n\n## Practices\n- a\n", True))
 
-    def test_an_at_sign_inside_a_line_or_a_code_block_is_not_an_import(self):
-        text = "## Practices\n- Ask @alice before merging.\n```\n@decorator\n```\n- `@types/node`\n"
+    def test_an_at_sign_that_names_no_file_or_sits_in_code_is_not_an_import(self):
+        text = ("## Practices\n- Ask @alice before merging.\n```\n@decorator\n@docs/x.md\n```\n"
+                "- `@types/node` and `@docs/y.md` stay as written.\n- Mail me@example.com.\n")
         self.assertIsNone(self.write("AGENTS.md", text, True))
+
+    def test_an_import_inside_a_line_is_refused(self):
+        text = "## Practices\n### Files to read before a task\n- before writing tests: @docs/practices/testing.md\n"
+        self.assertRefused(self.write("AGENTS.md", text, True), "@")
+
+    def test_an_import_of_a_file_without_a_folder_inside_a_line_is_refused(self):
+        self.assertRefused(self.write(TOPIC, "# Testing\nSee @README.md for more.\n", True), "@")
 
     def test_an_import_already_there_does_not_block_other_edits(self):
         self.put(TOPIC, "# Testing\n@old.md\n- a\n")

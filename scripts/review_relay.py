@@ -79,7 +79,7 @@ REVIEWERS = {
     "adr-reviewer": ("adr", ["docs/adrs/"]),
     "feedback-reviewer": ("feedback", []),
     "plan-reviewer": ("plan", ["docs/specs/", "docs/adrs/", "docs/plans/"]),
-    "practices-reviewer": ("practices", ["docs/practices/", "docs/adrs/",
+    "practices-reviewer": ("practices", ["docs/practices/", "docs/adrs/", "CLAUDE.md",
                                          "the repository's build, dependency, CI and setup files"]),
 }
 

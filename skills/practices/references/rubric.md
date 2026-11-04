@@ -34,4 +34,5 @@ import, so the reviewer does not count lines or look for imports in the section 
     marker such as [?] or TODO. A practice that is a default the person accepted, rather than
     something they said or the repository shows, says it is a default.
 12. **CLAUDE.md imports AGENTS.md.** `CLAUDE.md` exists and has a line that is exactly
-    `@AGENTS.md`.
+    `@AGENTS.md`. A `CLAUDE.md` that holds more but lacks the line goes under Needs a person
+    instead, since the file is the person's and only they may agree to the line.

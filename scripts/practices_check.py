@@ -9,8 +9,10 @@ file, relative to the project ($CLAUDE_PROJECT_DIR, or the current directory if 
   `## ` heading, trailing blank lines left out, may be at most 50 lines.
 - Each Markdown file under `docs/practices/`: at most 200 lines.
 
-In either, a line that starts with `@` (spaces before it allowed, code blocks left out) is an
-import, which makes Claude load the whole named file into every session; none may be added.
+In either, an import makes Claude load the whole named file into every session, so none may be
+added: a line that starts with `@`, and an `@` followed by a file path (a name holding a `.` or a
+`/`) after a space anywhere in a line, as Claude Code reads them. Code blocks and code between
+backticks are left out, as are an e-mail address and an `@name` that holds no `.` or `/`.
 
 The hook refuses an edit only when it makes things worse: a file that ends over its limit and
 longer than before, or that holds more imports than before. So a file already too long can still
@@ -26,7 +28,9 @@ import sys
 
 CORE_LIMIT = 50
 TOPIC_LIMIT = 200
-IMPORT = re.compile(r"^\s*@\S")
+IMPORT = re.compile(r"^\s*@\S")  # a line that starts with @
+INLINE = re.compile(r"(?:^|(?<=\s))@(?=[^\s@]*[./])[^\s@]+")  # @ and a path, anywhere in a line
+CODE = re.compile(r"`[^`]*`")
 FENCE = re.compile(r"^\s*(```|~~~)")
 
 
@@ -63,8 +67,9 @@ def imports(lines):
     for line in lines:
         if FENCE.match(line):
             fenced = not fenced
-        elif not fenced and IMPORT.match(line):
-            count += 1
+        elif not fenced:
+            text = CODE.sub("", line)
+            count += 1 if IMPORT.match(text) else len(INLINE.findall(text))
     return count
 
 

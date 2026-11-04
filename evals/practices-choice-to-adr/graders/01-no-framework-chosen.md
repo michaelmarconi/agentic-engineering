@@ -1,7 +1,7 @@
 ---
 type: regex
 target: trace
-pattern: '"name":"(Write|Edit|MultiEdit)"[^\n]*\b(use|uses|using|with) `?(pytest|unittest)\b'
+pattern: '"name":"(Write|Edit|MultiEdit)"[^\n]*(?:\\n|":")(?:[^\\]|\\")*\b(use|uses|using|written with|written in) (pytest|unittest)\b'
 flags: i
 match: not_contains
 weight: 1

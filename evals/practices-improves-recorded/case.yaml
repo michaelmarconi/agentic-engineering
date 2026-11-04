@@ -4,3 +4,6 @@ expected_outcome: |
   Testing is recorded, but the core says `uv run pytest` and the topic file says `python -m pytest tests/`. A rerun on testing starts from what is recorded, points out the disagreement and asks which is right before changing anything.
 context:
   scaffold_script: place-files.sh
+# Guard case: Claude already notices that the core and the topic file disagree and asks before
+# changing them, without the plugin. It is kept so a change to the skill that makes it overwrite
+# recorded practices, or start a recorded topic from scratch, fails here.
