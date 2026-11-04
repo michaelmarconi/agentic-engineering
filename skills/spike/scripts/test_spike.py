@@ -106,6 +106,13 @@ class Refusals(Project):
         self.assertEqual(done.returncode, 1)
         self.assertIn("Command", done.stderr)
 
+    def test_a_record_with_no_command_takes_only_observations(self):
+        self.put(record(command=None).replace("- Secrets: None.", "- Secrets: None.\n- Command: None."))
+        done = self.run_spike()
+        self.assertEqual(done.returncode, 1)
+        self.assertIn("--observation", done.stderr)
+        self.assertEqual(self.run_spike("--observation", "It showed.").returncode, 0)
+
     def test_refuses_a_record_without_a_runs_section(self):
         self.put(record().split("## Runs")[0])
         done = self.run_spike()

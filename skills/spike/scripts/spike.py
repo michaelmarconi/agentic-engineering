@@ -15,7 +15,8 @@ folder at <data>/spikes/<hash of the project path>-<record name>/, outside the r
    `# file: check.py` or `// file: data.json`; that first line is left out of the file.
 3. Each input (`- Inputs:`) is checked to be in the commit's copy, or, for a web address, fetched
    into the folder under the last part of its path.
-4. The command (`- Command:`) runs there with `sh -c`, stdout and stderr together.
+4. The command (`- Command:`) runs there with `sh -c`, stdout and stderr together. A record whose
+   Command is "None." takes only observations.
 
 It then appends `### Run N` to Runs, with the time (UTC), the operating system, whether it ran on
 the person's machine or in a cloud session (the CLAUDE_CODE_REMOTE variable), a 12-character
@@ -188,9 +189,11 @@ def plan(text):
     experiment = section(text, "Experiment")
     if experiment is None:
         raise RecordError("the record has no `## Experiment` section")
-    commands = spans(setting(experiment, "Command"))
-    if len(commands) != 1:
-        raise RecordError("the Experiment needs one `- Command:` line holding the command in backticks")
+    command = setting(experiment, "Command")
+    commands = spans(command)
+    if command is None or len(commands) > 1:
+        raise RecordError("the Experiment needs one `- Command:` line holding the command in backticks, or "
+                          "\"None.\" when every run is the person's observation")
     commits = spans(setting(experiment, "Starts from commit"))
     if len(commits) > 1:
         raise RecordError("`- Starts from commit:` names one commit")
@@ -212,7 +215,7 @@ def plan(text):
                           "commit the copy is made from")
     code = "\n".join(section(text, "Code") or []).strip()
     return {
-        "command": commands[0], "commit": commits[0] if commits else None, "inputs": inputs,
+        "command": commands[0] if commands else None, "commit": commits[0] if commits else None, "inputs": inputs,
         "secrets": secrets, "diffs": diffs, "files": files,
         "hash": hashlib.sha256(code.encode("utf-8")).hexdigest()[:12],
     }
@@ -319,6 +322,9 @@ def run(record_path, data, observation=None):
     if observation is not None:
         return append_run(record_path, text, f"{stamp}, the person's observation, passed on by Claude",
                           fenced(observation))
+    if steps["command"] is None:
+        raise RecordError("the Experiment's `- Command:` is \"None.\", so each run is the person's observation: "
+                          "pass their words with --observation")
     missing = [name for name in steps["secrets"] if not os.environ.get(name)]
     if missing:
         return append_run(record_path, text, f"{stamp}, did not run",
