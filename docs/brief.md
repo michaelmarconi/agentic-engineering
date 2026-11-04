@@ -15,16 +15,25 @@ still does what was intended.
 
 ## Who it's for
 
-Engineers and teams who build software mainly by directing an AI coding assistant, and want
-engineering rigour while they do. They meet the problem whenever they build a product that must
-meet defined quality standards and stay easy to evolve and maintain over the long run.
+Teams who build software mainly by directing an AI coding assistant, and want engineering rigour
+while they do. They meet the problem whenever they build a product that must meet defined quality
+standards and stay easy to evolve and maintain over the long run. Three kinds of person are
+involved:
+
+- **Product people** decide what is built. They shape the brief and the specs with the assistant,
+  and approve them. They meet the problem each time a new capability is defined.
+- **Engineers** build it with the assistant. They shape the decision records and the plans, and
+  approve them. They meet the problem on every piece of work.
+- **Newcomers** join the project later and learn it by asking an AI coding assistant about it.
+  They meet the problem when they join.
 
 ## Goals
 
 By version 1.0, on one real project:
 
-- Someone new to the project can find out from its documents alone what it is for, what was
-  decided and why, and what is built.
+- Given only the repository, an AI coding assistant answers a newcomer's questions about what
+  the product is for, what was decided and why, and what is built, correctly as the project's
+  engineers judge from the documents.
 - Every lifecycle document the plugin writes is reviewed independently before a person sees it,
   as the plugin's own tests show.
 - A person approves every change to a lifecycle document's status, such as from Draft to
@@ -44,10 +53,11 @@ By version 1.0, on one real project:
   its plans and the records of its experiments. The one exception is the practices a person chooses to record, such as how the project
   is set up and tested and the rules a coding agent follows there, which go in the files coding
   agents read for their instructions.
-- Those documents are plain text files in the repository, which a person can read and maintain
-  without the plugin.
+- Those documents are plain text files in the repository, never kept in an outside service such
+  as a hosted document tool, so that a person can read and maintain them without the plugin or
+  any one vendor's tools.
 - It must work on an existing codebase that has no lifecycle documents yet, as well as on a new
-  one. Bringing the lifecycle into such a codebase will get a step of its own later.
+  one.
 - It runs inside Claude Code, and only there.
 
 ## Open questions
