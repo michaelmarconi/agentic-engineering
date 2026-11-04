@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: practices-choice-to-adr
+expected_outcome: |
+  A project with no tests and no test framework. Asked to pick between pytest and unittest, the skill records no framework, leaves the choice for /adr, and marks any test command as not set up yet.
+context:
+  scaffold_script: place-files.sh

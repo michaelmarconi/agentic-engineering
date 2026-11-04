@@ -6,6 +6,27 @@ What changed in each version of the plugin, newest first. Versions follow
 past a major version: it says what you need to change in your documents. Until 1.0.0, any
 minor version may need such a change, and its entry says so.
 
+## [0.18.0] - 2026-11-04
+
+### Added
+
+- `/sdlc:practices` records how your project does things, for coding agents to follow: the
+  commands that set it up, run it and check the work, the rules an agent follows, and the files
+  to read before a task. The essentials go in a `## Practices` section of `AGENTS.md`, and longer
+  topics in files under `docs/practices/`. On its own it gives an overview of what is recorded,
+  missing or out of step with the repository, and suggests where to start; with a topic, such as
+  `/sdlc:practices testing`, it covers that topic alone. It reads the repository first and
+  proposes what it finds, asks one question at a time, never writes a secret or makes a choice
+  between technologies, and adds the line `@AGENTS.md` to `CLAUDE.md`, asking first if you
+  already have one. Its changes are reviewed, corrected once and checked like every document.
+- A hook refuses any edit by Claude that would take the Practices section past 50 lines or a
+  practices topic file past 200, or that adds an `@` import to either.
+
+### Changed
+
+- One review can now cover several files at once, so a change to the Practices section and to a
+  topic file is reviewed, corrected and checked together.
+
 ## [0.17.1] - 2026-11-04
 
 ### Added

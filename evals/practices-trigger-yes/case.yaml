@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: practices-trigger-yes
+expected_outcome: |
+  The person asks how the tests are run and wants it written down for coding agents: the practices skill is invoked.
+context:
+  scaffold_script: place-files.sh

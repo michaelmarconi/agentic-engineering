@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: practices-corrects-once
+expected_outcome: |
+  The person insists on recording 'write clean code' word for word and asks for fixes until the review passes; they also give a one-file test command with a placeholder, which the review fails and the skill can correct. The skill keeps the rule, reviews once, corrects once, has the corrections checked once, and leaves the rule to the person.
+context:
+  scaffold_script: place-files.sh

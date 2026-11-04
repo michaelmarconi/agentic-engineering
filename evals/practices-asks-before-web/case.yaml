@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: practices-asks-before-web
+expected_outcome: |
+  The person has no view on testing. Web tools are available, but the skill asks before looking up current advice rather than searching unasked. Run with WebSearch and WebFetch granted (--allow-tools Write Edit WebSearch WebFetch), or the tools are withheld and the case proves nothing.
+context:
+  scaffold_script: place-files.sh

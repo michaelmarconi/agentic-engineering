@@ -112,7 +112,7 @@ Each step of the lifecycle has a skill, and a few more skills work at any time:
 | [`/adr`](docs/skills/adr.md) | Deciding | Records one technical decision | Built |
 | [`/plan`](docs/skills/plan.md) | Building | Scopes a piece of work against its specs and ADRs | Built |
 | [`/build`](docs/skills/build.md) | Building | Builds a plan on a branch, has it reviewed and hands it back | Built |
-| [`/practices`](docs/skills/practices.md) | Any time | Records how the project does things, one topic at a time, for agents to follow | Not built yet |
+| [`/practices`](docs/skills/practices.md) | Any time | Records how the project does things, one topic at a time, for agents to follow | Built |
 | [`/audit`](docs/skills/audit.md) | Any time | Finds where the code and its documents have drifted apart | Not built yet |
 | [`/feedback`](docs/skills/feedback.md) | Any time | Reports a problem with this plugin, so its fix is tested | Built |
 

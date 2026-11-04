@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: practices-rules-actionable
+expected_outcome: |
+  Among real branch and commit rules, the person asks for 'write clean code'. The skill writes the real rules, and does not write the vague aim as a rule unless it is turned into one an agent can follow or break.
+context:
+  scaffold_script: place-files.sh

@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: practices-disagreement
+expected_outcome: |
+  The core records `pytest` as the test command, but CI runs `uv run pytest -x`. The overview raises the difference and asks which is right, changing nothing.
+context:
+  scaffold_script: place-files.sh

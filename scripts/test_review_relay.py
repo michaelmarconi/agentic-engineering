@@ -24,6 +24,8 @@ def handed_back(report):
     """An Agent tool result whose report came through a hand-back."""
     return {"status": "completed", "agentId": "a1b2c3", "handback": "send",
             "handbackReport": {"text": report}, "content": [{"type": "text", "text": POINTER}]}
+TOPIC = "docs/practices/testing.md"
+PAIR = f"AGENTS.md, {TOPIC}"
 
 
 def feedback_request(draft, kind="bug"):
@@ -600,6 +602,68 @@ class Relay(unittest.TestCase):
         self.agent("PostToolUse", "sdlc:correction-checker", f"Document: {SPEC}\nCheck.", response="ok")
         self.run_hook({"hook_event_name": "SessionEnd", "session_id": self.session})
         self.assertEqual(self.saved(), [])
+
+    # Several files named on one Document: line (ADR 0018)
+
+    def multi(self, core="## Practices\nv1\n", topic="# Testing\nv1\n"):
+        self.put("AGENTS.md", core)
+        self.put(TOPIC, topic)
+
+    def test_several_files_are_saved_and_handed_over_each_marked_with_its_path(self):
+        self.multi()
+        self.review(agent="sdlc:practices-reviewer", prompt=f"Document: {PAIR}\nReview.")
+        self.put(TOPIC, "# Testing\nv2\n")
+        prompt = self.assertAllowed(self.check(prompt=f"Document: {PAIR}\nCheck."))["prompt"]
+        reviewed = prompt.split("=== DOCUMENT AS REVIEWED: ")[1].split("=== END DOCUMENT ===")[0]
+        self.assertIn("=== FILE: AGENTS.md ===\n## Practices\nv1\n\n=== END FILE ===", reviewed)
+        self.assertIn(f"=== FILE: {TOPIC} ===\n# Testing\nv1\n\n=== END FILE ===", reviewed)
+        self.assertNotIn("v2", reviewed)
+        self.assertIn(os.path.join(ROOT, "skills", "practices", "references", "rubric.md"), prompt)
+
+    def test_a_change_to_any_one_of_the_files_lets_the_checker_start(self):
+        self.multi()
+        self.review(agent="sdlc:practices-reviewer", prompt=f"Document: {PAIR}\nReview.")
+        self.put("AGENTS.md", "## Practices\nv2\n")
+        self.assertAllowed(self.check(prompt=f"Document: {PAIR}\nCheck."))
+
+    def test_the_checker_is_refused_when_none_of_the_files_changed(self):
+        self.multi()
+        self.review(agent="sdlc:practices-reviewer", prompt=f"Document: {PAIR}\nReview.")
+        self.assertRefused(self.check(prompt=f"Document: {PAIR}\nCheck."), "unchanged")
+
+    def test_the_order_of_the_names_does_not_matter(self):
+        self.multi()
+        self.review(agent="sdlc:practices-reviewer", prompt=f"Document: {PAIR}\nReview.", wording=None)
+        self.language(prompt=f"Document: {TOPIC}, AGENTS.md\nCheck the wording.")
+        self.put(TOPIC, "# Testing\nv2\n")
+        self.assertAllowed(self.check(prompt=f"Document: {TOPIC},AGENTS.md\nCheck."))
+
+    def test_a_file_missing_when_reviewed_is_marked_missing_and_still_reviewed(self):
+        self.put("AGENTS.md", "## Practices\nv1\n")
+        self.review(agent="sdlc:practices-reviewer", prompt=f"Document: {PAIR}\nReview.")
+        self.put(TOPIC, "# Testing\nnew\n")
+        prompt = self.assertAllowed(self.check(prompt=f"Document: {PAIR}\nCheck."))["prompt"]
+        self.assertIn(f"=== FILE: {TOPIC} ===\n(missing)\n=== END FILE ===", prompt)
+
+    def test_when_every_named_file_is_missing_nothing_is_saved(self):
+        self.review(agent="sdlc:practices-reviewer", prompt=f"Document: {PAIR}\nReview.")
+        self.assertEqual(self.saved(), [])
+
+    def test_a_single_file_whose_name_holds_a_comma_is_one_document(self):
+        odd = "docs/specs/a, b.spec.md"
+        self.put(odd, "v1\n")
+        self.review(prompt=f"Document: {odd}\nReview.")
+        self.put(odd, "v2\n")
+        prompt = self.assertAllowed(self.check(prompt=f"Document: {odd}\nCheck."))["prompt"]
+        self.assertIn(f"=== DOCUMENT AS REVIEWED: {odd} ===\nv1\n\n=== END DOCUMENT ===", prompt)
+        self.assertNotIn("=== FILE:", prompt)
+
+    def test_a_single_path_is_handed_over_without_file_markers(self):
+        self.put(SPEC, "v1\n")
+        self.review()
+        self.put(SPEC, "v2\n")
+        prompt = self.assertAllowed(self.check())["prompt"]
+        self.assertNotIn("=== FILE:", prompt)
 
     # Everything else is left alone
 

@@ -9,12 +9,17 @@ saves them and adds them to the checker's request itself.
 Claude Code runs it on PreToolUse and PostToolUse for the Agent tool, and on SessionEnd. It reads
 the hook's JSON from stdin. A reviewer's or checker's request must start with the line
 `Document: <path>`, a path relative to the project ($CLAUDE_PROJECT_DIR, or the current
-directory if unset) or absolute. A draft that is never written to a file, such as /feedback's,
+directory if unset) or absolute. It may name several files separated by commas, such as
+`Document: AGENTS.md, docs/practices/testing.md`, which are then reviewed as one document (see
+docs/adrs/0018): the hook saves each, hands the checker each between `=== FILE: <path> ===` and
+`=== END FILE ===` lines, and starts the checker once any of them has changed. The order of the
+names does not matter, and a line naming one existing file is that file even if its name holds a
+comma. A draft that is never written to a file, such as /feedback's,
 uses `Document: feedback draft` and carries the draft between `=== DRAFT ===` and
 `=== END DRAFT ===` lines in the request.
 
-Every review has two parts that run side by side: the skill's own reviewer (spec, brief, adr, plan or
-feedback) and the shared language checker, which checks the wording (see docs/adrs/0013).
+Every review has two parts that run side by side: the skill's own reviewer (spec, brief, adr, plan,
+feedback or practices) and the shared language checker, which checks the wording (see docs/adrs/0013).
 
 - Before either starts, it saves the document's text. A part joins the latest review of that
   document if it is of the same text apart from spacing and has no report from this part yet, so
@@ -74,6 +79,8 @@ REVIEWERS = {
     "adr-reviewer": ("adr", ["docs/adrs/"]),
     "feedback-reviewer": ("feedback", []),
     "plan-reviewer": ("plan", ["docs/specs/", "docs/adrs/", "docs/plans/"]),
+    "practices-reviewer": ("practices", ["docs/practices/", "docs/adrs/", "CLAUDE.md",
+                                         "the repository's build, dependency, CI and setup files"]),
 }
 
 
@@ -100,22 +107,52 @@ def project():
     return os.environ.get("CLAUDE_PROJECT_DIR") or os.getcwd()
 
 
-def key(name):
-    if name == FEEDBACK_DRAFT:
-        return FEEDBACK_DRAFT
-    full = name if os.path.isabs(name) else os.path.join(project(), name)
+def relative(path):
+    full = path if os.path.isabs(path) else os.path.join(project(), path)
     return os.path.relpath(os.path.normpath(full), project())
 
 
-def current_text(name, prompt):
-    """The document's text now: the draft in the request, or the file's contents."""
+def files(name):
+    """The files a `Document:` line names: one, or several separated by commas (ADR 0018).
+
+    A line that names an existing file is that one file, even if its name holds a comma. The
+    files are returned relative to the project and sorted, so their order on the line never
+    matters."""
     if name == FEEDBACK_DRAFT:
-        return draft(prompt)
+        return [FEEDBACK_DRAFT]
+    if "," not in name or os.path.isfile(os.path.join(project(), relative(name))):
+        return [relative(name)]
+    return sorted({relative(p.strip()) for p in name.split(",") if p.strip()})
+
+
+def key(name):
+    return ", ".join(files(name))
+
+
+def read(path):
     try:
-        with open(os.path.join(project(), name), encoding="utf-8") as f:
+        with open(os.path.join(project(), path), encoding="utf-8") as f:
             return f.read()
     except (OSError, ValueError):
         return None
+
+
+def current_text(name, prompt):
+    """The document's text now: the draft in the request, or the files' contents.
+
+    Several files are joined, each between `=== FILE: <path> ===` and `=== END FILE ===`
+    lines, with a file that does not exist shown as `(missing)`; when none exists there is no
+    text."""
+    if name == FEEDBACK_DRAFT:
+        return draft(prompt)
+    paths = files(name)
+    if len(paths) == 1:
+        return read(paths[0])
+    texts = [read(p) for p in paths]
+    if all(t is None for t in texts):
+        return None
+    return "".join(f"=== FILE: {p} ===\n" + ("(missing)" if t is None else t) + "\n=== END FILE ===\n"
+                   for p, t in zip(paths, texts))
 
 
 def folder(session):

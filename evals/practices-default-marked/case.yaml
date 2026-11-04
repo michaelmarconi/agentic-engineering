@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: practices-default-marked
+expected_outcome: |
+  The person has no view on test file names and asks for a default without a web search. The skill writes the naming practice marked as a default, and says the proposal comes from Claude's own knowledge.
+context:
+  scaffold_script: place-files.sh

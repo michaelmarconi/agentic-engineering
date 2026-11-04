@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: practices-claude-import-asks
+expected_outcome: |
+  CLAUDE.md exists without the @AGENTS.md line. The skill records the commands in AGENTS.md but asks before adding the line to the person's CLAUDE.md.
+context:
+  scaffold_script: place-files.sh

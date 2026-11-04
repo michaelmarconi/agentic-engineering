@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: practices-leaves-rest-alone
+expected_outcome: |
+  AGENTS.md has two sections of its own, and the README's test command is out of date. The skill adds its core to AGENTS.md and leaves the rest of it, the README and CONTRIBUTING.md alone.
+context:
+  scaffold_script: place-files.sh

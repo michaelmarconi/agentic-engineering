@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: practices-overview
+expected_outcome: |
+  A bare /practices in a Python project with tests and no recorded practices gives an overview: the topics with their state, the note that tests exist but no test command is recorded, one suggested topic, and an invitation to a topic of the person's own. It writes nothing yet.
+context:
+  scaffold_script: place-files.sh

@@ -177,7 +177,7 @@ agents/
   correction-checker.md # checks the corrections after a review, for every skill that writes a document
   build-correction-checker.md # checks the corrections after a build's reviews
 hooks/
-  hooks.json           # session map, status checks, the review relay, reads of the plugin's own files, fresh sessions for /build, the build branch guard, the build review relay
+  hooks.json           # session map, status checks, the review relay, reads of the plugin's own files, fresh sessions for /build, the build branch guard, the build review relay, the practices limits
 scripts/               # scripts the hooks run, the skill, version, reference and status-name checks, and their tests
 docs/
   adrs/                # this plugin's own architecture decision records
@@ -201,7 +201,8 @@ Nothing else belongs at the root without a reason recorded in the change that ad
   you changed them or any skill: `python3 -m unittest discover -s scripts`. All must pass.
 - Run the evals for each skill you changed, once per supported model, with Sonnet as judge:
   `claude plugin eval . --case '<name>-*' --model <model> --judge-model sonnet --scaffold --allow-tools Write Edit -j 4 --ablation none`;
-  without the grant, cases that write documents can't pass.
+  without the grant, cases that write documents can't pass. A case whose prompt allows WebSearch
+  or WebFetch needs them in the grant too, or the tools are withheld and the case proves nothing.
   `--ablation none` turns off the no-plugin comparison runs, which show how much a skill adds
   but don't decide whether a case passes; turn it back on (drop the flag) to measure that, for
   example before 1.0. `-j 4` runs four cases at once.
