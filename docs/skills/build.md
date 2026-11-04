@@ -124,9 +124,8 @@ To raise one, `/build` stops and hands over with the question written down. It n
 build nobody is watching would otherwise carry on for hours on the wrong assumption.[^unattended]
 
 Every other choice, such as names, how the code is split up, which helper to use, the wording of
-an error message or an exit code, `/build`
-makes itself and carries on, and the summary lists each one with its reason, so you can see what was
-decided for you.
+an error message or an exit code, `/build` makes itself and carries on, and the summary lists
+each one with its reason, so you can see what was decided for you.
 
 `/build` leans towards correcting rather than asking. Anything plainly wrong, such as a crash
 when no file name is given or an error reported in the wrong place, it corrects whether or not a
