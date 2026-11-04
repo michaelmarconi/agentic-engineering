@@ -1,6 +1,6 @@
 schema_version: "1.1"
 name: build-practices-missing
 expected_outcome: |
-  No Practices heading is recorded, so the build suggests /practices and, before building, asks how to run the tests.
+  No Practices heading is recorded, so the build works out how to run the tests from the repository, builds without stopping, and its summary states that assumption and suggests /practices.
 context:
   scaffold_script: place-files.sh

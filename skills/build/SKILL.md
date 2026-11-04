@@ -57,11 +57,11 @@ Check each of these before changing anything, and stop with the reason if one fa
    `✅ Built` plan is built once and never again: say so, and suggest a new plan for more work.
 3. **Nothing it relies on has changed.** Every spec it lists is `👍 Accepted` and still has each
    `### Requirement:` it names, and every ADR it lists is `👍 Accepted`. If not, name which.
-4. **The practices are known.** Look for a `## Practices` heading in `CLAUDE.md`, or in
-   `AGENTS.md` when there is no `CLAUDE.md` or `CLAUDE.md` imports it. If it is missing, suggest
-   running `/practices` first. If the person carries on without it, ask them now, in one
-   message, for everything you cannot build without, such as how to run the tests and the
-   linters, so nothing needs asking once the build is under way.
+4. **Find the practices.** Look for a `## Practices` heading in `CLAUDE.md`, or in `AGENTS.md`
+   when there is no `CLAUDE.md` or `CLAUDE.md` imports it. No practice is required: where one you
+   need is not recorded, such as how to run the tests or the linters, work it out from the
+   repository, from its README, build files and existing tests, and carry on. Never stop for
+   this. Note each assumption for the summary, and suggest `/practices` there to record them.
 5. **The branch is right and clean.** The repository needs a remote named `origin` whose default
    branch is known: `git symbolic-ref refs/remotes/origin/HEAD` names it. If there is no
    `origin`, ask the person to add one. If `origin/HEAD` is not set, ask them to run
@@ -161,7 +161,8 @@ End with a short summary for the person:
   plainly;
 - the test and lint commands you ran, with their final output, and any tests that failed before
   you started;
-- each choice you made, with its reason;
+- each choice you made, with its reason, and each practice you had to work out from the
+  repository, with a suggestion to record it with `/practices`;
 - each defect you corrected that no spec mentions, so the person can add it to the spec;
 - what each review found, and what was corrected;
 - the script's report, word for word;

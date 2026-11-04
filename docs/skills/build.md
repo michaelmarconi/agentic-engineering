@@ -62,10 +62,10 @@ anything, `/build` checks:
 - **Nothing it relies on has changed.** Every spec the plan names is still `👍 Accepted`, and every
   ADR is still `👍 Accepted`. If one has changed since you signed the plan off, `/build` stops and
   says which.
-- **Your practices are recorded.** `/build` looks for the `## Practices` heading. If it is
-  missing, it suggests running `/practices` first. If you carry on without it, `/build` asks you
-  now for anything it cannot build without, such as how to run the tests, so nothing needs asking
-  once the build is under way.
+- **Your practices, if any.** `/build` looks for the `## Practices` heading. None is required:
+  where a practice it needs is not recorded, such as how to run the tests, it works it out from
+  your repository and carries on, and its summary says what it assumed and suggests `/practices`
+  to record it.
 - **It is on a branch of its own, with nothing left uncommitted.** `/build` never builds on your
   repository's default branch. If you are on it, it makes a branch named after the plan. If you are
   already on another branch, it builds there, since some places that run Claude Code, such as its
