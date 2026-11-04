@@ -22,8 +22,9 @@ issue) and the shared language checker, which checks the wording (see docs/adrs/
   review. The text kept is the copy the reviewer saw. A few recent reviews are kept, and always
   the newest the reviewer ran in, so a part run again on its own never wipes the review it
   follows.
-- When either finishes, it saves that part's report in the review its run started in. Claude
-  Code gives both events of one run the same `tool_use_id`; without one, the agent's name
+- When either finishes, it saves that part's report in the review its run started in. In a
+  Claude project thread the report is the one the agent handed back, not the tool's text, which
+  there only says where the report went. Claude Code gives both events of one run the same `tool_use_id`; without one, the agent's name
   stands in for it.
 - Either part started in the background is refused, when reviews are being saved: its report
   would arrive after the hook has already seen the run finish.
@@ -199,7 +200,13 @@ def forget(session, name):
 
 
 def response_text(response):
+    """The agent's report. In a Claude project thread the subagent hands it back through its
+    SubagentHandback tool: it is then in `handbackReport`, and `content` only says where it went."""
     if isinstance(response, dict):
+        if "handback" in response or "handbackReport" in response:
+            report = response.get("handbackReport")
+            text = report.get("text") if isinstance(report, dict) else None
+            return text if isinstance(text, str) else ""
         blocks = response.get("content") or []
         return "".join(b.get("text") or "" for b in blocks if isinstance(b, dict))
     return response if isinstance(response, str) else ""

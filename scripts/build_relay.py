@@ -16,7 +16,8 @@ fresh_session.py), and keeps:
   `Document: <plan>` and whose second line starts `Run /security-review`;
 - the report of the `build-reviewer` agent, whose request's first line is `Document: <plan>`.
 
-Each is kept with the commit checked out when it ran. A report of a later commit starts a new
+In a Claude project thread an agent's report is the one it handed back, not the tool's text,
+which there only says where the report went. Each is kept with the commit checked out when it ran. A report of a later commit starts a new
 set, so the checker only ever gets reports of one commit.
 
 Before the `build-correction-checker` starts, it appends the three reports, the reviewed commit
@@ -132,7 +133,12 @@ def part_of(tool_input):
 
 
 def text_of(response):
+    """The agent's or skill's report; one handed back in a Claude project thread, as review_relay.py."""
     if isinstance(response, dict):
+        if "handback" in response or "handbackReport" in response:
+            report = response.get("handbackReport")
+            text = report.get("text") if isinstance(report, dict) else None
+            return text if isinstance(text, str) else ""
         if isinstance(response.get("result"), str):
             return response["result"]
         blocks = response.get("content") or []
