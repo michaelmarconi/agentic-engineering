@@ -196,7 +196,7 @@ Nothing else belongs at the root without a reason recorded in the change that ad
   `python3 -m unittest discover -s skills/<name>/scripts`, and for the plugin's own scripts if
   you changed them or any skill: `python3 -m unittest discover -s scripts`. All must pass.
 - Run the evals for each skill you changed, once per supported model, with Sonnet as judge:
-  `claude plugin eval . --case '<name>-*' --model <model> --judge-model sonnet --scaffold --allow-tools Write Edit`;
+  `claude plugin eval . --case '<name>-*' --model <model> --judge-model sonnet --scaffold --allow-tools Write Edit -j 4 --ablation none`;
   without the grant, cases that write documents can't pass.
   The supported models are those named in README.md; a change merges only if its cases pass
   on every one. Evals are billed model runs: run the ones you touched, never the whole suite
@@ -206,7 +206,7 @@ Nothing else belongs at the root without a reason recorded in the change that ad
   in `evals-failed-check/agents/` replace the agents they are named after: each reviewer always
   reports a correctable failure, and the checker always fails with a known finding. The cases live outside `evals/` so the real plugin never runs them. If you
   change a skill's review sequence, run its case through the script that builds that copy:
-  `python3 scripts/failed_check_evals.py --case '<name>-*' --model <model> --judge-model sonnet --scaffold --allow-tools Write Edit`.
+  `python3 scripts/failed_check_evals.py --case '<name>-*' --model <model> --judge-model sonnet --scaffold --allow-tools Write Edit -j 4 --ablation none`.
 - Bump `version` in `.claude-plugin/plugin.json` in any change that alters what users receive,
   since installed copies only update when the version string changes. Follow
   [Semantic Versioning](https://semver.org/spec/v2.0.0.html): patch for a fix, minor for a new
