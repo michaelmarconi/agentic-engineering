@@ -41,7 +41,9 @@ By version 1.0, on one real project:
 
 - It must work when installed in any repository without changing anything there, apart from the
   documents it writes for the lifecycle: the product's brief, its specs, its decision records and
-  its plans.
+  its plans. The one exception is the practices a person chooses to record: how the project is
+  set up, tested and released, and the rules a coding agent follows there, which are written
+  where coding agents look for such instructions.
 - Those documents are plain text files in the repository, which a person can read and maintain
   without the plugin.
 - It must work on an existing codebase that has no lifecycle documents yet, as well as on a new
