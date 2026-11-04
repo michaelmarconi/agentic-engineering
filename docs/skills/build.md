@@ -62,13 +62,14 @@ anything, `/build` checks:
 - **Nothing it relies on has changed.** Every spec the plan names is still `👍 Accepted`, and every
   ADR is still `👍 Accepted`. If one has changed since you signed the plan off, `/build` stops and
   says which.
-- **Your practices, if any.** `/build` looks for the `## Practices` heading. None is required:
+- **Your practices, if any.** `/build` looks for the `## Practices` heading, and reads any file
+  it names to read before a task like this. None is required:
   where a practice it needs is not recorded, such as how to run the tests, it works it out from
   your repository and carries on, and its summary says what it assumed and suggests `/practices`
   to record it.
 - **It is on a branch of its own, with nothing left uncommitted.** `/build` never builds on your
-  repository's default branch. If you are on it, it makes a branch named after the plan. If you are
-  already on another branch, it builds there, since some places that run Claude Code, such as its
+  repository's default branch. If you are on it, it makes a branch named as your practices say,
+  or else after the plan. If you are already on another branch, it builds there, since some places that run Claude Code, such as its
   cloud sessions, choose the branch name for you. If anything is uncommitted, it stops, so your
   own work never gets mixed into the build. While it runs, a plugin hook refuses any commit or
   push to the default branch.

@@ -58,7 +58,8 @@ Check each of these before changing anything, and stop with the reason if one fa
 3. **Nothing it relies on has changed.** Every spec it lists is `👍 Accepted` and still has each
    `### Requirement:` it names, and every ADR it lists is `👍 Accepted`. If not, name which.
 4. **Find the practices.** Look for a `## Practices` heading in `CLAUDE.md`, or in `AGENTS.md`
-   when there is no `CLAUDE.md` or `CLAUDE.md` imports it. No practice is required: where one you
+   when there is no `CLAUDE.md` or `CLAUDE.md` imports it, and read any file it says to read
+   before a task like this one. No practice is required: where one you
    need is not recorded, such as how to run the tests or the linters, work it out from the
    repository, from its README, build files and existing tests, and carry on. Never stop for
    this. Note each assumption for the summary, and suggest `/practices` there to record them.
@@ -66,9 +67,10 @@ Check each of these before changing anything, and stop with the reason if one fa
    branch is known: `git symbolic-ref refs/remotes/origin/HEAD` names it. If there is no
    `origin`, ask the person to add one. If `origin/HEAD` is not set, ask them to run
    `git remote set-head origin -a`; never run it yourself, since it changes their repository.
-   The security review and the hand-over both need it. If anything is uncommitted, stop, so the person's
-   own work is never mixed into the build. If you are on the default branch, create and switch
-   to `build/<plan file name without its date and .md>`; on any other branch, build there, since
+   The security review and the hand-over both need it. If anything is uncommitted, stop, so the
+   person's own work is never mixed into the build. If you are on the default branch, create and
+   switch to a branch named as the practices say, or else `build/<plan file name without its
+   date and .md>`; on any other branch, build there, since
    some places that run Claude Code choose the branch name for you.
 6. **The reviews can run.** `/code-review` and `/security-review` must both be among the skills
    you can use, since every build has all three reviews. If either is missing, stop and say
