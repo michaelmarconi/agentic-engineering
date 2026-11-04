@@ -15,8 +15,8 @@ merged, how it is released. They are the same for every piece of work, so they a
 once rather than in each plan. They are grouped by topic, such as testing, security or releasing.
 
 Practices are written for coding agents, such as Claude. Your README, contributing guide and other
-documents for people stay yours: `/practices` may read them to learn how you work, but never
-changes them.
+documents for people stay yours: `/practices` may read them to learn how you work, but changes
+them only if you explicitly ask it to.
 
 A choice between real alternatives, such as which language, test framework or library to use, is
 not a practice: it is a technical decision, so it belongs in an [ADR](adr.md) (architecture
@@ -122,7 +122,8 @@ will use. Whenever the repository and the practices disagree, the overview says 
 - **Leaves choices to `/adr`.** When a question turns out to be a choice between alternatives, it
   says so and leaves it for you to record with `/adr`, as `/plan` does.
 - **Changes only the practices.** It writes only the `## Practices` section and the files under
-  `docs/practices/`, and leaves the rest of the instructions file alone. If the project has
+  `docs/practices/`, and leaves the rest of the instructions file alone. It never touches your
+  README, contributing guide or any other file unless you explicitly ask it to. If the project has
   neither `CLAUDE.md` nor `AGENTS.md`, it creates `CLAUDE.md`. It never commits: you look at the
   change and commit it.
 
