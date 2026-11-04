@@ -65,7 +65,8 @@ edit Runs: a plugin hook refuses it. For each run:
 python3 "${CLAUDE_SKILL_DIR}/scripts/spike.py" run <the record's path> --data "${CLAUDE_PLUGIN_DATA}"
 ```
 
-Run it once per call, as many times as `- Runs:` says, counting the runs already in Runs whose
+Give the shell command a 10-minute timeout: the script stops a run still going after 9 minutes
+and records that. Run it once per call, as many times as `- Runs:` says, counting the runs already in Runs whose
 code hash matches the latest code, so a resumed spike carries on where it stopped. After each run,
 read its output: stop early only when it shows the result named under `- Stop early if:`. If the
 script refuses, do what its reason says.

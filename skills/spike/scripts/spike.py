@@ -18,12 +18,14 @@ folder at <data>/spikes/<hash of the project path>-<record name>/, outside the r
 4. The command (`- Command:`) runs there with `sh -c`, stdout and stderr together. A record whose
    Command is "None." takes only observations.
 
-It then appends `### Run N` to Runs, with the time (UTC), the operating system, whether it ran on
+It then adds `### Run N` at the end of the Runs section, reading the record afresh, with the time (UTC), the operating system, whether it ran on
 the person's machine or in a cloud session (the CLAUDE_CODE_REMOTE variable), a 12-character
 SHA-256 hash of the Code section, the command's exit code, and the output in a code fence longer
 than any run of backticks in it. The value of each secret named in `- Secrets:` is replaced by
 `[secret: NAME]`; output over 500 lines keeps its first and last 200, saying how many were left out.
-A secret that is not set is recorded as a run that did not happen, saying which, without running
+Variables whose names look like credentials, such as *_TOKEN or *_KEY, are kept from the
+experiment unless named under Secrets. A run still going after 9 minutes is stopped and recorded
+as such. A secret that is not set is recorded as a run that did not happen, saying which, without running
 anything. With --observation, it records the person's words, marked as their observation, instead.
 
 Finally it deletes the working folder, and any folder this project left in <data>/spikes/ for a
@@ -44,11 +46,17 @@ import tarfile
 import urllib.parse
 import urllib.request
 
-READY_TO_RUN = "🟢 Ready to run"
-FINISHED = ("💡 Answered", "❔ Not answered")
-VARIATION = "️"
+# The record is read with the status hook's own parsing, so the two always agree on where each
+# section ends and what the status is. The hook lives in the plugin's scripts/ folder.
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "..", "scripts"))
+from status_check import (FENCE, NOT_ANSWERED, READY_TO_RUN, SPIKE_STATUSES, ANSWERED,  # noqa: E402
+                          headings_allowed, lifecycle_status, section)
+
+FINISHED = (ANSWERED, NOT_ANSWERED)
 MAX_LINES, KEPT_LINES = 500, 200
-FENCE = re.compile(r"^ {0,3}(`{3,}|~{3,})(.*)$")
+TIME_LIMIT = 540  # seconds: under the 10 minutes Claude Code's shell tool allows a command
+# Names of environment variables that hold credentials; only those named under Secrets reach a run.
+SECRET_NAME = re.compile(r"KEY|TOKEN|SECRET|PASSWORD|PASSWD|CREDENTIAL|AUTH|PRIVATE|SESSION|COOKIE", re.I)
 FILE_LINE = re.compile(r"^\s*(?:#|//|--|;|%|/\*|<!--)?\s*file:\s*(\S+)")
 CODE_SPAN = re.compile(r"(?<!`)(`+)(?!`)(.+?)(?<!`)\1(?!`)")
 NONE = {"", "none", "none."}
@@ -58,52 +66,8 @@ class RecordError(Exception):
     """The record can't be run as it stands; nothing was recorded."""
 
 
-def outside_fences(lines):
-    """Yield (index, line, fenced) for each line, fenced being True inside a fenced code block."""
-    fence = None
-    for index, line in enumerate(lines):
-        match = FENCE.match(line)
-        if fence is None and match:
-            fence = match.group(1)
-            yield index, line, True
-        elif fence is not None:
-            if closes(line, fence):
-                fence = None
-            yield index, line, True
-        else:
-            yield index, line, False
-
-
-def section_bounds(text, heading):
-    """(first line, end line) of the `## <heading>` section's body, or None; headings in fences don't count."""
-    lines = text.splitlines()
-    start = None
-    for index, line, fenced in outside_fences(lines):
-        if fenced:
-            continue
-        if start is None and line.strip().lower() == "## " + heading.lower():
-            start = index + 1
-        elif start is not None and (line.startswith("# ") or line.startswith("## ")):
-            return start, index
-    return (start, len(lines)) if start is not None else None
-
-
-def section(text, heading):
-    """The lines of the `## <heading>` section, or None if the record has none."""
-    bounds = section_bounds(text, heading)
-    return None if bounds is None else text.splitlines()[bounds[0]:bounds[1]]
-
-
 def status_of(text):
-    lines = text.lstrip("﻿").splitlines()
-    if not lines or lines[0].strip() != "---":
-        return None
-    for line in lines[1:]:
-        if line.strip() == "---":
-            return None
-        if re.match(r"status\s*:", line, re.IGNORECASE):
-            return line.split(":", 1)[1].split("#", 1)[0].strip().strip("\"'").replace(VARIATION, "")
-    return None
+    return lifecycle_status(text, SPIKE_STATUSES)
 
 
 def setting(experiment, label):
@@ -173,16 +137,17 @@ def work_folder(data, record_path):
 
 
 def inside(folder, name):
-    """The path of `name` inside `folder`, refusing absolute paths and any that leave it."""
+    """The path of `name` inside `folder`, refusing absolute paths and any that leave it, even by a link."""
     full = os.path.normpath(os.path.join(folder, name))
-    if os.path.isabs(name) or not full.startswith(os.path.abspath(folder) + os.sep):
+    root = os.path.realpath(folder)
+    if os.path.isabs(name) or not os.path.realpath(full).startswith(root + os.sep):
         raise RecordError(f"the file {name} must be a relative path inside the working folder")
     return full
 
 
 def plan(text):
     """Everything the run needs from the record, or a RecordError saying what doesn't follow the template."""
-    if status_of(text) != READY_TO_RUN.replace(VARIATION, ""):
+    if status_of(text) != READY_TO_RUN:
         raise RecordError(f"the record must be `{READY_TO_RUN}` to run; the person signs the design off first")
     if section(text, "Runs") is None:
         raise RecordError("the record has no `## Runs` section; add it from the template, last")
@@ -235,11 +200,18 @@ def fill(folder, project, steps):
         archive = git(project, "archive", "--format=tar", commit)
         if archive.returncode != 0:
             raise RecordError(f"git archive {commit} failed: {archive.stderr.decode(errors='replace').strip()}")
-        with tarfile.open(fileobj=io.BytesIO(archive.stdout)) as tar:
-            if hasattr(tarfile, "data_filter"):
-                tar.extractall(folder, filter="data")
-            else:
-                tar.extractall(folder)
+        try:
+            with tarfile.open(fileobj=io.BytesIO(archive.stdout)) as tar:
+                if hasattr(tarfile, "data_filter"):
+                    tar.extractall(folder, filter="data")
+                else:
+                    for member in tar.getmembers():
+                        inside(folder, member.name)
+                        if member.issym() or member.islnk():
+                            inside(folder, os.path.join(os.path.dirname(member.name), member.linkname))
+                    tar.extractall(folder)
+        except (tarfile.TarError, OSError) as error:
+            raise RecordError(f"could not copy commit {commit} into the working folder ({error})")
     for diff in steps["diffs"]:
         applied = subprocess.run(["git", "apply", "--whitespace=nowarn", "-"], cwd=folder, input=diff.encode("utf-8"),
                                  capture_output=True)
@@ -248,14 +220,17 @@ def fill(folder, project, steps):
                               f"{applied.stderr.decode(errors='replace').strip()}")
     for name, content in steps["files"]:
         path = inside(folder, name)
-        os.makedirs(os.path.dirname(path), exist_ok=True)
-        with open(path, "w", encoding="utf-8") as f:
-            f.write(content)
+        try:
+            os.makedirs(os.path.dirname(path), exist_ok=True)
+            with open(path, "w", encoding="utf-8") as f:
+                f.write(content)
+        except OSError as error:
+            raise RecordError(f"could not write {name} into the working folder ({error})")
     for name in steps["inputs"]:
         if "://" in name:
             target = inside(folder, os.path.basename(urllib.parse.urlparse(name).path.rstrip("/")) or "input")
             try:
-                with urllib.request.urlopen(name) as response, open(target, "wb") as f:
+                with urllib.request.urlopen(name, timeout=60) as response, open(target, "wb") as f:
                     shutil.copyfileobj(response, f)
             except (OSError, ValueError) as error:
                 raise RecordError(f"could not fetch the input {name} ({error})")
@@ -300,16 +275,43 @@ def remove_leftovers(data, record_path):
             status = status_of(read_record(record)) if os.path.exists(record) else None
         except RecordError:
             continue
-        if status is None or status in [value.replace(VARIATION, "") for value in FINISHED]:
+        if status is None or status in FINISHED:
             shutil.rmtree(os.path.join(spikes, name), ignore_errors=True)
 
 
-def append_run(path, text, heading_line, body):
-    number = len(re.findall(r"^### Run \d+\s*$", "\n".join(section(text, "Runs")), re.M)) + 1
+def append_run(path, heading_line, body):
+    """Add a run at the end of the Runs section, reading the record afresh so no edit made while
+    the experiment ran is lost."""
+    text = read_record(path)
+    if status_of(text) != READY_TO_RUN:
+        raise RecordError(f"the record stopped being `{READY_TO_RUN}` while the experiment ran; nothing was recorded")
+    lines = text.splitlines()
+    allowed = headings_allowed(lines)
+    start = next((i for i, line in enumerate(lines) if allowed[i] and line.strip().lower() == "## runs"), None)
+    if start is None:
+        raise RecordError("the record has no `## Runs` section; add it from the template, last")
+    end = next((i for i in range(start + 1, len(lines)) if allowed[i] and lines[i].startswith(("# ", "## "))), len(lines))
+    number = sum(1 for i in range(start + 1, end) if allowed[i] and re.fullmatch(r"### Run \d+\s*", lines[i])) + 1
     entry = f"### Run {number}\n\n{heading_line}\n\n{body}\n"
+    before = "\n".join(lines[:end]).rstrip("\n")
+    after = "\n".join(lines[end:])
+    new = before + "\n\n" + entry + ("\n" + after + "\n" if after else "")
     with open(path, "w", encoding="utf-8") as f:
-        f.write(text.rstrip("\n") + "\n\n" + entry)
+        f.write(new)
     return entry
+
+
+def experiment_env(secrets):
+    """Claude Code's environment, without the variables that look like credentials unless the
+    Experiment names them under Secrets."""
+    return {name: value for name, value in os.environ.items() if name in secrets or not SECRET_NAME.search(name)}
+
+
+def hide(output, secrets):
+    """Replace each secret's value by its name, longest value first, so one never half-hides another."""
+    for name in sorted(secrets, key=lambda n: len(os.environ[n]), reverse=True):
+        output = output.replace(os.environ[name], f"[secret: {name}]")
+    return output
 
 
 def run(record_path, data, observation=None):
@@ -320,29 +322,32 @@ def run(record_path, data, observation=None):
     steps = plan(text)
     stamp = f"{where()}, code `{steps['hash']}`"
     if observation is not None:
-        return append_run(record_path, text, f"{stamp}, the person's observation, passed on by Claude",
+        return append_run(record_path, f"{stamp}, the person's observation, passed on by Claude",
                           fenced(observation))
     if steps["command"] is None:
         raise RecordError("the Experiment's `- Command:` is \"None.\", so each run is the person's observation: "
                           "pass their words with --observation")
     missing = [name for name in steps["secrets"] if not os.environ.get(name)]
     if missing:
-        return append_run(record_path, text, f"{stamp}, did not run",
+        return append_run(record_path, f"{stamp}, did not run",
                           fenced(f"Did not run: the secret {', '.join(missing)} is not set in Claude Code's environment."))
     folder = work_folder(data, record_path)
     shutil.rmtree(folder, ignore_errors=True)
     os.makedirs(folder)
     try:
         fill(folder, project_of(record_path), steps)
-        done = subprocess.run(["sh", "-c", steps["command"]], cwd=folder, stdout=subprocess.PIPE,
-                              stderr=subprocess.STDOUT, stdin=subprocess.DEVNULL)
+        try:
+            done = subprocess.run(["sh", "-c", steps["command"]], cwd=folder, stdout=subprocess.PIPE,
+                                  stderr=subprocess.STDOUT, stdin=subprocess.DEVNULL,
+                                  env=experiment_env(steps["secrets"]), timeout=TIME_LIMIT)
+            output, ended = done.stdout, f"exit code {done.returncode}"
+        except subprocess.TimeoutExpired as stopped:
+            output, ended = stopped.stdout or b"", f"stopped after {TIME_LIMIT // 60} minutes without finishing"
     finally:
         shutil.rmtree(folder, ignore_errors=True)
         remove_leftovers(data, record_path)
-    output = done.stdout.decode("utf-8", errors="replace")
-    for name in steps["secrets"]:
-        output = output.replace(os.environ[name], f"[secret: {name}]")
-    return append_run(record_path, text, f"{stamp}, exit code {done.returncode}", fenced(shorten(output)))
+    text_output = hide(output.decode("utf-8", errors="replace"), steps["secrets"])
+    return append_run(record_path, f"{stamp}, {ended}", fenced(shorten(text_output)))
 
 
 def main(argv=None):

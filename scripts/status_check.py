@@ -64,13 +64,13 @@ For a spike record it refuses:
 - any move but `📝 Draft` to `🟢 Ready to run`, `🟢 Ready to run` back to `📝 Draft` while Runs is
   empty, and `🟢 Ready to run` to `💡 Answered` or `❔ Not answered`;
 - a move forward in the same edit as any other change, or while the Open questions section is
-  missing or not empty or "None.";
+  missing or not empty or "None.", and `💡 Answered` while Runs holds no run;
 - a change to the Question, What would answer it or Experiment section of a `🟢 Ready to run`
   record that does not return it to `📝 Draft`;
 - any change to a `💡 Answered` or `❔ Not answered` record, which is final. Deleting it is not an
   edit, so it is never refused.
 
-HTML comments in the Runs section, such as the template's, do not count as runs.
+HTML comments in the Runs section outside its code fences do not count as runs.
 
 Whether a person really accepted an ADR or signed off a plan is beyond a hook; the skill asks them.
 
@@ -645,8 +645,22 @@ def adr_rules(path, before, after, old, new):
 
 
 def runs(text):
-    """The Runs section without HTML comments or surrounding blank lines; "" when it holds none."""
-    return re.sub(r"<!--.*?-->", "", "\n".join(section(text, "Runs") or []), flags=re.S).strip()
+    """The Runs section without HTML comments or surrounding blank lines; "" when it holds none.
+
+    Comments are dropped only outside fenced code blocks, so a run's output can never hide
+    another run.
+    """
+    lines = section(text, "Runs") or []
+    kept, outside = [], []
+    for line, allowed in zip(lines, headings_allowed(lines)):
+        if allowed:
+            outside.append(line)
+            continue
+        kept.append(re.sub(r"<!--.*?-->", "", "\n".join(outside), flags=re.S))
+        kept.append(line)
+        outside = []
+    kept.append(re.sub(r"<!--.*?-->", "", "\n".join(outside), flags=re.S))
+    return "\n".join(kept).strip()
 
 
 def spike_rules(path, before, after, old, new):
@@ -687,6 +701,11 @@ def spike_rules(path, before, after, old, new):
             )
         if has_open_questions(after):
             return open_questions_refusal(name, after, new, "spike record")
+        if new == ANSWERED and not runs(after):
+            return (
+                f"{name}: it has no runs, so it cannot be `{ANSWERED}`: only an experiment's runs "
+                f"answer a spike. Run it through the run script, or end it `{NOT_ANSWERED}`."
+            )
     if old == new == READY_TO_RUN:
         changed = [part for part in FIXED_PARTS if section(after, part) != section(before, part)]
         if changed:
