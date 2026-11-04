@@ -51,3 +51,4 @@ class CountWords(unittest.TestCase):
 PY
 git add -A
 git commit -q -m 'Count the words in a file'
+git push -q origin build/word-count

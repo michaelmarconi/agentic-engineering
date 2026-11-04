@@ -1,9 +1,8 @@
 ---
 type: regex
-target: { source: file, path: .git/commits.log }
-pattern: '^=== '
-flags: m
+target: trace
+pattern: '"command":"[^"]*git commit'
 match: not_contains
 weight: 1
 ---
-Nothing was committed.
+Nothing was committed: no command ran git commit.
