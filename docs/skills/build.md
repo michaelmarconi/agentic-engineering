@@ -125,6 +125,11 @@ Every other choice, such as names, how the code is split up, or which helper to 
 makes itself and carries on, and the summary lists each one with its reason, so you can see what was
 decided for you.
 
+A crash is never what a spec intends. When the code would crash on input no spec mentions, such
+as a missing argument, `/build` makes it refuse that input plainly, in the way your code already
+reports errors, and lists it in the summary. It raises the case with you only when what should
+happen instead is a real product choice.
+
 ## Review
 
 When the code is written, three reviews check it side by side, each run by an agent that has not

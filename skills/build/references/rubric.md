@@ -19,7 +19,9 @@ failure. "The build" is every commit on the branch that the default branch does 
    changed to match the code, no test skipped, disabled or deleted. Changing a test to check its
    scenario more closely is fine.
 5. **Nothing unrequested.** The build adds no behaviour that neither a named requirement, nor the
-   Plan section, nor what those need to work, asks for.
+   Plan section, nor what those need to work, asks for. Stopping a crash or an unhandled error,
+   by refusing the input plainly in the way the code around it already reports errors, is not
+   new behaviour.
 6. **ADRs followed.** The code follows each ADR the plan lists, and each other `👍 Accepted` ADR
    whose Confirmation section says it applies to the code the build changes.
 7. **Plan followed.** The code follows the Plan section and each line under Decisions. Where it
@@ -30,7 +32,9 @@ failure. "The build" is every commit on the branch that the default branch does 
    settles; a change to what a user sees that the spec does not settle; something hard to undo,
    such as a database schema, a public interface or data already stored; or anything that
    stretches or contradicts a spec, an ADR or the project's practices. Names, how the code is
-   split up and which helper to use are `/build`'s to choose.
+   split up and which helper to use are `/build`'s to choose, and so is stopping a crash or an
+   unhandled error on input the spec does not mention, unless what should happen instead is a
+   real product choice.
 9. **Documents untouched.** The build changes no spec, ADR or brief, and changes the plan only to
    set its status.
 

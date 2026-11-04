@@ -32,6 +32,11 @@ These hold from the first step to the last, however long the build runs.
   Nobody may be watching, and a build that guesses can spend hours on the wrong assumption.
   Names, how the code is split up and which helper to use are yours: make each such choice,
   carry on, and note it with its reason for the summary.
+- **A crash is never intended.** When the code would crash or fail with an unhandled error, even
+  on input no spec mentions, make it refuse that input plainly, in the way the code around it
+  already reports errors, and list it in the summary. This is a correction, not a choice to
+  raise, unless what should happen instead is a real product choice, such as accepting the input
+  in some new way.
 - **Never commit on the default branch, and never open a pull request or merge.** A plugin hook
   refuses a commit or push to the default branch while you build.
 - **Change no spec, ADR or brief, and the plan only through the hand-over script.**
