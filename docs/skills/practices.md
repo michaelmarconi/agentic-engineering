@@ -31,13 +31,14 @@ Practices are kept in two layers, so an agent always has the essentials but read
 when its task needs it. Coding tools such as Claude Code, Cursor, GitHub Copilot and Kiro split
 their instructions the same way.[^tools]
 
-- **The core**: a `## Practices` section in the project instructions that Claude Code loads at the
-  start of every session, so every skill and agent sees it, `/plan` and `/build` included. Those
-  instructions are `CLAUDE.md`, or `AGENTS.md` when there is no `CLAUDE.md` or when `CLAUDE.md`
-  imports it.[^memory] `AGENTS.md` is a format that many coding tools read,[^agentsmd] but Claude
-  Code reads it directly only from version 2.1.277 and not in every kind of session, and a
-  personal `CLAUDE.local.md` makes it skip `AGENTS.md`.[^memory] So the core goes in `CLAUDE.md`
-  unless `AGENTS.md` is the file Claude Code actually loads. The core is at most 50 lines. That is
+- **The core**: a `## Practices` section in `AGENTS.md`, a format that many coding tools
+  read,[^agentsmd] so your practices serve whichever tool your team uses. Claude Code loads its
+  project instructions at the start of every session, so every skill and agent sees the core,
+  `/plan` and `/build` included. It reads `AGENTS.md` directly only when there is no `CLAUDE.md`,
+  only from version 2.1.277 and not in every kind of session, and a personal `CLAUDE.local.md`
+  makes it skip `AGENTS.md`. A `CLAUDE.md` holding the line `@AGENTS.md` imports it in every case,
+  as Anthropic suggests for sharing one file between tools,[^memory] so `/practices` makes sure that
+  line is there. The core is at most 50 lines. That is
   this plugin's own budget: Claude reads the whole file on every task, and Anthropic advises
   keeping it under 200 lines, since a longer file makes Claude follow it less reliably,[^memory] so
   the core leaves most of that room for whatever else the file holds. It has three parts:
@@ -133,9 +134,10 @@ will use.
 - **Make a technical choice.** When a question turns out to be a choice between alternatives, it
   says so and leaves it for you to record with `/adr`, as `/plan` does.
 - **Change anything else.** It writes only the core and the files under `docs/practices/`, and
-  leaves the rest of the instructions file alone. It never touches your README, contributing guide
-  or any other file unless you explicitly ask it to. If the project has neither `CLAUDE.md` nor
-  `AGENTS.md`, it creates `CLAUDE.md`.
+  leaves the rest of `AGENTS.md` alone, creating the file if the project has none. In `CLAUDE.md`
+  it adds only the `@AGENTS.md` line, creating the file if needed, and asks you first when the file
+  already exists. It never touches your README, contributing guide or any other file unless you
+  explicitly ask it to.
 - **Commit.** You look at the change and commit it.
 
 `/build` follows your practices but never changes them. Where a practice is not recorded, it works
