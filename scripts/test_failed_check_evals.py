@@ -23,8 +23,8 @@ class FailedCheckEvals(unittest.TestCase):
         self.put("evals/spec-normal/prompt.md", "normal case\n")
         self.put("evals/results/old.json", "{}")
         self.put("evals-failed-check/agents/correction-checker.md", "fake checker\n")
-        self.put("evals-failed-check/agents/issue-reviewer.md", "fake reviewer\n")
-        self.put("agents/issue-reviewer.md", "real reviewer\n")
+        self.put("evals-failed-check/agents/feedback-reviewer.md", "fake reviewer\n")
+        self.put("agents/feedback-reviewer.md", "real reviewer\n")
         self.put("evals-failed-check/spec-stops-on-failed-check/prompt.md", "stop case\n")
         self.put(".git/HEAD", "ref\n")
 
@@ -51,7 +51,7 @@ class FailedCheckEvals(unittest.TestCase):
 
     def test_copy_has_every_stand_in_in_place_of_the_agent_it_is_named_after(self):
         copy = self.build()
-        self.assertEqual(self.read(copy, "agents/issue-reviewer.md"), "fake reviewer\n")
+        self.assertEqual(self.read(copy, "agents/feedback-reviewer.md"), "fake reviewer\n")
 
     def test_copy_runs_only_the_failed_check_cases(self):
         copy = self.build()

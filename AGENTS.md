@@ -47,7 +47,7 @@ everything else is judgement.
      reads that line to save the document before the review and both reports after it, and
      attaches them to the checker's request, so the skill never copies them. Add the new
      reviewer and its skill's files to the hook's `REVIEWERS` table. A document that must not
-     be written to the working tree, such as `/issue`'s draft, uses `Document: issue draft` and
+     be written to the working tree, such as `/feedback`'s draft, uses `Document: feedback draft` and
      carries the draft between `=== DRAFT ===` and `=== END DRAFT ===` lines.
    - The correct step reads the rubric and the Plain words rule again, corrects only what the
      reports list, turns each
@@ -97,7 +97,7 @@ everything else is judgement.
 8. **Fix with evidence, not rules.** A bug report becomes a failing eval case first, then the
    smallest change that makes it pass. Skills carry no incident logs, rationalization tables or
    red-flag lists: lessons live in evals, where they are checked, not in prose, where they
-   accumulate. Issues raised with `/issue` follow the same path: turn the issue into a failing
+   accumulate. Issues raised with `/feedback` follow the same path: turn the issue into a failing
    case (starting from its proposed eval, if it has one), fix it with skill-creator, put
    `Fixes #<number>` in the fix's commit message, so GitHub closes the issue when the commit
    reaches main, and bump the version as the Workflow section says. An improvement to the
@@ -158,7 +158,7 @@ plan mode.
 
 ```
 .github/
-  ISSUE_TEMPLATE/      # bug and improvement templates; /issue reads them from the plugin
+  ISSUE_TEMPLATE/      # bug and improvement templates; /feedback reads them from the plugin
 .claude-plugin/
   plugin.json          # plugin manifest; version gates updates for users
   marketplace.json     # makes this repo installable as its own marketplace

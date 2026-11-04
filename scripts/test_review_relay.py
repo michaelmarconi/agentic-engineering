@@ -26,8 +26,8 @@ def handed_back(report):
             "handbackReport": {"text": report}, "content": [{"type": "text", "text": POINTER}]}
 
 
-def issue_request(draft, kind="bug"):
-    return f"Document: issue draft\nKind: {kind}\n=== DRAFT ===\n{draft}=== END DRAFT ===\n"
+def feedback_request(draft, kind="bug"):
+    return f"Document: feedback draft\nKind: {kind}\n=== DRAFT ===\n{draft}=== END DRAFT ===\n"
 
 
 class Relay(unittest.TestCase):
@@ -279,10 +279,10 @@ class Relay(unittest.TestCase):
         self.assertIn("second wording", prompt)
         self.assertNotIn("first", prompt)
 
-    def test_wording_of_an_issue_draft_counts(self):
-        self.review(agent="sdlc:issue-reviewer", prompt=issue_request(DRAFT))
+    def test_wording_of_a_feedback_draft_counts(self):
+        self.review(agent="sdlc:feedback-reviewer", prompt=feedback_request(DRAFT))
         corrected = DRAFT.replace("line two", "line 2")
-        prompt = self.assertAllowed(self.check(prompt=issue_request(corrected)))["prompt"]
+        prompt = self.assertAllowed(self.check(prompt=feedback_request(corrected)))["prompt"]
         self.assertIn("=== WORDING REPORT ===\n" + WORDING, prompt)
 
     def test_language_checker_names_without_the_plugin_prefix_work_too(self):
@@ -334,14 +334,14 @@ class Relay(unittest.TestCase):
         self.assertRefused(self.check(), "No review")
 
     def test_wording_of_a_slightly_different_copy_of_the_same_review_still_joins(self):
-        # /issue types the draft into both requests; a stray space must not lose the review.
-        self.assertIsNone(self.agent("PreToolUse", "sdlc:issue-reviewer", issue_request(DRAFT)))
-        self.assertIsNone(self.agent("PreToolUse", LANGUAGE, issue_request(DRAFT + " ")))
-        self.assertIsNone(self.agent("PostToolUse", "sdlc:issue-reviewer", issue_request(DRAFT), response=REPORT))
-        self.assertIsNone(self.agent("PostToolUse", LANGUAGE, issue_request(DRAFT + " "), response=WORDING))
+        # /feedback types the draft into both requests; a stray space must not lose the review.
+        self.assertIsNone(self.agent("PreToolUse", "sdlc:feedback-reviewer", feedback_request(DRAFT)))
+        self.assertIsNone(self.agent("PreToolUse", LANGUAGE, feedback_request(DRAFT + " ")))
+        self.assertIsNone(self.agent("PostToolUse", "sdlc:feedback-reviewer", feedback_request(DRAFT), response=REPORT))
+        self.assertIsNone(self.agent("PostToolUse", LANGUAGE, feedback_request(DRAFT + " "), response=WORDING))
         corrected = DRAFT.replace("line two", "line 2")
-        prompt = self.assertAllowed(self.check(prompt=issue_request(corrected)))["prompt"]
-        self.assertIn("=== DOCUMENT AS REVIEWED: issue draft ===\n" + DRAFT, prompt)
+        prompt = self.assertAllowed(self.check(prompt=feedback_request(corrected)))["prompt"]
+        self.assertIn("=== DOCUMENT AS REVIEWED: feedback draft ===\n" + DRAFT, prompt)
         self.assertIn(WORDING, prompt)
 
     def test_a_second_language_check_during_a_review_leaves_it_alone(self):
@@ -435,12 +435,12 @@ class Relay(unittest.TestCase):
         self.put(SPEC, "Intro\n\n- item\n")
         self.assertAllowed(self.check())
 
-    def test_the_reviewers_copy_of_an_issue_draft_is_the_one_kept(self):
-        self.assertIsNone(self.agent("PreToolUse", LANGUAGE, issue_request(DRAFT + " ")))
-        self.assertIsNone(self.agent("PreToolUse", "sdlc:issue-reviewer", issue_request(DRAFT)))
-        self.assertIsNone(self.agent("PostToolUse", LANGUAGE, issue_request(DRAFT + " "), response=WORDING))
-        self.assertIsNone(self.agent("PostToolUse", "sdlc:issue-reviewer", issue_request(DRAFT), response=REPORT))
-        self.assertRefused(self.check(prompt=issue_request(DRAFT)), "unchanged")
+    def test_the_reviewers_copy_of_a_feedback_draft_is_the_one_kept(self):
+        self.assertIsNone(self.agent("PreToolUse", LANGUAGE, feedback_request(DRAFT + " ")))
+        self.assertIsNone(self.agent("PreToolUse", "sdlc:feedback-reviewer", feedback_request(DRAFT)))
+        self.assertIsNone(self.agent("PostToolUse", LANGUAGE, feedback_request(DRAFT + " "), response=WORDING))
+        self.assertIsNone(self.agent("PostToolUse", "sdlc:feedback-reviewer", feedback_request(DRAFT), response=REPORT))
+        self.assertRefused(self.check(prompt=feedback_request(DRAFT)), "unchanged")
 
     def test_a_newer_review_missing_a_report_is_not_covered_by_an_older_one(self):
         self.put(SPEC, "v1\n")
@@ -516,23 +516,23 @@ class Relay(unittest.TestCase):
         self.put(SPEC, "v2\n")
         self.assertRefused(self.check(), "stop and show the person")
 
-    # /issue: the draft is never on disk
+    # /feedback: the draft is never on disk
 
-    def test_issue_draft_is_taken_from_the_requests(self):
-        self.review(agent="sdlc:issue-reviewer", prompt=issue_request(DRAFT))
+    def test_feedback_draft_is_taken_from_the_requests(self):
+        self.review(agent="sdlc:feedback-reviewer", prompt=feedback_request(DRAFT))
         corrected = DRAFT.replace("line two", "line 2")
-        prompt = self.assertAllowed(self.check(prompt=issue_request(corrected)))["prompt"]
-        self.assertIn("=== DOCUMENT AS REVIEWED: issue draft ===\n" + DRAFT, prompt)
+        prompt = self.assertAllowed(self.check(prompt=feedback_request(corrected)))["prompt"]
+        self.assertIn("=== DOCUMENT AS REVIEWED: feedback draft ===\n" + DRAFT, prompt)
         self.assertIn("=== DRAFT ===\n" + corrected, prompt)
-        self.assertIn(os.path.join(ROOT, "skills", "issue", "references", "rubric.md"), prompt)
+        self.assertIn(os.path.join(ROOT, "skills", "feedback", "references", "rubric.md"), prompt)
         self.assertNotIn("docs/brief.md", prompt)
 
-    def test_unchanged_issue_draft_is_refused(self):
-        self.review(agent="sdlc:issue-reviewer", prompt=issue_request(DRAFT))
-        self.assertRefused(self.check(prompt=issue_request(DRAFT)), "unchanged")
+    def test_unchanged_feedback_draft_is_refused(self):
+        self.review(agent="sdlc:feedback-reviewer", prompt=feedback_request(DRAFT))
+        self.assertRefused(self.check(prompt=feedback_request(DRAFT)), "unchanged")
 
-    def test_issue_review_without_a_draft_saves_nothing(self):
-        self.review(agent="sdlc:issue-reviewer", prompt="Document: issue draft\nKind: bug\n")
+    def test_feedback_review_without_a_draft_saves_nothing(self):
+        self.review(agent="sdlc:feedback-reviewer", prompt="Document: feedback draft\nKind: bug\n")
         self.assertEqual(self.saved(), [])
 
     # When the checker is refused

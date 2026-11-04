@@ -9,12 +9,12 @@ saves them and adds them to the checker's request itself.
 Claude Code runs it on PreToolUse and PostToolUse for the Agent tool, and on SessionEnd. It reads
 the hook's JSON from stdin. A reviewer's or checker's request must start with the line
 `Document: <path>`, a path relative to the project ($CLAUDE_PROJECT_DIR, or the current
-directory if unset) or absolute. A draft that is never written to a file, such as /issue's,
-uses `Document: issue draft` and carries the draft between `=== DRAFT ===` and
+directory if unset) or absolute. A draft that is never written to a file, such as /feedback's,
+uses `Document: feedback draft` and carries the draft between `=== DRAFT ===` and
 `=== END DRAFT ===` lines in the request.
 
 Every review has two parts that run side by side: the skill's own reviewer (spec, brief, adr, plan or
-issue) and the shared language checker, which checks the wording (see docs/adrs/0013).
+feedback) and the shared language checker, which checks the wording (see docs/adrs/0013).
 
 - Before either starts, it saves the document's text. A part joins the latest review of that
   document if it is of the same text apart from spacing and has no report from this part yet, so
@@ -60,7 +60,7 @@ except ImportError:  # Windows: run without the lock rather than fail every agen
 
 ROOT = os.environ.get("CLAUDE_PLUGIN_ROOT") or os.path.normpath(
     os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
-ISSUE = "issue draft"
+FEEDBACK_DRAFT = "feedback draft"
 DRAFT_START = "=== DRAFT ===\n"
 DRAFT_END = "=== END DRAFT ==="
 CHECKER = "correction-checker"
@@ -72,7 +72,7 @@ REVIEWERS = {
     "spec-reviewer": ("spec", ["docs/brief.md", "docs/specs/", "docs/adrs/", "docs/plans/"]),
     "brief-reviewer": ("brief", ["docs/specs/", "docs/adrs/", "docs/plans/"]),
     "adr-reviewer": ("adr", ["docs/adrs/"]),
-    "issue-reviewer": ("issue", []),
+    "feedback-reviewer": ("feedback", []),
     "plan-reviewer": ("plan", ["docs/specs/", "docs/adrs/", "docs/plans/"]),
 }
 
@@ -101,15 +101,15 @@ def project():
 
 
 def key(name):
-    if name == ISSUE:
-        return ISSUE
+    if name == FEEDBACK_DRAFT:
+        return FEEDBACK_DRAFT
     full = name if os.path.isabs(name) else os.path.join(project(), name)
     return os.path.relpath(os.path.normpath(full), project())
 
 
 def current_text(name, prompt):
     """The document's text now: the draft in the request, or the file's contents."""
-    if name == ISSUE:
+    if name == FEEDBACK_DRAFT:
         return draft(prompt)
     try:
         with open(os.path.join(project(), name), encoding="utf-8") as f:

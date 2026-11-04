@@ -6,7 +6,7 @@ What changed in each version of the plugin, newest first. Versions follow
 past a major version: it says what you need to change in your documents. Until 1.0.0, any
 minor version may need such a change, and its entry says so.
 
-## [0.15.0] - 2026-11-04
+## [0.17.0] - 2026-11-04
 
 ### Changed
 
@@ -27,6 +27,14 @@ minor version may need such a change, and its entry says so.
 - `/sdlc:spec`'s description no longer calls accepting a spec "ready to build".
 - Smaller corrections across the README, the lifecycle rules and the skill pages, so they agree
   with each other and with the skills.
+
+## [0.16.0] - 2026-11-04
+
+### Changed
+
+- `/sdlc:issue` is now `/sdlc:feedback`: same skill, new name. Type the `sdlc:` prefix, since in
+  the terminal a bare `/feedback` is Claude Code's own command, which sends feedback to
+  Anthropic. It still drafts and files a GitHub issue on the plugin's repository.
 
 ## [0.14.1] - 2026-11-04
 
