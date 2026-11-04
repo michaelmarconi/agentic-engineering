@@ -82,12 +82,11 @@ same way; only the commands change.
 
 ## Using `/practices`
 
-You don't set all your practices up front. You add them one topic at a time, as you need them: the
-commands to check work before the first build, testing in more depth once there is code to test,
-deployment when there is somewhere to deploy to. On a new, empty repository there are no commands
-to find yet, so the first topic is usually how your team works, such as test-first working and
-how branches are named. After the first build, the overview shows the commands are missing and
-offers to record them.
+You don't set all your practices up front. You add them one topic at a time, whenever you need
+them, and improve them as the project grows: how your team works from the start, testing in more
+depth once there is more to test, deployment when there is somewhere to deploy to. A practice can
+be recorded before the code it describes exists, such as the test command your test framework
+will use. Whenever the repository and the practices disagree, the overview says so.
 
 - **On its own, `/practices` gives an overview and suggests where to start.** It lists the topics,
   each as recorded, not recorded yet, or different from what the repository shows, such as "tests
