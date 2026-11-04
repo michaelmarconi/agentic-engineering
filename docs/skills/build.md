@@ -97,7 +97,8 @@ commits as it goes, so the branch always holds the work so far.
 Two rules hold throughout:
 
 - **A test is never weakened to make the code pass.** `/build` changes a test only to make it
-  check its scenario more closely.
+  check its scenario more closely, or to correct an expected value that plainly contradicts the
+  spec, such as a typo, which its summary then points out.
 - **Two attempts, then stop.** If a requirement's tests still fail after two attempts, `/build`
   stops and hands over with the failure written down, rather than keep retrying an approach that fails.
   Anthropic gives the same advice: after two failed corrections, start again rather than try a
@@ -122,7 +123,8 @@ that would:
 To raise one, `/build` stops and hands over with the question written down. It never guesses. A
 build nobody is watching would otherwise carry on for hours on the wrong assumption.[^unattended]
 
-Every other choice, such as names, how the code is split up, or which helper to use, `/build`
+Every other choice, such as names, how the code is split up, which helper to use, the wording of
+an error message or an exit code, `/build`
 makes itself and carries on, and the summary lists each one with its reason, so you can see what was
 decided for you.
 

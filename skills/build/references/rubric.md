@@ -17,7 +17,8 @@ failure. "The build" is every commit on the branch that the default branch does 
 4. **No test weakened.** No test that existed before the build, or that an earlier commit of the
    build added, was changed to check less: no assertion removed or loosened, no expected value
    changed to match the code, no test skipped, disabled or deleted. Changing a test to check its
-   scenario more closely is fine.
+   scenario more closely is fine, and so is correcting an expected value that plainly contradicts
+   its scenario in the spec to the spec's value, when the summary says so.
 5. **Nothing unrequested.** The build adds no behaviour that neither a named requirement, nor the
    Plan section, nor what those need to work, asks for. Correcting an obvious defect that no spec
    mentions, such as a crash, an unhandled error or bad input that is not refused plainly, is not
@@ -29,7 +30,8 @@ failure. "The build" is every commit on the branch that the default branch does 
 8. **No choice made quietly.** The build makes no choice that would need an ADR or a change to a
    spec: a lasting choice between real alternatives, such as a library, a data format or the
    shape of an interface, that no listed ADR, spec, Decisions line or existing code already
-   settles; a change to what a user sees that the spec does not settle; something hard to undo,
+   settles; a change to what a user sees that the spec does not settle, other than the wording of
+   error messages, exit codes and sensible handling of odd input; something hard to undo,
    such as a database schema, a public interface or data already stored; or anything that
    stretches or contradicts a spec, an ADR or the project's practices. Names, how the code is
    split up and which helper to use are `/build`'s to choose, and so is correcting an obvious

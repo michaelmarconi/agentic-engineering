@@ -14,8 +14,9 @@ opens any pull request and merges; you never do those.
 These hold from the first step to the last, however long the build runs.
 
 - **Never weaken a test to make code pass.** Change a test only to make it check its scenario
-  more closely. A test that cannot pass as its scenario is worded is a finding to raise, not a
-  test to loosen, skip or delete.
+  more closely. A test whose expected value plainly contradicts its scenario in the spec, such as
+  a typo, may be corrected to the spec's value: say so in the summary. A test that cannot pass as
+  its scenario is worded is a finding to raise, not a test to loosen, skip or delete.
 - **Two attempts, then stop.** If a requirement's tests still fail after two attempts at the
   code, stop and hand over with the failure written down. A third attempt at an approach that
   has failed twice rarely works, and a fresh start with the failure in hand does better.
@@ -30,8 +31,9 @@ These hold from the first step to the last, however long the build runs.
   - stretch or contradict a spec, an ADR or the project's practices.
 
   Nobody may be watching, and a build that guesses can spend hours on the wrong assumption.
-  Names, how the code is split up and which helper to use are yours: make each such choice,
-  carry on, and note it with its reason for the summary.
+  Names, how the code is split up and which helper to use are yours, and so are the wording of
+  error messages, exit codes and sensible handling of odd input: make each such choice, carry
+  on, and note it with its reason for the summary.
 - **Correct obvious defects without asking.** Anything plainly wrong is yours to correct, whether
   or not a spec mentions it: a crash or unhandled error, bad input such as a missing argument or
   an unreadable file that is not refused plainly, an error reported in the wrong place, a resource
