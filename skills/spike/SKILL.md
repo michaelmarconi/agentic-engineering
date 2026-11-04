@@ -52,7 +52,9 @@ question, so the experiment must actually exercise the thing asked about.
 - **A step only the person can do,** such as trying something on their own phone, is a run they
   report: write `- Command: None.` when every run is theirs, and describe what they will do.
 
-Write every new record as `📝 Draft`; then run the design review.
+Write every new record as `📝 Draft`, named for today's date and a few words naming the question;
+then run the design review. Never rename a record once its review has started: the review is kept
+under the record's path, so a renamed record can't have its corrections checked.
 
 ## Run
 
@@ -73,6 +75,9 @@ and records that. Run it once per call, as many times as `- Runs:` says, countin
 code hash matches the latest code, so a resumed spike carries on where it stopped. After each run,
 read its output: stop early only when it shows the result named under `- Stop early if:`. If the
 script refuses, do what its reason says.
+
+The run script writes the record itself, so read the record again after each run before you edit
+it, and make sure each edit succeeded before the next run.
 
 - **The experiment itself is at fault,** for example it crashes for a reason the Experiment doesn't
   name: correct the Code, tell the person what you changed, and run the corrected code the full

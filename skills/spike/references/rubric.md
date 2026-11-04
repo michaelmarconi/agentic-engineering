@@ -5,7 +5,7 @@ checking, and quotes the record as evidence for every failure. A spike record is
 the design review, before `🟢 Ready to run`, applies the checks marked *design*; the verdict
 review, before `💡 Answered` or `❔ Not answered`, applies every check.
 
-1. **Shape** (design). The file is `docs/spikes/YYYY-MM-DD-<question-in-lowercase-with-hyphens>.md`,
+1. **Shape** (design). The file is `docs/spikes/YYYY-MM-DD-<a-few-words-naming-the-question>.md`, in lowercase with hyphens,
    directly in that folder. Its frontmatter has `status:` set to `📝 Draft`, `🟢 Ready to run`,
    `💡 Answered` or `❔ Not answered`, emoji included. Under a `# ` title that is the question in
    plain words, the sections are Question, What would answer it, Experiment, Answer, Surprises,
