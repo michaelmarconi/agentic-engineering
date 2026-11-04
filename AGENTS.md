@@ -173,7 +173,7 @@ evals/
 evals-failed-check/    # cases for what a skill does when the correction check fails; see Workflow
 agents/
   <name>-reviewer.md   # one reviewer per skill that writes documents
-  language-checker.md  # checks the wording beside every reviewer, for every skill
+  language-checker.md  # checks the wording beside every reviewer, for every skill that writes a document
   correction-checker.md # checks the corrections after a review, for every skill that writes a document
   build-correction-checker.md # checks the corrections after a build's reviews
 hooks/

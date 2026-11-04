@@ -15,7 +15,7 @@ flowchart LR
     Branch --> Build[Build: tests first, commit as it goes]
     Build --> Review[Three reviews]
     Review --> Correct[Correct once, then check the corrections]
-    Review -->|no findings| Built
+    Review -->|all passed| Built
     Correct -->|passed| Built[Mark the plan Built]
     Built --> Hand[Hand over the branch]
     Correct -->|failed| Hand

@@ -37,12 +37,11 @@ plugin is tested now.
 
 Chosen option: Opus as the only supported model, because it is the model the plugin is used on,
 and testing one model halves the cost and time of checking each change. Sonnet can be added back
-later, under the rule below, if people need it. A change
-affects a skill when it alters the skill itself, its reviewer (the separate agent that checks what
-the skill writes) or anything they read. Another model joins the list only once every skill's
-tests pass on it, and the maintainer decides when that happens. This decision does not cover the
-reviewers, which run on Sonnet as ADR 0007 sets, nor the model that grades the eval runs, which is
-also Sonnet.
+later, under the rule below, if people need it. A change affects a skill when it alters the
+skill itself, its reviewer (the separate agent that checks what the skill writes) or anything they
+read. Another model joins the list only once every skill's tests pass on it, and the maintainer
+decides when that happens. This decision does not cover the reviewers, which run on Sonnet as ADR
+0007 sets, nor the model that grades the eval runs, which is also Sonnet.
 
 ### Consequences
 
