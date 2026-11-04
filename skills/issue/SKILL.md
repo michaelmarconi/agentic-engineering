@@ -46,7 +46,8 @@ asks to keep something you would redact, keep it and say why it is a risk: it is
 information, so the reviewer's report and the decision are theirs, not yours.
 
 Keep the draft in the conversation. Never write it to a file in the person's repository: the
-plugin leaves nothing there but the lifecycle's own documents.
+plugin leaves nothing there but the lifecycle's own documents and the practices the person asks
+it to record.
 
 ## Review
 

@@ -6,6 +6,22 @@ What changed in each version of the plugin, newest first. Versions follow
 past a major version: it says what you need to change in your documents. Until 1.0.0, any
 minor version may need such a change, and its entry says so.
 
+## [0.14.0] - 2026-11-04
+
+### Added
+
+- The design of `/sdlc:practices`, a skill not built yet, on its own page. It will record how a
+  project does things, one topic at a time and whenever you need it: the essentials in a
+  `## Practices` section of `AGENTS.md`, at most 50 lines, and longer topics in
+  `docs/practices/`. `/sdlc:build` follows them.
+
+### Changed
+
+- The README and the lifecycle rules show the skills in three groups, each with its own small
+  diagram: deciding what to build, building it, and skills used at any time.
+- Recorded practices are the one thing the plugin writes outside the lifecycle's own documents,
+  and only when you ask it to.
+
 ## [0.13.0] - 2026-11-04
 
 ### Added

@@ -59,6 +59,12 @@ repository:
 Each document except the brief has a status, such as `📝 Draft` or `🟢 Ready to build`, which says how far
 along it is.
 
+As well as the documents, a project can record its **practices**: how it is set up, built, tested
+and released, and the rules Claude follows while working on it. They are written for Claude and
+other coding tools: the essentials in `AGENTS.md`, which Claude Code reads at the start of every
+session, and longer topics in `docs/practices/`. They are added one topic at a time when you need
+them (see [`/practices`](docs/skills/practices.md)).
+
 One rule matters when you edit documents by hand: the brief, specs and ADRs never refer to each
 other, whether by hyperlink, path or title, because either end can change or be deleted without
 the other being touched, and the reference quietly goes stale. Only a plan, which is removed
@@ -84,8 +90,8 @@ The plugin gives Claude three kinds of help to work with these documents:
 
 Every document a skill writes is checked by a reviewer agent before you see it, and by a
 language checker that checks someone new to your project could follow its words. Apart from the
-documents, the plugin adds nothing to your repository, unless you choose to install it for
-everyone working there (see [Install](#install)).
+documents and the practices you ask it to record, the plugin adds nothing to your repository,
+unless you choose to install it for everyone working there (see [Install](#install)).
 
 [The lifecycle rules](docs/lifecycle.md) hold the whole lifecycle: every document's statuses, the
 principles, and how reviews work. Claude gets that page at the start of every session in a
@@ -93,7 +99,23 @@ repository that uses the lifecycle.
 
 ## Skills
 
-Each step of the lifecycle has a skill. In the order you would use them:
+Each step of the lifecycle has a skill, and a few more skills work at any time:
+
+| Skill | When | What it does | Status |
+|---|---|---|---|
+| [`/brief`](docs/skills/brief.md) | Deciding | Writes or changes the product brief with you | Built |
+| [`/spec`](docs/skills/spec.md) | Deciding | Writes or changes the spec for one capability | Built |
+| [`/spike`](docs/skills/spike.md) | Deciding | Settles an unknown with a throwaway experiment | Not built yet |
+| [`/adr`](docs/skills/adr.md) | Deciding | Records one technical decision | Built |
+| [`/plan`](docs/skills/plan.md) | Building | Scopes a piece of work against its specs and ADRs | Built |
+| [`/build`](docs/skills/build.md) | Building | Builds a plan on a branch, has it reviewed and hands it back | Built |
+| [`/practices`](docs/skills/practices.md) | Any time | Records how the project does things, one topic at a time, for agents to follow | Not built yet |
+| [`/audit`](docs/skills/audit.md) | Any time | Finds where the code and its documents have drifted apart | Not built yet |
+| [`/issue`](docs/skills/issue.md) | Any time | Reports a problem with this plugin, so its fix is tested | Built |
+
+The steps fall into two phases, and the other skills belong to neither.
+
+### Deciding what to build
 
 ```mermaid
 flowchart LR
@@ -102,27 +124,35 @@ flowchart LR
     Spike -->|facts| Spec
     Spike -->|choices| ADR
     Spec -->|decisions| ADR
+    ADR ~~~ Pad["#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;"]
+    style Pad fill:none,stroke:none
+```
+
+### Building it
+
+```mermaid
+flowchart LR
     Spec --> Plan
     ADR --> Plan
     Plan --> Build
     Build --> Branch[A branch, for you to verify]
     Branch -->|you merge| Code[Code on the main branch]
-    Code -.-> Audit
-    Audit -.->|drift| Spec
-    Audit ~~~ Pad["#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;"]
+    Code ~~~ Pad["#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;"]
     style Pad fill:none,stroke:none
 ```
 
-| Skill | What it does | Status |
-|---|---|---|
-| [`/brief`](docs/skills/brief.md) | Writes or changes the product brief with you | Built |
-| [`/spec`](docs/skills/spec.md) | Writes or changes the spec for one capability | Built |
-| [`/spike`](docs/skills/spike.md) | Settles an unknown with a throwaway experiment | Not built yet |
-| [`/adr`](docs/skills/adr.md) | Records one technical decision | Built |
-| [`/plan`](docs/skills/plan.md) | Scopes a piece of work against its specs and ADRs | Built |
-| [`/build`](docs/skills/build.md) | Builds a plan on a branch, has it reviewed and hands it back | Built |
-| [`/audit`](docs/skills/audit.md) | Finds where the code and its documents have drifted apart | Not built yet |
-| [`/issue`](docs/skills/issue.md) | Reports a problem with this plugin, so its fix is tested | Built |
+### Any time
+
+```mermaid
+flowchart LR
+    Practices -.->|followed by| Build
+    Code[Code on the main branch] -.-> Audit
+    Audit -.->|drift| Spec
+    Audit -.->|drift| ADR
+    Issue -.->|a problem with the plugin| Maintainers[The plugin's maintainers]
+    Maintainers ~~~ Pad["#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;"]
+    style Pad fill:none,stroke:none
+```
 
 ## Models
 
