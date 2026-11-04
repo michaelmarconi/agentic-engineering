@@ -24,7 +24,9 @@ plugin is tested now.
 
 ## Considered Options
 
-- **Keep testing on Sonnet and Opus.** Rejected; the reason is still to be recorded (see Open questions).
+- **Keep testing on Sonnet and Opus.** Rejected: the maintainer does not use the plugin on
+  Sonnet and sees it as outdated next to Opus, Anthropic's newer and stronger model, so a second test run on every change costs time and
+  money for a model nobody we know of relies on.
 - **Test on every model Anthropic offers.** Rejected: each extra model adds the full cost of a test
   run, including for models nobody uses with the plugin.
 - **List Opus as the only supported model in the README, and merge a change only when the tests
@@ -32,8 +34,9 @@ plugin is tested now.
 
 ## Decision Outcome
 
-Chosen option: Opus as the only supported model. The reason for choosing it is still to be
-recorded (see Open questions). A change
+Chosen option: Opus as the only supported model, because it is the model the plugin is used on,
+and testing one model halves the cost and time of checking each change. Sonnet can be added back
+later, under the rule below, if people need it. A change
 affects a skill when it alters the skill itself, its reviewer (the separate agent that checks what
 the skill writes) or anything they read. Another model joins the list only once every skill's
 tests pass on it, and the maintainer decides when that happens. This decision does not cover the
@@ -58,6 +61,4 @@ test cases are run on it, and the results show every case passing.
 
 ## Open questions
 
-- Why was Sonnet dropped from the supported models: the cost and time of a second test run, how
-  few people use the plugin on Sonnet, or something else? The answer fills the reason in Decision
-  Outcome and in the rejected first option.
+- None.
