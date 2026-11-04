@@ -115,8 +115,10 @@ will use. Whenever the repository and the practices disagree, the overview says 
 - **Reads the repository first.** Much of it is already there: build files, test setup,
   continuous integration settings, your README. `/practices` reads them and proposes what it
   finds, so you confirm rather than dictate. Anything it cannot find, or is not sure of, it asks.
-- **One question at a time.** It tells you how many questions it has, then asks them one at a
-  time.
+- **One question at a time, each with a proposal.** It tells you how many questions it has, then
+  asks them one at a time. Each question starts with a short summary of what it is about and what
+  the repository shows, so you can answer without knowing the repository, and ends with a
+  proposal you can accept, change or reject.
 - **Leaves choices to `/adr`.** When a question turns out to be a choice between alternatives, it
   says so and leaves it for you to record with `/adr`, as `/plan` does.
 - **Changes only the practices.** It writes only the `## Practices` section and the files under
