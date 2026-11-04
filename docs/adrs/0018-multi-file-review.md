@@ -28,13 +28,14 @@ other. The hand-off as it stands can carry only one of them.
 
 - **Review each file on its own.** Rejected: it runs every review agent twice, and no reviewer
   sees both files together, so a section that names a topic file wrongly could pass both reviews.
-- **Copy both files into one temporary file and review that.** Rejected: the plugin must not write
-  anything into the person's project except what the skill was asked to write, and the
-  corrections would have to be copied back into the real files.
+- **Copy both files into one temporary file and review that.** Rejected: the review would judge a
+  copy the person never sees, and the corrections would have to be copied back into the real
+  files.
 - **Let the `Document:` line name several files, separated by commas.** The hook saves each file as
   reviewed and hands the checker each one, marked with its path. When the whole line names a file
   that exists, it is read as that one file, even if its name holds a comma, so a line naming one
-  file works exactly as today.
+  file works exactly as today. The hook stops the checker from starting, with a reason Claude
+  sees, when the review lacks a report or none of the files has changed since the review.
 
 ## Decision Outcome
 
@@ -56,8 +57,7 @@ keeps working unchanged.
 
 Applies to: any review that covers more than one file.
 Checked by: test. Unit tests give the hook requests naming several files and check what it saves,
-that it stops the checker from starting when a report is missing or no file has changed since
-the review, as it does for one file, and what it adds to the checker's request; the existing tests check
+when it stops the checker from starting, and what it adds to the checker's request; the existing tests check
 that a single file works as before.
 
 ## Open questions

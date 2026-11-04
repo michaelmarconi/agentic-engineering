@@ -19,8 +19,9 @@ with each change until they take up much of what Claude reads on every task, whi
 room for the task itself.
 
 Counting lines must be exact, which a model is not. The plugin's skills are tested by running
-them on sample conversations, and a run that may use shell commands needs a sandbox, a protected
-area, that Claude Code's cloud sessions do not have. So a check that the skill runs as a command could not be tested there.
+them on sample conversations, and, as we found when running this plugin's own tests there, a run in
+one of Claude Code's cloud sessions cannot be allowed to use shell commands, since that needs an
+isolated environment the cloud sessions do not have. So a check that the skill runs as a command could not be tested there.
 
 ## Considered Options
 
@@ -31,7 +32,7 @@ area, that Claude Code's cloud sessions do not have. So a check that the skill r
   it, and the skill's tests in cloud sessions could never run it.
 - **A hook that checks every edit Claude is about to make to those files.** A hook is a script
   Claude Code runs automatically at set moments, here just before each edit. Like the hook of
-  architecture decision record (ADR) 0005, which refuses illegal changes to a document's status, it
+  architecture decision record (ADR) 0005, which refuses status changes the lifecycle rules do not allow, it
   refuses an edit that would take the section over 50 lines or a topic file over
   200, or that adds an `@` import, and tells Claude why. It refuses only an edit that makes a
   file longer than the limit and longer than before, so a file already too long can still be
