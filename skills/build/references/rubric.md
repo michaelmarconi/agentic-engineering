@@ -31,12 +31,13 @@ failure. "The build" is every commit on the branch that the default branch does 
    spec: a lasting choice between real alternatives, such as a library, a data format or the
    shape of an interface, that no listed ADR, spec, Decisions line or existing code already
    settles; a change to what a user sees that the spec does not settle, other than the wording of
-   error messages, exit codes and sensible handling of odd input; something hard to undo,
-   such as a database schema, a public interface or data already stored; or anything that
+   error messages, exit codes and sensible handling of odd input; something hard to undo, such
+   as a database schema, a public interface or data already stored; or anything that
    stretches or contradicts a spec, an ADR or the project's practices. Names, how the code is
    split up and which helper to use are `/build`'s to choose, and so is correcting an obvious
    defect, unless what should happen instead is a real product choice that a reasonable person
-   could want made differently, and so is any choice that is easy to change later, when the summary lists it.
+   could want made differently, and so is any choice that is easy to change later, when the
+   summary lists it.
 9. **Documents untouched.** The build changes no spec, ADR or brief, and changes the plan only to
    set its status.
 
