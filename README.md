@@ -1,13 +1,22 @@
 # Software Development Lifecycle (SDLC)
 
-A software development lifecycle is the path work takes from an idea for a product to working
-code. This repository defines one, and packages it as a plugin for
-[Claude Code](https://code.claude.com/docs), Anthropic's coding assistant, so that Claude follows
-it with you in any repository you install it in.
+A software development lifecycle for [Claude Code](https://code.claude.com/docs), Anthropic's
+coding assistant. It takes each piece of work from an idea to reviewed, working code along one
+defined path, and keeps what was decided, and why, in a few short Markdown documents in your
+repository.
+
+Every document Claude writes is checked by an independent reviewer before you see it, and no
+document moves forward until you sign it off. The result is a project whose intent, decisions and
+built work can be read from its documents, not lost in old conversations.
+
+## Requirements
+
+- Claude Code, tested on Opus 5.5. Other models may work but are untested.
+- Python 3, which the plugin's checks run on.
+- Git, with a remote named `origin`, for [`/build`](docs/skills/build.md), which pushes the branch
+  it builds.
 
 ## Install
-
-Tested with Claude Code on Opus 5.5 (see [Models](#models)).
 
 In Claude Code:
 
@@ -23,13 +32,90 @@ claude plugin marketplace add michaelmarconi/sdlc
 claude plugin install sdlc@sdlc
 ```
 
-Add `--scope project` to the `install` command to share the plugin with everyone working in a
-repository.
+Add `--scope project` to the `install` command to install the plugin for everyone working in a
+repository. This records it in the repository's `.claude/settings.json`.
 
-`/build` also needs the repository to have a remote named `origin`, such as GitHub, since it
-pushes the branch it builds there.
+## Quick start
 
-### Update
+In your repository, run the skills in order. Each one drafts a document with you, has it
+reviewed, corrects it and shows you the result to sign off.
+
+1. `/sdlc:brief` writes the product brief: what the product is, who it is for and why.
+2. `/sdlc:spec` writes the spec for one capability: what it should do, and how you will know it
+   does.
+3. `/sdlc:adr` records any technical decision the spec needs.
+4. `/sdlc:plan` plans a piece of work against the spec and its decisions.
+5. `/sdlc:build` builds the plan on a branch, tests first, and has the result reviewed. Start it
+   in a fresh session, or after `/clear`.
+
+You can also ask in your own words, such as "write a spec for invoice reminders". Claude picks
+the matching skill.
+
+## How it works
+
+The lifecycle keeps four kinds of document:
+
+| Document | Where | What it holds |
+|---|---|---|
+| Brief | `docs/brief.md` | What the product is, who it is for and why. One per product. |
+| Spec | `docs/specs/` | What one capability should do, and how we will know it does. |
+| ADR (architecture decision record) | `docs/adrs/` | One technical decision and why it was made. |
+| Plan | `docs/plans/` | One piece of work that builds part of a spec or an ADR, kept once built as the record of what was built. |
+
+Each document except the brief has a status, such as `📝 Draft` or `🟢 Ready to build`. A
+project can also record its **practices**, such as how it is built, tested and released, in
+`AGENTS.md` and `docs/practices/`, for Claude and other coding tools to follow.
+
+The plugin works through three parts:
+
+- **Skills:** the steps above, each run as a `/sdlc:<name>` command.
+- **Reviewer agents:** separate Claude instances that check each document, or each build, with
+  no memory of your conversation, so the conversation cannot sway their judgement. They always
+  run on Sonnet, so the same document gets the same judgement whatever model you use.
+- **Hooks:** small checks Claude Code runs automatically. They give Claude the lifecycle rules at
+  the start of every session in a repository that has a brief or a spec, and refuse any status
+  change the lifecycle does not allow.
+
+[The lifecycle rules](docs/lifecycle.md) describe all of it in full. Read them before you edit
+documents by hand.
+
+## Skills
+
+| Skill | What it does |
+|---|---|
+| [`/sdlc:brief`](docs/skills/brief.md) | Writes or changes the product brief |
+| [`/sdlc:spec`](docs/skills/spec.md) | Writes or changes the spec for one capability |
+| [`/sdlc:adr`](docs/skills/adr.md) | Records one technical decision |
+| [`/sdlc:plan`](docs/skills/plan.md) | Plans a piece of work against its specs and ADRs |
+| [`/sdlc:build`](docs/skills/build.md) | Builds a plan on a branch, has it reviewed and hands it back |
+| [`/sdlc:practices`](docs/skills/practices.md) | Records how the project does things, one topic at a time |
+| [`/sdlc:feedback`](docs/skills/feedback.md) | Drafts a GitHub issue about the plugin itself |
+
+Planned: [`/sdlc:spike`](docs/skills/spike.md), to settle an unknown with a throwaway
+experiment, and [`/sdlc:audit`](docs/skills/audit.md), to find where code and documents have
+drifted apart.
+
+```mermaid
+flowchart LR
+    Brief --> Spec
+    Spec -->|decisions| ADR
+    Spec --> Plan
+    ADR --> Plan
+    Plan --> Build
+    Build --> Branch[A reviewed branch]
+    Branch -->|you merge| Code[Code on the main branch]
+```
+
+## What it changes in your repository
+
+- It writes only the documents above, and the practices you ask it to record, and only when you
+  run a skill or ask for one.
+- `/sdlc:build` commits to a branch of its own and pushes it. It never commits to the main
+  branch, never opens a pull request and never merges: those steps stay with you.
+- Review reports are kept in the plugin's own data folder, outside your repository.
+- Nothing else is added, unless you install the plugin with `--scope project`.
+
+## Update
 
 ```bash
 claude plugin marketplace update sdlc
@@ -37,151 +123,23 @@ claude plugin update sdlc@sdlc
 ```
 
 To update automatically, run `/plugin`, open **Marketplaces**, select `sdlc` and choose
-**Enable auto-update**. New versions load on the next session or after `/reload-plugins`.
+**Enable auto-update**. New versions load in the next session, or after `/reload-plugins`.
 
-Claude Code doesn't say what a new version changed, so [CHANGELOG.md](CHANGELOG.md) does. Read
-it before you update past a major version, for example from 1.x to 2.0: it says what you need to
-change in your documents. Until 1.0, any minor version may need such a change, and its entry
-says so.
+Read [CHANGELOG.md](CHANGELOG.md) before you update. If a version needs changes to your
+documents, its entry says what they are.
 
-## How it works
+## Feedback
 
-The lifecycle keeps its thinking in a few kinds of document, each a Markdown file in your
-repository:
-
-- **Brief:** what the product is, who it is for and why. One per product.
-- **Spec:** what one capability of the product should do, and how we will know it does. A
-  product has many.
-- **ADR** (architecture decision record): one technical decision and why it was made.
-- **Plan:** a piece of work that builds part of a spec or an ADR. Once built, it is marked
-  `✅ Built` and kept, unchanged, as the record of what was built.
-
-Each document except the brief has a status, such as `📝 Draft` or `🟢 Ready to build`, which says how far
-along it is.
-
-As well as the documents, a project can record its **practices**: how it is set up, built, tested
-and released, and the rules Claude follows while working on it. They are written for Claude and
-other coding tools: the essentials in `AGENTS.md`, which Claude Code reads at the start of every
-session, and longer topics in `docs/practices/`. They are added one topic at a time when you need
-them (see [`/practices`](docs/skills/practices.md)).
-
-One rule matters when you edit documents by hand: the brief, specs and ADRs never refer to a
-document of another kind, whether by hyperlink, path or title, because either end can change or
-be deleted without the other being touched, and the reference quietly goes stale. Only a plan,
-which once built is a fixed record, refers to the specs and ADRs it builds. An ADR may refer to
-other ADRs by number, since a decided ADR is never edited or moved.
-
-The plugin gives Claude three kinds of help to work with these documents:
-
-- **Skills:** instructions Claude follows for one step, which you run as a slash command such as
-  `/spec`. The plugin's skills are named `/sdlc:spec` and so on; this page leaves out the
-  `sdlc:` prefix.
-- **Agents:** separate Claude instances that start with no memory of your conversation and only
-  the tools they need, so their work is not swayed by it. A skill hands them work such as reviewing
-  a document or a build.
-- **Hooks:** small scripts Claude Code runs automatically at set moments. This plugin uses them
-  to give Claude the lifecycle rules when a session starts in a repository that uses it, and to
-  refuse spec, ADR and plan edits Claude makes that the lifecycle does not allow, such as an illegal
-  status change. After a review, a hook also hands the correction checker the review reports and
-  the document as it was reviewed, word for word, keeping them in the plugin's own data folder
-  outside your repository until the check is done. Another lets the plugin's skills and agents
-  read the plugin's own files, such as a rubric, without asking you each time; it approves
-  reads inside the plugin's folder only. For `/build`, hooks also let it start only in a fresh
-  session, refuse commits and pushes to the main branch while it runs, and hand its review
-  reports to its correction checker. They need Python 3: without it, Claude's edits to your
-  specs, ADRs and plans are refused until you install it.
-
-Every document a skill writes is checked by a reviewer agent before you see it, and by a
-language checker that checks someone new to your project could follow its words. Apart from the
-documents and the practices you ask it to record, the plugin adds nothing to your repository,
-unless you choose to install it for everyone working there (see [Install](#install)).
-
-[The lifecycle rules](docs/lifecycle.md) hold the whole lifecycle: every document's statuses, the
-principles, and how reviews work. Claude gets that page at the start of every session in a
-repository that uses the lifecycle.
-
-## Skills
-
-Each step of the lifecycle has a skill, and a few more skills work at any time:
-
-| Skill | When | What it does | Status |
-|---|---|---|---|
-| [`/brief`](docs/skills/brief.md) | Deciding | Writes or changes the product brief with you | Built |
-| [`/spec`](docs/skills/spec.md) | Deciding | Writes or changes the spec for one capability | Built |
-| [`/spike`](docs/skills/spike.md) | Deciding | Settles an unknown with a throwaway experiment | Not built yet |
-| [`/adr`](docs/skills/adr.md) | Deciding | Records one technical decision | Built |
-| [`/plan`](docs/skills/plan.md) | Building | Scopes a piece of work against its specs and ADRs | Built |
-| [`/build`](docs/skills/build.md) | Building | Builds a plan on a branch, has it reviewed and hands it back | Built |
-| [`/practices`](docs/skills/practices.md) | Any time | Records how the project does things, one topic at a time, for agents to follow | Built |
-| [`/audit`](docs/skills/audit.md) | Any time | Finds where the code and its documents have drifted apart | Not built yet |
-| [`/feedback`](docs/skills/feedback.md) | Any time | Reports a problem with this plugin, so its fix is tested | Built |
-
-The steps fall into two phases, and the other skills belong to neither.
-
-### Deciding what to build
-
-```mermaid
-flowchart LR
-    Brief --> Spec
-    Spec -->|unknowns| Spike
-    Spike -->|facts| Spec
-    Spike -->|choices| ADR
-    Spec -->|decisions| ADR
-    ADR ~~~ Pad["#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;"]
-    style Pad fill:none,stroke:none
-```
-
-### Building it
-
-```mermaid
-flowchart LR
-    Spec --> Plan
-    ADR --> Plan
-    Plan --> Build
-    Build --> Branch[A branch, for you to verify]
-    Branch -->|you merge| Code[Code on the main branch]
-    Code ~~~ Pad["#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;"]
-    style Pad fill:none,stroke:none
-```
-
-### Any time
-
-```mermaid
-flowchart LR
-    Practices -.->|followed by| Build
-    Code[Code on the main branch] -.-> Audit
-    Audit -.->|drift| Spec
-    Audit -.->|drift| ADR
-    Issue -.->|a problem with the plugin| Maintainers[The plugin's maintainers]
-    Maintainers ~~~ Pad["#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;"]
-    style Pad fill:none,stroke:none
-```
-
-## Models
-
-Claude Code can run on different Claude models, and a skill that works well on one may behave
-differently on another. The plugin handles this in three ways.
-
-- **Skills use your model.** A skill (such as `/spec`) runs on whichever model your Claude Code
-  session uses, so you choose it, with `/model`, as you normally would.
-- **Reviewers use a fixed model.** Each skill hands its work to a reviewer, a separate Claude
-  that checks the document against a list of rules and reports what fails. Reviewers always run
-  on Sonnet, so the same document gets the same judgement whatever model your session uses. To
-  override it, set the environment variable `CLAUDE_CODE_SUBAGENT_MODEL` to a model name together
-  with `CLAUDE_CODE_SUBAGENT_MODEL_FORCE=1` (Claude Code 2.1.257 or later); note that this
-  changes every subagent, not just the reviewers. Results on other models are untested.
-- **Every change is tested on each supported model.** Each skill has evals: scripted
-  conversations whose results are checked automatically, some by simple text matching and some by
-  a second Claude acting as judge, always Sonnet. A change is released only if its evals pass
-  on Opus 5.5, the model listed under [Install](#install). Other models may work but are
-  untested; when one is added to that list, the evals are run on it first.
+Run `/sdlc:feedback` to report a bug or suggest an improvement. It drafts a GitHub issue that
+quotes nothing from your repository, shows it to you, and files it only when you agree. You can
+also [open an issue](https://github.com/michaelmarconi/sdlc/issues) directly.
 
 ## Contributing
 
-Read [AGENTS.md](AGENTS.md) first. It holds the rules every skill is built to and the checks a
-change must pass. The plugin's own design decisions, and why they were made, are recorded as
-architecture decision records in [docs/adrs/](docs/adrs/).
+Read [AGENTS.md](AGENTS.md) first. It holds the rules every skill is built to, how skills are
+tested, and the checks a change must pass. The plugin's own design decisions are recorded in
+[docs/adrs/](docs/adrs/).
 
 ## Licence
 
-The plugin is released under the [MIT licence](LICENSE).
+Released under the [MIT licence](LICENSE).
