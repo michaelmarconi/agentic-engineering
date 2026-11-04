@@ -46,7 +46,9 @@ and other documents for people, but never change them unless the person explicit
 ## A bare run: the overview
 
 When the person names no topic, give an overview and write nothing. Read
-[references/topics.md](references/topics.md) and the repository, then list each topic as
+[references/topics.md](references/topics.md), and read the practices and the repository afresh
+every time, even later in a conversation that has already read them, since either may have
+changed outside it. Then list each topic by name as
 recorded, not recorded yet, or out of step with the repository, with a few words on why, such as
 "tests exist, but no test command is recorded". When a recorded practice and the repository
 disagree, such as a test command that differs from the one the CI file runs, say what each says
@@ -67,7 +69,8 @@ Use every answer the person has already given, and ask only what remains. When y
 questions, say how many, then ask only the first. Start it with a short summary of what it is
 about and what the repository shows, so someone who does not know the repository can answer, and
 end it with a proposal they can accept, change or reject; give any examples as possible answers,
-not further questions. Ask the next once the first is settled. If the person has said not to ask,
+not further questions. Ask the next once the first is settled, saying the answer is noted, not
+recorded: nothing is recorded until the files are written. If the person has said not to ask,
 write what is settled and ask nothing. Otherwise, even when their answers covered everything,
 finish the topic by asking whether there is anything else about it they want recorded, in the
 hand-over if you have written the files: the topics file is only a starting point, and they know

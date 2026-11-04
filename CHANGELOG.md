@@ -6,6 +6,22 @@ What changed in each version of the plugin, newest first. Versions follow
 past a major version: it says what you need to change in your documents. Until 1.0.0, any
 minor version may need such a change, and its entry says so.
 
+## [0.19.0] - 2026-11-04
+
+### Added
+
+- `/sdlc:practices` has a CI/CD topic. It asks where the pipeline is defined and what it runs,
+  which checks are required, how to run them locally before pushing, what an agent does when a run
+  fails (reproduce it, fix the cause, re-run at most once, never skip or disable a test), who may
+  change the pipeline and how deployments start. Which CI service to use is left for
+  `/sdlc:adr`.
+
+### Fixed
+
+- The `/sdlc:practices` overview reads the practices and the repository again each time, even
+  later in a conversation, so it sees changes made outside it.
+- `/sdlc:practices` no longer calls an answer recorded before the files are written.
+
 ## [0.18.0] - 2026-11-04
 
 ### Added

@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: practices-ci-failures
+expected_outcome: |
+  /practices CI/CD with every proposal accepted. The skill reads the CI file and records the pipeline in a topic file under docs/practices/: what it runs, how to run the same checks locally, and what an agent does when a run fails, with the proposals the person accepted marked as defaults.
+context:
+  scaffold_script: place-files.sh

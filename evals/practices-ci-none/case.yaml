@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: practices-ci-none
+expected_outcome: |
+  A project with no pipeline. Asked to pick a CI service, the skill records no choice, leaves it for /adr, and says what any pipeline must run.
+context:
+  scaffold_script: place-files.sh
