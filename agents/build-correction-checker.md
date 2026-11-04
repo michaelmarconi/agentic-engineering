@@ -28,6 +28,10 @@ judge it. Run no other command, never run the tests, and change nothing.
 1. **Was each correction made?** Every bug and security hole in the code and security reports,
    and every failure and item under Other findings in the build review report, must now be
    corrected. A finding the reports mark as a suggestion, or as tidiness or style, need not be.
+   Nor need a gap in the spec: a code review finding about input or a situation that no spec the
+   plan lists covers, rather than something the code gets wrong against a spec, the plan or an
+   existing test. The build leaves those for the person to add to the spec. A security hole is
+   never a gap.
    A choice under Needs a person counts as made when the build left it for the person, rather
    than settling it in the code.
 2. **Did any correction break something?** Check every change since the reviewed commit against
