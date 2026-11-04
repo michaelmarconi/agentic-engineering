@@ -58,8 +58,8 @@ along it is.
 
 Beside the documents, a project can record its **practices**: how it is set up, built, tested and
 released, and the rules Claude follows while working on it. They are written for Claude and other
-coding tools, in the project instructions Claude Code reads at the start of every session, and added one topic
-at a time when you need them (see [`/practices`](docs/skills/practices.md)).
+coding tools, in the project instructions Claude Code reads at the start of every session, and
+added one topic at a time when you need them (see [`/practices`](docs/skills/practices.md)).
 
 One rule matters when you edit documents by hand: the brief, specs and ADRs never refer to each
 other, whether by hyperlink, path or title, because either end can change or be deleted without
