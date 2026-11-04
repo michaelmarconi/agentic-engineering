@@ -10,7 +10,7 @@ if command -v python3 >/dev/null 2>&1; then
     exit $?
 fi
 
-if printf '%s\n' "$input" | grep -Eiq '"file_path" *: *"[^"]*docs/(specs|adrs|plans)/'; then
+if printf '%s\n' "$input" | grep -Eiq '"file_path" *: *"[^"]*docs/(specs|adrs|plans|spikes)/'; then
     echo "The sdlc plugin needs Python 3 to check document status changes. Install Python 3 and try again." >&2
     exit 2
 fi
