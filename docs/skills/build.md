@@ -31,10 +31,11 @@ flowchart LR
 `/build` follows your project's practices: how to set up, build, test and run the product, how
 branches and commits are named, and what must pass before work is merged. It finds them where
 Claude Code finds any project instructions: in `CLAUDE.md`, or in `AGENTS.md` when there is no
-`CLAUDE.md` or when `CLAUDE.md` imports it.[^memory] The `/practices` skill, run when you set a
-project up, asks you about them and records them under a `## Practices` heading there. A choice
-between alternatives, such as which test framework to use, is an ADR (architecture decision
-record) instead.
+`CLAUDE.md` or when `CLAUDE.md` imports it.[^memory] The `/practices` skill, run whenever you want
+to record or change a practice, asks you about them and records them under a `## Practices` heading
+in `AGENTS.md`, with longer topics in `docs/practices/`, and makes sure `CLAUDE.md` imports
+`AGENTS.md`. A choice between alternatives, such as which test framework to use, is an ADR (architecture
+decision record) instead.
 
 `/build` stops once it has handed the branch back. These steps stay with you, done the way your
 practices say, because each needs a person:
