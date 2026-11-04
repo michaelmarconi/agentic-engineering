@@ -41,8 +41,11 @@ For an ADR (architecture decision record) it refuses:
 For a plan it refuses:
 
 - a plan that had a lifecycle status losing it, and a new plan with any status but `📝 Draft`;
-- setting `✅ Built`: only the build step may, and it does not exist yet;
-- `🟢 Ready to build` or `✅ Built` to anything but `📝 Draft`;
+- setting `✅ Built`: only `/build`'s hand-over script may, writing the file itself, so this hook
+  never sees it;
+- any change to a `✅ Built` plan, which is kept as the record of what was built, apart from adding
+  the emoji to its status line;
+- `🟢 Ready to build` to anything but `📝 Draft`;
 - `🟢 Ready to build` in the same edit as any other change, or while the Open questions section is
   missing or not empty or "None.";
 - `🟢 Ready to build` unless the plan names something to build, each spec listed under Specs
@@ -50,7 +53,7 @@ For a plan it refuses:
   `- Requirement:` line beneath it, each ADR listed under ADRs exists and is `👍 Accepted`, and no
   other plan in the folder that is not `✅ Built` names the same requirement of the same spec.
   References are paths relative to the plan;
-- a change to a `🟢 Ready to build` or `✅ Built` plan that does not return it to `📝 Draft`.
+- a change to a `🟢 Ready to build` plan that does not return it to `📝 Draft`.
 
 Whether a person really accepted an ADR or signed off a plan is beyond a hook; the skill asks them.
 
@@ -477,6 +480,11 @@ def plan_rules(path, before, after, old, new):
     name = os.path.basename(path)
     if old not in STATUSES:
         return None
+    if old == BUILT and not (new == old and (after == before or restyled(before, after))):
+        return (
+            f"{name}: this plan is `{BUILT}`, the record of what was built and how, so it is never "
+            "changed. For more work on the same requirements, write a new plan."
+        )
     if new == old:
         if new != DRAFT and without_status(after) != without_status(before):
             return (
@@ -485,8 +493,11 @@ def plan_rules(path, before, after, old, new):
             )
         return None
     if new == BUILT:
-        return f"{name}: only the build step sets `{BUILT}`, and it does not exist yet. Leave the status as it is."
-    if old in (READY, BUILT) and new != DRAFT:
+        return (
+            f"{name}: only `/build`'s hand-over script sets `{BUILT}`, once every review of the "
+            "build has passed. Leave the status as it is."
+        )
+    if old == READY and new != DRAFT:
         return f"{name}: a `{old}` plan can only go back to `{DRAFT}`, not to `{new}`."
     if new == READY:
         if without_status(after) != without_status(before or ""):

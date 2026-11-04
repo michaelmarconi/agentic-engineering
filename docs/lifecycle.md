@@ -24,7 +24,8 @@ which says how far along it is.
   `❌ Rejected`; `👍 Accepted` → `↪️ Superseded`.
 - **Plan**, `docs/plans/YYYY-MM-DD-<title>.md`, in one flat folder: a piece of work that builds
   part of a spec or an ADR. Statuses: `📝 Draft` → `🟢 Ready to build` → `✅ Built`; any change
-  returns it to `📝 Draft`. A `✅ Built` plan is removed later.
+  returns it to `📝 Draft`. A `✅ Built` plan is kept as the record of what was built, and never
+  changed again.
 
 ## Steps
 
@@ -42,7 +43,8 @@ flowchart LR
     Spec --> Plan
     ADR --> Plan
     Plan --> Build
-    Build --> Code[Code on the main branch]
+    Build --> Branch[A branch, for you to verify]
+    Branch -->|you merge| Code[Code on the main branch]
     Code -.-> Audit
     Audit -.->|drift| Spec
     Audit ~~~ Pad["#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;"]
@@ -55,7 +57,9 @@ flowchart LR
   the spec; a choice becomes an ADR.
 - `/adr` records one technical decision.
 - `/plan` scopes a piece of work against the specs and ADRs it delivers.
-- `/build` builds a plan, has it reviewed and merges it into the main branch.
+- `/build` builds a plan on a branch of its own, has it reviewed, and pushes the branch to your
+  remote.
+  Verifying the software, opening a pull request and merging stay with you.
 - `/audit` finds drift, where the code and its documents disagree, at any time.
 
 ## Principles
@@ -70,13 +74,14 @@ flowchart LR
 - **Only a person decides an ADR.** A person accepts or rejects it by explicitly signing off its
   final, reviewed text. No skill or agent does it for them.
 - **References never go stale.** Documents refer to one another only where neither end can go
-  stale: a plan to the specs and ADRs it builds, since it is removed once built, and an ADR to the
+  stale: a plan to the specs and ADRs it builds, since a `✅ Built` plan is a record of how they stood
+  when it was built, and an ADR to the
   ADR it supersedes or that supersedes it. The brief, specs and ADRs never refer to one another in
   any way, whether by hyperlink, path or title, because either end can change or be deleted
   without the other being touched, and the reference would quietly go stale.
 - **No separate design document.** `👍 Accepted` ADRs and the code are the design.
-- **Every document carries its own status.** A plan holds nothing that would be lost when it is
-  removed: a decision later work must follow is an ADR.
+- **Every document carries its own status.** A plan holds nothing later work needs: a decision
+  later work must follow is an ADR.
 - **No document moves forward with open questions.** Anything only a person can settle is
   written into the document's Open questions, not left in the conversation. A spec or an ADR becomes
   `👍 Accepted`, and a plan `🟢 Ready to build` only when that section
@@ -173,5 +178,6 @@ only that job found more of the jargon we added on purpose than the same rule ad
 rubric.
 
 `/build` follows the same sequence for code: the build agent corrects what the reviewers find
-once, and a correction check follows. A clean review or a passing correction check merges the work
-into the main branch; a failing correction check stops and asks for help.
+once, and a correction check follows. A clean review or a passing correction check marks the plan
+`✅ Built`; a failing correction check stops and hands the branch back with its report. Either way
+the work stays on its branch until you merge it.

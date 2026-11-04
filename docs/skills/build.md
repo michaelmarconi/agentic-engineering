@@ -1,7 +1,5 @@
 # `/build`
 
-*Not built yet. This page describes the agreed design.*
-
 `/build` is the skill for building one plan. It is one step of [the SDLC](../../README.md); read
 that page first for the documents, skills and agents it mentions.
 
@@ -64,19 +62,25 @@ anything, `/build` checks:
 - **Nothing it relies on has changed.** Every spec the plan names is still `👍 Accepted`, and every
   ADR is still `👍 Accepted`. If one has changed since you signed the plan off, `/build` stops and
   says which.
-- **Your practices are recorded.** `/build` looks for the `## Practices` heading. If it is
-  missing, it suggests running `/practices` first. If you carry on without it, `/build` asks you
-  now for anything it cannot build without, such as how to run the tests, so nothing needs asking
-  once the build is under way.
+- **Your practices, if any.** `/build` looks for the `## Practices` heading, and reads any file
+  it names to read before a task like this. None is required:
+  where a practice it needs is not recorded, such as how to run the tests, it works it out from
+  your repository and carries on, and its summary says what it assumed and suggests `/practices`
+  to record it.
 - **It is on a branch of its own, with nothing left uncommitted.** `/build` never builds on your
-  repository's default branch. If you are on it, it makes a branch named after the plan. If you are
-  already on another branch, it builds there, since some places that run Claude Code, such as its
-  cloud sessions, choose the branch name for you. If anything is uncommitted, it stops, so your
+  repository's default branch. If you are on it, it makes a branch named as your practices say,
+  or else after the plan. If you are already on another branch, it builds there, since some
+  places that run Claude Code, such as its cloud sessions, choose the branch name for you. If anything is uncommitted, it stops, so your
   own work never gets mixed into the build. While it runs, a plugin hook refuses any commit or
   push to the default branch.
-- **The reviews can run.** Claude must be allowed to start `/code-review`, which a setting can turn
-  off, and `/security-review` needs a remote named `origin`. If either is missing, `/build` says so
-  now, skips that review, and repeats it in the summary.
+- **It has a remote.** The repository needs a remote named `origin` whose default branch git
+  knows, which `git clone` sets up. `/security-review` compares the branch with that default
+  branch, and the hand-over pushes to it. If it is missing, `/build` stops and names the command
+  to run, such as `git remote set-head origin -a`; it never runs that itself, since it would
+  change your repository.
+- **The reviews can run.** Claude must be allowed to start `/code-review` and `/security-review`,
+  which a setting can turn off. If either is not, `/build` stops and says which, so every build
+  gets all three reviews.
 
 Finally, it runs your tests once. Any test that already fails is noted for the summary, and
 `/build` does not try to fix it.
@@ -93,7 +97,8 @@ commits as it goes, so the branch always holds the work so far.
 Two rules hold throughout:
 
 - **A test is never weakened to make the code pass.** `/build` changes a test only to make it
-  check its scenario more closely.
+  check its scenario more closely, or to correct an expected value that plainly contradicts the
+  spec, such as a typo, which its summary then points out.
 - **Two attempts, then stop.** If a requirement's tests still fail after two attempts, `/build`
   stops and hands over with the failure written down, rather than keep retrying an approach that fails.
   Anthropic gives the same advice: after two failed corrections, start again rather than try a
@@ -118,9 +123,16 @@ that would:
 To raise one, `/build` stops and hands over with the question written down. It never guesses. A
 build nobody is watching would otherwise carry on for hours on the wrong assumption.[^unattended]
 
-Every other choice, such as names, how the code is split up, or which helper to use, `/build`
-makes itself and carries on, and the summary lists each one with its reason, so you can see what was
-decided for you.
+Every other choice, such as names, how the code is split up, which helper to use, the wording of
+an error message or an exit code, `/build` makes itself and carries on, and the summary lists
+each one with its reason, so you can see what was decided for you.
+
+`/build` leans towards correcting rather than asking. Anything plainly wrong, such as a crash
+when no file name is given or an error reported in the wrong place, it corrects whether or not a
+spec mentions it, with a test where it can, and lists each correction in its summary so you can
+add it to the spec. Stopping a build to ask about something obvious costs more than a small
+overstep. It raises the case with you only when what should happen instead is a real product
+choice that a reasonable person could want made differently.
 
 ## Review
 
@@ -147,9 +159,9 @@ tests and linters again.
 
 ## Handing over
 
-However the build ends, a small script commits and pushes the branch if the repository has a
-remote. It does this, not Claude, and reports exactly what happened, including the branch name and
-any failure to push. `/build` never opens a pull request and never merges.
+However the build ends, a small script commits the branch and pushes it to `origin`. It does
+this, not Claude, and reports exactly what happened, including the branch name and any failure
+to push. `/build` never opens a pull request and never merges.
 
 The plan is set to `✅ Built` only when every review has passed. If the build stopped instead,
 because the corrections failed their check, a requirement's tests still failed after two attempts,
@@ -164,7 +176,7 @@ It ends with a short summary:
 - the test and lint commands it ran, with their output, and any tests that were failing before it
   started;
 - the decisions it made for you, each with its reason;
-- what the reviews found, what was corrected, and any review it skipped;
+- what the reviews found, and what was corrected;
 - a reminder to verify the work before merging.
 
 ## After a build

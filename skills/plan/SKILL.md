@@ -8,8 +8,8 @@ description: Plan one piece of work that builds requirements of settled specs or
 A plan says how one piece of work will build part of what the specs and ADRs have already
 settled: the requirements it delivers, the decisions the code must follow, and how the work will be
 done. Plans live in one flat folder, `docs/plans/`, as `YYYY-MM-DD-<title>.md`, dated the day the
-plan is first written. A plan is short-lived: once its work is built it is marked `✅ Built` and later
-removed, so it never holds anything later work needs. A technical decision later work has to follow
+plan is first written. A plan is built once: `/build` marks it `✅ Built` and it is then kept unchanged as a
+record, so it never holds anything later work needs. A technical decision later work has to follow
 belongs in an ADR, not here.
 
 Before writing, read [references/rubric.md](references/rubric.md): it is the list of checks the

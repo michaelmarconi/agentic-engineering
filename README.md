@@ -7,7 +7,7 @@ it with you in any repository you install it in.
 
 ## Install
 
-Tested with Claude Code on Sonnet 5.5 and Opus 5.5 (see [Models](#models)).
+Tested with Claude Code on Opus 5.5 (see [Models](#models)).
 
 In Claude Code:
 
@@ -25,6 +25,9 @@ claude plugin install sdlc@sdlc
 
 Add `--scope project` to the `install` command to share the plugin with everyone working in a
 repository.
+
+`/build` also needs the repository to have a remote named `origin`, such as GitHub, since it
+pushes the branch it builds there.
 
 ### Update
 
@@ -102,7 +105,8 @@ flowchart LR
     Spec --> Plan
     ADR --> Plan
     Plan --> Build
-    Build --> Code[Code on the main branch]
+    Build --> Branch[A branch, for you to verify]
+    Branch -->|you merge| Code[Code on the main branch]
     Code -.-> Audit
     Audit -.->|drift| Spec
     Audit ~~~ Pad["#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;"]
@@ -116,7 +120,7 @@ flowchart LR
 | [`/spike`](docs/skills/spike.md) | Settles an unknown with a throwaway experiment | Not built yet |
 | [`/adr`](docs/skills/adr.md) | Records one technical decision | Built |
 | [`/plan`](docs/skills/plan.md) | Scopes a piece of work against its specs and ADRs | Built |
-| [`/build`](docs/skills/build.md) | Builds a plan, has it reviewed and merges it | Not built yet |
+| [`/build`](docs/skills/build.md) | Builds a plan on a branch, has it reviewed and hands it back | Built |
 | [`/audit`](docs/skills/audit.md) | Finds where the code and its documents have drifted apart | Not built yet |
 | [`/issue`](docs/skills/issue.md) | Reports a problem with this plugin, so its fix is tested | Built |
 
@@ -136,8 +140,8 @@ differently on another. The plugin handles this in three ways.
 - **Every change is tested on each supported model.** Each skill has evals: scripted
   conversations whose results are checked automatically, some by simple text matching and some by
   a second Claude acting as judge, always Sonnet. A change is released only if its evals pass
-  on Sonnet 5.5 and on Opus 5.5, the models listed under [Install](#install). When a new model
-  comes out, the evals are run on it before it is added to that list.
+  on Opus 5.5, the model listed under [Install](#install). Other models may work but are
+  untested; when one is added to that list, the evals are run on it first.
 
 ## Contributing
 

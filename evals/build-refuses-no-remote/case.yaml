@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: build-refuses-no-remote
+expected_outcome: |
+  The repository has no remote, so the build stops before building and asks the person to add one named origin.
+context:
+  scaffold_script: place-files.sh

@@ -10,7 +10,8 @@ everything else is judgement.
 ## Principles
 
 1. **Independent in spirit.** The plugin is the unit of distribution, not the skill. A skill
-   does one job and never invokes or assumes a prior run of another skill; it may use a document
+   does one job and never invokes or assumes a prior run of another of the plugin's skills,
+   though it may use Claude Code's own skills and agents, such as `/code-review`; it may use a document
    another skill produces when one is present, but must work when it is not. Skills may share
    what the plugin provides: its agents, hooks, scripts and `docs/lifecycle.md`.
 2. **Small.** Every word earns its place. Write only what Claude would not do unaided, and say it
@@ -103,7 +104,7 @@ everything else is judgement.
    NEVER. Reserve those words for hard limits.
 10. **Safe by default.** A skill never commits, pushes, publishes, deletes or sends anything
    outside the working tree unless the user asks for it in that session. Running `/build` is
-   that request for its merge.
+   that request for its commits and the push of its own branch; nothing ever merges.
 11. **Generic.** Skills assume no particular language, framework, repo layout or host, beyond
     the lifecycle's own folders under `docs/`. Paths a skill writes to are stated in the skill
     and kept to a minimum.
@@ -172,7 +173,7 @@ agents/
   language-checker.md  # checks the wording beside every reviewer, for every skill
   correction-checker.md # checks the corrections after a review, for every skill
 hooks/
-  hooks.json           # session map, status checks, the review relay, reads of the plugin's own files
+  hooks.json           # session map, status checks, the review relay, reads of the plugin's own files, fresh sessions for /build, the build branch guard, the build review relay
 scripts/               # scripts the hooks run, the skill, version, reference and status-name checks, and their tests
 docs/
   adrs/                # this plugin's own architecture decision records
@@ -195,8 +196,11 @@ Nothing else belongs at the root without a reason recorded in the change that ad
   `python3 -m unittest discover -s skills/<name>/scripts`, and for the plugin's own scripts if
   you changed them or any skill: `python3 -m unittest discover -s scripts`. All must pass.
 - Run the evals for each skill you changed, once per supported model, with Sonnet as judge:
-  `claude plugin eval . --case '<name>-*' --model <model> --judge-model sonnet --scaffold --allow-tools Write Edit`;
+  `claude plugin eval . --case '<name>-*' --model <model> --judge-model sonnet --scaffold --allow-tools Write Edit -j 4 --ablation none`;
   without the grant, cases that write documents can't pass.
+  `--ablation none` turns off the no-plugin comparison runs, which show how much a skill adds
+  but don't decide whether a case passes; turn it back on (drop the flag) to measure that, for
+  example before 1.0. `-j 4` runs four cases at once.
   The supported models are those named in README.md; a change merges only if its cases pass
   on every one. Evals are billed model runs: run the ones you touched, never the whole suite
   unprompted.
@@ -205,7 +209,7 @@ Nothing else belongs at the root without a reason recorded in the change that ad
   in `evals-failed-check/agents/` replace the agents they are named after: each reviewer always
   reports a correctable failure, and the checker always fails with a known finding. The cases live outside `evals/` so the real plugin never runs them. If you
   change a skill's review sequence, run its case through the script that builds that copy:
-  `python3 scripts/failed_check_evals.py --case '<name>-*' --model <model> --judge-model sonnet --scaffold --allow-tools Write Edit`.
+  `python3 scripts/failed_check_evals.py --case '<name>-*' --model <model> --judge-model sonnet --scaffold --allow-tools Write Edit -j 4 --ablation none`.
 - Bump `version` in `.claude-plugin/plugin.json` in any change that alters what users receive,
   since installed copies only update when the version string changes. Follow
   [Semantic Versioning](https://semver.org/spec/v2.0.0.html): patch for a fix, minor for a new

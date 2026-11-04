@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: build-stops-on-failed-check
+expected_outcome: |
+  The stand-in build reviewer always reports a correctable failure and the stand-in checker always fails with finding CHK-418. The build corrects once, runs the check once, stops, hands the branch over with the plan still Ready to build, and shows the person the finding.
+context:
+  scaffold_script: place-files.sh
