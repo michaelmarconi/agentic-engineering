@@ -6,6 +6,27 @@ What changed in each version of the plugin, newest first. Versions follow
 past a major version: it says what you need to change in your documents. Until 1.0.0, any
 minor version may need such a change, and its entry says so.
 
+## [0.20.0] - 2026-11-04
+
+### Added
+
+- `/sdlc:spike` settles one unknown by a throwaway experiment. It writes a spike record in
+  `docs/spikes/`: the question, the result that would answer it, the experiment and its code.
+  Once the design is reviewed and you sign it off, it runs the experiment only through its run
+  script, which writes each run's output into the record word for word. Then it writes the answer,
+  has that reviewed too, and tells you which spec or ADR the answer belongs in. Experiments run
+  in a fresh folder outside your repository, so your working tree is never touched. Secrets
+  reach them only from Claude Code's environment, and are hidden in the recorded output.
+- Spike records have their own statuses: `📝 Draft`, `🟢 Ready to run`, `💡 Answered` and
+  `❔ Not answered`. The status hook enforces them. It also refuses any edit to a record's runs,
+  and any change to a finished record.
+
+### Changed
+
+- `/sdlc:spec`, `/sdlc:adr`, `/sdlc:brief` and `/sdlc:plan` never refer to a spike record, so it
+  can be deleted at any time. `/sdlc:spec` and `/sdlc:adr` can draft from a finished record, and
+  state its evidence in their own words.
+
 ## [0.19.0] - 2026-11-04
 
 ### Added
