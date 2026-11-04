@@ -377,21 +377,60 @@ def spec_rules(path, before, after, old, new):
 FENCE = re.compile(r"^ {0,3}(`{3,}|~{3,})(.*)$")
 
 
+def closes_fence(line, fence):
+    """Whether `line` closes a block opened by `fence`: the same character, at least as long, nothing after."""
+    match = FENCE.match(line)
+    return bool(match and match.group(1)[0] == fence[0] and len(match.group(1)) >= len(fence)
+                and not match.group(2).strip())
+
+
+def scan(lines):
+    """One pass over the original lines: (fenced, comments).
+
+    fenced[i] is True for a fence line or a line inside a fenced code block. comments lists each
+    HTML comment as ((line, column), (line, column after its `-->`)). A comment starts with `<!--`
+    outside a fenced block and ends at the next `-->`, across lines and fences; a fence counts
+    only at the start of a line outside a comment. A `<!--` with no `-->` after it is text, and so
+    is everything after it. Nothing is read twice, so cutting a comment out can't make a new one.
+    """
+    fenced, comments = [False] * len(lines), []
+    fence, opened, i, column, comments_possible = None, None, 0, 0, True
+    while True:
+        while i < len(lines):
+            line = lines[i]
+            if column == 0 and opened is None:
+                if fence is not None:
+                    fenced[i] = True
+                    if closes_fence(line, fence):
+                        fence = None
+                    i += 1
+                    continue
+                match = FENCE.match(line)
+                if match:
+                    fence, fenced[i] = match.group(1), True
+                    i += 1
+                    continue
+            mark = "-->" if opened else "<!--"
+            found = line.find(mark, column) if comments_possible else -1
+            if found < 0:
+                i, column = i + 1, 0
+            elif opened:
+                comments.append((opened, (i, found + 3)))
+                opened, column = None, found + 3
+            else:
+                opened, column = (i, found), found + 4
+        if opened is None:
+            return fenced, comments
+        # Unclosed: read again from the line after it, as text with no comments.
+        fence, i, column, comments_possible = None, opened[0] + 1, 0, False
+        opened = None
+
+
 def headings_allowed(lines):
-    """For each line, False if it is inside a fenced code block or is a fence, where a heading is only text."""
-    fence, allowed = None, []
-    for line in lines:
-        match = FENCE.match(line)
-        if fence is None and match:
-            fence = match.group(1)
-        elif fence is not None and match and match.group(1)[0] == fence[0] and len(match.group(1)) >= len(fence) \
-                and not match.group(2).strip():
-            fence = None
-        else:
-            allowed.append(fence is None)
-            continue
-        allowed.append(False)
-    return allowed
+    """For each line, False if it is a fence, inside a fenced code block or starts inside an HTML
+    comment, where a heading is only text."""
+    fenced, comments = scan(lines)
+    return [not fenced[i] and not any(start < (i, 0) < end for start, end in comments) for i in range(len(lines))]
 
 
 def section(text, heading):
@@ -647,38 +686,20 @@ def adr_rules(path, before, after, old, new):
 def runs(text):
     """The Runs section without HTML comments or surrounding blank lines; "" when it holds none.
 
-    A comment starts only outside fenced code blocks, so a run's output can never hide another
-    run, and a fence inside a comment is part of the comment. A `<!--` with no `-->` after it is
-    text, so it can never hide a run added below it.
+    Comments are found by scan(), so a run's output can never hide another run, and an unclosed
+    `<!--` can never hide a run added below it.
     """
     lines = section(text, "Runs") or []
-    kept, fence, i, carry = [], None, 0, None
-    while i < len(lines):
-        line, carry = (lines[i] if carry is None else carry), None
-        if fence is not None:
-            kept.append(line)
-            match = FENCE.match(line)
-            if match and match.group(1)[0] == fence[0] and len(match.group(1)) >= len(fence) \
-                    and not match.group(2).strip():
-                fence = None
-            i += 1
-            continue
-        match = FENCE.match(line)
-        start = line.find("<!--")
-        if match or start < 0:
-            fence = match.group(1) if match else None
-            kept.append(line)
-            i += 1
-            continue
-        end = (i, line.find("-->", start + 4)) if "-->" in line[start + 4:] else next(
-            ((j, lines[j].find("-->")) for j in range(i + 1, len(lines)) if "-->" in lines[j]), None)
-        if end is None:
-            kept.append(line)
-            i += 1
-            continue
-        closing = line if end[0] == i else lines[end[0]]
-        carry, i = line[:start] + closing[end[1] + 3:], end[0]
-    return "\n".join(kept).strip()
+    _, comments = scan(lines)
+    starts = [0]
+    for line in lines:
+        starts.append(starts[-1] + len(line) + 1)
+    joined, kept, at = "\n".join(lines), [], 0
+    for (line, column), (end_line, end_column) in comments:
+        kept.append(joined[at:starts[line] + column])
+        at = starts[end_line] + end_column
+    kept.append(joined[at:])
+    return "".join(kept).strip()
 
 
 def ran(text):
