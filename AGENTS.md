@@ -198,6 +198,9 @@ Nothing else belongs at the root without a reason recorded in the change that ad
 - Run the evals for each skill you changed, once per supported model, with Sonnet as judge:
   `claude plugin eval . --case '<name>-*' --model <model> --judge-model sonnet --scaffold --allow-tools Write Edit -j 4 --ablation none`;
   without the grant, cases that write documents can't pass.
+  `--ablation none` turns off the no-plugin comparison runs, which show how much a skill adds
+  but don't decide whether a case passes; turn it back on (drop the flag) to measure that, for
+  example before 1.0. `-j 4` runs four cases at once.
   The supported models are those named in README.md; a change merges only if its cases pass
   on every one. Evals are billed model runs: run the ones you touched, never the whole suite
   unprompted.
