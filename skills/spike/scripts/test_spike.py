@@ -444,5 +444,105 @@ class FromACommit(Project):
         self.assertIn("Starts from commit", done.stderr)
 
 
+class SecondReview(Project):
+    """Corrections from the second code review."""
+
+    def fallback(self):
+        return os.path.join(self.tmp.name, f"sdlc-spikes-{os.getuid()}")
+
+    def test_falls_back_to_a_private_folder_of_this_user(self):
+        blocked = os.path.join(self.tmp.name, "blocked")
+        pathlib.Path(blocked).write_text("a file, so no folder can be made inside it")
+        self.put(record(command="pwd"))
+        done = self.run_spike(data=blocked, env={"TMPDIR": self.tmp.name})
+        self.assertEqual(done.returncode, 0, done.stderr)
+        self.assertIn(self.fallback(), "\n".join(self.runs()))
+        self.assertEqual(os.stat(self.fallback()).st_mode & 0o777, 0o700)
+
+    @unittest.skipIf(os.geteuid() == 0, "root can write to any folder")
+    def test_falls_back_when_the_spikes_folder_exists_but_cannot_be_written(self):
+        os.makedirs(os.path.join(self.data, "spikes"))
+        os.chmod(os.path.join(self.data, "spikes"), 0o500)
+        self.addCleanup(os.chmod, os.path.join(self.data, "spikes"), 0o700)
+        self.put(record(command="pwd"))
+        done = self.run_spike(env={"TMPDIR": self.tmp.name})
+        self.assertEqual(done.returncode, 0, done.stderr)
+        self.assertIn(self.fallback(), "\n".join(self.runs()))
+
+    def test_refuses_a_fallback_folder_that_is_a_link(self):
+        blocked = os.path.join(self.tmp.name, "blocked")
+        pathlib.Path(blocked).write_text("a file")
+        elsewhere = os.path.join(self.tmp.name, "elsewhere")
+        os.makedirs(elsewhere)
+        os.symlink(elsewhere, self.fallback())
+        self.put(record(command="pwd"))
+        done = self.run_spike(data=blocked, env={"TMPDIR": self.tmp.name})
+        self.assertEqual(done.returncode, 1)
+        self.assertNotIn("Traceback", done.stderr)
+        self.assertIn(self.fallback(), done.stderr)
+        self.assertEqual(self.runs(), ["", "<!-- Only the run script writes here. -->"])
+
+    def test_ordinary_variables_are_neither_hidden_nor_kept_back(self):
+        names = {"GIT_AUTHOR_NAME": "Michael Marconi", "DBUS_SESSION_BUS_ADDRESS": "unix:path=/run/bus-1234",
+                 "SSH_AUTH_SOCK": "/private/tmp/agent.sock-1234"}
+        self.put(record(command='printf "%s|%s|%s\\n" "$GIT_AUTHOR_NAME" "$DBUS_SESSION_BUS_ADDRESS" "$SSH_AUTH_SOCK"'))
+        self.run_spike(env=names)
+        runs = "\n".join(self.runs())
+        self.assertIn("|".join(names.values()), runs)
+        self.assertNotIn("hidden", runs)
+
+    def test_credential_variables_are_still_kept_back(self):
+        for name in ("ANTHROPIC_API_KEY", "GH_TOKEN", "AWS_SECRET_ACCESS_KEY", "PGPASSWORD", "CLAUDE_CODE_OAUTH_TOKEN",
+                     "NPM_AUTH_TOKEN", "DATABASE_PASSWORD", "GOOGLE_APPLICATION_CREDENTIALS"):
+            self.assertTrue(spike.SECRET_NAME.search(name), name)
+
+    def test_more_private_key_shapes_are_redacted(self):
+        for block in ("-----BEGIN PGP PRIVATE KEY BLOCK-----\nlQOYBGabc123\n-----END PGP PRIVATE KEY BLOCK-----",
+                      "-----BEGIN RSA PRIVATE KEY-----\nlQOYBGabc123"):
+            self.put(record(command="cat key.txt", code=f"```text\n# file: key.txt\n{block}\n```"))
+            self.run_spike()
+            runs = "\n".join(self.runs())
+            self.assertIn("[redacted: private key]", runs, block)
+            self.assertNotIn("lQOYBGabc123", runs, block)
+
+    def test_any_bearer_header_is_redacted(self):
+        self.put(record(command="printf 'authorization: bearer abcdefghijklmnop1234\\nBearer\\tqrstuvwxyz567890\\n'"))
+        self.run_spike()
+        runs = "\n".join(self.runs())
+        self.assertNotIn("abcdefghijklmnop1234", runs)
+        self.assertNotIn("qrstuvwxyz567890", runs)
+
+    def test_an_observation_is_redacted_too(self):
+        self.put(record(command="echo ran"))
+        token = "ghp_" + "a" * 36
+        self.run_spike("--observation", f"It worked with token {token}")
+        runs = "\n".join(self.runs())
+        self.assertNotIn(token, runs)
+        self.assertIn("1 value hidden", runs)
+
+    def test_a_short_secret_never_garbles_another_secrets_name(self):
+        self.put(record(command='printf "$API_KEY $SHORT\\n"', secrets="`API_KEY`, `SHORT`"))
+        self.run_spike(env={"API_KEY": "long-value-123456", "SHORT": "API"})
+        runs = "\n".join(self.runs())
+        self.assertIn("[secret: API_KEY] [secret: SHORT]", runs)
+        self.assertIn("2 values hidden", runs)
+
+    def test_removes_leftovers_from_the_other_folder_too(self):
+        self.put(record("💡 Answered"), name="finished")
+        key = spike.project_key(self.project)
+        in_temp = os.path.join(self.fallback(), f"{key}-finished")
+        os.makedirs(in_temp)
+        self.put(record())
+        self.run_spike(env={"TMPDIR": self.tmp.name})
+        self.assertFalse(os.path.exists(in_temp))
+
+    def test_keeps_windows_line_endings(self):
+        pathlib.Path(self.path()).write_bytes(record().replace("\n", "\r\n").encode("utf-8"))
+        self.run_spike()
+        written = pathlib.Path(self.path()).read_bytes()
+        self.assertIn(b"### Run 1", written)
+        self.assertNotIn(b"\n", written.replace(b"\r\n", b""))
+
+
 if __name__ == "__main__":
     unittest.main()

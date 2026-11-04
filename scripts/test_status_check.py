@@ -882,6 +882,15 @@ class Spike(SpikeWorkspace):
         self.put(record("🟢 Ready to run", runs=runs))
         self.assertIn("run script", self.edit("exit code 0", "exit code 1"))
 
+    def test_a_comment_holding_a_fence_in_runs_is_empty(self):
+        self.assertIsNone(self.write(record(runs="<!-- For example:\n```\n### Run 1\n```\n-->\n")))
+
+    def test_answered_needs_a_run_that_ran(self):
+        not_run = "### Run 1\n\n2026-11-04 15:02, Linux, a cloud session, code `a91c03e7b2d4`, did not run\n\n```\nx\n```\n"
+        self.put(record("🟢 Ready to run", runs=not_run))
+        self.assertIn("no runs", self.move("🟢 Ready to run", "💡 Answered"))
+        self.assertIsNone(self.move("🟢 Ready to run", "❔ Not answered"))
+
     def test_answered_needs_a_run(self):
         self.put(record("🟢 Ready to run"))
         self.assertIn("no runs", self.move("🟢 Ready to run", "💡 Answered"))
