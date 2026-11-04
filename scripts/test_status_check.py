@@ -894,6 +894,21 @@ class Spike(SpikeWorkspace):
                                ("xx <!-- a --> <!-- b --> tail", "xx   tail")):
             self.assertEqual(status_check.runs(record(runs=runs)), expected, runs)
 
+    def test_cutting_a_comment_never_makes_a_new_one(self):
+        self.assertEqual(status_check.runs(record(runs="<!<!---->---->")), "<!---->")
+        self.put(record("🟢 Ready to run", runs="<!<!---->-- Run 1 passed -->\n"))
+        self.assertIn("run script", self.edit("passed", "FAILED"))
+
+    def test_cutting_a_comment_never_makes_a_fence(self):
+        self.assertEqual(status_check.runs(record(runs="<!---->```<!---->")), "```")
+        runs = "<!---->```\n\n```\n<!--\n### Run 1\npassed\n-->\n```\n"
+        self.put(record("🟢 Ready to run", runs=runs))
+        self.assertIn("run script", self.edit("passed", "FAILED"))
+
+    def test_a_heading_inside_a_comment_never_ends_runs(self):
+        self.put(record("🟢 Ready to run", runs="<!--\n## x\n-->\n" + RUN))
+        self.assertIn("run script", self.edit("```\nok\n```", "```\nfine\n```"))
+
     def test_answered_needs_a_run_that_ran(self):
         not_run = "### Run 1\n\n2026-11-04 15:02, Linux, a cloud session, code `a91c03e7b2d4`, did not run\n\n```\nx\n```\n"
         self.put(record("🟢 Ready to run", runs=not_run))
