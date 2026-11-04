@@ -36,8 +36,9 @@ Chosen option: Opus as the only supported model. The reason for choosing it is s
 recorded (see Open questions). A change
 affects a skill when it alters the skill itself, its reviewer (the separate agent that checks what
 the skill writes) or anything they read. Another model joins the list only once every skill's
-tests pass on it, and the maintainer decides when that happens. The models that reviewers and the
-eval judge run on are not part of this decision: they stay as ADR 0007 sets them.
+tests pass on it, and the maintainer decides when that happens. This decision does not cover the
+reviewers, which run on Sonnet as ADR 0007 sets, nor the model that grades the eval runs, which is
+also Sonnet.
 
 ### Consequences
 
