@@ -71,6 +71,4 @@ skill on sample conversations check that runs are made only through the script.
 
 ## Open questions
 
-- Does the hook's refusal of edits to Runs belong in this record, or in an ADR of its own that
-  adds to ADR 0005, so it could be replaced on its own? Proposal: keep it here, since the script
-  can't be the only writer of Runs without it.
+- None.
