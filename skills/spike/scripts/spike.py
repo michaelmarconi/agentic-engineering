@@ -18,15 +18,19 @@ folder at <data>/spikes/<hash of the project path>-<record name>/, outside the r
 4. The command (`- Command:`) runs there with `sh -c`, stdout and stderr together. A record whose
    Command is "None." takes only observations.
 
-It then adds `### Run N` at the end of the Runs section, reading the record afresh, with the time (UTC), the operating system, whether it ran on
-the person's machine or in a cloud session (the CLAUDE_CODE_REMOTE variable), a 12-character
-SHA-256 hash of the Code section, the command's exit code, and the output in a code fence longer
-than any run of backticks in it. The value of each secret named in `- Secrets:` is replaced by
-`[secret: NAME]`; output over 500 lines keeps its first and last 200, saying how many were left out.
-Variables whose names look like credentials, such as *_TOKEN or *_KEY, are kept from the
-experiment unless named under Secrets. A run still going after 9 minutes is stopped and recorded
-as such. A secret that is not set is recorded as a run that did not happen, saying which, without running
-anything. With --observation, it records the person's words, marked as their observation, instead.
+It then adds `### Run N` at the end of the Runs section, reading the record afresh, with the time
+(UTC), the operating system, whether it ran on the person's machine or in a cloud session (the
+CLAUDE_CODE_REMOTE variable), a 12-character SHA-256 hash of the Code section, the command's exit
+code, and the output in a code fence longer than any run of backticks in it. The value of each
+secret named in `- Secrets:`, and of any variable whose name looks like a credential and whose
+value is 8 characters or more, is replaced by `[secret: NAME]`, and the common shapes of
+credentials, such as GitHub, AWS, Slack and `sk-` keys, web tokens, Bearer headers and private
+keys, by `[redacted: <kind>]`; the run's heading says how many values were hidden; output over 500
+lines keeps its first and last 200, saying how many were left out. Variables whose names look like
+credentials, such as *_TOKEN or *_KEY, are kept from the experiment unless named under Secrets. A
+run still going after 9 minutes is stopped and recorded as such. A secret that is not set is
+recorded as a run that did not happen, saying which, without running anything. With --observation,
+it records the person's words, marked as their observation, instead.
 
 Finally it deletes the working folder, and any folder this project left in <data>/spikes/ for a
 record that is finished or no longer exists. Other projects' folders are never touched.
@@ -307,11 +311,36 @@ def experiment_env(secrets):
     return {name: value for name, value in os.environ.items() if name in secrets or not SECRET_NAME.search(name)}
 
 
+# Common shapes of credentials, hidden wherever they appear in a run's output.
+CREDENTIALS = [
+    ("private key", re.compile(r"-----BEGIN [A-Z ]*PRIVATE KEY-----.*?-----END [A-Z ]*PRIVATE KEY-----", re.S)),
+    ("GitHub token", re.compile(r"\b(?:gh[pousr]_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,})")),
+    ("AWS key", re.compile(r"\b(?:AKIA|ASIA)[A-Z0-9]{16}\b")),
+    ("Slack token", re.compile(r"\bxox[abposr]-[A-Za-z0-9-]{10,}")),
+    ("API key", re.compile(r"\bsk-[A-Za-z0-9_-]{20,}")),
+    ("web token", re.compile(r"\beyJ[A-Za-z0-9_-]{5,}\.eyJ[A-Za-z0-9_-]{5,}\.[A-Za-z0-9_-]{10,}")),
+    ("bearer token", re.compile(r"(?<=Bearer )[A-Za-z0-9._~+/=-]{12,}")),
+]
+
+
 def hide(output, secrets):
-    """Replace each secret's value by its name, longest value first, so one never half-hides another."""
-    for name in sorted(secrets, key=lambda n: len(os.environ[n]), reverse=True):
+    """Hide secrets in a run's output: (output, how many values were hidden).
+
+    The value of each secret named under Secrets, and of every variable whose name looks like a
+    credential, is replaced by its name, longest value first, so one never half-hides another.
+    Then the common shapes of credentials are replaced by their kind."""
+    hidden = 0
+    # An unnamed variable's value is hidden only when long enough to be a credential, so flags
+    # such as `1` or `true` are left alone.
+    names = [name for name, value in os.environ.items()
+             if value and (name in secrets or (SECRET_NAME.search(name) and len(value) >= 8))]
+    for name in sorted(names, key=lambda n: len(os.environ[n]), reverse=True):
+        hidden += output.count(os.environ[name])
         output = output.replace(os.environ[name], f"[secret: {name}]")
-    return output
+    for kind, pattern in CREDENTIALS:
+        output, count = pattern.subn(f"[redacted: {kind}]", output)
+        hidden += count
+    return output, hidden
 
 
 def run(record_path, data, observation=None):
@@ -346,8 +375,9 @@ def run(record_path, data, observation=None):
     finally:
         shutil.rmtree(folder, ignore_errors=True)
         remove_leftovers(data, record_path)
-    text_output = hide(output.decode("utf-8", errors="replace"), steps["secrets"])
-    return append_run(record_path, f"{stamp}, {ended}", fenced(shorten(text_output)))
+    text_output, hidden = hide(output.decode("utf-8", errors="replace"), steps["secrets"])
+    note = f", {hidden} value{'s' if hidden != 1 else ''} hidden" if hidden else ""
+    return append_run(record_path, f"{stamp}, {ended}{note}", fenced(shorten(text_output)))
 
 
 def main(argv=None):
