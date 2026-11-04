@@ -51,6 +51,9 @@ flowchart LR
     style Pad fill:none,stroke:none
 ```
 
+Dotted lines are not steps in the order: practices record how to use what an ADR chose, and plans
+and builds follow them; an audit can run at any time.
+
 - `/brief` writes or changes the brief.
 - `/spec` writes or changes the spec for one capability.
 - `/spike` settles an unknown by a throwaway experiment, when one is needed. A fact goes back into

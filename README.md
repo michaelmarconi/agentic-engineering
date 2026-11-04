@@ -117,6 +117,9 @@ flowchart LR
     style Pad fill:none,stroke:none
 ```
 
+Dotted lines are not steps in the order: practices record how to use what an ADR chose, and plans
+and builds follow them; an audit can run at any time.
+
 | Skill | What it does | Status |
 |---|---|---|
 | [`/brief`](docs/skills/brief.md) | Writes or changes the product brief with you | Built |
