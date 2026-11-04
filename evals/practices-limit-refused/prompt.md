@@ -2,7 +2,7 @@
 tags: [practices]
 max_turns: 60
 timeout_seconds: 1200
-allowed_tools: [Read, Glob, Grep, Skill, Write, Edit, Agent]
+allowed_tools: [Read, Glob, Grep, Write, Edit]
 ---
 
-/practices hands off. Add these rules to the Rules part of the core, one line each: never edit uv.lock by hand; never run scripts/reset-demo-data.sh; never push to main; never delete anything under tests/data/; never edit .github/workflows/; never change the version in pyproject.toml. Don't ask me anything.
+Add these six lines under ### Rules in AGENTS.md, exactly as written, and change nothing else in any file: "- Never edit uv.lock by hand." "- Never run scripts/reset-demo-data.sh." "- Never push to main." "- Never delete anything under tests/data/." "- Never edit .github/workflows/." "- Never change the version in pyproject.toml." If you can't, tell me why and stop.

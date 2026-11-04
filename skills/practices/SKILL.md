@@ -27,8 +27,8 @@ the core.
 
 Claude Code reads `AGENTS.md` reliably only when `CLAUDE.md` imports it with a line that is
 exactly `@AGENTS.md`. If there is no `CLAUDE.md`, create one holding that line. If there is one
-without the line, ask the person before adding it, since the file is theirs; change nothing else
-in it.
+without the line, ask the person before adding it, since the file is theirs, and change nothing
+else in it. That question waits for the hand-over: write the practices first.
 
 Before writing, read [references/rubric.md](references/rubric.md): it is the list of checks the
 reviewer will apply, so writing to it leaves less to correct. Write in plain words, as the Plain
@@ -67,9 +67,10 @@ Use every answer the person has already given, and ask only what remains. When y
 questions, say how many, then ask only the first. Start it with a short summary of what it is
 about and what the repository shows, so someone who does not know the repository can answer, and
 end it with a proposal they can accept, change or reject; give any examples as possible answers,
-not further questions. Ask the next once the first is settled. Before finishing the topic, ask
-whether there is anything else about it they want recorded. If the person has said not to ask,
-write what is settled and ask nothing.
+not further questions. Ask the next once the first is settled. If the person has said not to ask,
+write what is settled and ask nothing. Otherwise, even when their answers covered everything,
+finish the topic by asking whether there is anything else about it they want recorded: the topics
+file is only a starting point, and they know what it misses.
 
 - **No view.** When the person has no view on a question, ask whether to look up current advice
   on the web for their language and tools, rather than searching unasked. If they agree, name
@@ -87,7 +88,9 @@ write what is settled and ask nothing.
   Record where it lives instead, such as the environment variable and the store it comes from,
   and tell the person why.
 - **Vague rules.** A rule must say what to do or not do, in a way an agent could follow or break.
-  Turn a vague aim such as "write clean code" into such a rule with the person, or leave it out.
+  Turn a vague aim such as "write clean code" into such a rule with the person, or leave it out
+  and tell them why. If they want it recorded exactly as they said it, write it so: the wording
+  is theirs, and the review will raise it for them to decide.
 - **Disagreements.** When the repository, the core and a topic file disagree, such as two test
   commands, say what each says and ask which is right before changing either.
 

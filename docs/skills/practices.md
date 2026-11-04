@@ -1,7 +1,5 @@
 # `/practices`
 
-*Not built yet. This page describes the design so far.*
-
 `/practices` is the skill for recording how your project does things, so that a coding agent
 building it works the way your team does: the commands it uses to check its work, the rules it
 follows, and where to find more detail. It is part of [the SDLC](../../README.md) but not one of
@@ -120,11 +118,13 @@ will use.
 - **One question at a time, each with a proposal.** It tells you how many questions it has, then
   asks them one at a time. Each question starts with a short summary of what it is about and what
   the repository shows, so you can answer without knowing the repository, and ends with a
-  proposal you can accept, change or reject.
+  proposal you can accept, change or reject. Anything you already said, such as answers given
+  with the request, is used rather than asked again.
 - **Bases its proposals on current advice.** The answers are yours, but when you have no view on a
   question, it asks whether to look up current advice on the web for your language and tools,
   rather than rely on what Claude already knows, which may be out of date. It then proposes a
-  default, names the sources it used, and marks the default as one in the practices. If you
+  default, names the sources it used, and marks the default as one in the practices, by ending
+  it with "(default)". If you
   decline, or the session cannot reach the web, it says its proposal comes from Claude's own
   knowledge.
 
@@ -133,7 +133,8 @@ will use.
 - **Require anything.** Running `/practices` is optional, and so is every topic. A question you
   don't answer is left out, never written as a guess, so it shows as not recorded in the overview.
 - **Make a technical choice.** When a question turns out to be a choice between alternatives, it
-  says so and leaves it for you to record with `/adr`, as `/plan` does.
+  says so and leaves it for you to record with `/adr`, as `/plan` does. A command for a tool the
+  project does not use yet is marked by ending it with "(not set up yet)".
 - **Change anything else.** It writes only the core and the files under `docs/practices/`, and
   leaves the rest of `AGENTS.md` alone, creating the file if the project has none. In `CLAUDE.md`
   it adds only the `@AGENTS.md` line, creating the file if needed, and asks you first when the file
@@ -148,10 +149,12 @@ it out from the repository and says what it assumed (see [`/build`](build.md)).
 
 Before you see the changes, `/practices` has its reviewer agent check them against a short list of
 pass-or-fail checks, such as: each command matches what the repository holds, no secret is
-written down, and no choice between alternatives is made there instead of in an ADR. A script
-checks the 50-line and 200-line limits and that nothing is imported. At the same time, the
-language checker, an agent shared by every skill that writes a document, reads the changes for
-words a newcomer could not follow, by the [Plain words](../lifecycle.md#plain-words) rule. Both are corrected once, as for
+written down, and no choice between alternatives is made there instead of in an ADR. The core and
+any topic file a run changed are reviewed together, since they must agree. A hook, a script Claude
+Code runs before every edit, refuses any edit that would break the 50-line or 200-line limit or add
+an import, so those never reach the review. Beside the reviewer, the language checker, an agent
+shared by every skill that writes a document, reads the changes for words a newcomer could not follow, by the
+[Plain words](../lifecycle.md#plain-words) rule. Both are corrected once, as for
 every document (see [Review process](../lifecycle.md#review-process)).
 
 [^tools]: [Claude Code](https://code.claude.com/docs/en/memory), [Cursor](https://docs.cursor.com/context/rules),
