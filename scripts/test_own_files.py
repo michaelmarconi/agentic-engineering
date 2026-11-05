@@ -15,18 +15,12 @@ class OwnFiles(unittest.TestCase):
         self.addCleanup(self.tmp.cleanup)
         self.plugin = os.path.join(self.tmp.name, "plugin")
         self.rubric = os.path.join(self.plugin, "skills", "spec", "references", "rubric.md")
-        # The hook's temporary folder, so tests never depend on what the real one holds.
-        self.temporary = os.path.join(self.tmp.name, "temporary")
-        os.makedirs(self.temporary)
-        self.fallback = os.path.join(self.temporary, f"sdlc-audits-{os.getuid()}")
         os.makedirs(os.path.dirname(self.rubric))
         with open(self.rubric, "w") as f:
             f.write("rubric\n")
 
     def run_hook(self, tool, tool_input, raw=None, root=None):
         env = dict(os.environ, CLAUDE_PLUGIN_ROOT=root if root is not None else self.plugin)
-        env["CLAUDE_PLUGIN_DATA"] = os.path.join(self.tmp.name, "data")
-        env["TMPDIR"] = self.temporary
         event = {"hook_event_name": "PreToolUse", "tool_name": tool, "tool_input": tool_input}
         done = subprocess.run([sys.executable, SCRIPT], input=raw if raw is not None else json.dumps(event),
                               capture_output=True, text=True, env=env)
@@ -75,27 +69,6 @@ class OwnFiles(unittest.TestCase):
     def test_unreadable_input_is_ignored(self):
         self.assertIsNone(self.run_hook("Read", {}, raw="not json"))
         self.assertIsNone(self.run_hook("Read", {}, raw=json.dumps({"tool_name": "Read"})))
-
-    def test_reading_an_audit_diff_file_in_its_temporary_folder_is_allowed(self):
-        os.makedirs(self.fallback, mode=0o700)
-        self.assert_allowed(self.run_hook("Read", {"file_path": os.path.join(self.fallback, "0123456789ab-x", "diff.patch")}))
-
-    def test_a_temporary_fallback_that_is_a_link_is_left_to_the_person(self):
-        target = os.path.join(self.tmp.name, "home")
-        os.makedirs(target)
-        os.symlink(target, self.fallback)
-        self.assertIsNone(self.run_hook("Read", {"file_path": os.path.join(self.fallback, "secret")}))
-
-    def test_a_temporary_fallback_others_can_open_is_left_to_the_person(self):
-        os.makedirs(self.fallback, mode=0o755)
-        os.chmod(self.fallback, 0o755)
-        self.assertIsNone(self.run_hook("Read", {"file_path": os.path.join(self.fallback, "x")}))
-
-    def test_other_temporary_folders_and_the_data_folder_are_left_to_the_person(self):
-        os.makedirs(self.fallback, mode=0o700)
-        self.assertIsNone(self.run_hook("Read", {"file_path": os.path.join(self.fallback, "..", "secret.md")}))
-        self.assertIsNone(self.run_hook("Read", {"file_path": os.path.join(self.temporary, "sdlc-audits-other", "x")}))
-        self.assertIsNone(self.run_hook("Read", {"file_path": os.path.join(self.tmp.name, "data", "audits", "x")}))
 
     def test_help_describes_the_hook(self):
         done = subprocess.run([sys.executable, SCRIPT, "--help"], capture_output=True, text=True)

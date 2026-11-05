@@ -56,10 +56,6 @@ class Project(unittest.TestCase):
         self.tmp = tempfile.TemporaryDirectory()
         self.addCleanup(self.tmp.cleanup)
         self.project = os.path.join(self.tmp.name, "project")
-        # The script's temporary folder, so no test touches the real one.
-        self.temporary = os.path.join(self.tmp.name, "temporary")
-        os.makedirs(self.temporary)
-        self.audits = os.path.join(self.temporary, f"sdlc-audits-{os.getuid()}")
         os.makedirs(self.project)
 
     def put(self, relative, text):
@@ -82,7 +78,7 @@ class Project(unittest.TestCase):
 
     def run_audit(self, *args):
         done = subprocess.run([sys.executable, SCRIPT, *args], capture_output=True, text=True,
-                              cwd=self.project, env={**os.environ, **GIT_ENV, "TMPDIR": self.temporary})
+                              cwd=self.project, env={**os.environ, **GIT_ENV})
         return done
 
     def documents(self):
@@ -372,12 +368,11 @@ class Window(Project):
         out = self.ok("last", "7", "days")
         self.assertEqual([c["path"] for c in out["changed"]], ["src/feature.py"])
 
-    def test_the_diff_file_holds_the_changes_outside_the_project(self):
+    def test_the_diff_file_holds_the_changes_in_git_s_own_folder_not_the_working_tree(self):
         self.put("src/late.py", "print('changed')\n")
         self.commit("Late", date="2026-11-01T12:00:00+00:00")
         out = self.ok("last", "7", "days")
-        self.assertTrue(out["diff"].startswith(self.audits + os.sep))
-        self.assertEqual(os.stat(self.audits).st_mode & 0o077, 0)
+        self.assertEqual(out["diff"], os.path.join(self.project, ".git", "sdlc-audit", "diff.patch"))
         with open(out["diff"], encoding="utf-8") as f:
             self.assertIn("+print('changed')", f.read())
         self.assertEqual(self.git("status", "--porcelain"), "")
@@ -394,27 +389,26 @@ class Window(Project):
         out = self.ok("last", "3", "days")
         self.assertEqual((out["commits"], out["changed"]), (0, []))
 
-    def test_a_new_run_deletes_what_an_earlier_run_left_and_clean_deletes_the_rest(self):
-        first = self.ok("last", "7", "days")["diff"]
-        second = self.ok("last", "7", "days")["diff"]
-        self.assertFalse(os.path.exists(first))
-        self.assertTrue(os.path.exists(second))
-        other = os.path.join(self.audits, "0123456789ab-other")
-        os.makedirs(other)
+    def test_a_new_run_replaces_the_diff_file_and_clean_deletes_it(self):
+        self.ok("last", "7", "days")
+        self.put("src/late.py", "print('second')\n")
+        self.commit("Late", date="2026-11-01T12:00:00+00:00")
+        diff = self.ok("last", "7", "days")["diff"]
+        with open(diff, encoding="utf-8") as f:
+            self.assertIn("second", f.read())
         done = self.run_audit("clean")
         self.assertEqual(done.returncode, 0, done.stderr)
-        self.assertFalse(os.path.exists(second))
-        self.assertTrue(os.path.exists(other))
+        self.assertFalse(os.path.exists(os.path.dirname(diff)))
+        self.assertEqual(json.loads(self.run_audit("clean").stdout), {"deleted": []})
 
-    def test_a_temporary_folder_others_could_have_made_is_refused(self):
-        target = os.path.join(self.tmp.name, "elsewhere")
-        os.makedirs(target)
-        os.symlink(target, self.audits)
-        self.assertIn("only you can open", self.refused("last", "7", "days"))
-        os.remove(self.audits)
-        os.makedirs(self.audits, mode=0o755)
-        os.chmod(self.audits, 0o755)
-        self.assertIn("only you can open", self.refused("last", "7", "days"))
+    def test_in_a_worktree_the_diff_file_is_in_that_worktree_s_own_git_folder(self):
+        worktree = os.path.join(self.tmp.name, "worktree")
+        self.git("worktree", "add", "-q", worktree)
+        done = subprocess.run([sys.executable, SCRIPT, "window", "last", "7", "days", "--now", NOW],
+                              capture_output=True, text=True, cwd=worktree)
+        self.assertEqual(done.returncode, 0, done.stderr)
+        diff = json.loads(done.stdout)["diff"]
+        self.assertTrue(diff.startswith(os.path.join(self.project, ".git", "worktrees") + os.sep), diff)
 
     def test_a_file_name_that_is_not_ascii_is_listed_as_it_is(self):
         self.put("docs/specs/caf\u00e9.spec.md", spec())
@@ -444,7 +438,7 @@ class Window(Project):
         self.git("clone", "-q", "--depth", "2", "file://" + self.project, clone, cwd=self.tmp.name)
         def in_clone(*words):
             return subprocess.run([sys.executable, SCRIPT, "window", *words, "--now", NOW],
-                                  capture_output=True, text=True, cwd=clone, env={**os.environ, "TMPDIR": self.temporary})
+                                  capture_output=True, text=True, cwd=clone, env={**os.environ})
         self.assertEqual(in_clone("last", "4", "days").returncode, 0)
         refused = in_clone("last", "30", "days")
         self.assertEqual(refused.returncode, 1)
@@ -465,7 +459,7 @@ class Window(Project):
         clone = os.path.join(self.tmp.name, "clone")
         self.git("clone", "-q", "--depth", "2", "file://" + self.project, clone, cwd=self.tmp.name)
         refused = subprocess.run([sys.executable, SCRIPT, "window", "last", "7", "days", "--now", NOW],
-                                 capture_output=True, text=True, cwd=clone, env={**os.environ, "TMPDIR": self.temporary})
+                                 capture_output=True, text=True, cwd=clone, env={**os.environ})
         self.assertEqual(refused.returncode, 1, refused.stdout)
         self.assertIn("history", refused.stderr)
 
@@ -474,7 +468,7 @@ class Window(Project):
         os.makedirs(plain_folder)
         done = subprocess.run([sys.executable, SCRIPT, "window", "last", "7", "days", "--now", NOW],
                               capture_output=True, text=True, cwd=plain_folder,
-                              env={**os.environ, "GIT_CEILING_DIRECTORIES": self.tmp.name, "TMPDIR": self.temporary})
+                              env={**os.environ, "GIT_CEILING_DIRECTORIES": self.tmp.name})
         self.assertEqual(done.returncode, 1)
         self.assertIn("git repository", done.stderr)
 
