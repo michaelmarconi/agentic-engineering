@@ -24,6 +24,10 @@ A spec is edited in place on a branch, and git is its history.
 | Constraints | Hard limits the behaviour must respect |
 | Open questions | Unknowns still to answer; empty before the spec can be `👍 Accepted` |
 
+These sections are the minimum. A spec can have more, such as "Security" or "Privacy", when you
+ask `/spec` for them; they go before Open questions and are held to the same checks, and
+each requirement stays under Requirements.
+
 Each requirement has a name, one rule and some scenarios. The rule is a single sentence in
 EARS, a small set of sentence patterns for requirements such as "IF ..., THEN the system SHALL
 ...", where SHALL means the requirement is mandatory.[^ears][^rfc2119] The scenarios use

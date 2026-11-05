@@ -66,6 +66,10 @@ not hold, is an open question, not a rule you choose: a rule for paid invoices s
 about unpaid ones. Write each requirement as rubric checks 5 to 8 describe: one EARS rule, scenarios that
 add concrete cases, and a Verified by line.
 
+The template's six sections are the minimum, not the limit. When the person asks for a section of
+its own, such as "Security", add it where it fits before Open questions (rubric check 1); never add one
+they did not ask for, and keep every `### Requirement:` under Requirements.
+
 An open question the person has seen is settled only by their answer: written into the spec,
 or, for a technical choice, recorded in an ADR they accept, after which the question goes.
 Never remove or reword such a question without that answer, and moving it to another section,

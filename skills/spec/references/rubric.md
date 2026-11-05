@@ -4,8 +4,11 @@ Each check passes or fails. `/spec` reads this while writing; the spec reviewer 
 checking, and quotes the spec as evidence for every failure.
 
 1. **Shape.** The spec has `status:` frontmatter set to `📝 Draft` or `👍 Accepted`,
-   emoji included, and the sections
-   Problem, Goal, Scope, Requirements, Constraints and Open questions, in that order.
+   emoji included, and at least the sections Problem, Goal, Scope, Requirements, Constraints and
+   Open questions, in that order relative to each other. Further sections, such as "Security" or
+   "Privacy", may go wherever they fit before Open questions, which comes last, and every other
+   check applies to them too. A further section holds no `### Requirement:` heading; those
+   belong under Requirements.
 2. **One specific story.** Problem names who is stuck and what happens to them today, as one
    concrete situation rather than a general complaint, and does not mention the solution, not
    even in passing, such as the file format, screen or button it will use. While the person has
