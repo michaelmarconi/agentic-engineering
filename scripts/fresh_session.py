@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 """Let /build start only in answer to the first message the person sends in a session.
 
-Claude Code runs this on four hook events:
+Claude Code runs this on three hook events:
 
 - SessionStart: a session that starts new, or after /clear (which gives it a new session id),
   is recorded as fresh, with no messages yet. One that is resumed is recorded as not fresh,
-  since its earlier conversation is back in context. Compaction keeps what was recorded.
+  since its earlier conversation is back in context, and keeps the record of a /build it was
+  running. Compaction keeps what was recorded.
 - UserPromptSubmit: each message from the person is counted. In a Claude project thread,
   messages arrive wrapped in a `<wake>` envelope; only one that holds a message `from="human"`
   counts, so the note that opens a thread and events such as a pull request closing do not.
@@ -13,7 +14,8 @@ Claude Code runs this on four hook events:
 - PreToolUse on Skill: starting `build` or `sdlc:build` is refused unless the session is fresh
   and exactly one message has been counted, which covers asking in plain words.
 - A /build that is allowed to start is recorded, so the branch guard knows a build is running.
-- SessionEnd: the session's record is deleted.
+- A record is deleted once unchanged for 30 days (see saved_records.py), not when the session
+  ends, since a resumed session carries on.
 
 Records live in $CLAUDE_PLUGIN_DATA/sessions/<session id>.json. Without $CLAUDE_PLUGIN_DATA, or
 when the input cannot be read, nothing is recorded and /build is refused, since freshness
@@ -25,6 +27,8 @@ import json
 import os
 import re
 import sys
+
+import saved_records
 
 BUILD_SKILLS = ("build", "sdlc:build")
 TYPED_BUILD = re.compile(r"^\s*/(?:sdlc:)?build(?:\s|$)")
@@ -68,7 +72,8 @@ def save(session, record):
         with open(path, "w", encoding="utf-8") as f:
             json.dump(record, f)
     except OSError:
-        pass
+        return
+    saved_records.prune(os.path.dirname(path))
 
 
 def from_person(prompt):
@@ -97,7 +102,10 @@ def on_start(event):
     elif source == "compact" and load(session):
         return None
     else:
-        save(session, {"fresh": False, "messages": 0})
+        record = {"fresh": False, "messages": 0}
+        if building(session):
+            record["building"] = True  # a resumed build keeps its branch guard
+        save(session, record)
     return None
 
 
@@ -130,18 +138,7 @@ def on_skill(event):
                                    "permissionDecisionReason": REASON}}
 
 
-def on_end(event):
-    path = record_path(event.get("session_id"))
-    if path:
-        try:
-            os.remove(path)
-        except OSError:
-            pass
-    return None
-
-
-HANDLERS = {"SessionStart": on_start, "UserPromptSubmit": on_prompt, "PreToolUse": on_skill,
-            "SessionEnd": on_end}
+HANDLERS = {"SessionStart": on_start, "UserPromptSubmit": on_prompt, "PreToolUse": on_skill}
 
 
 def main(argv=None):

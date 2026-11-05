@@ -8,7 +8,7 @@ could reword them, so this hook keeps them and adds them to the checker's reques
 review_relay.py does for documents.
 
 Claude Code runs it on PreToolUse for the Agent tool, on PostToolUse for the Agent and Skill
-tools, and on SessionEnd. It acts only in a session where /build was allowed to start (recorded by
+tools. It acts only in a session where /build was allowed to start (recorded by
 fresh_session.py), and keeps:
 
 - the report of Claude Code's `/code-review`, from the Skill tool's result;
@@ -26,8 +26,10 @@ start, with a reason Claude sees, when the request has no `Document:` line, when
 reports of the reviewed commit is missing, or when nothing
 has been committed since the reviews, and deletes the record once the checker has run, so the
 corrections are checked only once. A review started in the background is refused, since its
-report would arrive after the hook has seen it finish. Records live in $CLAUDE_PLUGIN_DATA/builds/<session>.json
-and are deleted when the session ends. Anything else, and any input it cannot read, is left alone.
+report would arrive after the hook has seen it finish. Records live in
+$CLAUDE_PLUGIN_DATA/builds/<session>.json and are deleted once unchanged for 30 days (see
+saved_records.py), not when the session ends, since a resumed session carries on. Anything else,
+and any input it cannot read, is left alone.
 """
 
 import argparse
@@ -44,6 +46,7 @@ except ImportError:  # Windows: run without the lock rather than fail every agen
     fcntl = None
 
 import fresh_session
+import saved_records
 
 ROOT = os.environ.get("CLAUDE_PLUGIN_ROOT") or os.path.normpath(
     os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
@@ -104,6 +107,7 @@ def save(session, record):
     os.makedirs(os.path.dirname(path), exist_ok=True)
     with open(path, "w", encoding="utf-8") as f:
         json.dump(record, f)
+    saved_records.prune(os.path.dirname(path))
 
 
 def for_commit(session, commit):
@@ -179,12 +183,6 @@ def start_checker(session, tool_input):
 def handle(event):
     session = str(event.get("session_id") or "unknown")
     when = event.get("hook_event_name")
-    if when == "SessionEnd":
-        path = record_path(session)
-        for leftover in (path, path + ".lock") if path else ():
-            if os.path.exists(leftover):
-                os.remove(leftover)
-        return None
     tool_input = event.get("tool_input")
     if not isinstance(tool_input, dict):
         return None

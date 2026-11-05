@@ -5,6 +5,7 @@ import json
 import os
 import sys
 import tempfile
+import time
 import unittest
 from contextlib import redirect_stdout
 from unittest import mock
@@ -172,10 +173,30 @@ class Sessions(Hooks):
         self.say("build it", session="b")
         self.assertIsNone(self.skill(session="b"))
 
-    def test_session_end_forgets_it(self):
+    def test_the_record_survives_the_session_ending(self):
+        # Issue #37: `claude --resume`, or a restarted container, brings the same session back.
         self.start()
+        self.say("build docs/plans/x.md")
+        self.assertIsNone(self.skill())
         self.hook({"hook_event_name": "SessionEnd"})
-        self.assertEqual(os.listdir(os.path.join(self.tmp.name, "sessions")), [])
+        self.assertTrue(fresh_session.building("s1"))
+
+    def test_a_resumed_build_is_still_building_but_not_fresh(self):
+        self.start()
+        self.say("build docs/plans/x.md")
+        self.assertIsNone(self.skill())
+        self.start("resume")
+        self.assertTrue(fresh_session.building("s1"))
+        self.say("carry on")
+        self.assert_refused_skill(self.skill())
+
+    def test_saving_a_record_deletes_another_sessions_once_it_is_a_month_old(self):
+        self.start(session="old")
+        sessions = os.path.join(self.tmp.name, "sessions")
+        month = time.time() - 31 * 24 * 60 * 60
+        os.utime(os.path.join(sessions, "old.json"), (month, month))
+        self.start()
+        self.assertEqual(os.listdir(sessions), ["s1.json"])
 
 
 class Threads(Hooks):
