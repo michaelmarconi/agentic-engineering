@@ -43,17 +43,10 @@ window <words>
     and lists the files those commits added (A), changed (M), renamed (R, with the old name) or
     deleted (D), and the `👍 Accepted` specs and ADRs whose own text changed. A merge commit counts
     as its change from its first parent, so work merged in the window counts even when its own
-    commits are older. It writes the window's changes, as `git log -p`, to sdlc-audit/diff.patch
-    in git's own folder (.git, or a worktree's folder under it), which agents can read without
-    asking since it is inside the project, and which is never part of the working tree, so
-    `git status` doesn't change. Each run replaces the file an earlier run left, so two audits of
-    one checkout run at the same time can delete each other's diff file; run them one after
-    another. It refuses, with the reason, words it can't read, a commit that doesn't exist or
-    isn't on this branch, and a window older than the history the clone holds; it never falls
-    back to every commit.
-
-clean
-    Deletes the folder `window` wrote, if it is there.
+    commits are older. It also lists the window's commits, oldest first, with their dates and
+    subjects, and writes nothing, so agents read the changed files themselves. It refuses, with
+    the reason, words it can't read, a commit that doesn't exist or isn't on this branch, and a
+    window older than the history the clone holds; it never falls back to every commit.
 
 Exit codes: 0 done; 1 refused or failed, with the reason on stderr and nothing on stdout.
 """
@@ -63,7 +56,6 @@ import datetime
 import json
 import os
 import re
-import shutil
 import subprocess
 import sys
 
@@ -373,24 +365,7 @@ def check_documents(project):
     }
 
 
-# ---- window and clean ----
-
-def audit_folder(project):
-    """sdlc-audit/ in the checkout's own git folder, or None outside a git repository."""
-    found = git(project, "rev-parse", "--git-path", "sdlc-audit", check=False)
-    if found.returncode != 0:
-        return None
-    return os.path.normpath(os.path.join(project, found.stdout.strip()))
-
-
-def clean(project):
-    """Delete the folder `window` wrote; the folders deleted."""
-    folder = audit_folder(project)
-    if not folder or not os.path.isdir(folder) or os.path.islink(folder):
-        return []
-    shutil.rmtree(folder, ignore_errors=True)
-    return [folder]
-
+# ---- window ----
 
 def commit_date(project, commit):
     return int(git(project, "log", "-1", "--format=%ct", commit).stdout.strip())
@@ -433,12 +408,16 @@ def resolve_window(project, words, now):
 
 
 def changed_files(project, selection):
-    out = git(project, "log", "--name-status", "-M", "--diff-merges=first-parent", "--format=%x00%H",
-              *selection).stdout
-    commits = [chunk for chunk in out.split("\x00") if chunk.strip()]
-    changes = {}
-    for chunk in reversed(commits):
-        for line in chunk.splitlines()[1:]:
+    """(the window's commits, oldest first, and the files they changed)."""
+    out = git(project, "log", "--name-status", "-M", "--diff-merges=first-parent",
+              "--format=%x00%H%x1f%cs%x1f%s", *selection).stdout
+    chunks = [chunk for chunk in out.split("\x00") if chunk.strip()]
+    commits, changes = [], {}
+    for chunk in reversed(chunks):
+        lines = chunk.splitlines()
+        sha, date, subject = (lines[0].split("\x1f") + ["", ""])[:3]
+        commits.append({"commit": sha[:12], "date": date, "subject": subject})
+        for line in lines[1:]:
             fields = line.split("\t")
             if len(fields) < 2:
                 continue
@@ -448,26 +427,19 @@ def changed_files(project, selection):
             elif letter in "AMDTC":
                 path = fields[-1]
                 changes[path] = {"status": "M" if letter in "TC" else letter, "path": path}
-    return len(commits), [changes[path] for path in sorted(changes)]
+    return commits, [changes[path] for path in sorted(changes)]
 
 
 def window(project, words, now):
     project = os.path.abspath(project)
     selection, description = resolve_window(project, words, now)
-    count, changes = changed_files(project, selection)
-    clean(project)
-    folder = audit_folder(project)
-    os.makedirs(folder)
-    diff = os.path.join(folder, "diff.patch")
-    with open(diff, "w", encoding="utf-8") as f:
-        f.write(git(project, "log", "-p", "-M", "--diff-merges=first-parent",
-                    "--format=commit %H%nDate: %cI%n%n    %s%n", *selection).stdout)
+    commits, changes = changed_files(project, selection)
     documents = lifecycle_documents(project)
     touched = {change["path"] for change in changes}
     accepted = [relative for relative, (kind, text) in sorted(documents.items())
                 if kind in ("spec", "ADR") and status(kind, text) == ACCEPTED and relative in touched]
-    return {"window": description, "commits": count, "changed": changes,
-            "changed_accepted_documents": accepted, "diff": diff}
+    return {"window": description, "commits": commits, "changed": changes,
+            "changed_accepted_documents": accepted}
 
 
 def parse_now(value):
@@ -491,27 +463,23 @@ def main(argv=None):
                     "built_plans, finished_spikes and unfinished_spikes [{document, status, date}]. "
                     "Exit codes: 0 done, whatever it found; 1 failed, with the reason on stderr.")
     window_parser = commands.add_parser(
-        "window", help="list what a window of commits changed, and write its diff file",
-        description="Read `last N days` or `since <commit>` on the checked-out branch. Output: JSON with window, "
-                    "commits, changed [{status, path, from}], changed_accepted_documents and diff, the diff "
-                    "file's path. Exit codes: 0 done, even when the window holds no commits; 1 refused, with "
-                    "the reason on stderr.")
+        "window", help="list a window of commits and the files they changed",
+        description="Read `last N days` or `since <commit>` on the checked-out branch, writing nothing.\n"
+                    "Output: JSON with window, commits [{commit, date, subject}], oldest first,\n"
+                    "changed [{status, path, from}] and changed_accepted_documents.\n"
+                    "Exit codes: 0 done, even when the window holds no commits; 1 refused, with the\n"
+                    "reason on stderr.",
+        formatter_class=argparse.RawDescriptionHelpFormatter)
     window_parser.add_argument("words", nargs="+", help="`last N days` or `since <commit>`")
     window_parser.add_argument("--now", help="the time the window ends, in ISO 8601; for tests (default: now)")
-    clean_parser = commands.add_parser(
-        "clean", help="delete the diff file window wrote",
-        description="Delete the folder window wrote in git's own folder. Output: JSON with deleted, the folders "
-                    "deleted. Exit codes: 0 done; 1 failed, with the reason on stderr.")
-    for sub in (documents_parser, window_parser, clean_parser):
+    for sub in (documents_parser, window_parser):
         sub.add_argument("--project", default=".", help="the project's folder (default: the current folder)")
     args = parser.parse_args(argv)
     try:
         if args.command == "documents":
             out = check_documents(args.project)
-        elif args.command == "window":
-            out = window(args.project, " ".join(args.words), parse_now(args.now))
         else:
-            out = {"deleted": clean(os.path.abspath(args.project))}
+            out = window(args.project, " ".join(args.words), parse_now(args.now))
     except Refused as error:
         print(f"audit {args.command}: {error}", file=sys.stderr)
         return 1
