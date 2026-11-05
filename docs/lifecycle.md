@@ -37,7 +37,7 @@ which says how far along it is.
 
 Each step has a skill: instructions Claude follows for that step, which you run as a slash
 command. The plugin's skills are named `/sdlc:<name>`, such as `/sdlc:spec`; this page leaves out
-the `sdlc:` prefix. Some skills are not built yet, and only those Claude Code lists exist.
+the `sdlc:` prefix.
 
 - `/brief` writes or changes the brief.
 - `/spec` writes or changes the spec for one capability.
