@@ -6,6 +6,17 @@ What changed in each version of the plugin, newest first. Versions follow
 past a major version: it says what you need to change in your documents. Until 1.0.0, any
 minor version may need such a change, and its entry says so.
 
+## [0.24.2] - 2026-11-05
+
+### Fixed
+
+- A correction check now works when Claude Code runs the reviews in the background, which it can
+  do even when a skill asks for the foreground. The plugin's hooks used to keep a review's report
+  only from the Agent tool's result, which for a background run is just a launch notice, so the
+  correction checker was refused. They now keep the report that arrives when the agent finishes,
+  for every document skill and for `/sdlc:build`, and no longer refuse reviews started in the
+  background.
+
 ## [0.24.1] - 2026-11-05
 
 ### Fixed

@@ -430,12 +430,152 @@ class Relay(unittest.TestCase):
         self.assertIn("second wording", prompt)
         self.assertNotIn("first", prompt)
 
-    def test_reviewer_or_language_checker_in_the_background_is_refused(self):
+    # Runs that Claude Code moves to the background
+
+    def launch(self, agent, prompt, agent_id, session=None, **extra):
+        """Start an agent that Claude Code runs in the background: its tool result is a launch notice."""
+        out = self.agent("PreToolUse", agent, prompt, session=session, **extra)
+        self.assertIsNone(self.run_hook({
+            "hook_event_name": "PostToolUse", "session_id": session or self.session, "tool_name": "Agent",
+            "tool_use_id": f"{agent}-{prompt}",
+            "tool_input": dict({"subagent_type": agent, "prompt": prompt, "description": "a task"}, **extra),
+            "tool_response": {"isAsync": True, "status": "async_launched", "agentId": agent_id,
+                              "description": "a task", "prompt": prompt, "outputFile": "/tmp/out"}}))
+        return out
+
+    def stopped(self, agent, agent_id, report, session=None):
+        """The background agent finishes: Claude Code sends SubagentStop with its last message."""
+        return self.run_hook({"hook_event_name": "SubagentStop", "session_id": session or self.session,
+                              "agent_id": agent_id, "agent_type": agent, "stop_hook_active": False,
+                              "last_assistant_message": report})
+
+    def test_reports_of_background_runs_reach_the_checker_word_for_word(self):
         self.put(SPEC, "v1\n")
-        for agent in ("sdlc:spec-reviewer", LANGUAGE):
-            out = self.agent("PreToolUse", agent, f"Document: {SPEC}\nReview.", run_in_background=True)
-            self.assertRefused(out, "foreground")
+        review, check = f"Document: {SPEC}\nReview this spec.", f"Document: {SPEC}\nCheck the wording."
+        self.assertStarted(self.launch("sdlc:spec-reviewer", review, "a1"))
+        self.assertStarted(self.launch(LANGUAGE, check, "a2"))
+        self.assertIsNone(self.stopped("sdlc:spec-reviewer", "a1", REPORT))
+        self.assertIsNone(self.stopped(LANGUAGE, "a2", WORDING))
+        self.put(SPEC, "v2\n")
+        prompt = self.assertAllowed(self.check())["prompt"]
+        self.assertIn("=== REVIEW REPORT ===\n" + REPORT + "\n=== END REVIEW REPORT ===", prompt)
+        self.assertIn("=== WORDING REPORT ===\n" + WORDING + "\n=== END WORDING REPORT ===", prompt)
+        self.assertIn("=== DOCUMENT AS REVIEWED: " + SPEC + " ===\nv1\n", prompt)
+
+    def test_a_background_report_counts_when_the_agent_stops_before_its_launch_is_seen(self):
+        self.put(SPEC, "v1\n")
+        review, check = f"Document: {SPEC}\nReview this spec.", f"Document: {SPEC}\nCheck the wording."
+        self.agent("PreToolUse", "sdlc:spec-reviewer", review)
+        self.agent("PreToolUse", LANGUAGE, check)
+        self.assertIsNone(self.stopped("sdlc:spec-reviewer", "a1", REPORT))
+        self.assertIsNone(self.stopped(LANGUAGE, "a2", WORDING))
+        for agent, prompt, agent_id in (("sdlc:spec-reviewer", review, "a1"), (LANGUAGE, check, "a2")):
+            self.run_hook({"hook_event_name": "PostToolUse", "session_id": self.session,
+                           "tool_name": "Agent", "tool_use_id": f"{agent}-{prompt}",
+                           "tool_input": {"subagent_type": agent, "prompt": prompt},
+                           "tool_response": {"status": "async_launched", "agentId": agent_id}})
+        self.put(SPEC, "v2\n")
+        prompt = self.assertAllowed(self.check())["prompt"]
+        self.assertIn(REPORT, prompt)
+        self.assertIn(WORDING, prompt)
+
+    def test_one_part_in_the_foreground_and_one_in_the_background_both_count(self):
+        self.put(SPEC, "v1\n")
+        review = f"Document: {SPEC}\nReview this spec."
+        self.agent("PreToolUse", "sdlc:spec-reviewer", review)
+        self.agent("PostToolUse", "sdlc:spec-reviewer", review, response=REPORT)
+        self.launch(LANGUAGE, f"Document: {SPEC}\nCheck the wording.", "a2")
+        self.stopped(LANGUAGE, "a2", WORDING)
+        self.put(SPEC, "v2\n")
+        prompt = self.assertAllowed(self.check())["prompt"]
+        self.assertIn(REPORT, prompt)
+        self.assertIn(WORDING, prompt)
+
+    def test_a_launch_notice_alone_is_no_report(self):
+        self.put(SPEC, "v1\n")
+        self.launch("sdlc:spec-reviewer", f"Document: {SPEC}\nReview this spec.", "a1")
+        self.launch(LANGUAGE, f"Document: {SPEC}\nCheck the wording.", "a2")
+        self.put(SPEC, "v2\n")
+        self.assertRefused(self.check(), "stop and show the person")
+        record = [p for p in self.saved() if not p.endswith("background-runs.json")]
+        for path in record:
+            with open(path, encoding="utf-8") as f:
+                self.assertNotIn("async_launched", f.read())
+
+    def test_a_background_agent_that_stops_with_no_report_is_no_report(self):
+        self.put(SPEC, "v1\n")
+        self.launch("sdlc:spec-reviewer", f"Document: {SPEC}\nReview this spec.", "a1")
+        self.stopped("sdlc:spec-reviewer", "a1", "")
+        self.language()
+        self.put(SPEC, "v2\n")
+        self.assertRefused(self.check(), "stop and show the person")
+
+    def test_an_agent_the_relay_never_saw_start_changes_nothing(self):
+        self.assertIsNone(self.stopped("sdlc:spec-reviewer", "a9", REPORT))
+        self.assertIsNone(self.stopped("Explore", "a8", REPORT))
         self.assertEqual(self.saved(), [])
+        self.put(SPEC, "v1\n")
+        self.review()
+        before = {p: open(p, encoding="utf-8").read() for p in self.saved()}
+        self.assertIsNone(self.stopped("sdlc:spec-reviewer", "a7", "another report"))
+        self.assertEqual({p: open(p, encoding="utf-8").read() for p in self.saved()
+                          if not p.endswith("background-runs.json")}, before)
+        self.put(SPEC, "v2\n")
+        self.assertNotIn("another report", self.assertAllowed(self.check())["prompt"])
+
+    def test_a_background_report_of_another_session_does_not_count(self):
+        self.put(SPEC, "v1\n")
+        self.launch("sdlc:spec-reviewer", f"Document: {SPEC}\nReview this spec.", "a1")
+        self.stopped("sdlc:spec-reviewer", "a1", REPORT, session="other")
+        self.language()
+        self.put(SPEC, "v2\n")
+        self.assertRefused(self.check(), "stop and show the person")
+
+    def test_an_agent_that_stops_again_has_its_last_report_kept(self):
+        # Another plugin's SubagentStop hook may keep an agent going; it then stops again.
+        self.put(SPEC, "v1\n")
+        self.launch("sdlc:spec-reviewer", f"Document: {SPEC}\nReview this spec.", "a1")
+        self.stopped("sdlc:spec-reviewer", "a1", "an early line")
+        self.stopped("sdlc:spec-reviewer", "a1", REPORT)
+        self.language()
+        self.put(SPEC, "v2\n")
+        prompt = self.assertAllowed(self.check())["prompt"]
+        self.assertIn(REPORT, prompt)
+        self.assertNotIn("an early line", prompt)
+
+    def held(self):
+        path = [p for p in self.saved() if p.endswith("background-runs.json")]
+        if not path:
+            return {}
+        with open(path[0], encoding="utf-8") as f:
+            return json.load(f)["stopped"]
+
+    def test_a_foreground_run_leaves_no_report_held(self):
+        # SubagentStop fires for foreground runs too, before their tool result.
+        self.put(SPEC, "v1\n")
+        review = f"Document: {SPEC}\nReview this spec."
+        self.agent("PreToolUse", "sdlc:spec-reviewer", review)
+        self.stopped("sdlc:spec-reviewer", "a1", REPORT)
+        self.post("sdlc:spec-reviewer", review, {"status": "completed", "agentId": "a1",
+                                                 "content": [{"type": "text", "text": REPORT}]})
+        self.assertEqual(self.held(), {})
+
+    def test_only_the_last_few_reports_are_held(self):
+        self.put(SPEC, "v1\n")
+        self.agent("PreToolUse", "sdlc:spec-reviewer", f"Document: {SPEC}\nReview this spec.")
+        for n in range(8):
+            self.stopped("sdlc:spec-reviewer", f"a{n}", REPORT)
+        self.assertEqual(sorted(self.held()), ["a3", "a4", "a5", "a6", "a7"])
+
+    def test_reviewer_or_language_checker_asked_to_run_in_the_background_is_allowed(self):
+        self.put(SPEC, "v1\n")
+        review, check = f"Document: {SPEC}\nReview.", f"Document: {SPEC}\nCheck the wording."
+        self.assertStarted(self.launch("sdlc:spec-reviewer", review, "a1", run_in_background=True))
+        self.assertStarted(self.launch(LANGUAGE, check, "a2", run_in_background=True))
+        self.stopped("sdlc:spec-reviewer", "a1", REPORT)
+        self.stopped(LANGUAGE, "a2", WORDING)
+        self.put(SPEC, "v2\n")
+        self.assertAllowed(self.check())
 
     def test_without_tool_use_ids_both_reports_still_count(self):
         self.put(SPEC, "v1\n")
