@@ -368,47 +368,24 @@ class Window(Project):
         out = self.ok("last", "7", "days")
         self.assertEqual([c["path"] for c in out["changed"]], ["src/feature.py"])
 
-    def test_the_diff_file_holds_the_changes_in_git_s_own_folder_not_the_working_tree(self):
+    def test_the_window_s_commits_are_listed_and_nothing_is_written(self):
         self.put("src/late.py", "print('changed')\n")
-        self.commit("Late", date="2026-11-01T12:00:00+00:00")
+        late = self.commit("Late", date="2026-11-01T12:00:00+00:00")
         out = self.ok("last", "7", "days")
-        self.assertEqual(out["diff"], os.path.join(self.project, ".git", "sdlc-audit", "diff.patch"))
-        with open(out["diff"], encoding="utf-8") as f:
-            self.assertIn("+print('changed')", f.read())
-        self.assertEqual(self.git("status", "--porcelain"), "")
+        self.assertEqual(out["commit_list"], [{"commit": late[:12], "date": "2026-11-01", "subject": "Late"}])
+        self.assertEqual(self.git("status", "--porcelain", "--ignored"), "")
+        self.assertFalse(os.path.exists(os.path.join(self.project, ".git", "sdlc-audit")))
 
-    def test_changes_that_are_not_utf_8_text_still_make_a_diff_file(self):
+    def test_changes_that_are_not_utf_8_text_are_still_listed(self):
         with open(os.path.join(self.project, "src", "latin.txt"), "wb") as f:
             f.write("caf\u00e9\n".encode("latin-1"))
         self.commit("Latin-1", date="2026-11-01T12:00:00+00:00")
         out = self.ok("last", "7", "days")
         self.assertEqual([c["path"] for c in out["changed"]], ["src/latin.txt"])
-        self.assertTrue(os.path.exists(out["diff"]))
 
     def test_a_window_with_no_commits_is_not_refused(self):
         out = self.ok("last", "3", "days")
         self.assertEqual((out["commits"], out["changed"]), (0, []))
-
-    def test_a_new_run_replaces_the_diff_file_and_clean_deletes_it(self):
-        self.ok("last", "7", "days")
-        self.put("src/late.py", "print('second')\n")
-        self.commit("Late", date="2026-11-01T12:00:00+00:00")
-        diff = self.ok("last", "7", "days")["diff"]
-        with open(diff, encoding="utf-8") as f:
-            self.assertIn("second", f.read())
-        done = self.run_audit("clean")
-        self.assertEqual(done.returncode, 0, done.stderr)
-        self.assertFalse(os.path.exists(os.path.dirname(diff)))
-        self.assertEqual(json.loads(self.run_audit("clean").stdout), {"deleted": []})
-
-    def test_in_a_worktree_the_diff_file_is_in_that_worktree_s_own_git_folder(self):
-        worktree = os.path.join(self.tmp.name, "worktree")
-        self.git("worktree", "add", "-q", worktree)
-        done = subprocess.run([sys.executable, SCRIPT, "window", "last", "7", "days", "--now", NOW],
-                              capture_output=True, text=True, cwd=worktree)
-        self.assertEqual(done.returncode, 0, done.stderr)
-        diff = json.loads(done.stdout)["diff"]
-        self.assertTrue(diff.startswith(os.path.join(self.project, ".git", "worktrees") + os.sep), diff)
 
     def test_a_file_name_that_is_not_ascii_is_listed_as_it_is(self):
         self.put("docs/specs/caf\u00e9.spec.md", spec())
@@ -473,7 +450,7 @@ class Window(Project):
         self.assertIn("git repository", done.stderr)
 
     def test_every_command_has_help(self):
-        for command in ("documents", "window", "clean"):
+        for command in ("documents", "window"):
             done = self.run_audit(command, "--help")
             self.assertEqual(done.returncode, 0)
             self.assertIn("Exit codes", done.stdout)
