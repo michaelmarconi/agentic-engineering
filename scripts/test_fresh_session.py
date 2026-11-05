@@ -190,6 +190,16 @@ class Sessions(Hooks):
         self.say("carry on")
         self.assert_refused_skill(self.skill())
 
+    def test_a_restart_that_keeps_the_session_id_counts_as_resumed(self):
+        # A restarted cloud container may report a startup under a session id it already used.
+        self.start()
+        self.say("build docs/plans/x.md")
+        self.assertIsNone(self.skill())
+        self.start("startup")
+        self.assertTrue(fresh_session.building("s1"))
+        self.say("build docs/plans/x.md")
+        self.assert_refused_skill(self.skill())
+
     def test_saving_a_record_deletes_another_sessions_once_it_is_a_month_old(self):
         self.start(session="old")
         sessions = os.path.join(self.tmp.name, "sessions")

@@ -6,7 +6,7 @@ Claude Code runs this on three hook events:
 - SessionStart: a session that starts new, or after /clear (which gives it a new session id),
   is recorded as fresh, with no messages yet. One that is resumed is recorded as not fresh,
   since its earlier conversation is back in context, and keeps the record of a /build it was
-  running. Compaction keeps what was recorded.
+  running; so is a start under a session id already recorded, as a restarted container may send. Compaction keeps what was recorded.
 - UserPromptSubmit: each message from the person is counted. In a Claude project thread,
   messages arrive wrapped in a `<wake>` envelope; only one that holds a message `from="human"`
   counts, so the note that opens a thread and events such as a pull request closing do not.
@@ -97,7 +97,7 @@ def building(session):
 def on_start(event):
     session = event.get("session_id")
     source = event.get("source")
-    if source in ("startup", "clear"):
+    if source == "clear" or (source == "startup" and not load(session)):
         save(session, {"fresh": True, "messages": 0})
     elif source == "compact" and load(session):
         return None
