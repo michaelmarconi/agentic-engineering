@@ -95,7 +95,9 @@ def plain(status):
 
 
 def git(project, *args, check=True):
-    done = subprocess.run(["git", "-C", project, *args], capture_output=True, text=True)
+    # Files in a diff need not be UTF-8 text; a byte that isn't is shown as U+FFFD, not refused.
+    done = subprocess.run(["git", "-C", project, *args], capture_output=True, text=True, encoding="utf-8",
+                          errors="replace")
     if check and done.returncode != 0:
         raise Refused(done.stderr.strip() or f"git {args[0]} failed")
     return done
