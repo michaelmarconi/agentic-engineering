@@ -92,7 +92,7 @@ A drift finding is reported as drift only once its checker confirms it.
 ## Report
 
 Give the findings in this order, grouped by document within each part, leaving out a part with
-nothing in it:
+nothing in it and numbering the parts you give from 1:
 
 1. **Drift:** each confirmed finding, with the auditor's quotes of the requirement or decision
    and of the code, with its file and line, as the report gave them.
