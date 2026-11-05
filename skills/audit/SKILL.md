@@ -19,9 +19,8 @@ python3 "${CLAUDE_SKILL_DIR}/scripts/audit.py" <command> ...
 
 - `documents` checks every lifecycle document and lists the accepted specs and ADRs. Run it in
   every audit.
-- `window <words>` works out what a window of commits changed and writes their diff to a file
-  in git's own folder, never in the working tree. Run it before anything else when the person gives a window.
-- `clean` deletes that diff file. Run it once the agents have reported.
+- `window <words>` lists a window's commits and the files they changed, and writes nothing. Run
+  it before anything else when the person gives a window.
 
 Each prints JSON. If a command exits with 1, or Claude Code doesn't let it run, as in a routine
 whose permissions don't allow it, stop and give the person the reason: without the script you
@@ -45,11 +44,17 @@ Say so plainly and go straight to the findings when there is nothing for agents 
 no spec or ADR is accepted, or a window holds no commits, the document checks are still the
 findings.
 
-For a window, start the `sdlc:audit-picker` agent with this request, listing every accepted spec
-and ADR beneath it, one path per line:
+For a window, start the `sdlc:audit-picker` agent with this request, filled from `window`'s
+output and listing every accepted spec and ADR under `Documents:`, one per line:
 
 ```
-Changes: <the window's diff file>
+Commits:
+<commit> <date> <subject>
+...
+Changed:
+<status> <path>, or R <path> from <old path>
+...
+Documents:
 <path>
 ...
 ```
@@ -61,12 +66,10 @@ changes touch no accepted document.
 ## Check the code
 
 Start one `sdlc:auditor` agent per document to check, all in the foreground and all in one
-message, so they run side by side. Give each this request, its first line exactly as shown, with
-the second line only for a window:
+message, so they run side by side. Give each this request, exactly as shown:
 
 ```
 Document: <the document's path, as documents lists it>
-Changes: <the window's diff file>
 ```
 
 Never start one for any other document. Claude Code limits how many agents run at once; if it
@@ -84,8 +87,7 @@ Document: <the document's path>
 === END AUDIT REPORT ===
 ```
 
-A drift finding is reported as drift only once its checker confirms it. Once every agent has
-reported, run `clean`.
+A drift finding is reported as drift only once its checker confirms it.
 
 ## Report
 

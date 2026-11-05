@@ -35,4 +35,4 @@ check. "The run" is one `/audit` from the person's request to its findings.
    supersede the ADR, through `/adr`; or, for a problem with a document, the edit that corrects
    it.
 9. **Changes nothing.** The run writes, edits and deletes nothing in the repository, sets no
-   status, and makes no commit; the script's diff files are deleted with `clean` at the end.
+   status, and makes no commit.
