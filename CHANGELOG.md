@@ -6,6 +6,16 @@ What changed in each version of the plugin, newest first. Versions follow
 past a major version: it says what you need to change in your documents. Until 1.0.0, any
 minor version may need such a change, and its entry says so.
 
+## [0.23.0] - 2026-11-05
+
+### Changed
+
+- A brief or a spec can now have sections beyond the six it needs, such as "Safety and security"
+  in a brief or "Security" in a spec, when you ask for them. The six must still all be there in
+  their order, and Open questions stays last. Every other check applies to the new sections too,
+  so they can't hold a feature list, a design or a guess, and a spec's requirements stay under
+  Requirements. Before, the reviewer failed any section beyond the six.
+
 ## [0.21.0] - 2026-11-04
 
 ### Added
