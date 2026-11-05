@@ -423,7 +423,14 @@ def changed_files(project, selection):
                 continue
             letter = fields[0][:1]
             if letter == "R" and len(fields) == 3:
-                changes[fields[2]] = {"status": "R", "path": fields[2], "from": fields[1]}
+                # A file renamed in the window is listed once, under its new name: as added if the
+                # window added it, otherwise as renamed from the name it had before the window.
+                before = changes.pop(fields[1], None)
+                if before and before["status"] == "A":
+                    changes[fields[2]] = {"status": "A", "path": fields[2]}
+                else:
+                    origin = before.get("from", fields[1]) if before else fields[1]
+                    changes[fields[2]] = {"status": "R", "path": fields[2], "from": origin}
             elif letter in "AMDTC":
                 path = fields[-1]
                 changes[path] = {"status": "M" if letter in "TC" else letter, "path": path}
