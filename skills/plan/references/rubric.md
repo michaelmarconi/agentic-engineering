@@ -30,6 +30,9 @@ checking, and quotes the plan as evidence for every failure.
    questions section that is empty or says only "None."
 10. **No overlap.** No other plan under `docs/plans/` that is `📝 Draft` or `🟢 Ready to build`
     names a requirement that this plan names.
+11. **Fits the practices.** Where the project's practices say how work is split or how big one
+    plan may be, the plan keeps to them, or Decisions has a line saying why it does not. With no
+    such practice, this passes.
 
 The reviewer also passes on this advice for the Plan section as suggestions, never as
 failures: start with why the work is being done and what it leaves for later; give one

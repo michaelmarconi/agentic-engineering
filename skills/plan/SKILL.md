@@ -36,6 +36,17 @@ the person says and from `docs/specs/` and `docs/adrs/`. Each requirement is a
   `✅ Built` already names a requirement this work builds, say so and offer to change that plan
   instead; no two unbuilt plans may name the same requirement.
 
+## Keep to the practices
+
+Look for a `## Practices` heading in `CLAUDE.md`, or in `AGENTS.md` when there is no `CLAUDE.md` or
+`CLAUDE.md` imports it, and read any file it says to read before planning work. Where they say how
+work is split or how big one plan may be, plan within that. If the work asked for is
+bigger, say so, quoting the practice, propose how to split it into several plans that can each be
+built and reviewed on their own, and ask which to plan first. Ask this before any decision, since
+the decisions depend on what this plan covers. If the person keeps the work whole, give it a line
+under Decisions saying why. Where the practices say neither, or there are none, plan as below.
+Never edit the practices from here: that belongs to `/practices`.
+
 ## Explore
 
 Read the specs, the ADRs and the code the work touches, changing nothing. Use Claude Code's

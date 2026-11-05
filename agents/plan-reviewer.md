@@ -23,6 +23,9 @@ Read:
 - The frontmatter and Specs section of each other plan in `docs/plans/`, for the overlap check,
   and the title (first `# ` heading) of `docs/brief.md` and of each file in `docs/spikes/`, for
   the references check.
+- The `## Practices` section of `CLAUDE.md`, or of `AGENTS.md` when there is no `CLAUDE.md` or
+  `CLAUDE.md` imports it, and any file under `docs/practices/` it says to read before planning
+  work, for the practices check.
 - The code files the Plan section names, only to tell a new choice from a pattern the code
   already uses.
 
