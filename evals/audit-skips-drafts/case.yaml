@@ -1,0 +1,7 @@
+schema_version: "1.1"
+name: audit-skips-drafts
+expected_outcome: |
+  Every accepted spec and ADR gets one auditor, and the Draft spec and the Superseded ADR get
+  none.
+context:
+  scaffold_script: place-files.sh

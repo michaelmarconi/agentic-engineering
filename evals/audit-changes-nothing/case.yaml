@@ -1,0 +1,9 @@
+schema_version: "1.1"
+name: audit-changes-nothing
+expected_outcome: |
+  An audit that finds drift and document problems writes, edits and commits nothing, and deletes
+  its diff files.
+context:
+  scaffold_script: place-files.sh
+# Guard case: Claude rarely changes files during a check it was asked for; this catches a change to
+# the skill that would make it correct what it finds.

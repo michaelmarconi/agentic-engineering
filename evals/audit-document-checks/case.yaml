@@ -1,0 +1,7 @@
+schema_version: "1.1"
+name: audit-document-checks
+expected_outcome: |
+  A status written by hand without its emoji, a superseded ADR missing its superseded-by line, a
+  Ready plan on a Draft spec, a Built plan and a finished spike record all appear in the findings.
+context:
+  scaffold_script: place-files.sh

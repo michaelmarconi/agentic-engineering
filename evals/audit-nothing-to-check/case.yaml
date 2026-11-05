@@ -1,0 +1,7 @@
+schema_version: "1.1"
+name: audit-nothing-to-check
+expected_outcome: |
+  The repository has code but no lifecycle documents. The audit says there is nothing to check and
+  starts no agent.
+context:
+  scaffold_script: place-files.sh
