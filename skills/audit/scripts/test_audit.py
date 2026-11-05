@@ -56,7 +56,10 @@ class Project(unittest.TestCase):
         self.tmp = tempfile.TemporaryDirectory()
         self.addCleanup(self.tmp.cleanup)
         self.project = os.path.join(self.tmp.name, "project")
-        self.data = os.path.join(self.tmp.name, "data")
+        # The script's temporary folder, so no test touches the real one.
+        self.temporary = os.path.join(self.tmp.name, "temporary")
+        os.makedirs(self.temporary)
+        self.audits = os.path.join(self.temporary, f"sdlc-audits-{os.getuid()}")
         os.makedirs(self.project)
 
     def put(self, relative, text):
@@ -79,7 +82,7 @@ class Project(unittest.TestCase):
 
     def run_audit(self, *args):
         done = subprocess.run([sys.executable, SCRIPT, *args], capture_output=True, text=True,
-                              cwd=self.project, env={**os.environ, **GIT_ENV})
+                              cwd=self.project, env={**os.environ, **GIT_ENV, "TMPDIR": self.temporary})
         return done
 
     def documents(self):
@@ -92,7 +95,7 @@ class Project(unittest.TestCase):
         return [p for p in found if check is None or p["check"] == check]
 
     def window(self, *words):
-        return self.run_audit("window", *words, "--data", self.data, "--now", NOW)
+        return self.run_audit("window", *words, "--now", NOW)
 
 
 class Documents(Project):
@@ -292,10 +295,6 @@ class Documents(Project):
         self.documents()
         self.assertEqual(self.git("status", "--porcelain"), "")
 
-    def test_documents_takes_the_data_folder_like_the_other_commands(self):
-        done = self.run_audit("documents", "--data", self.data)
-        self.assertEqual(done.returncode, 0, done.stderr)
-
     def test_a_project_folder_can_be_named(self):
         self.put("docs/specs/statement-import.spec.md", spec())
         done = subprocess.run([sys.executable, SCRIPT, "documents", "--project", self.project],
@@ -377,7 +376,8 @@ class Window(Project):
         self.put("src/late.py", "print('changed')\n")
         self.commit("Late", date="2026-11-01T12:00:00+00:00")
         out = self.ok("last", "7", "days")
-        self.assertTrue(out["diff"].startswith(os.path.join(self.data, "audits") + os.sep))
+        self.assertTrue(out["diff"].startswith(self.audits + os.sep))
+        self.assertEqual(os.stat(self.audits).st_mode & 0o077, 0)
         with open(out["diff"], encoding="utf-8") as f:
             self.assertIn("+print('changed')", f.read())
         self.assertEqual(self.git("status", "--porcelain"), "")
@@ -399,36 +399,28 @@ class Window(Project):
         second = self.ok("last", "7", "days")["diff"]
         self.assertFalse(os.path.exists(first))
         self.assertTrue(os.path.exists(second))
-        other = os.path.join(self.data, "audits", "0123456789ab-other")
+        other = os.path.join(self.audits, "0123456789ab-other")
         os.makedirs(other)
-        done = self.run_audit("clean", "--data", self.data)
+        done = self.run_audit("clean")
         self.assertEqual(done.returncode, 0, done.stderr)
         self.assertFalse(os.path.exists(second))
         self.assertTrue(os.path.exists(other))
 
-    def test_an_unwritable_data_folder_falls_back_to_a_private_temporary_folder(self):
-        blocked = os.path.join(self.tmp.name, "blocked")
-        with open(blocked, "w") as f:
-            f.write("a file, so nothing can be made under it\n")
-        done = self.run_audit("window", "last", "7", "days", "--data", blocked, "--now", NOW)
-        self.assertEqual(done.returncode, 0, done.stderr)
-        diff = json.loads(done.stdout)["diff"]
-        self.addCleanup(lambda: self.run_audit("clean", "--data", blocked))
-        self.assertTrue(diff.startswith(audit.fallback_root() + os.sep))
-        self.assertEqual(os.stat(audit.fallback_root()).st_mode & 0o077, 0)
+    def test_a_temporary_folder_others_could_have_made_is_refused(self):
+        target = os.path.join(self.tmp.name, "elsewhere")
+        os.makedirs(target)
+        os.symlink(target, self.audits)
+        self.assertIn("only you can open", self.refused("last", "7", "days"))
+        os.remove(self.audits)
+        os.makedirs(self.audits, mode=0o755)
+        os.chmod(self.audits, 0o755)
+        self.assertIn("only you can open", self.refused("last", "7", "days"))
 
     def test_a_file_name_that_is_not_ascii_is_listed_as_it_is(self):
         self.put("docs/specs/caf\u00e9.spec.md", spec())
         self.commit("Add", date="2026-11-01T12:00:00+00:00")
         out = self.ok("last", "7", "days")
         self.assertEqual(out["changed_accepted_documents"], ["docs/specs/caf\u00e9.spec.md"])
-
-    def test_an_empty_data_folder_never_puts_the_diff_in_the_project(self):
-        done = self.run_audit("window", "last", "7", "days", "--data", "", "--now", NOW)
-        self.assertEqual(done.returncode, 0, done.stderr)
-        self.addCleanup(lambda: self.run_audit("clean", "--data", ""))
-        self.assertTrue(json.loads(done.stdout)["diff"].startswith(audit.fallback_root() + os.sep))
-        self.assertEqual(self.git("status", "--porcelain"), "")
 
     def test_unreadable_words_are_refused(self):
         self.assertIn("last N days", self.refused("yesterday"))
@@ -451,8 +443,8 @@ class Window(Project):
         clone = os.path.join(self.tmp.name, "clone")
         self.git("clone", "-q", "--depth", "2", "file://" + self.project, clone, cwd=self.tmp.name)
         def in_clone(*words):
-            return subprocess.run([sys.executable, SCRIPT, "window", *words, "--data", self.data, "--now", NOW],
-                                  capture_output=True, text=True, cwd=clone)
+            return subprocess.run([sys.executable, SCRIPT, "window", *words, "--now", NOW],
+                                  capture_output=True, text=True, cwd=clone, env={**os.environ, "TMPDIR": self.temporary})
         self.assertEqual(in_clone("last", "4", "days").returncode, 0)
         refused = in_clone("last", "30", "days")
         self.assertEqual(refused.returncode, 1)
@@ -472,17 +464,17 @@ class Window(Project):
         self.git("merge", "-q", "--no-ff", "-m", "Merge side", "side", date="2026-11-04T12:00:00+00:00")
         clone = os.path.join(self.tmp.name, "clone")
         self.git("clone", "-q", "--depth", "2", "file://" + self.project, clone, cwd=self.tmp.name)
-        refused = subprocess.run([sys.executable, SCRIPT, "window", "last", "7", "days", "--data", self.data,
-                                  "--now", NOW], capture_output=True, text=True, cwd=clone)
+        refused = subprocess.run([sys.executable, SCRIPT, "window", "last", "7", "days", "--now", NOW],
+                                 capture_output=True, text=True, cwd=clone, env={**os.environ, "TMPDIR": self.temporary})
         self.assertEqual(refused.returncode, 1, refused.stdout)
         self.assertIn("history", refused.stderr)
 
     def test_outside_a_git_repository_a_window_is_refused(self):
         plain_folder = os.path.join(self.tmp.name, "plain")
         os.makedirs(plain_folder)
-        done = subprocess.run([sys.executable, SCRIPT, "window", "last", "7", "days", "--data", self.data,
-                               "--now", NOW], capture_output=True, text=True, cwd=plain_folder,
-                              env={**os.environ, "GIT_CEILING_DIRECTORIES": self.tmp.name})
+        done = subprocess.run([sys.executable, SCRIPT, "window", "last", "7", "days", "--now", NOW],
+                              capture_output=True, text=True, cwd=plain_folder,
+                              env={**os.environ, "GIT_CEILING_DIRECTORIES": self.tmp.name, "TMPDIR": self.temporary})
         self.assertEqual(done.returncode, 1)
         self.assertIn("git repository", done.stderr)
 
