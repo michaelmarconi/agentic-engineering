@@ -4,9 +4,12 @@ Each check passes or fails. `/brief` reads this while writing; the brief reviewe
 checking, and quotes the brief as evidence for every failure.
 
 1. **Shape.** The brief has no status, so no `status:` frontmatter. Under a title naming the
-   product comes one sentence saying what it is and why it exists, then the sections Problem,
-   Who it's for, Goals, Out of scope, Constraints and Open questions, in that order. If the person
-   has not named the product, the title describes it and Open questions asks for its name.
+   product comes one sentence saying what it is and why it exists, then at least the sections
+   Problem, Who it's for, Goals, Out of scope, Constraints and Open questions, in that order
+   relative to each other. Further sections, such as "Safety and security" or "Risks", may go
+   wherever they fit before Open questions, which comes last, and every other check applies to
+   them too. If the person has not named the product, the title describes it and Open questions
+   asks for its name.
 2. **Whole product.** Every section speaks for the product as a whole. Nothing describes how
    one capability behaves, such as a rule, a limit or what one screen does: that belongs in the
    capability's spec. Nor does the brief list features; specs are the list.

@@ -30,6 +30,10 @@ kept true.
 | Constraints | Hard limits on the whole product, such as a law, a deadline or a system it must work with |
 | Open questions | What is not known yet |
 
+These sections are the minimum. A brief for a larger or riskier product can have more, such as
+"Safety and security" or "Risks", when you ask `/brief` for them; they go before Open questions,
+and are held to the same checks as the rest.
+
 The brief says only what you told `/brief` or showed it. Anything it does not know, or would
 otherwise have to assume, goes in Open questions, worded so you can answer or confirm it, such as
 "Is it right that support staff are the main users?". Where a fact comes from a document, the
