@@ -10,7 +10,7 @@ minor version may need such a change, and its entry says so.
 
 ### Fixed
 
-- On a Python older than 3.7, the plugin now warns you when a session starts, rather than
+- On Python 3.6, the plugin now warns you when a session starts, rather than
   letting its checks fail later with an unclear error. The README now gives the minimum
   version, Python 3.7.
 

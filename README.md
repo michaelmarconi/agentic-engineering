@@ -12,8 +12,8 @@ built work can be read from its documents, not lost in old conversations.
 ## Requirements
 
 - Claude Code, tested on Opus 5.5. Other models may work but are untested.
-- Python 3.7 or later, which the plugin's checks run on. On an older Python, the plugin warns
-  you when a session starts.
+- Python 3.7 or later, which the plugin's checks run on. On Python 3.6, the plugin warns you
+  when a session starts.
 - Git, with a remote named `origin`, for [`/build`](docs/skills/build.md), which pushes the branch
   it builds.
 

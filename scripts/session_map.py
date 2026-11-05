@@ -7,7 +7,7 @@ docs/specs/ whose frontmatter has a lifecycle status.
 
 In any other project it prints nothing, so installing the plugin costs other projects nothing.
 
-On a Python older than 3.7, in any project, it also warns the person, because the plugin's other
+On Python 3.6, in any project, it also warns the person, because the plugin's other
 scripts use calls that Python 3.6 lacks and would fail.
 """
 
@@ -32,9 +32,10 @@ def version_warning():
     """The warning to give on a Python too old for the plugin, or None."""
     if tuple(sys.version_info[:2]) >= MINIMUM:
         return None
+    needed = ".".join(str(part) for part in MINIMUM)
     found = ".".join(str(part) for part in sys.version_info[:3])
-    return (f"The sdlc plugin needs Python 3.7 or later, but python3 here is {found}, so its "
-            f"checks will fail. Install a newer Python 3 as python3.")
+    return (f"The sdlc plugin needs Python {needed} or later, but python3 here is {found}, so "
+            f"its checks will fail. Install a newer Python 3 as python3.")
 
 
 def uses_lifecycle(project):
@@ -59,8 +60,9 @@ def main(argv=None):
         epilog=(
             "The project is $CLAUDE_PROJECT_DIR, or the current directory if that is unset. "
             "Output: nothing, or a SessionStart JSON object on stdout whose additionalContext "
-            "holds the map, plus a systemMessage warning on a Python older than 3.7. Exit code: always 0, so a session never fails to start "
-            "because of this hook."
+            "holds the map and any warning about the Python version, which also goes in "
+            "systemMessage. Exit code: always 0, so a session never fails to start because of "
+            "this hook."
         ),
     )
     parser.parse_args(argv)
