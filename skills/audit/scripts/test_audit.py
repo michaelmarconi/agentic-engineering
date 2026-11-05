@@ -287,5 +287,155 @@ class Documents(Project):
         self.assertEqual(json.loads(done.stdout)["accepted"]["specs"], ["docs/specs/statement-import.spec.md"])
 
 
+class Window(Project):
+    def setUp(self):
+        super().setUp()
+        self.init()
+        self.put("docs/specs/statement-import.spec.md", spec())
+        self.put("docs/adrs/0001-cents.md", adr())
+        self.put("src/old.py", "x = 1\n")
+        self.start = self.commit("Start", date="2026-10-01T12:00:00+00:00")
+
+    def ok(self, *words):
+        done = self.window(*words)
+        self.assertEqual(done.returncode, 0, done.stderr)
+        return json.loads(done.stdout)
+
+    def refused(self, *words):
+        done = self.window(*words)
+        self.assertEqual(done.returncode, 1)
+        self.assertEqual(done.stdout, "")
+        return done.stderr
+
+    def test_last_n_days_lists_files_changed_by_commits_in_it(self):
+        self.put("src/early.py", "1\n")
+        self.commit("Early", date="2026-10-20T12:00:00+00:00")
+        self.put("src/late.py", "2\n")
+        self.commit("Late", date="2026-11-01T12:00:00+00:00")
+        out = self.ok("last", "7", "days")
+        self.assertEqual(out["commits"], 1)
+        self.assertEqual(out["changed"], [{"status": "A", "path": "src/late.py"}])
+
+    def test_since_a_commit_leaves_that_commit_out(self):
+        self.put("src/a.py", "1\n")
+        first = self.commit("A", date="2026-11-01T12:00:00+00:00")
+        self.put("src/b.py", "2\n")
+        self.commit("B", date="2026-11-02T12:00:00+00:00")
+        out = self.ok("since", first[:10])
+        self.assertEqual([c["path"] for c in out["changed"]], ["src/b.py"])
+
+    def test_changed_renamed_and_deleted_files_are_listed(self):
+        self.put("src/old.py", "x = 2\n")
+        self.commit("Change", date="2026-11-01T12:00:00+00:00")
+        os.rename(os.path.join(self.project, "src/old.py"), os.path.join(self.project, "src/new.py"))
+        self.put("src/gone.py", "g\n")
+        self.commit("Rename", date="2026-11-02T12:00:00+00:00")
+        os.remove(os.path.join(self.project, "src/gone.py"))
+        self.commit("Delete", date="2026-11-03T12:00:00+00:00")
+        out = self.ok("since", self.start)
+        found = {c["path"]: c for c in out["changed"]}
+        self.assertEqual(found["src/new.py"], {"status": "R", "path": "src/new.py", "from": "src/old.py"})
+        self.assertEqual(found["src/old.py"]["status"], "M")
+        self.assertEqual(found["src/gone.py"]["status"], "D")
+
+    def test_accepted_documents_whose_text_changed_are_named(self):
+        self.put("docs/specs/statement-import.spec.md", spec(extra="More.\n\n"))
+        self.put("docs/specs/exports.spec.md", spec(status="📝 Draft"))
+        self.commit("Edit spec", date="2026-11-01T12:00:00+00:00")
+        out = self.ok("last", "7", "days")
+        self.assertEqual(out["changed_accepted_documents"], ["docs/specs/statement-import.spec.md"])
+
+    def test_work_merged_in_the_window_counts_even_if_its_commits_are_older(self):
+        self.git("checkout", "-q", "-b", "feature")
+        self.put("src/feature.py", "f\n")
+        self.commit("Feature", date="2026-10-02T12:00:00+00:00")
+        self.git("checkout", "-q", "main")
+        self.put("src/main.py", "m\n")
+        self.commit("Main", date="2026-10-03T12:00:00+00:00")
+        self.git("merge", "-q", "--no-ff", "-m", "Merge feature", "feature", date="2026-11-02T12:00:00+00:00")
+        out = self.ok("last", "7", "days")
+        self.assertEqual([c["path"] for c in out["changed"]], ["src/feature.py"])
+
+    def test_the_diff_file_holds_the_changes_outside_the_project(self):
+        self.put("src/late.py", "print('changed')\n")
+        self.commit("Late", date="2026-11-01T12:00:00+00:00")
+        out = self.ok("last", "7", "days")
+        self.assertTrue(out["diff"].startswith(os.path.join(self.data, "audits") + os.sep))
+        with open(out["diff"], encoding="utf-8") as f:
+            self.assertIn("+print('changed')", f.read())
+        self.assertEqual(self.git("status", "--porcelain"), "")
+
+    def test_a_window_with_no_commits_is_not_refused(self):
+        out = self.ok("last", "3", "days")
+        self.assertEqual((out["commits"], out["changed"]), (0, []))
+
+    def test_a_new_run_deletes_what_an_earlier_run_left_and_clean_deletes_the_rest(self):
+        first = self.ok("last", "7", "days")["diff"]
+        second = self.ok("last", "7", "days")["diff"]
+        self.assertFalse(os.path.exists(first))
+        self.assertTrue(os.path.exists(second))
+        other = os.path.join(self.data, "audits", "0123456789ab-other")
+        os.makedirs(other)
+        done = self.run_audit("clean", "--data", self.data)
+        self.assertEqual(done.returncode, 0, done.stderr)
+        self.assertFalse(os.path.exists(second))
+        self.assertTrue(os.path.exists(other))
+
+    def test_an_unwritable_data_folder_falls_back_to_a_private_temporary_folder(self):
+        blocked = os.path.join(self.tmp.name, "blocked")
+        with open(blocked, "w") as f:
+            f.write("a file, so nothing can be made under it\n")
+        done = self.run_audit("window", "last", "7", "days", "--data", blocked, "--now", NOW)
+        self.assertEqual(done.returncode, 0, done.stderr)
+        diff = json.loads(done.stdout)["diff"]
+        self.addCleanup(lambda: self.run_audit("clean", "--data", blocked))
+        self.assertTrue(diff.startswith(audit.fallback_root() + os.sep))
+        self.assertEqual(os.stat(audit.fallback_root()).st_mode & 0o077, 0)
+
+    def test_unreadable_words_are_refused(self):
+        self.assertIn("last N days", self.refused("yesterday"))
+        self.assertIn("last N days", self.refused("last", "week"))
+
+    def test_an_unknown_commit_is_refused(self):
+        self.assertIn("no commit", self.refused("since", "deadbeef"))
+
+    def test_a_commit_not_on_this_branch_is_refused(self):
+        self.git("checkout", "-q", "-b", "side")
+        self.put("src/side.py", "s\n")
+        side = self.commit("Side", date="2026-11-01T12:00:00+00:00")
+        self.git("checkout", "-q", "main")
+        self.assertIn("not on the checked-out branch", self.refused("since", side))
+
+    def test_a_window_older_than_a_shallow_clone_is_refused(self):
+        for day in ("2026-10-28", "2026-10-30", "2026-11-02"):
+            self.put(f"src/{day}.py", "d\n")
+            self.commit(day, date=f"{day}T12:00:00+00:00")
+        clone = os.path.join(self.tmp.name, "clone")
+        self.git("clone", "-q", "--depth", "2", "file://" + self.project, clone, cwd=self.tmp.name)
+        def in_clone(*words):
+            return subprocess.run([sys.executable, SCRIPT, "window", *words, "--data", self.data, "--now", NOW],
+                                  capture_output=True, text=True, cwd=clone)
+        self.assertEqual(in_clone("last", "4", "days").returncode, 0)
+        refused = in_clone("last", "30", "days")
+        self.assertEqual(refused.returncode, 1)
+        self.assertIn("history", refused.stderr)
+        self.assertEqual(in_clone("since", self.start).returncode, 1)
+
+    def test_outside_a_git_repository_a_window_is_refused(self):
+        plain_folder = os.path.join(self.tmp.name, "plain")
+        os.makedirs(plain_folder)
+        done = subprocess.run([sys.executable, SCRIPT, "window", "last", "7", "days", "--data", self.data,
+                               "--now", NOW], capture_output=True, text=True, cwd=plain_folder,
+                              env={**os.environ, "GIT_CEILING_DIRECTORIES": self.tmp.name})
+        self.assertEqual(done.returncode, 1)
+        self.assertIn("git repository", done.stderr)
+
+    def test_every_command_has_help(self):
+        for command in ("documents", "window", "clean"):
+            done = self.run_audit(command, "--help")
+            self.assertEqual(done.returncode, 0)
+            self.assertIn("Exit codes", done.stdout)
+
+
 if __name__ == "__main__":
     unittest.main()
