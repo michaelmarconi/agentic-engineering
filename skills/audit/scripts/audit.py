@@ -352,6 +352,148 @@ def check_documents(project):
     }
 
 
+# ---- window and clean ----
+
+def project_key(project):
+    return hashlib.sha256(os.path.abspath(project).encode("utf-8")).hexdigest()[:12]
+
+
+def fallback_root():
+    """A folder in the system's temporary folder that only this user can open."""
+    return os.path.join(tempfile.gettempdir(), f"sdlc-audits-{os.getuid()}")
+
+
+def roots(data):
+    return [os.path.join(os.path.abspath(data), "audits"), fallback_root()]
+
+
+def writable(folder):
+    try:
+        os.makedirs(folder, exist_ok=True)
+        os.rmdir(tempfile.mkdtemp(dir=folder))
+        return True
+    except OSError:
+        return False
+
+
+def audits_root(data):
+    root = roots(data)[0]
+    if writable(root):
+        return root
+    fallback = fallback_root()
+    try:
+        os.makedirs(fallback, mode=0o700, exist_ok=True)
+        info = os.lstat(fallback)
+    except OSError as error:
+        raise Refused(f"neither {root} nor {fallback} can be written ({error})")
+    if not os.path.isdir(fallback) or os.path.islink(fallback) or info.st_uid != os.getuid() \
+            or info.st_mode & 0o077:
+        raise Refused(f"{fallback} is not a folder only you can open; delete it and run again")
+    return fallback
+
+
+def clean(project, data):
+    """Delete every folder `window` left for this project, in either place; the names deleted."""
+    prefix = project_key(project) + "-"
+    deleted = []
+    for root in roots(data):
+        try:
+            names = sorted(os.listdir(root)) if os.path.isdir(root) and not os.path.islink(root) else []
+        except OSError:
+            continue
+        for name in names:
+            if name.startswith(prefix):
+                shutil.rmtree(os.path.join(root, name), ignore_errors=True)
+                deleted.append(os.path.join(root, name))
+    return deleted
+
+
+def commit_date(project, commit):
+    return int(git(project, "log", "-1", "--format=%ct", commit).stdout.strip())
+
+
+def resolve_window(project, words, now):
+    """(git log arguments selecting the window's commits, description)."""
+    if git(project, "rev-parse", "--git-dir", check=False).returncode != 0:
+        raise Refused("this folder is not in a git repository, so no window can be read")
+    if git(project, "rev-parse", "--verify", "-q", "HEAD", check=False).returncode != 0:
+        raise Refused("this branch has no commits yet")
+    last, since = LAST.match(words), SINCE.match(words)
+    shallow = git(project, "rev-parse", "--is-shallow-repository").stdout.strip() == "true"
+    if last:
+        days = int(last.group(1))
+        if days < 1:
+            raise Refused("a window of `last N days` needs N of 1 or more")
+        cutoff = int(now.timestamp()) - days * 86400
+        if shallow:
+            # The clone's oldest commits are listed in .git/shallow; history before them is missing.
+            shallow_file = os.path.join(project, git(project, "rev-parse", "--git-path", "shallow").stdout.strip())
+            cut = (read(shallow_file) or "").split()
+            if not cut or min(commit_date(project, c) for c in cut) >= cutoff:
+                raise Refused(f"this clone's history starts after the window does ({days} days back), as in a clone "
+                              "made with only recent history; fetch more history, or give a shorter window")
+        return ["HEAD", f"--since=@{cutoff}"], f"the last {days} day{'s' if days != 1 else ''}"
+    if since:
+        commit = since.group(1)
+        found = git(project, "rev-parse", "--verify", "-q", f"{commit}^{{commit}}", check=False)
+        if found.returncode != 0:
+            if shallow:
+                raise Refused(f"no commit {commit} in this clone, which holds only recent history")
+            raise Refused(f"no commit {commit} in this repository")
+        full = found.stdout.strip()
+        if git(project, "merge-base", "--is-ancestor", full, "HEAD", check=False).returncode != 0:
+            raise Refused(f"commit {commit} is not on the checked-out branch")
+        return [f"{full}..HEAD"], f"the commits after {commit}"
+    raise Refused(f"can't read the window '{words}'; write `last N days` or `since <commit>`")
+
+
+def changed_files(project, selection):
+    out = git(project, "log", "--name-status", "-M", "--diff-merges=first-parent", "--format=%x00%H",
+              *selection).stdout
+    commits = [chunk for chunk in out.split("\x00") if chunk.strip()]
+    changes = {}
+    for chunk in reversed(commits):
+        for line in chunk.splitlines()[1:]:
+            fields = line.split("\t")
+            if len(fields) < 2:
+                continue
+            letter = fields[0][:1]
+            if letter == "R" and len(fields) == 3:
+                changes[fields[2]] = {"status": "R", "path": fields[2], "from": fields[1]}
+            elif letter in "AMDTC":
+                path = fields[-1]
+                changes[path] = {"status": "M" if letter in "TC" else letter, "path": path}
+    return len(commits), [changes[path] for path in sorted(changes)]
+
+
+def window(project, words, data, now):
+    project = os.path.abspath(project)
+    selection, description = resolve_window(project, words, now)
+    count, changes = changed_files(project, selection)
+    clean(project, data)
+    folder = tempfile.mkdtemp(prefix=project_key(project) + "-", dir=audits_root(data))
+    diff = os.path.join(folder, "diff.patch")
+    with open(diff, "w", encoding="utf-8") as f:
+        f.write(git(project, "log", "-p", "-M", "--diff-merges=first-parent",
+                    "--format=commit %H%nDate: %cI%n%n    %s%n", *selection).stdout)
+    documents = lifecycle_documents(project)
+    touched = {change["path"] for change in changes}
+    accepted = [relative for relative, (kind, text) in sorted(documents.items())
+                if kind in ("spec", "ADR") and status_of(text) == ACCEPTED and relative in touched]
+    return {"window": description, "commits": count, "changed": changes,
+            "changed_accepted_documents": accepted, "diff": diff}
+
+
+def parse_now(value):
+    if value is None:
+        return datetime.datetime.now(datetime.timezone.utc)
+    try:
+        moment = datetime.datetime.fromisoformat(value)
+    except ValueError:
+        raise Refused(f"can't read --now '{value}'; write it as 2026-11-05T12:00:00+00:00")
+    return moment if moment.tzinfo else moment.replace(tzinfo=datetime.timezone.utc)
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0], epilog=__doc__.split("\n\n", 1)[1],
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -362,10 +504,30 @@ def main(argv=None):
                     "Output: JSON with lifecycle, accepted {specs, adrs}, problems [{document, check, detail}], "
                     "built_plans, finished_spikes and unfinished_spikes [{document, status, date}]. "
                     "Exit codes: 0 done, whatever it found; 1 failed, with the reason on stderr.")
-    documents_parser.add_argument("--project", default=".", help="the project's folder (default: the current folder)")
+    window_parser = commands.add_parser(
+        "window", help="list what a window of commits changed, and write its diff file",
+        description="Read `last N days` or `since <commit>` on the checked-out branch. Output: JSON with window, "
+                    "commits, changed [{status, path, from}], changed_accepted_documents and diff, the diff "
+                    "file's path. Exit codes: 0 done, even when the window holds no commits; 1 refused, with "
+                    "the reason on stderr.")
+    window_parser.add_argument("words", nargs="+", help="`last N days` or `since <commit>`")
+    window_parser.add_argument("--now", help="the time the window ends, in ISO 8601; for tests (default: now)")
+    clean_parser = commands.add_parser(
+        "clean", help="delete the diff files window left for this project",
+        description="Delete every folder window left for this project. Output: JSON with deleted, the folders "
+                    "deleted. Exit codes: 0 done; 1 failed, with the reason on stderr.")
+    for sub in (window_parser, clean_parser):
+        sub.add_argument("--data", required=True, help='the plugin\'s data folder: "${CLAUDE_PLUGIN_DATA}"')
+    for sub in (documents_parser, window_parser, clean_parser):
+        sub.add_argument("--project", default=".", help="the project's folder (default: the current folder)")
     args = parser.parse_args(argv)
     try:
-        out = check_documents(args.project)
+        if args.command == "documents":
+            out = check_documents(args.project)
+        elif args.command == "window":
+            out = window(args.project, " ".join(args.words), args.data, parse_now(args.now))
+        else:
+            out = {"deleted": clean(os.path.abspath(args.project), args.data)}
     except Refused as error:
         print(f"audit {args.command}: {error}", file=sys.stderr)
         return 1
