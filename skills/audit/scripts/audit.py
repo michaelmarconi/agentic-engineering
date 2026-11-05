@@ -546,6 +546,8 @@ def main(argv=None):
                     "deleted. Exit codes: 0 done; 1 failed, with the reason on stderr.")
     for sub in (window_parser, clean_parser):
         sub.add_argument("--data", required=True, help='the plugin\'s data folder: "${CLAUDE_PLUGIN_DATA}"')
+    # documents writes nothing, but takes --data too, so every command can be run the same way.
+    documents_parser.add_argument("--data", help="accepted and not used, as documents writes nothing")
     for sub in (documents_parser, window_parser, clean_parser):
         sub.add_argument("--project", default=".", help="the project's folder (default: the current folder)")
     args = parser.parse_args(argv)
