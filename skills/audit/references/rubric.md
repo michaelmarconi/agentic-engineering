@@ -22,9 +22,12 @@ check. "The run" is one `/audit` from the person's request to its findings.
 5. **Findings quote both sides.** Each drift finding quotes the requirement or decision and the
    code, with its file and line, as the auditor reported them.
 6. **Drift is checked.** Each document whose auditor reported drift gets one `sdlc:audit-checker`
-   agent, after its auditor has reported; a document with no drift gets none. Only confirmed
+   agent, after its auditor has reported; a document with no drift gets none. Every auditor,
+   checker and picker request carries the `Repository:` line with `root`, and a report with an
+   `Error:` line is reported as a document not checked, never as no drift or as rejected findings. Only confirmed
    findings are reported as drift. Each rejected one is listed with the checker's reason.
-7. **Order.** Findings come in this order, grouped by document within each part: drift, problems
+7. **Order.** Findings come in this order, grouped by document within each part: documents not
+   checked (each auditor that reported an `Error:`, never counted as no drift), drift, problems
    with the documents, requirements not built yet (per spec, the count and names), ADR checks
    that need a run (with what to run), documents to consider deleting (`✅ Built` plans and
    finished spike records), unfinished spike records with their dates, and rejected findings. A

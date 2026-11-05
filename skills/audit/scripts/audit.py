@@ -35,7 +35,9 @@ documents
 
     It also lists the `✅ Built` plans, the finished spike records (`💡 Answered` or
     `❔ Not answered`) and the unfinished ones with the date their name starts with. `lifecycle`
-    is false when the project has no lifecycle document at all.
+    is false when the project has no lifecycle document at all. Every path is relative to `root`,
+    the project's full path, which both commands print, so an agent started from another folder
+    can be given whole paths.
 
 window <words>
     Reads `last N days` (commits whose commit date falls in the N days before now) or
@@ -316,7 +318,7 @@ def overlap_problems(project, documents):
 
 
 def check_documents(project):
-    project = os.path.abspath(project)
+    project = os.path.realpath(project)
     documents = lifecycle_documents(project)
     problems = []
 
@@ -356,6 +358,7 @@ def check_documents(project):
     for document, detail in overlap_problems(project, documents):
         add(document, "overlap", detail)
     return {
+        "root": project,
         "lifecycle": bool(documents),
         "accepted": accepted,
         "problems": problems,
@@ -438,14 +441,14 @@ def changed_files(project, selection):
 
 
 def window(project, words, now):
-    project = os.path.abspath(project)
+    project = os.path.realpath(project)
     selection, description = resolve_window(project, words, now)
     commits, changes = changed_files(project, selection)
     documents = lifecycle_documents(project)
     touched = {change["path"] for change in changes}
     accepted = [relative for relative, (kind, text) in sorted(documents.items())
                 if kind in ("spec", "ADR") and status(kind, text) == ACCEPTED and relative in touched]
-    return {"window": description, "commits": commits, "changed": changes,
+    return {"root": project, "window": description, "commits": commits, "changed": changes,
             "changed_accepted_documents": accepted}
 
 
@@ -466,13 +469,13 @@ def main(argv=None):
     documents_parser = commands.add_parser(
         "documents", help="check every lifecycle document and list the accepted specs and ADRs",
         description="Check every lifecycle document as it stands, and list the accepted specs and ADRs. "
-                    "Output: JSON with lifecycle, accepted {specs, adrs}, problems [{document, check, detail}], "
+                    "Output: JSON with root (the project's full path, which every other path is relative to), lifecycle, accepted {specs, adrs}, problems [{document, check, detail}], "
                     "built_plans, finished_spikes and unfinished_spikes [{document, status, date}]. "
                     "Exit codes: 0 done, whatever it found; 1 failed, with the reason on stderr.")
     window_parser = commands.add_parser(
         "window", help="list a window of commits and the files they changed",
         description="Read `last N days` or `since <commit>` on the checked-out branch, writing nothing.\n"
-                    "Output: JSON with window, commits [{commit, date, subject}], oldest first,\n"
+                    "Output: JSON with root, window, commits [{commit, date, subject}], oldest first,\n"
                     "changed [{status, path, from}] and changed_accepted_documents.\n"
                     "Exit codes: 0 done, even when the window holds no commits; 1 refused, with the\n"
                     "reason on stderr.",

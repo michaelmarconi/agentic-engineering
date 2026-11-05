@@ -11,7 +11,9 @@ repository, so the person chooses each correction. Before you start, read
 [references/rubric.md](references/rubric.md) with the Read tool: it is the list of checks the
 audit's output must meet.
 
-The audit script does every exact check. Run it with Bash, from the repository's root:
+The audit script does every exact check. Run it with Bash, from the repository's root, or with
+`--project <folder>` when the repository is not the folder you are in, such as when the person
+names it:
 
 ```
 python3 "${CLAUDE_SKILL_DIR}/scripts/audit.py" <command> ...
@@ -49,6 +51,7 @@ For a window, start the `sdlc:audit-picker` agent with this request, filled from
 output and listing every accepted spec and ADR under `Documents:`, one per line:
 
 ```
+Repository: <root, as window prints it>
 Commits:
 <commit> <date> <subject>
 ...
@@ -62,7 +65,8 @@ Documents:
 
 The documents to check are those it picks, and every one `window` lists under
 `changed_accepted_documents`, whose own text changed. If that leaves none, say the window's
-changes touch no accepted document.
+changes touch no accepted document. If the picker reports an `Error:`, stop and give the person
+the error: the window was not checked, and a full audit is no substitute for it.
 
 ## Check the code
 
@@ -71,39 +75,46 @@ message, so they run side by side. Give each this request, exactly as shown:
 
 ```
 Document: <the document's path, as documents lists it>
+Repository: <root, as documents prints it>
 ```
 
 Never start one for any other document. Claude Code limits how many agents run at once; if it
 refuses some, start those again the same way once the others have reported, until every
 document has a report.
 
-Then, for each report whose Drift section is not "None.", start one `sdlc:audit-checker` agent,
+Then, for each report that has no `Error:` line and whose Drift section is not "None.", start one `sdlc:audit-checker` agent,
 all in one message, with this request. Copy the auditor's report between the markers exactly as
 it came, since the person judges each finding by its quotes:
 
 ```
 Document: <the document's path>
+Repository: <root, as documents prints it>
 === AUDIT REPORT ===
 <the report>
 === END AUDIT REPORT ===
 ```
 
-A drift finding is reported as drift only once its checker confirms it.
+A report, an auditor's or a checker's, with an `Error:` line checked nothing: never count it
+as no drift, or its findings as rejected. A drift finding is
+reported as drift only once its checker confirms it.
 
 ## Report
 
 Give the findings in this order, grouped by document within each part, leaving out a part with
 nothing in it and numbering the parts you give from 1:
 
-1. **Drift:** each confirmed finding, with the auditor's quotes of the requirement or decision
+1. **Documents not checked:** each document whose auditor or checker reported an `Error:`, with
+   the error, saying the audit is not complete until it is run again where the document can be
+   read.
+2. **Drift:** each confirmed finding, with the auditor's quotes of the requirement or decision
    and of the code, with its file and line, as the report gave them.
-2. **Problems with the documents:** each problem `documents` reported, with its document.
-3. **Not built yet:** for each spec, how many requirements were not found, and their names.
-4. **ADR checks that need a run:** each, with what to run.
-5. **Documents to consider deleting:** the `✅ Built` plans and finished spike records. Nothing
+3. **Problems with the documents:** each problem `documents` reported, with its document.
+4. **Not built yet:** for each spec, how many requirements were not found, and their names.
+5. **ADR checks that need a run:** each, with what to run.
+6. **Documents to consider deleting:** the `✅ Built` plans and finished spike records. Nothing
    refers to either, so deleting one leaves no other document wrong.
-6. **Unfinished spike records:** each `📝 Draft` or `🟢 Ready to run` one, with its date.
-7. **Rejected findings:** each, briefly, with the checker's reason.
+7. **Unfinished spike records:** each `📝 Draft` or `🟢 Ready to run` one, with its date.
+8. **Rejected findings:** each, briefly, with the checker's reason.
 
 Name a suggested correction, and the skill that makes it, for each drift finding and each problem:
 

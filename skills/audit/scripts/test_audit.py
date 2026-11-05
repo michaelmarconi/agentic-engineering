@@ -298,6 +298,12 @@ class Documents(Project):
         self.assertEqual(done.returncode, 0, done.stderr)
         self.assertEqual(json.loads(done.stdout)["accepted"]["specs"], ["docs/specs/statement-import.spec.md"])
 
+    def test_documents_names_the_project_s_full_path_so_paths_can_be_made_whole(self):
+        self.put("docs/specs/statement-import.spec.md", spec())
+        done = subprocess.run([sys.executable, SCRIPT, "documents", "--project", self.project],
+                              capture_output=True, text=True, cwd=self.tmp.name)
+        self.assertEqual(json.loads(done.stdout)["root"], os.path.realpath(self.project))
+
 
 class Window(Project):
     def setUp(self):
@@ -390,6 +396,9 @@ class Window(Project):
         self.commit("Latin-1", date="2026-11-01T12:00:00+00:00")
         out = self.ok("last", "7", "days")
         self.assertEqual([c["path"] for c in out["changed"]], ["src/latin.txt"])
+
+    def test_window_names_the_project_s_full_path(self):
+        self.assertEqual(self.ok("last", "7", "days")["root"], os.path.realpath(self.project))
 
     def test_a_window_with_no_commits_is_not_refused(self):
         out = self.ok("last", "3", "days")

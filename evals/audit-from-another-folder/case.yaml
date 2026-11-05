@@ -1,0 +1,8 @@
+schema_version: "1.1"
+name: audit-from-another-folder
+expected_outcome: |
+  The session starts in the folder above the repository. Every auditor is told the repository's
+  full folder, and the planted drift is still found, so a document read from the wrong folder
+  never passes as no drift.
+context:
+  scaffold_script: place-files.sh
