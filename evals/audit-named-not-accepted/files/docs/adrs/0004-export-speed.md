@@ -4,11 +4,11 @@ status: 👍 Accepted
 date: 2026-09-01
 ---
 
-# Export with the standard csv module, writing as it goes
+# Export with Python's csv module
 
 ## Context and Problem Statement
 
-The accountant exports a year of invoices at once, about 10,000 of them.
+The accountant exports a year of invoices at once, about 10,000 of them, and it must be quick.
 
 ## Considered Options
 
@@ -16,7 +16,7 @@ The accountant exports a year of invoices at once, about 10,000 of them.
 
 ## Decision Outcome
 
-Chosen option: the csv module, writing each row as it is made, because it needs no memory for the whole file.
+Chosen option: Python's csv module, because it quotes fields correctly and is fast enough for a year of invoices.
 
 ### Consequences
 
