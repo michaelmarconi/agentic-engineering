@@ -37,7 +37,8 @@ Read what the person asked for:
 For a window, run `window` first. If it refuses, stop with its reason: check nothing, not even
 the documents, and never fall back to a full audit. Then run `documents` in every case. For a
 named document, if it is not among `documents`' accepted specs and ADRs, stop and say why: it
-doesn't exist, or it isn't `👍 Accepted` and so states no settled intent. Report nothing else.
+doesn't exist, or it isn't `👍 Accepted` and so states no settled intent. Report nothing else,
+not even problems `documents` found: the person asked about that one document only.
 
 Say so plainly and go straight to the findings when there is nothing for agents to check: when
 `lifecycle` is false there are no lifecycle documents at all, and nothing more to report; when
