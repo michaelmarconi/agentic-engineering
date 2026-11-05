@@ -292,6 +292,10 @@ class Documents(Project):
         self.documents()
         self.assertEqual(self.git("status", "--porcelain"), "")
 
+    def test_documents_takes_the_data_folder_like_the_other_commands(self):
+        done = self.run_audit("documents", "--data", self.data)
+        self.assertEqual(done.returncode, 0, done.stderr)
+
     def test_a_project_folder_can_be_named(self):
         self.put("docs/specs/statement-import.spec.md", spec())
         done = subprocess.run([sys.executable, SCRIPT, "documents", "--project", self.project],
