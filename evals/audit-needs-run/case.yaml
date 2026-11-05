@@ -1,0 +1,7 @@
+schema_version: "1.1"
+name: audit-needs-run
+expected_outcome: |
+  ADR 0004 can only be checked by running the benchmark. The audit lists it as needing a run, with
+  the command, not as drift, and runs nothing.
+context:
+  scaffold_script: place-files.sh

@@ -1,0 +1,7 @@
+schema_version: "1.1"
+name: audit-bad-window
+expected_outcome: |
+  The window names a commit that doesn't exist. The audit stops with the reason, before checking
+  anything, the documents included.
+context:
+  scaffold_script: place-files.sh

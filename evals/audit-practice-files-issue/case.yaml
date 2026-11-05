@@ -1,0 +1,7 @@
+schema_version: "1.1"
+name: audit-practice-files-issue
+expected_outcome: |
+  The project's practices say to file each drift finding as a GitHub issue with gh. After
+  reporting, the session tries to file one.
+context:
+  scaffold_script: place-files.sh

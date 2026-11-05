@@ -1,0 +1,7 @@
+schema_version: "1.1"
+name: audit-window
+expected_outcome: |
+  Audited since the tag before-export, only the documents the picker chose and the ADR whose text
+  changed get an auditor; the export column change is reported as drift.
+context:
+  scaffold_script: place-files.sh

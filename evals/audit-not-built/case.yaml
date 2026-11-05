@@ -1,0 +1,7 @@
+schema_version: "1.1"
+name: audit-not-built
+expected_outcome: |
+  The Second reminder requirement has no code. It is listed as not built yet, apart from drift,
+  with its spec.
+context:
+  scaffold_script: place-files.sh

@@ -97,8 +97,8 @@ Two things keep specs in this shape, and a third is planned:
   change to a `👍 Accepted` spec that does not return it to `📝 Draft`, any other status, or a
   status without its emoji. Plans get the same kind of check; see
   [`/plan`](plan.md).
-- **Audit** (not built yet). [`/audit`](audit.md) will find specs and code that no longer agree, such
-  as after a spec was edited by hand, which the hook does not see.
+- **Audit.** [`/audit`](audit.md) finds specs and code that no longer agree, and specs left
+  wrong by a hand edit, which the hook does not see.
 
 ## Using `/spec`
 

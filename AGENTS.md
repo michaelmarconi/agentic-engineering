@@ -182,6 +182,9 @@ agents/
   language-checker.md  # checks the wording beside every reviewer, for every skill that writes a document
   correction-checker.md # checks the corrections after a review, for every skill that writes a document
   build-correction-checker.md # checks the corrections after a build's reviews
+  auditor.md           # /audit: checks the code against one accepted spec or ADR
+  audit-checker.md     # /audit: tries to disprove one auditor's drift findings
+  audit-picker.md      # /audit: picks the documents a window of commits could affect
 hooks/
   hooks.json           # session map, status checks, the review relay, reads of the plugin's own files, fresh sessions for /build, the build branch guard, the build review relay, the practices limits
 scripts/               # scripts the hooks run, the skill, version, reference and status-name checks, and their tests
