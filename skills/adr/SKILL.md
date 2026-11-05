@@ -104,10 +104,13 @@ more, and each round of corrections brings new mistakes.
    as reviewed:
 
    ```
-   Document: <the ADR's path>
+   Document: <the ADR's full path>
    Review this ADR.
    ```
 
+   Give the document's full path on the `Document:` line, the one you wrote it to: the hook works
+   out the document's repository from it, so the review reads the right one whatever folder you
+   started in. If it refuses to start them, do what its reason says.
    Each reads everything else it needs itself. Wait for both reports before touching the ADR.
    If both pass with nothing under Needs a person, go straight to handing over.
 2. **Correct, once.** Read the rubric and the Plain words rule again, then correct only what
@@ -125,7 +128,7 @@ more, and each round of corrections brings new mistakes.
    reviewed, word for word.
 
    ```
-   Document: <the ADR's path>
+   Document: <the ADR's full path>
    Check the corrections.
    ```
 

@@ -42,10 +42,14 @@ everything else is judgement.
    - The skill starts the reviewer and the shared language checker
      (`agents/language-checker.md`, [ADR 0013](docs/adrs/0013-language-checker.md))
      side by side, then the shared correction checker (`agents/correction-checker.md`), each
-     with a request whose first line is `Document: <path>`. The review relay hook
-     (`scripts/review_relay.py`, [ADR 0011](docs/adrs/0011-review-relay-hook.md))
+     with a request whose first line is `Document: <path>`, the document's full path. The review
+     relay hook (`scripts/review_relay.py`, [ADR 0011](docs/adrs/0011-review-relay-hook.md))
      reads that line to save the document before the review and both reports after it, and
-     attaches them to the checker's request, so the skill never copies them. Add the new
+     attaches them to the checker's request, so the skill never copies them. It also finds the
+     document's repository ([ADR 0022](docs/adrs/0022-review-repository-folder.md)), names the
+     document relative to it and adds a `Repository: <folder>` second line, so a review started
+     from another folder still reads the right one. The skill holds `PATH_RULE`, and each agent
+     `AGENT_RULE`, from `scripts/skill_check.py` word for word; the script checks both. Add the new
      reviewer and its skill's files to the hook's `REVIEWERS` table. A document that must not
      be written to the working tree, such as `/feedback`'s draft, uses `Document: feedback draft` and
      carries the draft between `=== DRAFT ===` and `=== END DRAFT ===` lines.

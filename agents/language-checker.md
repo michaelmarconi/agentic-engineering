@@ -15,6 +15,12 @@ document, so check every one and say which file each finding is in. For a feedba
 never saved as a file, it says `Document: feedback draft` and the draft is in the request, between
 `=== DRAFT ===` and `=== END DRAFT ===` lines.
 
+Your request's second line names the repository: `Repository: <folder>`. It may not be the folder
+you start in. Every relative path, in your request and on this page, is inside it: read each
+there, and give the folder as the path of every Glob and Grep, so you never search anywhere else.
+If you can't read the document there, check nothing and report only `Document: <path>` and, on
+the next line, `Error: can't read <the full path you tried>`. A feedback draft's request has no such line.
+
 Read:
 - The document: every file named on that line.
 - The Plain words section of `${CLAUDE_PLUGIN_ROOT}/docs/lifecycle.md`. Apply only that section;

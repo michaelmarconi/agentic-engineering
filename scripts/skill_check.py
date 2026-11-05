@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Check every skill's SKILL.md against the size and naming limits of the Agent Skills
+"""Check every skill's SKILL.md, and the agents' review rules, against the size and naming limits of the Agent Skills
 specification (https://agentskills.io/specification), as AGENTS.md rule 3 sets them out.
 
 For each skills/<folder>/SKILL.md under the given plugin root (default: this plugin):
@@ -14,6 +14,13 @@ For each skills/<folder>/SKILL.md under the given plugin root (default: this plu
   `sdlc:correction-checker` agent, holds REVIEW_RULE word for word (line breaks may differ), so
   every such skill reviews at the same points, as the lifecycle page's Review process says.
   /build, whose checker is `sdlc:build-correction-checker`, reviews code and is not held to it.
+- such a skill that names a document by its path, as `Document: <...>`, holds PATH_RULE word for
+  word, so every review is given the full path the review relay hook finds the repository from
+  (docs/adrs/0022). A draft never saved as a file, `Document: feedback draft`, is not held to it.
+
+For each agents/<name>.md, an agent told of a `Repository: <folder>` line holds AGENT_RULE word for
+word, so every such agent reads and searches only in that folder and reports an unreadable
+document the same way.
 
 Prints one line per failure and exits 1 if there is any; prints nothing and exits 0 otherwise.
 Its tests run it on this plugin, so `python3 -m unittest discover -s scripts` fails on a skill
@@ -36,6 +43,24 @@ REVIEW_RULE = (
     "are left or because the person stops. A change the person makes or asks for at any other"
     " time is reviewed once it is made."
 )
+
+PATH_RULE = (
+    "Give the document's full path on the `Document:` line, the one you wrote it to: the hook "
+    "works out the document's repository from it, so the review reads the right one whatever "
+    "folder you started in. If it refuses to start them, do what its reason says."
+)
+REPOSITORY_LINE = "`Repository: <folder>`"
+AGENT_RULE = (
+    "Your request's second line names the repository: `Repository: <folder>`. It may not be the "
+    "folder you start in. Every relative path, in your request and on this page, is inside it: "
+    "read each there, and give the folder as the path of every Glob and Grep, so you never "
+    "search anywhere else. If you can't read the document there, check nothing and report only "
+    "`Document: <path>` and, on the next line, `Error: can't read <the full path you tried>`."
+)
+
+
+def holds(text, rule):
+    return rule in " ".join(text.split())
 
 
 def frontmatter(text):
@@ -86,10 +111,20 @@ def problems(folder, text):
     tokens = len(body) // 4
     if tokens > MAX_TOKENS:
         found.append(f"body is about {tokens:,} tokens, over about 5,000 tokens")
-    if REVIEWS in body and REVIEW_RULE not in " ".join(body.split()):
+    if REVIEWS in body and not holds(body, REVIEW_RULE):
         found.append("review rule missing: a skill that runs the review sequence must hold "
                      "skill_check.REVIEW_RULE word for word")
+    if REVIEWS in body and "Document: <" in body and not holds(body, PATH_RULE):
+        found.append("path rule missing: a skill that reviews a document by its path must hold "
+                     "skill_check.PATH_RULE word for word")
     return found
+
+
+def agent_problems(text):
+    if REPOSITORY_LINE in text and "`Document: <path>`" in text and not holds(text, AGENT_RULE):
+        return ["repository rule missing: an agent given a `Repository:` line must hold "
+                "skill_check.AGENT_RULE word for word"]
+    return []
 
 
 def main(argv=None):
@@ -105,6 +140,14 @@ def main(argv=None):
         with open(path, encoding="utf-8") as f:
             for problem in problems(folder, f.read()):
                 print(f"{folder}/SKILL.md: {problem}")
+                failed = True
+    agents = os.path.join(args.root, "agents")
+    for name in sorted(os.listdir(agents)) if os.path.isdir(agents) else []:
+        if not name.endswith(".md"):
+            continue
+        with open(os.path.join(agents, name), encoding="utf-8") as f:
+            for problem in agent_problems(f.read()):
+                print(f"agents/{name}: {problem}")
                 failed = True
     return 1 if failed else 0
 
