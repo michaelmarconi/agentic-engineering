@@ -32,6 +32,8 @@ import os
 import re
 import sys
 
+import review_relay
+
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
 NAME = re.compile(r"[a-z0-9]+(-[a-z0-9]+)*")
 RESERVED = ("anthropic", "claude")
@@ -50,12 +52,17 @@ PATH_RULE = (
     "folder you started in. If it refuses to start them, do what its reason says."
 )
 REPOSITORY_LINE = "`Repository: <folder>`"
+# Every agent given a `Repository:` line: the document reviewers the review relay hook knows (all
+# but /feedback's, whose draft is never a file), its two checkers, and the audit's two.
+REPOSITORY_AGENTS = sorted({name for name in review_relay.REVIEWERS if name != "feedback-reviewer"}
+                           | {review_relay.LANGUAGE, review_relay.CHECKER, "auditor", "audit-checker"})
 AGENT_RULE = (
-    "Your request's second line names the repository: `Repository: <folder>`. It may not be the "
-    "folder you start in. Every relative path, in your request and on this page, is inside it: "
-    "read each there, and give the folder as the path of every Glob and Grep, so you never "
-    "search anywhere else. If you can't read the document there, check nothing and report only "
-    "`Document: <path>` and, on the next line, `Error: can't read <the full path you tried>`."
+    "Your request's second line names the repository, `Repository: <folder>`, which may not be "
+    "the folder you start in; a request without that line means the folder you start in. Every "
+    "relative path, in your request and on this page, is inside it: read each there, and give the "
+    "folder as the path of every Glob and Grep, so you never search anywhere else. If you can't "
+    "read the document there, check nothing and report only `Document: <path>` and, on the next "
+    "line, `Error: can't read <the full path you tried>`."
 )
 
 
@@ -120,8 +127,11 @@ def problems(folder, text):
     return found
 
 
-def agent_problems(text):
-    if REPOSITORY_LINE in text and "`Document: <path>`" in text and not holds(text, AGENT_RULE):
+def agent_problems(name, text):
+    """An agent the review relay hook or the audit starts with a `Repository:` line, or any agent
+    told of one, must hold AGENT_RULE."""
+    held = REPOSITORY_LINE in text and "`Document: <path>`" in text
+    if (name in REPOSITORY_AGENTS or held) and not holds(text, AGENT_RULE):
         return ["repository rule missing: an agent given a `Repository:` line must hold "
                 "skill_check.AGENT_RULE word for word"]
     return []
@@ -146,7 +156,7 @@ def main(argv=None):
         if not name.endswith(".md"):
             continue
         with open(os.path.join(agents, name), encoding="utf-8") as f:
-            for problem in agent_problems(f.read()):
+            for problem in agent_problems(name[:-3], f.read()):
                 print(f"agents/{name}: {problem}")
                 failed = True
     return 1 if failed else 0

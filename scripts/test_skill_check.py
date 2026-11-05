@@ -106,6 +106,10 @@ class SkillCheck(unittest.TestCase):
         self.put_agent("demo-reviewer", "---\nname: demo-reviewer\n---\n\nRead `Document: <path>` and `Repository: <folder>`.\n")
         self.assertFails("agents/demo-reviewer.md: repository rule missing")
 
+    def test_a_document_reviewer_that_loses_the_agent_rule_fails(self):
+        self.put_agent("plan-reviewer", "---\nname: plan-reviewer\n---\n\nYou review one plan.\n")
+        self.assertFails("agents/plan-reviewer.md: repository rule missing")
+
     def test_agent_with_the_agent_rule_passes(self):
         rule = AGENT_RULE.replace(" It may ", "\nIt may ")
         self.put_agent("demo-reviewer", f"---\nname: demo-reviewer\n---\n\n{rule}\n")

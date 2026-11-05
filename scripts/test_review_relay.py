@@ -798,6 +798,23 @@ class Relay(unittest.TestCase):
         self.assertRefused(self.agent("PreToolUse", "sdlc:practices-reviewer", f"Document: {one}, {two}\nReview."),
                            "different repositories")
 
+    def test_a_missing_file_in_another_repository_is_refused(self):
+        one = self.put_in(self.repository("one"), "AGENTS.md", "## Practices\n")
+        missing = os.path.join(self.repository("two"), TOPIC)
+        self.assertRefused(self.agent("PreToolUse", "sdlc:practices-reviewer", f"Document: {one}, {missing}\nReview."),
+                           "outside")
+
+    def test_a_report_still_counts_when_its_document_moved_while_the_agent_ran(self):
+        top = self.repository()
+        full = self.put_in(top, SPEC, "v1\n")
+        started = self.assertStarted(self.agent("PreToolUse", "sdlc:spec-reviewer", f"Document: {full}\nGo.",
+                                                call="r1"), project=top)
+        os.remove(full)
+        self.assertIsNone(self.agent("PostToolUse", "sdlc:spec-reviewer", started, response=REPORT, call="r1"))
+        self.assertEqual(len(self.saved()), 1)
+        with open(self.saved()[0], encoding="utf-8") as f:
+            self.assertEqual(json.load(f)["reviews"][-1]["reports"]["spec-reviewer"], REPORT)
+
     def test_outside_any_git_repository_the_project_folder_stands_in(self):
         self.put(SPEC, "v1\n")
         self.assertStarted(self.agent("PreToolUse", "sdlc:spec-reviewer",

@@ -11,11 +11,12 @@ finding may be wrong, and try to disprove it.
 
 Your request's first line names the document: `Document: <path>`.
 
-Your request's second line names the repository: `Repository: <folder>`. It may not be the folder
-you start in. Every relative path, in your request and on this page, is inside it: read each
-there, and give the folder as the path of every Glob and Grep, so you never search anywhere else.
-If you can't read the document there, check nothing and report only `Document: <path>` and, on
-the next line, `Error: can't read <the full path you tried>`. The same goes for a finding's file you can't read: a finding you couldn't check is neither
+Your request's second line names the repository, `Repository: <folder>`, which may not be the
+folder you start in; a request without that line means the folder you start in. Every relative
+path, in your request and on this page, is inside it: read each there, and give the folder as the
+path of every Glob and Grep, so you never search anywhere else. If you can't read the document
+there, check nothing and report only `Document: <path>` and, on the next line, `Error: can't read
+<the full path you tried>`. The same goes for a finding's file you can't read: a finding you couldn't check is neither
 confirmed nor rejected.
 
 The auditor's report follows those lines, between `=== AUDIT REPORT ===` and `=== END AUDIT REPORT ===`. Judge only its Drift section;

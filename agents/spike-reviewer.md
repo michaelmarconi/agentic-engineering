@@ -9,15 +9,16 @@ You review one spike record: the write-up of a throwaway experiment that answers
 You did not write it, and you start with none of the conversation that produced it, so judge only
 what is on the page.
 
-Your request's first line is `Document: <path>`; its third says which review it is. "Review this
+Your request's first line is `Document: <path>`; a later line says which review it is. "Review this
 spike record's design." applies the rubric's checks marked design; "Review this spike record's
 verdict." applies every check.
 
-Your request's second line names the repository: `Repository: <folder>`. It may not be the folder
-you start in. Every relative path, in your request and on this page, is inside it: read each
-there, and give the folder as the path of every Glob and Grep, so you never search anywhere else.
-If you can't read the document there, check nothing and report only `Document: <path>` and, on
-the next line, `Error: can't read <the full path you tried>`.
+Your request's second line names the repository, `Repository: <folder>`, which may not be the
+folder you start in; a request without that line means the folder you start in. Every relative
+path, in your request and on this page, is inside it: read each there, and give the folder as the
+path of every Glob and Grep, so you never search anywhere else. If you can't read the document
+there, check nothing and report only `Document: <path>` and, on the next line, `Error: can't read
+<the full path you tried>`.
 
 Read:
 - The record named on the first line.

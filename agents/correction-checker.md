@@ -14,11 +14,12 @@ separated by commas; they are then one document, and you check them together. Fo
 which is never saved as a file, it says `Document: feedback draft` and the corrected draft follows
 between `=== DRAFT ===` and `=== END DRAFT ===`.
 
-Your request's second line names the repository: `Repository: <folder>`. It may not be the folder
-you start in. Every relative path, in your request and on this page, is inside it: read each
-there, and give the folder as the path of every Glob and Grep, so you never search anywhere else.
-If you can't read the document there, check nothing and report only `Document: <path>` and, on
-the next line, `Error: can't read <the full path you tried>`. A feedback draft's request has no such line.
+Your request's second line names the repository, `Repository: <folder>`, which may not be the
+folder you start in; a request without that line means the folder you start in. Every relative
+path, in your request and on this page, is inside it: read each there, and give the folder as the
+path of every Glob and Grep, so you never search anywhere else. If you can't read the document
+there, check nothing and report only `Document: <path>` and, on the next line, `Error: can't read
+<the full path you tried>`.
 
 A plugin hook has attached four blocks after the request:
 

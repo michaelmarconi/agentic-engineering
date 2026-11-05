@@ -1,7 +1,7 @@
 ---
 type: regex
 target: trace
-pattern: "Can't find docs/|Error: can't read"
+pattern: "Can't find |Error: can't read"
 match: not_contains
 weight: 1
 ---

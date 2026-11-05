@@ -102,12 +102,23 @@ def agent_name(tool_input):
     return name.split(":")[-1] if isinstance(name, str) else None
 
 
-def document(prompt):
-    """Return the document named on the request's first line, or None."""
+def header(prompt):
+    """The request's `Document:` name, its `Repository:` folder and the rest of its lines.
+
+    The name is None when the first line is not `Document: <name>`; the folder is None when the
+    second line is not `Repository: <folder>`, and that line is then part of the rest."""
     lines = prompt.strip().splitlines() if isinstance(prompt, str) else []
     if not lines or not lines[0].startswith("Document:"):
-        return None
-    return lines[0][len("Document:"):].strip() or None
+        return None, None, lines
+    name = lines[0][len("Document:"):].strip() or None
+    if len(lines) > 1 and lines[1].startswith(REPOSITORY):
+        return name, lines[1][len(REPOSITORY):].strip() or None, lines[2:]
+    return name, None, lines[1:]
+
+
+def document(prompt):
+    """Return the document named on the request's first line, or None."""
+    return header(prompt)[0]
 
 
 def draft(prompt):
@@ -122,14 +133,6 @@ def project():
 
 class Unreadable(Exception):
     """The `Document:` line names no file the hook can find, or files in different repositories."""
-
-
-def repository_line(prompt):
-    """The folder on the request's second line, `Repository: <folder>`, or None."""
-    lines = prompt.strip().splitlines()
-    if len(lines) > 1 and lines[1].startswith(REPOSITORY):
-        return lines[1][len(REPOSITORY):].strip() or None
-    return None
 
 
 def git_top(path):
@@ -149,10 +152,10 @@ def locate(name, prompt):
 
     A line that names an existing file is that one file, even if its name holds a comma, so the
     order of the names on the line never matters. Raises Unreadable when no named file exists, or
-    when they sit in different repositories."""
+    when they sit in different repositories or outside the repository the others are in."""
     if name == FEEDBACK_DRAFT:
         return None, [FEEDBACK_DRAFT]
-    base = repository_line(prompt) or project()
+    base = header(prompt)[1] or project()
 
     def full(path):
         return os.path.realpath(path if os.path.isabs(path) else os.path.join(base, path))
@@ -169,16 +172,33 @@ def locate(name, prompt):
     if len(tops) > 1:
         raise Unreadable(f"The files on the `Document:` line, {name}, sit in different "
                          f"repositories: {', '.join(tops)}. Name only one repository's files.")
-    return tops[0], sorted({os.path.relpath(p, tops[0]) for p in paths})
+    relative = sorted({os.path.relpath(p, tops[0]) for p in paths})
+    outside = [p for p in relative if p == ".." or p.startswith(".." + os.sep)]
+    if outside and git_top(found[0]):
+        raise Unreadable(f"{', '.join(outside)}, on the `Document:` line, is outside the repository "
+                         f"{tops[0]} that holds the other files. Name only one repository's files.")
+    return tops[0], relative
+
+
+def named_after(name, prompt):
+    """The document's files once its agent has run, for keeping its report.
+
+    A request the hook rewrote names them relative to its `Repository:` line, so the report is
+    kept even if a file has moved or gone since the agent started. Raises Unreadable as locate."""
+    _, repository, _ = header(prompt)
+    if repository and name != FEEDBACK_DRAFT:
+        parts = [name]
+        if "," in name and not os.path.isfile(os.path.join(repository, name)):
+            parts = [p.strip() for p in name.split(",") if p.strip()]
+        if not any(os.path.isabs(p) for p in parts):
+            return sorted(set(parts))
+    return locate(name, prompt)[1]
 
 
 def rewritten(tool_input, repository, paths):
     """The request with `Document:` naming the files relative to the repository and
     `Repository:` on the second line, in place of any the request had."""
-    lines = (tool_input.get("prompt") or "").strip("\n").splitlines()
-    rest = lines[1:]
-    if rest and rest[0].startswith(REPOSITORY):
-        rest = rest[1:]
+    rest = header(tool_input.get("prompt") or "")[2]
     prompt = "\n".join([f"Document: {', '.join(paths)}", f"{REPOSITORY} {repository}", *rest])
     return dict(tool_input, prompt=prompt)
 
@@ -392,7 +412,7 @@ def handle(event):
             return start_checker(session, tool_input)
         if when == "PostToolUse" and named:
             try:
-                name = ", ".join(locate(named, prompt)[1])
+                name = ", ".join(named_after(named, prompt))
             except Unreadable:
                 return None
             with locked(session, create=False):
@@ -403,13 +423,16 @@ def handle(event):
     if when == "PreToolUse" and tool_input.get("run_in_background") and folder(session):
         return refuse("Start the reviewer and the language checker in the foreground, not in the "
                       "background, so their reports are kept for the correction check.")
+    call = str(event.get("tool_use_id") or agent)
+    part = "reviewer" if agent in REVIEWERS else "language"
     try:
-        repository, paths = locate(named, prompt)
+        if when == "PreToolUse":
+            repository, paths = locate(named, prompt)
+        else:
+            repository, paths = None, named_after(named, prompt)
     except Unreadable as problem:
         return refuse(str(problem)) if when == "PreToolUse" else None
     name = ", ".join(paths)
-    call = str(event.get("tool_use_id") or agent)
-    part = "reviewer" if agent in REVIEWERS else "language"
     start = allow(rewritten(tool_input, repository, paths)) if repository else None
     if when == "PreToolUse" and not folder(session):
         return start
