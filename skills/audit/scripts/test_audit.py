@@ -298,6 +298,12 @@ class Documents(Project):
         self.assertEqual(done.returncode, 0, done.stderr)
         self.assertEqual(json.loads(done.stdout)["accepted"]["specs"], ["docs/specs/statement-import.spec.md"])
 
+    def test_documents_names_the_project_s_full_path_so_paths_can_be_made_whole(self):
+        self.put("docs/specs/statement-import.spec.md", spec())
+        done = subprocess.run([sys.executable, SCRIPT, "documents", "--project", self.project],
+                              capture_output=True, text=True, cwd=self.tmp.name)
+        self.assertEqual(json.loads(done.stdout)["root"], os.path.realpath(self.project))
+
 
 class Window(Project):
     def setUp(self):
