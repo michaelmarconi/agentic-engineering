@@ -49,6 +49,7 @@ For a window, start the `sdlc:audit-picker` agent with this request, filled from
 output and listing every accepted spec and ADR under `Documents:`, one per line:
 
 ```
+Repository: <root, as window prints it>
 Commits:
 <commit> <date> <subject>
 ...
@@ -71,6 +72,7 @@ message, so they run side by side. Give each this request, exactly as shown:
 
 ```
 Document: <the document's path, as documents lists it>
+Repository: <root, as documents prints it>
 ```
 
 Never start one for any other document. Claude Code limits how many agents run at once; if it
@@ -83,27 +85,31 @@ it came, since the person judges each finding by its quotes:
 
 ```
 Document: <the document's path>
+Repository: <root, as documents prints it>
 === AUDIT REPORT ===
 <the report>
 === END AUDIT REPORT ===
 ```
 
-A drift finding is reported as drift only once its checker confirms it.
+A report with an `Error:` line checked nothing: never count it as no drift. A drift finding is
+reported as drift only once its checker confirms it.
 
 ## Report
 
 Give the findings in this order, grouped by document within each part, leaving out a part with
 nothing in it and numbering the parts you give from 1:
 
-1. **Drift:** each confirmed finding, with the auditor's quotes of the requirement or decision
+1. **Documents not checked:** each document whose auditor reported an `Error:`, with the error,
+   saying the audit is not complete until it is run again where the document can be read.
+2. **Drift:** each confirmed finding, with the auditor's quotes of the requirement or decision
    and of the code, with its file and line, as the report gave them.
-2. **Problems with the documents:** each problem `documents` reported, with its document.
-3. **Not built yet:** for each spec, how many requirements were not found, and their names.
-4. **ADR checks that need a run:** each, with what to run.
-5. **Documents to consider deleting:** the `✅ Built` plans and finished spike records. Nothing
+3. **Problems with the documents:** each problem `documents` reported, with its document.
+4. **Not built yet:** for each spec, how many requirements were not found, and their names.
+5. **ADR checks that need a run:** each, with what to run.
+6. **Documents to consider deleting:** the `✅ Built` plans and finished spike records. Nothing
    refers to either, so deleting one leaves no other document wrong.
-6. **Unfinished spike records:** each `📝 Draft` or `🟢 Ready to run` one, with its date.
-7. **Rejected findings:** each, briefly, with the checker's reason.
+7. **Unfinished spike records:** each `📝 Draft` or `🟢 Ready to run` one, with its date.
+8. **Rejected findings:** each, briefly, with the checker's reason.
 
 Name a suggested correction, and the skill that makes it, for each drift finding and each problem:
 

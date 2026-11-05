@@ -136,7 +136,8 @@ nothing to your repository.
 
 ## What you get
 
-Findings come in this order, grouped by document within each part: drift, problems with the
+Findings come in this order, grouped by document within each part: any document the audit
+couldn't read, which means the run is not complete, then drift, problems with the
 documents, requirements not built yet, ADR checks that need a run, documents to consider
 deleting, unfinished spike records, and last, findings the checking agent rejected. Each drift finding and each problem names its suggested correction, and
 the skill that makes it:
