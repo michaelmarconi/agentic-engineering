@@ -61,6 +61,13 @@ class AllowedReferences(Workspace):
         self.put(self.at("src/app.py"))
         self.assertIsNone(self.write("Checked in [app.py](../../src/app.py).\n", self.adr))
 
+    def test_a_protocol_relative_web_link_passes(self):
+        self.assertIsNone(self.write("[RFC](//www.rfc-editor.org/rfc/rfc9110)\n"))
+
+    def test_a_link_to_a_folder_passes(self):
+        os.makedirs(self.at("docs/plans"))
+        self.assertIsNone(self.write("See [the plans](../plans/) and [here](./).\n", self.adr))
+
     def test_a_heading_in_the_same_document_passes(self):
         self.assertIsNone(self.write("See [goals](#goals).\n"))
 
@@ -122,13 +129,48 @@ class RefusedReferences(Workspace):
         self.assertIn("~/b.md", reason)
         self.assertNotIn("https://example.com", reason)
 
-    def test_an_edit_that_leaves_an_old_reference_in_place_is_refused(self):
+    def test_an_edit_that_leaves_an_old_reference_in_place_is_allowed(self):
         self.put(self.brief, "# Brief\n\nFrom [the PRD](/tmp/prd.md).\n\nGoal: one.\n")
         reason = reference_check.check({
             "tool_name": "Edit",
             "tool_input": {"file_path": self.brief, "old_string": "Goal: one.", "new_string": "Goal: two."},
         })
-        self.assertRefused(reason, "/tmp/prd.md")
+        self.assertIsNone(reason)
+
+    def test_an_edit_that_adds_a_reference_beside_an_old_one_names_only_the_new_one(self):
+        self.put(self.brief, "# Brief\n\nFrom [the PRD](/tmp/prd.md).\n\nGoal: one.\n")
+        reason = reference_check.check({
+            "tool_name": "Edit",
+            "tool_input": {"file_path": self.brief, "old_string": "Goal: one.",
+                           "new_string": "Goal: [two](~/notes.md)."},
+        })
+        self.assertRefused(reason, "~/notes.md")
+        self.assertNotIn("/tmp/prd.md", reason)
+
+    def test_a_decided_adr_holding_an_old_reference_can_still_be_superseded(self):
+        self.put(self.adr, "---\nstatus: 👍 Accepted\n---\n\n# X\n\nSee [notes](../research/n.md).\n")
+        reason = reference_check.check({
+            "tool_name": "Edit",
+            "tool_input": {"file_path": self.adr, "old_string": "status: 👍 Accepted",
+                           "new_string": "status: ↪️ Superseded\nsuperseded-by: 0002"},
+        })
+        self.assertIsNone(reason)
+
+    def test_a_write_is_checked_even_when_the_old_file_cannot_be_read(self):
+        os.makedirs(os.path.dirname(self.brief), exist_ok=True)
+        with open(self.brief, "wb") as f:
+            f.write(b"caf\xe9\n")
+        self.assertRefused(self.write("[prd](/tmp/prd.md)\n"), "/tmp/prd.md")
+
+    def test_angle_bracket_targets_are_read_without_their_brackets(self):
+        self.assertRefused(self.write("[prd](</Users/me/My Docs/prd.pdf>)\n"), "/Users/me/My Docs/prd.pdf")
+        self.assertIsNone(self.write("[a](<https://example.com/a b>) [b](<specs/login.spec.md>)\n"))
+
+    def test_autolinks_and_html_links_are_checked(self):
+        self.assertRefused(self.write("See <file:///tmp/prd.md>.\n"), "file:///tmp/prd.md")
+        self.assertRefused(self.write('See <a href="/tmp/prd.md">it</a>.\n'), "/tmp/prd.md")
+        self.assertRefused(self.write("<img src='~/shot.png'>\n"), "~/shot.png")
+        self.assertIsNone(self.write("See <https://example.com> and <a href=\"https://x.org\">x</a>.\n"))
 
     def test_an_edit_that_removes_the_reference_is_allowed(self):
         self.put(self.brief, "# Brief\n\nFrom [the PRD](/tmp/prd.md).\n")

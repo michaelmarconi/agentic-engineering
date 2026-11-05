@@ -40,13 +40,16 @@ above has an exact shape, so the question is how to enforce it.
   script Claude Code runs automatically at set moments, here just before each edit. It is started
   by the same script as the hook of ADR 0005, which checks that a document's status changes only
   in allowed ways, and runs after that check. It reads every link and every reference definition
-  outside code in the document as the edit would leave it, and refuses the edit if any target
-  names an address of a kind other than a web or email address (`http`, `https` or `mailto`),
+  outside code in the document as the edit would leave it, and refuses the edit if it adds a
+  target that names an address of a kind other than a web or email address (`http`, `https` or `mailto`),
   such as `file:`; is a path starting at the root of the computer or at a home folder (`~`);
   leads outside the repository; or points to a file under `docs/` that is not a lifecycle
   document. Email addresses are allowed because they point to no file. Any other target passes:
   a heading in the same document, a path to code, or a path to another lifecycle document, whose
-  references the reviewer agents check against the lifecycle's own rules. It tells Claude which
+  references the reviewer agents check against the lifecycle's own rules. A target the document
+  already held before the edit is not refused again, as ADR 0019's hook refuses only an edit that
+  makes a file worse: a decided ADR can't be edited to remove one, so refusing it would leave
+  that ADR impossible to supersede. It tells Claude which
   references to remove and why.
 
 ## Decision Outcome
@@ -57,15 +60,14 @@ command.
 
 ### Consequences
 
-- Good: no brief, spec or ADR that Claude writes can hold a link to material outside the
-  lifecycle, whether or not a skill is running.
+- Good: Claude cannot add a link to material outside the lifecycle to a brief, spec or ADR,
+  whether or not a skill is running.
 - Good: the refusal names each reference and says why, so Claude can state the material in the
   document's own words in the same session.
 - Bad: a reference by title, such as "as the kick-off notes say", or a path written as plain text
   is not a link, so the reviewer agents still have to catch it.
-- Bad: a document that already holds such a link cannot be edited through Claude until the link
-  is removed, and every such link must go in the same edit, since each edit is checked against
-  the whole document it leaves.
+- Bad: a link a document held before this check, or one added by hand, stays until someone
+  removes it; only the reviewer agents point it out.
 - Bad: the hook sees only edits made with Claude's file-editing tools, not a person's own edits
   or a shell command.
 

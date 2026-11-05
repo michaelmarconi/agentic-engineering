@@ -1,7 +1,7 @@
 ---
 type: regex
 target: { source: file, path: docs/brief.md }
-pattern: 'courtside-prd|\]\((?!https?:)'
+pattern: 'courtside-prd|\]\((?!https?:|mailto:|#)'
 flags: i
 match: not_contains
 weight: 1

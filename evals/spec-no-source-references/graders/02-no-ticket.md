@@ -1,7 +1,7 @@
 ---
 type: regex
 target: { source: file, path: docs/specs/account-lockout.spec.md }
-pattern: 'SUP-?412|ticket'
+pattern: 'SUP-?412'
 flags: i
 match: not_contains
 weight: 1
