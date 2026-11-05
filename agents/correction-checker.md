@@ -12,7 +12,16 @@ happened, so do not review the document afresh: answer only the two questions be
 Your request starts with `Document: <path>`, naming the document. It may name several files
 separated by commas; they are then one document, and you check them together. For a feedback draft,
 which is never saved as a file, it says `Document: feedback draft` and the corrected draft follows
-between `=== DRAFT ===` and `=== END DRAFT ===`. A plugin hook has attached four blocks after it:
+between `=== DRAFT ===` and `=== END DRAFT ===`.
+
+Your request's second line names the repository, `Repository: <folder>`, which may not be the
+folder you start in; a request without that line means the folder you start in. Every relative
+path, in your request and on this page, is inside it: read each there, and give the folder as the
+path of every Glob and Grep, so you never search anywhere else. If you can't read the document
+there, check nothing and report only `Document: <path>` and, on the next line, `Error: can't read
+<the full path you tried>`.
+
+A plugin hook has attached four blocks after the request:
 
 - the review report the corrections answer, from the skill's reviewer, between
   `=== REVIEW REPORT ===` and `=== END REVIEW REPORT ===`;

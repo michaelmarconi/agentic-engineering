@@ -6,6 +6,18 @@ What changed in each version of the plugin, newest first. Versions follow
 past a major version: it says what you need to change in your documents. Until 1.0.0, any
 minor version may need such a change, and its entry says so.
 
+## [0.24.0] - 2026-11-05
+
+### Fixed
+
+- Reviews now work when Claude Code is started in a folder other than the repository's, such as
+  one holding several projects. Every skill that writes a document gives its reviewers the
+  document's full path, and a plugin hook finds the repository from it, so each reviewer, the
+  language checker and the correction checker read the document, and the documents they compare
+  it with, from the right repository. A review of a document the hook can't find is refused, and
+  an agent that still can't read its document reports an error, never a pass. `/sdlc:audit`'s
+  agents follow the same rule.
+
 ## [0.23.1] - 2026-11-05
 
 ### Fixed

@@ -69,13 +69,21 @@ class Relay(unittest.TestCase):
     def review(self, agent="sdlc:spec-reviewer", prompt=f"Document: {SPEC}\nReview this spec.",
                report=REPORT, session=None, wording=WORDING):
         """Run the skill's reviewer, then the language checker unless wording is None."""
-        self.assertIsNone(self.agent("PreToolUse", agent, prompt, session=session))
+        out = self.agent("PreToolUse", agent, prompt, session=session)
+        if "feedback draft" in prompt:
+            self.assertIsNone(out)
+        else:
+            self.assertAllowed(out)
         self.assertIsNone(self.agent("PostToolUse", agent, prompt, response=report, session=session))
         if wording is not None:
             self.language(prompt, wording, session=session)
 
     def language(self, prompt=f"Document: {SPEC}\nCheck the wording.", wording=WORDING, session=None):
-        self.assertIsNone(self.agent("PreToolUse", LANGUAGE, prompt, session=session))
+        out = self.agent("PreToolUse", LANGUAGE, prompt, session=session)
+        if "feedback draft" in prompt:
+            self.assertIsNone(out)
+        else:
+            self.assertAllowed(out)
         self.assertIsNone(self.agent("PostToolUse", LANGUAGE, prompt, response=wording, session=session))
 
     def check(self, prompt=f"Document: {SPEC}\nCheck the corrections.", session=None, **extra):
@@ -87,6 +95,14 @@ class Relay(unittest.TestCase):
         self.assertEqual(decision["hookEventName"], "PreToolUse")
         self.assertEqual(decision["permissionDecision"], "allow")
         return decision["updatedInput"]
+
+    def assertStarted(self, out, document=SPEC, project=None):
+        """The agent starts with the document relative to its repository and that folder named."""
+        prompt = self.assertAllowed(out)["prompt"]
+        lines = prompt.splitlines()
+        self.assertEqual(lines[0], f"Document: {document}")
+        self.assertEqual(lines[1], f"Repository: {os.path.realpath(project or self.project)}")
+        return prompt
 
     def assertRefused(self, out, needle):
         self.assertIsNotNone(out)
@@ -106,7 +122,8 @@ class Relay(unittest.TestCase):
         self.put(SPEC, "# Booking\n\nCorrected.\n")
         updated = self.assertAllowed(self.check())
         prompt = updated["prompt"]
-        self.assertTrue(prompt.startswith(f"Document: {SPEC}\nCheck the corrections."))
+        self.assertTrue(prompt.startswith(f"Document: {SPEC}\nRepository: {os.path.realpath(self.project)}\n"
+                                          "Check the corrections."))
         self.assertIn("=== REVIEW REPORT ===\n" + REPORT + "\n=== END REVIEW REPORT ===", prompt)
         self.assertIn(f"=== DOCUMENT AS REVIEWED: {SPEC} ===\n# Booking\n\nAs reviewed.\n\n"
                       "=== END DOCUMENT ===", prompt)
@@ -215,11 +232,12 @@ class Relay(unittest.TestCase):
 
     def test_reviewer_without_a_document_line_saves_nothing(self):
         self.put(SPEC, "v1\n")
-        self.review(prompt=f"Review the spec at {SPEC}.")
+        self.assertIsNone(self.agent("PreToolUse", "sdlc:spec-reviewer", f"Review the spec at {SPEC}."))
         self.assertEqual(self.saved(), [])
 
-    def test_reviewer_of_a_missing_file_saves_nothing(self):
-        self.review()
+    def test_reviewer_of_a_missing_file_is_refused_and_saves_nothing(self):
+        self.assertRefused(self.agent("PreToolUse", "sdlc:spec-reviewer", f"Document: {SPEC}\nReview."),
+                           "Can't find")
         self.assertEqual(self.saved(), [])
 
     def test_a_new_review_replaces_the_last_one(self):
@@ -283,7 +301,11 @@ class Relay(unittest.TestCase):
                     response = None
                     if when == "PostToolUse":
                         response = WORDING if agent == LANGUAGE else REPORT
-                    self.assertIsNone(self.agent(when, agent, prompt, response=response, session=session))
+                    out = self.agent(when, agent, prompt, response=response, session=session)
+                    if when == "PreToolUse":
+                        self.assertStarted(out)
+                    else:
+                        self.assertIsNone(out)
                 self.put(SPEC, "v2\n")
                 prompt = self.assertAllowed(self.check(session=session))["prompt"]
                 self.assertIn(REPORT, prompt)
@@ -329,7 +351,7 @@ class Relay(unittest.TestCase):
     def test_language_checker_names_without_the_plugin_prefix_work_too(self):
         self.put(SPEC, "v1\n")
         self.review(wording=None)
-        self.assertIsNone(self.agent("PreToolUse", "language-checker", f"Document: {SPEC}\nGo."))
+        self.assertAllowed(self.agent("PreToolUse", "language-checker", f"Document: {SPEC}\nGo."))
         self.assertIsNone(self.agent("PostToolUse", "language-checker", f"Document: {SPEC}\nGo.",
                                      response=WORDING))
         self.put(SPEC, "v2\n")
@@ -338,10 +360,10 @@ class Relay(unittest.TestCase):
     def test_a_late_report_from_an_earlier_run_does_not_count(self):
         v1 = f"Document: {SPEC}\nCheck the wording."
         self.put(SPEC, "v1\n")
-        self.assertIsNone(self.agent("PreToolUse", LANGUAGE, v1, call="old"))
+        self.assertAllowed(self.agent("PreToolUse", LANGUAGE, v1, call="old"))
         self.put(SPEC, "v2\n")
-        self.assertIsNone(self.agent("PreToolUse", "sdlc:spec-reviewer", v1, call="rev"))
-        self.assertIsNone(self.agent("PreToolUse", LANGUAGE, v1, call="new"))
+        self.assertAllowed(self.agent("PreToolUse", "sdlc:spec-reviewer", v1, call="rev"))
+        self.assertAllowed(self.agent("PreToolUse", LANGUAGE, v1, call="new"))
         self.assertIsNone(self.agent("PostToolUse", "sdlc:spec-reviewer", v1, response=REPORT, call="rev"))
         self.assertIsNone(self.agent("PostToolUse", LANGUAGE, v1, response="current wording", call="new"))
         self.assertIsNone(self.agent("PostToolUse", LANGUAGE, v1, response="stale wording", call="old"))
@@ -371,7 +393,7 @@ class Relay(unittest.TestCase):
         for path in self.saved():
             with open(path, "w", encoding="utf-8") as f:
                 f.write("[1, 2]")
-        self.assertIsNone(self.agent("PreToolUse", "sdlc:spec-reviewer", f"Document: {SPEC}\nGo."))
+        self.assertAllowed(self.agent("PreToolUse", "sdlc:spec-reviewer", f"Document: {SPEC}\nGo."))
         self.assertRefused(self.check(), "No review")
 
     def test_wording_of_a_slightly_different_copy_of_the_same_review_still_joins(self):
@@ -424,7 +446,9 @@ class Relay(unittest.TestCase):
                      "tool_input": {"subagent_type": agent, "prompt": f"Document: {SPEC}\nGo."}}
             if response:
                 event["tool_response"] = {"content": [{"type": "text", "text": response}]}
-            self.assertIsNone(self.run_hook(event))
+                self.assertIsNone(self.run_hook(event))
+            else:
+                self.assertStarted(self.run_hook(event))
         self.put(SPEC, "v2\n")
         self.assertAllowed(self.check())
 
@@ -437,11 +461,11 @@ class Relay(unittest.TestCase):
     def test_a_part_started_again_after_a_run_with_no_report_joins_the_same_review(self):
         self.put(SPEC, "v1\n")
         prompt = f"Document: {SPEC}\nReview."
-        self.assertIsNone(self.agent("PreToolUse", "sdlc:spec-reviewer", prompt, call="r1"))
-        self.assertIsNone(self.agent("PreToolUse", LANGUAGE, prompt, call="l1"))
+        self.assertAllowed(self.agent("PreToolUse", "sdlc:spec-reviewer", prompt, call="r1"))
+        self.assertAllowed(self.agent("PreToolUse", LANGUAGE, prompt, call="l1"))
         self.assertIsNone(self.agent("PostToolUse", "sdlc:spec-reviewer", prompt, response=REPORT, call="r1"))
         # l1 never finishes; it is started again as l2.
-        self.assertIsNone(self.agent("PreToolUse", LANGUAGE, prompt, call="l2"))
+        self.assertAllowed(self.agent("PreToolUse", LANGUAGE, prompt, call="l2"))
         self.assertIsNone(self.agent("PostToolUse", LANGUAGE, prompt, response=WORDING, call="l2"))
         self.put(SPEC, "v2\n")
         prompt = self.assertAllowed(self.check())["prompt"]
@@ -509,16 +533,16 @@ class Relay(unittest.TestCase):
         self.agent("PostToolUse", "sdlc:correction-checker", f"Document: {SPEC}\nCheck.", response="ok")
         self.assertFalse(os.path.exists(os.path.join(self.data, "reviews")))
 
-    def test_background_runs_are_left_alone_when_nothing_is_saved(self):
+    def test_background_runs_are_not_refused_when_nothing_is_saved(self):
         self.put(SPEC, "v1\n")
         event = {"hook_event_name": "PreToolUse", "session_id": self.session, "tool_name": "Agent",
                  "tool_input": {"subagent_type": LANGUAGE, "prompt": f"Document: {SPEC}\nGo.",
                                 "run_in_background": True}}
-        self.assertIsNone(self.run_hook(event, data=False))
+        self.assertTrue(self.assertAllowed(self.run_hook(event, data=False))["run_in_background"])
 
     def test_a_null_text_block_in_a_reply_never_blocks(self):
         self.put(SPEC, "v1\n")
-        self.assertIsNone(self.agent("PreToolUse", "sdlc:spec-reviewer", f"Document: {SPEC}\nGo."))
+        self.assertAllowed(self.agent("PreToolUse", "sdlc:spec-reviewer", f"Document: {SPEC}\nGo."))
         event = {"hook_event_name": "PostToolUse", "session_id": self.session, "tool_name": "Agent",
                  "tool_use_id": f"sdlc:spec-reviewer-Document: {SPEC}\nGo.",
                  "tool_input": {"subagent_type": "sdlc:spec-reviewer", "prompt": f"Document: {SPEC}\nGo."},
@@ -587,7 +611,7 @@ class Relay(unittest.TestCase):
 
     def test_checker_before_the_review_finished_is_refused(self):
         self.put(SPEC, "v1\n")
-        self.assertIsNone(self.agent("PreToolUse", "sdlc:spec-reviewer", f"Document: {SPEC}\nReview."))
+        self.assertAllowed(self.agent("PreToolUse", "sdlc:spec-reviewer", f"Document: {SPEC}\nReview."))
         self.put(SPEC, "v2\n")
         self.assertRefused(self.check(), "No review")
 
@@ -684,8 +708,9 @@ class Relay(unittest.TestCase):
         prompt = self.assertAllowed(self.check(prompt=f"Document: {PAIR}\nCheck."))["prompt"]
         self.assertIn(f"=== FILE: {TOPIC} ===\n(missing)\n=== END FILE ===", prompt)
 
-    def test_when_every_named_file_is_missing_nothing_is_saved(self):
-        self.review(agent="sdlc:practices-reviewer", prompt=f"Document: {PAIR}\nReview.")
+    def test_when_every_named_file_is_missing_the_review_is_refused_and_nothing_saved(self):
+        self.assertRefused(self.agent("PreToolUse", "sdlc:practices-reviewer", f"Document: {PAIR}\nReview."),
+                           "Can't find")
         self.assertEqual(self.saved(), [])
 
     def test_a_single_file_whose_name_holds_a_comma_is_one_document(self):
@@ -703,6 +728,107 @@ class Relay(unittest.TestCase):
         self.put(SPEC, "v2\n")
         prompt = self.assertAllowed(self.check())["prompt"]
         self.assertNotIn("=== FILE:", prompt)
+
+    # Finding the repository (ADR 0022)
+
+    def repository(self, name="invoice-tool"):
+        """A git repository inside the folder Claude Code was started in."""
+        top = os.path.join(self.project, name)
+        os.makedirs(os.path.join(top, ".git"))
+        return top
+
+    def put_in(self, top, path, text):
+        full = os.path.join(top, path)
+        os.makedirs(os.path.dirname(full), exist_ok=True)
+        with open(full, "w", encoding="utf-8") as f:
+            f.write(text)
+        return full
+
+    def test_a_full_path_from_a_folder_above_names_the_document_relative_to_its_repository(self):
+        top = self.repository()
+        full = self.put_in(top, SPEC, "v1\n")
+        for agent in ("sdlc:spec-reviewer", LANGUAGE):
+            with self.subTest(agent=agent):
+                prompt = self.assertStarted(self.agent("PreToolUse", agent, f"Document: {full}\nReview this spec."),
+                                            project=top)
+                self.assertEqual(prompt.splitlines()[2:], ["Review this spec."])
+
+    def test_a_review_from_a_folder_above_reaches_the_checker(self):
+        top = self.repository()
+        full = self.put_in(top, SPEC, "# Booking\n\nAs reviewed.\n")
+        self.review(prompt=f"Document: {full}\nReview this spec.")
+        self.put_in(top, SPEC, "# Booking\n\nCorrected.\n")
+        prompt = self.assertStarted(self.check(prompt=f"Document: {full}\nCheck the corrections."), project=top)
+        self.assertIn("=== REVIEW REPORT ===\n" + REPORT, prompt)
+        self.assertIn(f"=== DOCUMENT AS REVIEWED: {SPEC} ===\n# Booking\n\nAs reviewed.\n", prompt)
+
+    def test_a_relative_path_is_read_from_the_repository_line(self):
+        top = self.repository()
+        full = self.put_in(top, SPEC, "v1\n")
+        self.review(prompt=f"Document: {full}\nReview this spec.")
+        self.put_in(top, SPEC, "v2\n")
+        rewritten = f"Document: {SPEC}\nRepository: {top}\nCheck the corrections."
+        prompt = self.assertStarted(self.check(prompt=rewritten), project=top)
+        self.assertEqual(prompt.count("Repository:"), 1)
+        self.assertIn(f"=== DOCUMENT AS REVIEWED: {SPEC} ===\nv1\n", prompt)
+
+    def test_the_review_and_the_check_name_the_same_document_however_it_is_given(self):
+        self.put(SPEC, "v1\n")
+        self.review(prompt=f"Document: {os.path.join(self.project, SPEC)}\nReview.")
+        self.put(SPEC, "v2\n")
+        self.assertStarted(self.check(prompt=f"Document: {SPEC}\nCheck."))
+
+    def test_several_files_by_full_path_are_named_relative_to_their_repository(self):
+        top = self.repository()
+        agents = self.put_in(top, "AGENTS.md", "## Practices\n")
+        topic = self.put_in(top, TOPIC, "# Testing\n")
+        out = self.agent("PreToolUse", "sdlc:practices-reviewer", f"Document: {topic}, {agents}\nReview.")
+        self.assertStarted(out, document=PAIR, project=top)
+
+    def test_a_document_that_cannot_be_found_is_refused_for_every_review_agent(self):
+        for agent in ("sdlc:spec-reviewer", LANGUAGE, "sdlc:correction-checker"):
+            with self.subTest(agent=agent):
+                out = self.agent("PreToolUse", agent, f"Document: {SPEC}\nReview this spec.")
+                self.assertRefused(out, "Can't find docs/specs/booking.spec.md")
+                self.assertIn("full path", out["hookSpecificOutput"]["permissionDecisionReason"])
+
+    def test_files_in_two_repositories_are_refused(self):
+        one = self.put_in(self.repository("one"), "AGENTS.md", "## Practices\n")
+        two = self.put_in(self.repository("two"), TOPIC, "# Testing\n")
+        self.assertRefused(self.agent("PreToolUse", "sdlc:practices-reviewer", f"Document: {one}, {two}\nReview."),
+                           "different repositories")
+
+    def test_a_missing_file_in_another_repository_is_refused(self):
+        one = self.put_in(self.repository("one"), "AGENTS.md", "## Practices\n")
+        missing = os.path.join(self.repository("two"), TOPIC)
+        self.assertRefused(self.agent("PreToolUse", "sdlc:practices-reviewer", f"Document: {one}, {missing}\nReview."),
+                           "outside")
+
+    def test_a_report_still_counts_when_its_document_moved_while_the_agent_ran(self):
+        top = self.repository()
+        full = self.put_in(top, SPEC, "v1\n")
+        started = self.assertStarted(self.agent("PreToolUse", "sdlc:spec-reviewer", f"Document: {full}\nGo.",
+                                                call="r1"), project=top)
+        os.remove(full)
+        self.assertIsNone(self.agent("PostToolUse", "sdlc:spec-reviewer", started, response=REPORT, call="r1"))
+        self.assertEqual(len(self.saved()), 1)
+        with open(self.saved()[0], encoding="utf-8") as f:
+            self.assertEqual(json.load(f)["reviews"][-1]["reports"]["spec-reviewer"], REPORT)
+
+    def test_outside_any_git_repository_the_project_folder_stands_in(self):
+        self.put(SPEC, "v1\n")
+        self.assertStarted(self.agent("PreToolUse", "sdlc:spec-reviewer",
+                                      f"Document: {os.path.join(self.project, SPEC)}\nReview."))
+
+    def test_the_request_is_rewritten_even_when_nothing_is_saved(self):
+        top = self.repository()
+        full = self.put_in(top, SPEC, "v1\n")
+        event = {"hook_event_name": "PreToolUse", "session_id": self.session, "tool_name": "Agent",
+                 "tool_input": {"subagent_type": "sdlc:spec-reviewer", "prompt": f"Document: {full}\nGo."}}
+        self.assertStarted(self.run_hook(event, data=False), project=top)
+
+    def test_a_feedback_draft_is_left_as_it_is(self):
+        self.assertIsNone(self.agent("PreToolUse", "sdlc:feedback-reviewer", feedback_request(DRAFT)))
 
     # Everything else is left alone
 

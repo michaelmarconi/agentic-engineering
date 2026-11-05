@@ -132,10 +132,13 @@ always ends with a clear result.
    keep a copy of the record as reviewed, and its second naming the review:
 
    ```
-   Document: <the record's path>
+   Document: <the record's full path>
    Review this spike record's design.
    ```
 
+   Give the document's full path on the `Document:` line, the one you wrote it to: the hook works
+   out the document's repository from it, so the review reads the right one whatever folder you
+   started in. If it refuses to start them, do what its reason says.
    For the verdict, the second line is `Review this spike record's verdict.` Ask the language
    checker to leave out the Code and Runs, which are the experiment's own text. Wait for both
    reports before touching the record. If both pass with nothing under Needs a person, go
@@ -150,7 +153,7 @@ always ends with a clear result.
    this request, and add nothing to it: the hook attaches both reports and the record as reviewed.
 
    ```
-   Document: <the record's path>
+   Document: <the record's full path>
    Check the corrections.
    ```
 

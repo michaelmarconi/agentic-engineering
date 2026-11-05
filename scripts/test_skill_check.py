@@ -8,7 +8,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 SCRIPT = os.path.join(HERE, "skill_check.py")
 ROOT = os.path.join(HERE, "..")
 sys.path.insert(0, HERE)
-from skill_check import REVIEW_RULE  # noqa: E402
+from skill_check import AGENT_RULE, PATH_RULE, REVIEW_RULE  # noqa: E402
 
 DESCRIPTION = "Write a thing. Use whenever someone wants a thing."
 
@@ -21,6 +21,12 @@ class SkillCheck(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
         self.addCleanup(self.tmp.cleanup)
+
+    def put_agent(self, name, text):
+        path = os.path.join(self.tmp.name, "agents", name + ".md")
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        with open(path, "w") as f:
+            f.write(text)
 
     def put(self, folder, text):
         path = os.path.join(self.tmp.name, "skills", folder, "SKILL.md")
@@ -74,6 +80,52 @@ class SkillCheck(unittest.TestCase):
     def test_skill_that_runs_no_review_needs_no_review_rule(self):
         self.put("demo", skill_md())
         self.assertEqual(self.check().returncode, 0)
+
+    # Reviews find the document's repository (ADR 0022)
+
+    def reviewing(self, document_line, extra=""):
+        return (f"# Demo\n\nStart the `sdlc:correction-checker` agent.\n\n{REVIEW_RULE}\n\n"
+                f"```\n{document_line}\n```\n{extra}")
+
+    def test_reviewing_skill_without_path_rule_fails(self):
+        self.put("demo", skill_md(body=self.reviewing("Document: <the demo's full path>")))
+        self.assertFails("demo/SKILL.md: path rule missing")
+
+    def test_reviewing_skill_with_path_rule_passes(self):
+        rule = PATH_RULE.replace(" the one ", "\nthe one ")
+        self.assertNotEqual(rule, PATH_RULE)
+        self.put("demo", skill_md(body=self.reviewing("Document: <the demo's full path>", rule)))
+        done = self.check()
+        self.assertEqual(done.returncode, 0, done.stdout)
+
+    def test_a_draft_never_saved_needs_no_path_rule(self):
+        self.put("demo", skill_md(body=self.reviewing("Document: feedback draft")))
+        self.assertEqual(self.check().returncode, 0)
+
+    def test_agent_given_a_repository_without_the_agent_rule_fails(self):
+        self.put_agent("demo-reviewer", "---\nname: demo-reviewer\n---\n\nRead `Document: <path>` and `Repository: <folder>`.\n")
+        self.assertFails("agents/demo-reviewer.md: repository rule missing")
+
+    def test_a_document_reviewer_that_loses_the_agent_rule_fails(self):
+        self.put_agent("plan-reviewer", "---\nname: plan-reviewer\n---\n\nYou review one plan.\n")
+        self.assertFails("agents/plan-reviewer.md: repository rule missing")
+
+    def test_agent_with_the_agent_rule_passes(self):
+        rule = AGENT_RULE.replace(" It may ", "\nIt may ")
+        self.put_agent("demo-reviewer", f"---\nname: demo-reviewer\n---\n\n{rule}\n")
+        done = self.check()
+        self.assertEqual(done.returncode, 0, done.stdout)
+
+    def test_every_agent_started_with_a_document_path_holds_the_agent_rule(self):
+        agents = os.path.join(ROOT, "agents")
+        holding = set()
+        for name in os.listdir(agents):
+            with open(os.path.join(agents, name), encoding="utf-8") as f:
+                if AGENT_RULE in " ".join(f.read().split()):
+                    holding.add(name[:-3])
+        self.assertEqual(holding, {"spec-reviewer", "brief-reviewer", "adr-reviewer", "plan-reviewer",
+                                   "spike-reviewer", "practices-reviewer", "language-checker",
+                                   "correction-checker", "auditor", "audit-checker"})
 
     def test_no_skills_folder_passes(self):
         self.assertEqual(self.check().returncode, 0)

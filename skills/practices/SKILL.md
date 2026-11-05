@@ -117,10 +117,13 @@ since the core and a topic file must agree.
    by commas, since a plugin hook reads that line to keep a copy of the files as reviewed:
 
    ```
-   Document: AGENTS.md, docs/practices/<topic>.md
+   Document: <AGENTS.md's full path>, <each topic file's full path>
    Review these practices. Of AGENTS.md, check only its ## Practices section.
    ```
 
+   Give the document's full path on the `Document:` line, the one you wrote it to: the hook works
+   out the document's repository from it, so the review reads the right one whatever folder you
+   started in. If it refuses to start them, do what its reason says.
    Each reads everything else it needs itself. Wait for both reports before touching the files.
    If both pass with nothing under Needs a person, go straight to handing over.
 2. **Correct, once.** Read the rubric and the Plain words rule again, then correct only what the
@@ -137,7 +140,7 @@ since the core and a topic file must agree.
    both reports and the files as reviewed, word for word.
 
    ```
-   Document: AGENTS.md, docs/practices/<topic>.md
+   Document: <AGENTS.md's full path>, <each topic file's full path>
    Check the corrections.
    ```
 
