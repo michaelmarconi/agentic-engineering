@@ -6,6 +6,17 @@ What changed in each version of the plugin, newest first. Versions follow
 past a major version: it says what you need to change in your documents. Until 1.0.0, any
 minor version may need such a change, and its entry says so.
 
+## [0.24.1] - 2026-11-05
+
+### Fixed
+
+- A correction check now works after the session ends and the same conversation carries on, as
+  with `claude --resume` or a restarted cloud container. The plugin's hooks used to delete
+  their saved reviews and build reports when a session ended, so the correction checker was
+  refused. They now keep them, and delete any left unchanged for 30 days, the time after which
+  Claude Code deletes the conversation itself. A resumed `/sdlc:build` session also keeps its
+  branch guard. (#37)
+
 ## [0.24.0] - 2026-11-05
 
 ### Fixed
