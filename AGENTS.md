@@ -95,8 +95,8 @@ everything else is judgement.
    effort on it. Otherwise leave it to Claude and the reviewer, whose judgement copes with cases
    a script can't foresee. A script lives in the skill's `scripts/`, or the plugin's `scripts/`
    when a hook runs it. Scripts are
-   self-contained: standard-library Python 3 or POSIX shell, no install step, no network unless
-   the task needs it, and runnable on macOS, Linux and in Claude Code on the web.
+   self-contained: standard-library Python (3.7 or later) or POSIX shell, no install step, no
+   network unless the task needs it, and runnable on macOS, Linux and in Claude Code on the web.
    - **Test-driven.** Write a failing test before each behaviour. Tests use the standard-library
      `unittest` module and live beside the script as `scripts/test_<script>.py`.
    - **Documented.** Each script has a module docstring saying what it does, and every command
