@@ -325,7 +325,7 @@ class Window(Project):
         self.put("src/late.py", "2\n")
         self.commit("Late", date="2026-11-01T12:00:00+00:00")
         out = self.ok("last", "7", "days")
-        self.assertEqual(out["commits"], 1)
+        self.assertEqual(len(out["commits"]), 1)
         self.assertEqual(out["changed"], [{"status": "A", "path": "src/late.py"}])
 
     def test_since_a_commit_leaves_that_commit_out(self):
@@ -372,7 +372,7 @@ class Window(Project):
         self.put("src/late.py", "print('changed')\n")
         late = self.commit("Late", date="2026-11-01T12:00:00+00:00")
         out = self.ok("last", "7", "days")
-        self.assertEqual(out["commit_list"], [{"commit": late[:12], "date": "2026-11-01", "subject": "Late"}])
+        self.assertEqual(out["commits"], [{"commit": late[:12], "date": "2026-11-01", "subject": "Late"}])
         self.assertEqual(self.git("status", "--porcelain", "--ignored"), "")
         self.assertFalse(os.path.exists(os.path.join(self.project, ".git", "sdlc-audit")))
 
@@ -385,7 +385,7 @@ class Window(Project):
 
     def test_a_window_with_no_commits_is_not_refused(self):
         out = self.ok("last", "3", "days")
-        self.assertEqual((out["commits"], out["changed"]), (0, []))
+        self.assertEqual((out["commits"], out["changed"]), ([], []))
 
     def test_a_file_name_that_is_not_ascii_is_listed_as_it_is(self):
         self.put("docs/specs/caf\u00e9.spec.md", spec())
