@@ -182,12 +182,87 @@ class Corrections(Relay):
         self.assertIn("plan finding", prompt)
         self.assertNotIn("SubagentHandback", prompt)
 
-    def test_review_in_the_background_refused(self):
-        result = self.hook({"hook_event_name": "PreToolUse", "tool_name": "Agent", "tool_use_id": "bg",
-                            "tool_input": {"subagent_type": "sdlc:build-reviewer", "run_in_background": True,
-                                           "prompt": f"Document: {PLAN}\nBase: main\nReview this build."}})
-        self.assertEqual(result["permissionDecision"], "deny")
-        self.assertIn("foreground", result["permissionDecisionReason"])
+    def launch(self, agent, prompt, agent_id, session="s1", **extra):
+        """Start a review that Claude Code runs in the background: its tool result is a launch notice."""
+        self.calls += 1
+        call = f"call{self.calls}"
+        tool_input = dict({"subagent_type": agent, "prompt": prompt}, **extra)
+        before = self.hook({"hook_event_name": "PreToolUse", "tool_name": "Agent", "tool_use_id": call,
+                            "tool_input": tool_input}, session)
+        self.hook({"hook_event_name": "PostToolUse", "tool_name": "Agent", "tool_use_id": call,
+                   "tool_input": tool_input,
+                   "tool_response": {"isAsync": True, "status": "async_launched", "agentId": agent_id}},
+                  session)
+        return before, call
+
+    def stopped(self, agent, agent_id, report, session="s1"):
+        return self.hook({"hook_event_name": "SubagentStop", "agent_id": agent_id, "agent_type": agent,
+                          "stop_hook_active": False, "last_assistant_message": report}, session)
+
+    SECURITY = ("general-purpose", f"Document: {PLAN}\nRun /security-review and report.")
+    REVIEW = ("sdlc:build-reviewer", f"Document: {PLAN}\nBase: main\nReview this build.")
+
+    def test_reports_of_background_reviews_are_attached(self):
+        self.code_review()
+        self.assertIsNone(self.launch(*self.SECURITY, "a1")[0])
+        self.assertIsNone(self.launch(*self.REVIEW, "a2")[0])
+        self.assertIsNone(self.stopped("general-purpose", "a1", "security finding"))
+        self.assertIsNone(self.stopped("sdlc:build-reviewer", "a2", "plan finding"))
+        self.commit("Correct")
+        prompt = self.check()["updatedInput"]["prompt"]
+        self.assertIn("=== SECURITY REVIEW REPORT ===\nsecurity finding\n", prompt)
+        self.assertIn("=== BUILD REVIEW REPORT ===\nplan finding\n", prompt)
+
+    def test_a_background_report_counts_when_the_agent_stops_before_its_launch_is_seen(self):
+        self.code_review()
+        calls = []
+        for (agent, prompt), agent_id, report in ((self.SECURITY, "a1", "security finding"),
+                                                  (self.REVIEW, "a2", "plan finding")):
+            self.calls += 1
+            call = f"call{self.calls}"
+            tool_input = {"subagent_type": agent, "prompt": prompt}
+            self.hook({"hook_event_name": "PreToolUse", "tool_name": "Agent", "tool_use_id": call,
+                       "tool_input": tool_input})
+            self.stopped(agent, agent_id, report)
+            calls.append((call, tool_input, agent_id))
+        for call, tool_input, agent_id in calls:
+            self.hook({"hook_event_name": "PostToolUse", "tool_name": "Agent", "tool_use_id": call,
+                       "tool_input": tool_input,
+                       "tool_response": {"status": "async_launched", "agentId": agent_id}})
+        self.commit("Correct")
+        prompt = self.check()["updatedInput"]["prompt"]
+        self.assertIn("security finding", prompt)
+        self.assertIn("plan finding", prompt)
+
+    def test_a_launch_notice_alone_is_no_report(self):
+        self.code_review()
+        self.launch(*self.SECURITY, "a1")
+        self.launch(*self.REVIEW, "a2")
+        self.commit("Correct")
+        self.assertEqual(self.check()["permissionDecision"], "deny")
+
+    def test_an_agent_the_relay_never_saw_start_changes_nothing(self):
+        self.all_reviews()
+        self.stopped("sdlc:build-reviewer", "a9", "another report")
+        self.stopped("general-purpose", "a8", "another report")
+        self.commit("Correct")
+        prompt = self.check()["updatedInput"]["prompt"]
+        self.assertNotIn("another report", prompt)
+        self.assertIn("plan finding", prompt)
+
+    def test_a_stop_outside_a_build_saves_nothing(self):
+        fresh_session.save("s2", {"fresh": True, "messages": 1})
+        self.stopped("sdlc:build-reviewer", "a1", "plan finding", session="s2")
+        self.assertFalse(os.path.exists(os.path.join(self.tmp.name, "data", "builds", "s2.json")))
+
+    def test_review_asked_to_run_in_the_background_is_allowed(self):
+        self.code_review()
+        self.assertIsNone(self.launch(*self.SECURITY, "a1", run_in_background=True)[0])
+        self.assertIsNone(self.launch(*self.REVIEW, "a2", run_in_background=True)[0])
+        self.stopped("general-purpose", "a1", "security finding")
+        self.stopped("sdlc:build-reviewer", "a2", "plan finding")
+        self.commit("Correct")
+        self.assertEqual(self.check()["permissionDecision"], "allow")
 
     def test_one_correction_check_only(self):
         self.all_reviews()

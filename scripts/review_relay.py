@@ -6,7 +6,7 @@ After a review, the drafting agent corrects the document once and starts the cor
 and the document as it stood when reviewed. A model copying them can reword them, so this hook
 saves them and adds them to the checker's request itself.
 
-Claude Code runs it on PreToolUse and PostToolUse for the Agent tool. It reads
+Claude Code runs it on PreToolUse and PostToolUse for the Agent tool, and on SubagentStop. It reads
 the hook's JSON from stdin. A reviewer's or checker's request must start with the line
 `Document: <path>`. Skills give the document's full path; a relative path is read from a
 `Repository: <folder>` second line if the request has one, or else from the project
@@ -40,8 +40,12 @@ feedback, practices or spike) and the shared language checker, which checks the 
   Claude project thread the report is the one the agent handed back, not the tool's text, which
   there only says where the report went. Claude Code gives both events of one run the same `tool_use_id`; without one, the agent's name
   stands in for it.
-- Either part started in the background is refused, when reviews are being saved: its report
-  would arrive after the hook has already seen the run finish.
+- Either part may run in the background, which Claude Code can choose even when the skill asks for
+  the foreground. The Agent tool's PostToolUse event then only says the agent was launched, with
+  its id, so the hook notes which review that id's run started in. When the agent finishes,
+  Claude Code's SubagentStop event carries the same id and the report (see subagent_report.py),
+  and the hook saves it as above. If the agent finishes before its launch is seen, the report is
+  held under its id until it is. These notes live in the session's background-runs.json.
 - Before the correction checker starts, it takes the latest review the reviewer ran in, appends
   both its reports, the document as reviewed, and the files that skill's checker should read,
   between fixed `=== ... ===` lines, and approves the start. It refuses the start, with a reason
@@ -69,6 +73,7 @@ import sys
 import tempfile
 
 import saved_records
+import subagent_report
 
 try:
     import fcntl
@@ -85,6 +90,7 @@ CHECKER = "correction-checker"
 LANGUAGE = "language-checker"
 LIFECYCLE = os.path.join(ROOT, "docs", "lifecycle.md")
 KEPT = 3  # reviews kept per document
+RUNS = "background-runs.json"  # beside the reviews; their names are hashes, so never this one
 # Each reviewer's skill, and the project files its checker may read to judge a changed sentence.
 REVIEWERS = {
     "spec-reviewer": ("spec", ["docs/brief.md", "docs/specs/", "docs/adrs/", "docs/plans/", "docs/spikes/"]),
@@ -314,6 +320,85 @@ def forget(session, name):
         os.remove(record_path(session, name))
     except (OSError, TypeError):
         pass
+    runs = load_runs(session)
+    launched = {k: v for k, v in runs["launched"].items() if v.get("name") != name}
+    if launched != runs["launched"]:
+        save_runs(session, dict(runs, launched=launched))
+
+
+def runs_path(session):
+    base = folder(session)
+    return os.path.join(base, RUNS) if base else None
+
+
+def load_runs(session):
+    """The session's background runs: `launched` maps an agent's id to the review its run started
+    in, and `stopped` holds the report of an agent that finished before its launch was seen."""
+    try:
+        with open(runs_path(session), encoding="utf-8") as f:
+            runs = json.load(f)
+    except (OSError, TypeError, ValueError):
+        runs = None
+    runs = runs if isinstance(runs, dict) else {}
+    return {key: {k: v for k, v in runs.get(key, {}).items() if isinstance(v, dict)}
+            if isinstance(runs.get(key), dict) else {} for key in ("launched", "stopped")}
+
+
+def save_runs(session, runs):
+    path = runs_path(session)
+    if not path:
+        return
+    if not runs["launched"] and not runs["stopped"]:
+        with contextlib.suppress(OSError):
+            os.remove(path)
+        return
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    handle, temp = tempfile.mkstemp(dir=os.path.dirname(path))
+    with os.fdopen(handle, "w", encoding="utf-8") as f:
+        json.dump(runs, f)
+    os.replace(temp, path)
+
+
+def keep_report(session, name, call, agent, report):
+    """Save one part's report in the review its run started in."""
+    reviews = load(session, name)
+    for review in reversed(reviews):
+        if call in review["started"]:
+            if report.strip():
+                review["reports"][agent] = report
+                save(session, name, reviews)
+            break
+
+
+def launched_id(response):
+    """The agent's id when the Agent tool only launched it in the background, else None."""
+    if isinstance(response, dict) and response.get("status") == "async_launched":
+        agent_id = response.get("agentId")
+        return agent_id if isinstance(agent_id, str) and agent_id else None
+    return None
+
+
+def agent_stopped(session, event):
+    """A background agent finished: save its report in the review its run started in, or keep it
+    until its launch is seen, when the agent is a reviewer or the language checker."""
+    agent_id = event.get("agent_id")
+    agent = str(event.get("agent_type") or "").split(":")[-1]
+    if not isinstance(agent_id, str) or not agent_id or not folder(session):
+        return None
+    if agent not in REVIEWERS and agent != LANGUAGE:
+        return None
+    report = subagent_report.report(event)
+    with locked(session, create=False):
+        if not os.path.isdir(folder(session)):
+            return None
+        runs = load_runs(session)
+        run = runs["launched"].pop(agent_id, None)
+        if run is None:
+            runs["stopped"][agent_id] = {"agent": agent, "report": report}
+        elif isinstance(run.get("name"), str) and isinstance(run.get("call"), str):
+            keep_report(session, run["name"], run["call"], str(run.get("agent")), report)
+        save_runs(session, runs)
+    return None
 
 
 def response_text(response):
@@ -398,6 +483,8 @@ def handle(event):
         return None
     session = str(event.get("session_id") or "unknown")
     when = event.get("hook_event_name")
+    if when == "SubagentStop":
+        return agent_stopped(session, event)
     tool_input = event.get("tool_input")
     if event.get("tool_name") not in ("Agent", "Task") or not isinstance(tool_input, dict):
         return None
@@ -417,9 +504,6 @@ def handle(event):
         return None
     if (agent not in REVIEWERS and agent != LANGUAGE) or not named:
         return None
-    if when == "PreToolUse" and tool_input.get("run_in_background") and folder(session):
-        return refuse("Start the reviewer and the language checker in the foreground, not in the "
-                      "background, so their reports are kept for the correction check.")
     call = str(event.get("tool_use_id") or agent)
     part = "reviewer" if agent in REVIEWERS else "language"
     try:
@@ -449,13 +533,18 @@ def handle(event):
             save(session, name, reviews)
             return start
         elif when == "PostToolUse":
-            report = response_text(event.get("tool_response"))
-            for review in reversed(reviews):
-                if call in review["started"]:
-                    if report.strip():
-                        review["reports"][agent] = report
-                        save(session, name, reviews)
-                    break
+            response = event.get("tool_response")
+            agent_id = launched_id(response)
+            if agent_id is None:
+                keep_report(session, name, call, agent, response_text(response))
+                return None
+            runs = load_runs(session)
+            stopped = runs["stopped"].pop(agent_id, None)
+            if stopped is None:
+                runs["launched"][agent_id] = {"name": name, "call": call, "agent": agent}
+            elif isinstance(stopped.get("report"), str):
+                keep_report(session, name, call, agent, stopped["report"])
+            save_runs(session, runs)
     return None
 
 

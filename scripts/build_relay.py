@@ -8,7 +8,7 @@ could reword them, so this hook keeps them and adds them to the checker's reques
 review_relay.py does for documents.
 
 Claude Code runs it on PreToolUse for the Agent tool, on PostToolUse for the Agent and Skill
-tools. It acts only in a session where /build was allowed to start (recorded by
+tools, and on SubagentStop. It acts only in a session where /build was allowed to start (recorded by
 fresh_session.py), and keeps:
 
 - the report of Claude Code's `/code-review`, from the Skill tool's result;
@@ -25,8 +25,10 @@ and the rubric to read, between fixed `=== ... ===` lines, and approves the star
 start, with a reason Claude sees, when the request has no `Document:` line, when any of the three
 reports of the reviewed commit is missing, or when nothing
 has been committed since the reviews, and deletes the record once the checker has run, so the
-corrections are checked only once. A review started in the background is refused, since its
-report would arrive after the hook has seen it finish. Records live in
+corrections are checked only once. A review agent may run in the background, which Claude Code
+can choose even when the skill asks for the foreground: its PostToolUse event then only says it
+was launched, with its id, so the hook keeps the report from the SubagentStop event with that id
+(see subagent_report.py), and holds a report that arrives first until the launch is seen. Records live in
 $CLAUDE_PLUGIN_DATA/builds/<session>.json and are deleted once unchanged for 30 days (see
 saved_records.py), not when the session ends, since a resumed session carries on. Anything else,
 and any input it cannot read, is left alone.
@@ -47,6 +49,7 @@ except ImportError:  # Windows: run without the lock rather than fail every agen
 
 import fresh_session
 import saved_records
+import subagent_report
 
 ROOT = os.environ.get("CLAUDE_PLUGIN_ROOT") or os.path.normpath(
     os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
@@ -180,9 +183,56 @@ def start_checker(session, tool_input):
                                    "updatedInput": dict(tool_input, prompt=prompt + extra)}}
 
 
+def launched_id(response):
+    """The agent's id when the Agent tool only launched it in the background, else None."""
+    if isinstance(response, dict) and response.get("status") == "async_launched":
+        agent_id = response.get("agentId")
+        return agent_id if isinstance(agent_id, str) and agent_id else None
+    return None
+
+
+def runs(record, key):
+    """The record's background runs: `launched` maps an agent's id to its call, and `stopped`
+    holds the report of an agent that finished before its launch was seen."""
+    if not isinstance(record.get(key), dict):
+        record[key] = {}
+    return record[key]
+
+
+def keep(record, call, part, report):
+    if record["started"].get(call) == part and report.strip():
+        record["reports"][part] = report
+
+
+def agent_stopped(session, event):
+    """A background review agent finished: keep its report, or hold it until its launch is seen."""
+    agent_id = event.get("agent_id")
+    agent = str(event.get("agent_type") or "").split(":")[-1]
+    if (not isinstance(agent_id, str) or not agent_id or agent not in ("build-reviewer", "general-purpose")
+            or not fresh_session.building(session) or not record_path(session)):
+        return None
+    report = subagent_report.report(event)
+    with locked(session):
+        record = load(session)
+        if not record:
+            return None
+        launched, stopped = runs(record, "launched"), runs(record, "stopped")
+        call = launched.pop(agent_id, None)
+        if call is None:
+            stopped[agent_id] = report
+        elif isinstance(call, str):
+            part = record.get("started", {}).get(call)
+            if part:
+                keep(record, call, part, report)
+        save(session, record)
+    return None
+
+
 def handle(event):
     session = str(event.get("session_id") or "unknown")
     when = event.get("hook_event_name")
+    if when == "SubagentStop":
+        return agent_stopped(session, event)
     tool_input = event.get("tool_input")
     if not isinstance(tool_input, dict):
         return None
@@ -215,9 +265,6 @@ def handle(event):
     if not part:
         return None
     call = str(event.get("tool_use_id") or part)
-    if when == "PreToolUse" and tool_input.get("run_in_background"):
-        return refuse("Start each review in the foreground, not in the background, so its report "
-                      "is kept for the correction check.")
     with locked(session):
         if when == "PreToolUse":
             record = for_commit(session, head())
@@ -225,10 +272,20 @@ def handle(event):
             save(session, record)
         elif when == "PostToolUse":
             record = load(session)
-            report = text_of(event.get("tool_response"))
-            if record and record["started"].get(call) == part and report.strip():
-                record["reports"][part] = report
-                save(session, record)
+            if not record or not isinstance(record.get("started"), dict):
+                return None
+            response = event.get("tool_response")
+            agent_id = launched_id(response)
+            if agent_id is None:
+                report = text_of(response)
+            else:
+                launched, stopped = runs(record, "launched"), runs(record, "stopped")
+                report = stopped.pop(agent_id, None)
+                if not isinstance(report, str):
+                    launched[agent_id] = call
+                    report = ""
+            keep(record, call, part, report)
+            save(session, record)
     return None
 
 
