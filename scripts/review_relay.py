@@ -8,15 +8,24 @@ saves them and adds them to the checker's request itself.
 
 Claude Code runs it on PreToolUse and PostToolUse for the Agent tool, and on SessionEnd. It reads
 the hook's JSON from stdin. A reviewer's or checker's request must start with the line
-`Document: <path>`, a path relative to the project ($CLAUDE_PROJECT_DIR, or the current
-directory if unset) or absolute. It may name several files separated by commas, such as
-`Document: AGENTS.md, docs/practices/testing.md`, which are then reviewed as one document (see
-docs/adrs/0018): the hook saves each, hands the checker each between `=== FILE: <path> ===` and
+`Document: <path>`. Skills give the document's full path; a relative path is read from a
+`Repository: <folder>` second line if the request has one, or else from the project
+($CLAUDE_PROJECT_DIR, or the current directory if unset). It may name several files separated by
+commas, such as `Document: /p/AGENTS.md, /p/docs/practices/testing.md`, which are then reviewed as
+one document (see docs/adrs/0018): the hook saves each, hands the checker each between `=== FILE: <path> ===` and
 `=== END FILE ===` lines, and starts the checker once any of them has changed. The order of the
 names does not matter, and a line naming one existing file is that file even if its name holds a
 comma. A draft that is never written to a file, such as /feedback's,
 uses `Document: feedback draft` and carries the draft between `=== DRAFT ===` and
 `=== END DRAFT ===` lines in the request.
+
+Before any of these agents starts, the hook finds the repository the document is in (see
+docs/adrs/0022): the top folder of the git repository holding its files, or the project when they
+are in none. It rewrites the request's first line to name each file relative to that folder, and
+puts `Repository: <the folder's full path>` on the second line, so an agent started from a folder
+above the project still reads and searches the right one. Everything it saves is keyed by those
+relative paths. It refuses the start when none of the files exists, or when they sit in different
+repositories. A feedback draft has no file, so its requests are left as they are.
 
 Every review has two parts that run side by side: the skill's own reviewer (spec, brief, adr, plan,
 feedback, practices or spike) and the shared language checker, which checks the wording (see docs/adrs/0013).
@@ -70,6 +79,7 @@ ROOT = os.environ.get("CLAUDE_PLUGIN_ROOT") or os.path.normpath(
 FEEDBACK_DRAFT = "feedback draft"
 DRAFT_START = "=== DRAFT ===\n"
 DRAFT_END = "=== END DRAFT ==="
+REPOSITORY = "Repository:"
 CHECKER = "correction-checker"
 LANGUAGE = "language-checker"
 LIFECYCLE = os.path.join(ROOT, "docs", "lifecycle.md")
@@ -110,48 +120,93 @@ def project():
     return os.environ.get("CLAUDE_PROJECT_DIR") or os.getcwd()
 
 
-def relative(path):
-    full = path if os.path.isabs(path) else os.path.join(project(), path)
-    return os.path.relpath(os.path.normpath(full), project())
+class Unreadable(Exception):
+    """The `Document:` line names no file the hook can find, or files in different repositories."""
 
 
-def files(name):
-    """The files a `Document:` line names: one, or several separated by commas (ADR 0018).
+def repository_line(prompt):
+    """The folder on the request's second line, `Repository: <folder>`, or None."""
+    lines = prompt.strip().splitlines()
+    if len(lines) > 1 and lines[1].startswith(REPOSITORY):
+        return lines[1][len(REPOSITORY):].strip() or None
+    return None
 
-    A line that names an existing file is that one file, even if its name holds a comma. The
-    files are returned relative to the project and sorted, so their order on the line never
-    matters."""
+
+def git_top(path):
+    """The top folder of the git repository holding `path`, or None when it is in none."""
+    folder = os.path.dirname(path)
+    while True:
+        if os.path.exists(os.path.join(folder, ".git")):
+            return folder
+        parent = os.path.dirname(folder)
+        if parent == folder:
+            return None
+        folder = parent
+
+
+def locate(name, prompt):
+    """The document's repository and its files relative to it, sorted (ADR 0018 and 0022).
+
+    A line that names an existing file is that one file, even if its name holds a comma, so the
+    order of the names on the line never matters. Raises Unreadable when no named file exists, or
+    when they sit in different repositories."""
     if name == FEEDBACK_DRAFT:
-        return [FEEDBACK_DRAFT]
-    if "," not in name or os.path.isfile(os.path.join(project(), relative(name))):
-        return [relative(name)]
-    return sorted({relative(p.strip()) for p in name.split(",") if p.strip()})
+        return None, [FEEDBACK_DRAFT]
+    base = repository_line(prompt) or project()
+
+    def full(path):
+        return os.path.realpath(path if os.path.isabs(path) else os.path.join(base, path))
+
+    parts = [name]
+    if "," in name and not os.path.isfile(full(name)):
+        parts = [p.strip() for p in name.split(",") if p.strip()]
+    paths = [full(p) for p in parts]
+    found = [p for p in paths if os.path.isfile(p)]
+    if not found:
+        raise Unreadable(f"Can't find {name}. Give the document's full path on the `Document:` "
+                         "line, the path you wrote it to, and start the agent again.")
+    tops = sorted({git_top(p) or os.path.realpath(project()) for p in found})
+    if len(tops) > 1:
+        raise Unreadable(f"The files on the `Document:` line, {name}, sit in different "
+                         f"repositories: {', '.join(tops)}. Name only one repository's files.")
+    return tops[0], sorted({os.path.relpath(p, tops[0]) for p in paths})
 
 
-def key(name):
-    return ", ".join(files(name))
+def rewritten(tool_input, repository, paths):
+    """The request with `Document:` naming the files relative to the repository and
+    `Repository:` on the second line, in place of any the request had."""
+    lines = (tool_input.get("prompt") or "").strip("\n").splitlines()
+    rest = lines[1:]
+    if rest and rest[0].startswith(REPOSITORY):
+        rest = rest[1:]
+    prompt = "\n".join([f"Document: {', '.join(paths)}", f"{REPOSITORY} {repository}", *rest])
+    return dict(tool_input, prompt=prompt)
 
 
-def read(path):
+def allow(updated):
+    return {"hookSpecificOutput": {"hookEventName": "PreToolUse", "permissionDecision": "allow",
+                                   "updatedInput": updated}}
+
+
+def read(repository, path):
     try:
-        with open(os.path.join(project(), path), encoding="utf-8") as f:
+        with open(os.path.join(repository, path), encoding="utf-8") as f:
             return f.read()
     except (OSError, ValueError):
         return None
 
 
-def current_text(name, prompt):
+def current_text(repository, paths, prompt):
     """The document's text now: the draft in the request, or the files' contents.
 
     Several files are joined, each between `=== FILE: <path> ===` and `=== END FILE ===`
     lines, with a file that does not exist shown as `(missing)`; when none exists there is no
     text."""
-    if name == FEEDBACK_DRAFT:
+    if paths == [FEEDBACK_DRAFT]:
         return draft(prompt)
-    paths = files(name)
     if len(paths) == 1:
-        return read(paths[0])
-    texts = [read(p) for p in paths]
+        return read(repository, paths[0])
+    texts = [read(repository, p) for p in paths]
     if all(t is None for t in texts):
         return None
     return "".join(f"=== FILE: {p} ===\n" + ("(missing)" if t is None else t) + "\n=== END FILE ===\n"
@@ -293,7 +348,11 @@ def start_checker(session, tool_input):
     if not named:
         return refuse("Start the correction checker with `Document: <path>` as the first line of "
                       "its request, the same line the reviewer was given.")
-    name = key(named)
+    try:
+        repository, paths = locate(named, prompt)
+    except Unreadable as problem:
+        return refuse(str(problem))
+    name = ", ".join(paths)
     with locked(session, create=False):
         reviews = [r for r in load(session, name) if reviewed(r)][-1:]
     if not reviews or not complete(reviews[0]):
@@ -302,13 +361,13 @@ def start_checker(session, tool_input):
                       "checked. Do not review again: stop and show the person the reports you "
                       "have and this reason.")
     record = reviews[-1]
-    text = current_text(name, prompt)
+    text = current_text(repository, paths, prompt)
     if text == record["text"]:
         return refuse(f"{name} is unchanged since its review. Make the corrections first, then "
                       "start the correction checker.")
-    updated = dict(tool_input, prompt=prompt + attachments(name, record))
-    return {"hookSpecificOutput": {"hookEventName": "PreToolUse", "permissionDecision": "allow",
-                                   "updatedInput": updated}}
+    updated = rewritten(tool_input, repository, paths) if repository else dict(tool_input)
+    updated["prompt"] += attachments(name, record)
+    return allow(updated)
 
 
 def handle(event):
@@ -332,23 +391,34 @@ def handle(event):
         if when == "PreToolUse":
             return start_checker(session, tool_input)
         if when == "PostToolUse" and named:
+            try:
+                name = ", ".join(locate(named, prompt)[1])
+            except Unreadable:
+                return None
             with locked(session, create=False):
-                forget(session, key(named))
+                forget(session, name)
         return None
     if (agent not in REVIEWERS and agent != LANGUAGE) or not named:
         return None
     if when == "PreToolUse" and tool_input.get("run_in_background") and folder(session):
         return refuse("Start the reviewer and the language checker in the foreground, not in the "
                       "background, so their reports are kept for the correction check.")
-    name = key(named)
+    try:
+        repository, paths = locate(named, prompt)
+    except Unreadable as problem:
+        return refuse(str(problem)) if when == "PreToolUse" else None
+    name = ", ".join(paths)
     call = str(event.get("tool_use_id") or agent)
     part = "reviewer" if agent in REVIEWERS else "language"
+    start = allow(rewritten(tool_input, repository, paths)) if repository else None
+    if when == "PreToolUse" and not folder(session):
+        return start
     with locked(session):
         reviews = load(session, name)
         if when == "PreToolUse":
-            text = current_text(name, prompt)
+            text = current_text(repository, paths, prompt)
             if text is None:
-                return None
+                return start
             latest = reviews[-1] if reviews else None
             if not (latest and same_text(latest["text"], text) and not has_report(latest, part)):
                 latest = {"text": text, "reports": {}, "started": {}}
@@ -357,6 +427,7 @@ def handle(event):
                 latest["text"] = text  # the copy the reviewer saw is the one kept
             latest["started"][call] = part
             save(session, name, reviews)
+            return start
         elif when == "PostToolUse":
             report = response_text(event.get("tool_response"))
             for review in reversed(reviews):
