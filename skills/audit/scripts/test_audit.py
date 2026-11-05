@@ -365,6 +365,14 @@ class Window(Project):
             self.assertIn("+print('changed')", f.read())
         self.assertEqual(self.git("status", "--porcelain"), "")
 
+    def test_changes_that_are_not_utf_8_text_still_make_a_diff_file(self):
+        with open(os.path.join(self.project, "src", "latin.txt"), "wb") as f:
+            f.write("caf\u00e9\n".encode("latin-1"))
+        self.commit("Latin-1", date="2026-11-01T12:00:00+00:00")
+        out = self.ok("last", "7", "days")
+        self.assertEqual([c["path"] for c in out["changed"]], ["src/latin.txt"])
+        self.assertTrue(os.path.exists(out["diff"]))
+
     def test_a_window_with_no_commits_is_not_refused(self):
         out = self.ok("last", "3", "days")
         self.assertEqual((out["commits"], out["changed"]), (0, []))
