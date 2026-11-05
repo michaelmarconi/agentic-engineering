@@ -318,7 +318,7 @@ def overlap_problems(project, documents):
 
 
 def check_documents(project):
-    project = os.path.abspath(project)
+    project = os.path.realpath(project)
     documents = lifecycle_documents(project)
     problems = []
 
@@ -358,7 +358,7 @@ def check_documents(project):
     for document, detail in overlap_problems(project, documents):
         add(document, "overlap", detail)
     return {
-        "root": os.path.realpath(project),
+        "root": project,
         "lifecycle": bool(documents),
         "accepted": accepted,
         "problems": problems,
@@ -441,14 +441,14 @@ def changed_files(project, selection):
 
 
 def window(project, words, now):
-    project = os.path.abspath(project)
+    project = os.path.realpath(project)
     selection, description = resolve_window(project, words, now)
     commits, changes = changed_files(project, selection)
     documents = lifecycle_documents(project)
     touched = {change["path"] for change in changes}
     accepted = [relative for relative, (kind, text) in sorted(documents.items())
                 if kind in ("spec", "ADR") and status(kind, text) == ACCEPTED and relative in touched]
-    return {"root": os.path.realpath(project), "window": description, "commits": commits, "changed": changes,
+    return {"root": project, "window": description, "commits": commits, "changed": changes,
             "changed_accepted_documents": accepted}
 
 

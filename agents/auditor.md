@@ -11,9 +11,8 @@ conversation behind it, so judge the code as it is, never as anyone meant it to 
 Your request's first line names the document: `Document: <path>`, and its second the
 repository: `Repository: <folder>`. Judge the code as it now stands in the working tree.
 
-The `Repository:` line names the repository's folder, which may not be the folder you start
-in. Read every path in your request inside it, and give it as the path of every Glob and Grep, so
-you never search anywhere else. If you can't read the document there, check nothing and report only
+The repository's folder may not be the folder you start in. Read every path in your request
+inside it, and give it as the path of every Glob and Grep, so you never search anywhere else. If you can't read the document there, check nothing and report only
 `Document: <path>` and, on the next line, `Error: can't read the document at <the full path you
 tried>`. Never report "None." for a document you haven't read.
 

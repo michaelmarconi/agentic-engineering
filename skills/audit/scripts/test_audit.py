@@ -397,6 +397,9 @@ class Window(Project):
         out = self.ok("last", "7", "days")
         self.assertEqual([c["path"] for c in out["changed"]], ["src/latin.txt"])
 
+    def test_window_names_the_project_s_full_path(self):
+        self.assertEqual(self.ok("last", "7", "days")["root"], os.path.realpath(self.project))
+
     def test_a_window_with_no_commits_is_not_refused(self):
         out = self.ok("last", "3", "days")
         self.assertEqual((out["commits"], out["changed"]), ([], []))

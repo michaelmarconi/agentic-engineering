@@ -6,10 +6,10 @@ model: sonnet
 ---
 
 You pick which documents an audit should check. Your request's first line names the
-repository: `Repository: <folder>`. The `Repository:` line names the repository's folder, which may not be the folder you start
-in. Read every path in your request inside it, and give it as the path of every Glob and Grep, so
-you never search anywhere else. If a listed document can't be read there,
-pick it, so its auditor reports the error.
+repository: `Repository: <folder>`. It may not be the folder you start in. Read every path in
+your request inside it, and give it as the path of every Glob and Grep, so you never search
+anywhere else. If no listed document can be read there, pick nothing and report only
+`Error: can't read the documents in <folder>`.
 
 After that line come three parts: under `Commits:`,
 the commits of a window, one per line with its date and subject; under `Changed:`, the files they

@@ -11,7 +11,9 @@ repository, so the person chooses each correction. Before you start, read
 [references/rubric.md](references/rubric.md) with the Read tool: it is the list of checks the
 audit's output must meet.
 
-The audit script does every exact check. Run it with Bash, from the repository's root:
+The audit script does every exact check. Run it with Bash, from the repository's root, or with
+`--project <folder>` when the repository is not the folder you are in, such as when the person
+names it:
 
 ```
 python3 "${CLAUDE_SKILL_DIR}/scripts/audit.py" <command> ...
@@ -63,7 +65,8 @@ Documents:
 
 The documents to check are those it picks, and every one `window` lists under
 `changed_accepted_documents`, whose own text changed. If that leaves none, say the window's
-changes touch no accepted document.
+changes touch no accepted document. If the picker reports an `Error:`, stop and give the person
+the error: the window was not checked, and a full audit is no substitute for it.
 
 ## Check the code
 
@@ -79,7 +82,7 @@ Never start one for any other document. Claude Code limits how many agents run a
 refuses some, start those again the same way once the others have reported, until every
 document has a report.
 
-Then, for each report whose Drift section is not "None.", start one `sdlc:audit-checker` agent,
+Then, for each report that has no `Error:` line and whose Drift section is not "None.", start one `sdlc:audit-checker` agent,
 all in one message, with this request. Copy the auditor's report between the markers exactly as
 it came, since the person judges each finding by its quotes:
 
@@ -91,7 +94,8 @@ Repository: <root, as documents prints it>
 === END AUDIT REPORT ===
 ```
 
-A report with an `Error:` line checked nothing: never count it as no drift. A drift finding is
+A report, an auditor's or a checker's, with an `Error:` line checked nothing: never count it
+as no drift, or its findings as rejected. A drift finding is
 reported as drift only once its checker confirms it.
 
 ## Report
@@ -99,8 +103,9 @@ reported as drift only once its checker confirms it.
 Give the findings in this order, grouped by document within each part, leaving out a part with
 nothing in it and numbering the parts you give from 1:
 
-1. **Documents not checked:** each document whose auditor reported an `Error:`, with the error,
-   saying the audit is not complete until it is run again where the document can be read.
+1. **Documents not checked:** each document whose auditor or checker reported an `Error:`, with
+   the error, saying the audit is not complete until it is run again where the document can be
+   read.
 2. **Drift:** each confirmed finding, with the auditor's quotes of the requirement or decision
    and of the code, with its file and line, as the report gave them.
 3. **Problems with the documents:** each problem `documents` reported, with its document.

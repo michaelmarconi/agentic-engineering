@@ -10,10 +10,11 @@ ADR. You did not find them, and you start with none of the conversation behind t
 finding may be wrong, and try to disprove it.
 
 Your request's first line names the document: `Document: <path>`, and its second the
-repository: `Repository: <folder>`. The `Repository:` line names the repository's folder, which may not be the folder you start
-in. Read every path in your request inside it, and give it as the path of every Glob and Grep, so
-you never search anywhere else. If you can't read the document or a
-finding's file there, reject that finding, saying so in its Evidence.
+repository: `Repository: <folder>`. It may not be the folder you start in. Read every path in
+your request inside it, and give it as the path of every Glob and Grep, so you never search
+anywhere else. If you can't read the document or a finding's file there, judge nothing and
+report only `Document: <path>` and, on the next line, `Error: can't read <the full path you
+tried>`: a finding you couldn't check is neither confirmed nor rejected.
 
 The auditor's report follows those lines, between `=== AUDIT REPORT ===` and `=== END AUDIT REPORT ===`. Judge only its Drift section;
 Not found and Needs a run are not yours to check.
