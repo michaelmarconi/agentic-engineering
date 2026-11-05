@@ -6,6 +6,9 @@ when the project uses the lifecycle, that is, when it has docs/brief.md or a spe
 docs/specs/ whose frontmatter has a lifecycle status.
 
 In any other project it prints nothing, so installing the plugin costs other projects nothing.
+
+On a Python older than 3.7, in any project, it also warns the person, because the plugin's other
+scripts use calls that Python 3.6 lacks and would fail.
 """
 
 import argparse
@@ -21,6 +24,17 @@ KNOWN = SPEC_STATUSES + STATUSES
 
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
 MAP = os.path.join(ROOT, "docs", "lifecycle.md")
+
+MINIMUM = (3, 7)
+
+
+def version_warning():
+    """The warning to give on a Python too old for the plugin, or None."""
+    if tuple(sys.version_info[:2]) >= MINIMUM:
+        return None
+    found = ".".join(str(part) for part in sys.version_info[:3])
+    return (f"The sdlc plugin needs Python 3.7 or later, but python3 here is {found}, so its "
+            f"checks will fail. Install a newer Python 3 as python3.")
 
 
 def uses_lifecycle(project):
@@ -45,21 +59,27 @@ def main(argv=None):
         epilog=(
             "The project is $CLAUDE_PROJECT_DIR, or the current directory if that is unset. "
             "Output: nothing, or a SessionStart JSON object on stdout whose additionalContext "
-            "holds the map. Exit code: always 0, so a session never fails to start "
+            "holds the map, plus a systemMessage warning on a Python older than 3.7. Exit code: always 0, so a session never fails to start "
             "because of this hook."
         ),
     )
     parser.parse_args(argv)
     project = os.environ.get("CLAUDE_PROJECT_DIR") or os.getcwd()
-    if not uses_lifecycle(project):
+    warning = version_warning()
+    parts = [warning] if warning else []
+    if uses_lifecycle(project):
+        try:
+            with open(MAP, encoding="utf-8") as f:
+                parts.append(f.read())
+        except OSError:
+            pass
+    if not parts:
         return 0
-    try:
-        with open(MAP, encoding="utf-8") as f:
-            context = f.read()
-    except OSError:
-        return 0
-    print(json.dumps({"hookSpecificOutput": {"hookEventName": "SessionStart",
-                                             "additionalContext": context}}))
+    out = {"hookSpecificOutput": {"hookEventName": "SessionStart",
+                                  "additionalContext": "\n\n".join(parts)}}
+    if warning:
+        out["systemMessage"] = warning
+    print(json.dumps(out))
     return 0
 
 
