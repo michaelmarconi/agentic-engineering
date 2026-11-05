@@ -48,9 +48,9 @@ window <words> --data <folder>
     when the data folder can't be written, in a folder only this user can open in the system's
     temporary folder, sdlc-audits-<user id>/; and it first deletes any folder an earlier run of
     the same project left in either place, so two audits of one project run at the same time can
-    delete each other's diff file; run them one after another. It refuses, with the reason, words it can't read, a
-    commit that doesn't exist or isn't on this branch, and a window older than the history the
-    clone holds; it never falls back to every commit.
+    delete each other's diff file; run them one after another. It refuses, with the reason, words
+    it can't read, a commit that doesn't exist or isn't on this branch, and a window older than
+    the history the clone holds; it never falls back to every commit.
 
 clean --data <folder>
     Deletes every folder `window` left for this project, in either place. Other projects' folders
