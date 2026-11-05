@@ -15,6 +15,10 @@ class OwnFiles(unittest.TestCase):
         self.addCleanup(self.tmp.cleanup)
         self.plugin = os.path.join(self.tmp.name, "plugin")
         self.rubric = os.path.join(self.plugin, "skills", "spec", "references", "rubric.md")
+        # The hook's temporary folder, so tests never depend on what the real one holds.
+        self.temporary = os.path.join(self.tmp.name, "temporary")
+        os.makedirs(self.temporary)
+        self.fallback = os.path.join(self.temporary, f"sdlc-audits-{os.getuid()}")
         os.makedirs(os.path.dirname(self.rubric))
         with open(self.rubric, "w") as f:
             f.write("rubric\n")
@@ -22,6 +26,7 @@ class OwnFiles(unittest.TestCase):
     def run_hook(self, tool, tool_input, raw=None, root=None, data=None):
         env = dict(os.environ, CLAUDE_PLUGIN_ROOT=root if root is not None else self.plugin)
         env["CLAUDE_PLUGIN_DATA"] = data if data is not None else os.path.join(self.tmp.name, "data")
+        env["TMPDIR"] = self.temporary
         event = {"hook_event_name": "PreToolUse", "tool_name": tool, "tool_input": tool_input}
         done = subprocess.run([sys.executable, SCRIPT], input=raw if raw is not None else json.dumps(event),
                               capture_output=True, text=True, env=env)
@@ -79,36 +84,25 @@ class OwnFiles(unittest.TestCase):
         self.assert_allowed(self.run_hook("Grep", {"pattern": "x", "path": os.path.dirname(diff)}))
 
     def test_reading_an_audit_diff_file_in_the_temporary_fallback_is_allowed(self):
-        fallback = os.path.join(tempfile.gettempdir(), f"sdlc-audits-{os.getuid()}")
-        if not os.path.lexists(fallback):
-            os.makedirs(fallback, mode=0o700)
-            self.addCleanup(os.rmdir, fallback)
-        self.assert_allowed(self.run_hook("Read", {"file_path": os.path.join(fallback, "0123456789ab-x", "diff.patch")}))
+        os.makedirs(self.fallback, mode=0o700)
+        self.assert_allowed(self.run_hook("Read", {"file_path": os.path.join(self.fallback, "0123456789ab-x", "diff.patch")}))
 
     def test_a_temporary_fallback_that_is_a_link_is_left_to_the_person(self):
-        fallback = os.path.join(tempfile.gettempdir(), f"sdlc-audits-{os.getuid()}")
-        if os.path.lexists(fallback):
-            self.skipTest("the real fallback folder exists")
         target = os.path.join(self.tmp.name, "home")
         os.makedirs(target)
-        os.symlink(target, fallback)
-        self.addCleanup(os.remove, fallback)
-        self.assertIsNone(self.run_hook("Read", {"file_path": os.path.join(fallback, "secret")}))
+        os.symlink(target, self.fallback)
+        self.assertIsNone(self.run_hook("Read", {"file_path": os.path.join(self.fallback, "secret")}))
 
     def test_a_temporary_fallback_others_can_open_is_left_to_the_person(self):
-        fallback = os.path.join(tempfile.gettempdir(), f"sdlc-audits-{os.getuid()}")
-        if os.path.lexists(fallback):
-            self.skipTest("the real fallback folder exists")
-        os.makedirs(fallback, mode=0o755)
-        os.chmod(fallback, 0o755)
-        self.addCleanup(os.rmdir, fallback)
-        self.assertIsNone(self.run_hook("Read", {"file_path": os.path.join(fallback, "x")}))
+        os.makedirs(self.fallback, mode=0o755)
+        os.chmod(self.fallback, 0o755)
+        self.assertIsNone(self.run_hook("Read", {"file_path": os.path.join(self.fallback, "x")}))
 
     def test_the_rest_of_the_data_folder_is_left_to_the_person(self):
         data = os.path.join(self.tmp.name, "data")
         self.assertIsNone(self.run_hook("Read", {"file_path": os.path.join(data, "spikes", "x", "check.sh")}))
         self.assertIsNone(self.run_hook("Read", {"file_path": os.path.join(data, "audits", "..", "secret.md")}))
-        self.assertIsNone(self.run_hook("Read", {"file_path": os.path.join(tempfile.gettempdir(), "sdlc-audits-other", "x")}))
+        self.assertIsNone(self.run_hook("Read", {"file_path": os.path.join(self.temporary, "sdlc-audits-other", "x")}))
 
     def test_without_a_data_folder_only_the_fallback_is_allowed(self):
         diff = os.path.join(self.tmp.name, "audits", "x", "diff.patch")

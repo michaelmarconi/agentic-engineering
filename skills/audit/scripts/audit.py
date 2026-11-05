@@ -47,7 +47,8 @@ window <words> --data <folder>
     folder for this project and this run, <data>/audits/<hash of the project path>-<run>/, or,
     when the data folder can't be written, in a folder only this user can open in the system's
     temporary folder, sdlc-audits-<user id>/; and it first deletes any folder an earlier run of
-    the same project left in either place. It refuses, with the reason, words it can't read, a
+    the same project left in either place, so two audits of one project run at the same time can
+    delete each other's diff file; run them one after another. It refuses, with the reason, words it can't read, a
     commit that doesn't exist or isn't on this branch, and a window older than the history the
     clone holds; it never falls back to every commit.
 
@@ -73,8 +74,8 @@ import tempfile
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "..", "scripts"))
 from status_check import (ACCEPTED, ADR_STATUSES, ANSWERED, BUILT, DRAFT, NOT_ANSWERED,  # noqa: E402
                           READY, READY_TO_RUN, SPEC_STATUSES, SPIKE_STATUSES, STATUSES, SUPERSEDED,
-                          VARIATION, field, frontmatter, has_open_questions, reference_problem,
-                          requirements, status_of)
+                          field, frontmatter, has_open_questions, lifecycle_status, listed,
+                          reference_problem, requirements, status_of)
 from doc_references import targets  # noqa: E402
 
 KINDS = {"spec": SPEC_STATUSES, "ADR": ADR_STATUSES, "plan": STATUSES, "spike record": SPIKE_STATUSES}
@@ -90,13 +91,9 @@ class Refused(Exception):
     """The command can't do what was asked; the reason says why."""
 
 
-def plain(status):
-    return (status or "").replace(VARIATION, "")
-
-
 def git(project, *args, check=True):
     # Files in a diff need not be UTF-8 text; a byte that isn't is shown as U+FFFD, not refused.
-    done = subprocess.run(["git", "-C", project, *args], capture_output=True, text=True, encoding="utf-8",
+    done = subprocess.run(["git", "-C", project, "-c", "core.quotePath=false", *args], capture_output=True, text=True, encoding="utf-8",
                           errors="replace")
     if check and done.returncode != 0:
         raise Refused(done.stderr.strip() or f"git {args[0]} failed")
@@ -157,27 +154,29 @@ def lifecycle_documents(project):
     return found
 
 
-def listed(values):
-    named = [f"`{value}`" for value in values]
-    return ", ".join(named[:-1]) + " or " + named[-1]
+def status(kind, text):
+    """The document's status as the status hook reads it: a status written by its word alone, as
+    documents written before the emoji were, counts as the status it names."""
+    return lifecycle_status(text, KINDS[kind])
 
 
 def status_problem(kind, text):
-    status = status_of(text)
-    statuses = KINDS[kind]
-    if status is None:
+    written, statuses = status_of(text), KINDS[kind]
+    if written is None:
         return f"it has no `status:`; a {kind}'s status is {listed(statuses)}"
-    if status not in statuses:
-        return f"its status '{status}' is not one a {kind} has; it is {listed(statuses)}"
+    meant = status(kind, text)
+    if meant in statuses and meant != written:
+        return f"its status '{written}' is missing its emoji or has the wrong one; write `{meant}`"
+    if written not in statuses:
+        return f"its status '{written}' is not one a {kind} has; it is {listed(statuses)}"
     return None
 
 
 def body(text):
-    """The text without its frontmatter, as (first line number, lines)."""
-    lines = text.lstrip("﻿").splitlines()
+    """The text's lines without its frontmatter."""
+    lines = text.lstrip("\ufeff").splitlines()
     head = frontmatter(text)
-    start = len(head) + 2 if head is not None else 0
-    return start + 1, lines[start:]
+    return lines[len(head) + 2 if head is not None else 0:]
 
 
 def allowed_reference(source_kind, target_kind):
@@ -193,8 +192,7 @@ def reference_problems(relative, kind, text, documents, project):
         by_name.setdefault(other.rsplit("/", 1)[-1].lower(), []).append(other)
     folder = os.path.dirname(os.path.join(project, relative))
     named = set()
-    first, lines = body(text)
-    for line in lines:
+    for line in body(text):
         for target in targets(line):
             path = target.split("#", 1)[0]
             if not path or re.match(r"[A-Za-z][A-Za-z0-9+.-]*:", path):
@@ -233,8 +231,8 @@ def supersede_problems(documents):
     found = []
     for number, entries in sorted(adrs.items()):
         for relative, text in entries:
-            status = status_of(text)
-            if plain(status) not in (plain(ACCEPTED), plain(SUPERSEDED)):
+            current = status("ADR", text)
+            if current not in (ACCEPTED, SUPERSEDED):
                 continue
             for other in numbers(field(text, "supersedes")):
                 targets_ = adrs.get(other)
@@ -243,8 +241,11 @@ def supersede_problems(documents):
                 elif not any(number in numbers(field(t, "superseded-by")) for _, t in targets_):
                     found.append((relative, f"`supersedes:` names ADR {other}, whose `superseded-by:` does not name {number}"))
             by = numbers(field(text, "superseded-by"))
-            if plain(status) == plain(SUPERSEDED) and not by:
+            if current == SUPERSEDED and not by:
                 found.append((relative, f"it is `{SUPERSEDED}` but has no `superseded-by:`"))
+            if current == ACCEPTED and by:
+                found.append((relative, f"it names its replacement in `superseded-by:` but is still `{ACCEPTED}`; "
+                                        f"set it to `{SUPERSEDED}`"))
             for other in by:
                 targets_ = adrs.get(other)
                 if not targets_:
@@ -255,24 +256,45 @@ def supersede_problems(documents):
 
 
 def branch_plans(project):
-    """{plan file name: [(where, text)]} for plans on every branch git knows, local or remote."""
+    """{plan file name: [(where, text)]} for plans on every branch git knows, local or remote.
+
+    One `git ls-tree` per branch lists its plans, and one `git cat-file --batch` reads them all,
+    so a repository with many branches doesn't start a process per plan per branch.
+    """
     found = {}
     if git(project, "rev-parse", "--git-dir", check=False).returncode != 0:
         return found
     refs = git(project, "for-each-ref", "--format=%(refname)", "refs/heads", "refs/remotes").stdout.split()
+    listed_plans = []
     for ref in refs:
         if ref.endswith("/HEAD"):
             continue
-        short = re.sub(r"^refs/(heads|remotes)/", "", ref)
-        listing = git(project, "ls-tree", "--name-only", f"{ref}:docs/plans", check=False)
+        listing = git(project, "ls-tree", f"{ref}:docs/plans", check=False)
         if listing.returncode != 0:
             continue
-        for name in listing.stdout.splitlines():
-            if not name.lower().endswith(".md"):
-                continue
-            shown = git(project, "show", f"{ref}:docs/plans/{name}", check=False)
-            if shown.returncode == 0:
-                found.setdefault(name, []).append((f"branch {short}", shown.stdout))
+        for line in listing.stdout.splitlines():
+            info, _, name = line.partition("\t")
+            parts = info.split()
+            if len(parts) == 3 and parts[1] == "blob" and name.lower().endswith(".md"):
+                listed_plans.append((re.sub(r"^refs/(heads|remotes)/", "", ref), name, parts[2]))
+    blobs = sorted({blob for _, _, blob in listed_plans})
+    if not blobs:
+        return found
+    done = subprocess.run(["git", "-C", project, "cat-file", "--batch"], input="\n".join(blobs).encode() + b"\n",
+                          capture_output=True)
+    texts, out, at = {}, done.stdout, 0
+    while at < len(out):
+        end = out.index(b"\n", at)
+        header = out[at:end].split()
+        at = end + 1
+        if len(header) != 3:
+            continue
+        size = int(header[2])
+        texts[header[0].decode()] = out[at:at + size].decode("utf-8", errors="replace")
+        at += size + 1
+    for short, name, blob in listed_plans:
+        if blob in texts:
+            found.setdefault(name, []).append((f"branch {short}", texts[blob]))
     return found
 
 
@@ -284,11 +306,11 @@ def overlap_problems(project, documents):
     plans_dir = os.path.join(project, "docs", "plans")
     unbuilt = {}
     for name, versions in sorted(copies.items()):
-        if any(status_of(text) == BUILT for _, text in versions):
+        if any(status("plan", text) == BUILT for _, text in versions):
             continue
         wanted = {}
         for where, text in versions:
-            if status_of(text) not in (DRAFT, READY):
+            if status("plan", text) not in (DRAFT, READY):
                 continue
             for spec_path, requirement in requirements(os.path.join(plans_dir, name), text):
                 wanted.setdefault((os.path.relpath(spec_path, project).replace(os.sep, "/"), requirement), where)
@@ -319,25 +341,25 @@ def check_documents(project):
             wrong = status_problem(kind, text)
             if wrong:
                 add(relative, "status", wrong)
-            status = status_of(text)
-            if status == SETTLED[kind] and has_open_questions(text):
+            current = status(kind, text)
+            if current == SETTLED[kind] and has_open_questions(text):
                 add(relative, "open questions",
-                    f"it is `{status}` but its Open questions section is missing or not \"None.\"")
-            if kind == "spec" and status == ACCEPTED:
+                    f"it is `{current}` but its Open questions section is missing or not \"None.\"")
+            if kind == "spec" and current == ACCEPTED:
                 accepted["specs"].append(relative)
-            if kind == "ADR" and status == ACCEPTED:
+            if kind == "ADR" and current == ACCEPTED:
                 accepted["adrs"].append(relative)
-            if kind == "plan" and status == BUILT:
+            if kind == "plan" and current == BUILT:
                 built.append(relative)
-            if kind == "plan" and status == READY:
+            if kind == "plan" and current == READY:
                 wrong = reference_problem(os.path.join(project, relative), text)
                 if wrong:
                     add(relative, "ready plan", f"it is `{READY}` but {wrong}")
-            if kind == "spike record" and status in FINISHED:
+            if kind == "spike record" and current in FINISHED:
                 finished.append(relative)
-            if kind == "spike record" and status in (DRAFT, READY_TO_RUN):
+            if kind == "spike record" and current in (DRAFT, READY_TO_RUN):
                 date = DATED_NAME.match(relative.rsplit("/", 1)[-1])
-                unfinished.append({"document": relative, "status": status, "date": date.group(1) if date else None})
+                unfinished.append({"document": relative, "status": current, "date": date.group(1) if date else None})
         for wrong in reference_problems(relative, kind, text, documents, project):
             add(relative, "references", wrong)
     for document, detail in supersede_problems(documents):
@@ -361,12 +383,16 @@ def project_key(project):
 
 
 def fallback_root():
-    """A folder in the system's temporary folder that only this user can open."""
-    return os.path.join(tempfile.gettempdir(), f"sdlc-audits-{os.getuid()}")
+    """A folder in the system's temporary folder that only this user can open. Windows has no
+    os.getuid; there the folder is still checked to be a real folder, not a link."""
+    user = os.getuid() if hasattr(os, "getuid") else "user"
+    return os.path.join(tempfile.gettempdir(), f"sdlc-audits-{user}")
 
 
 def roots(data):
-    return [os.path.join(os.path.abspath(data), "audits"), fallback_root()]
+    """Where diff files go: <data>/audits, then the fallback. An empty --data, as when
+    CLAUDE_PLUGIN_DATA is not set, leaves only the fallback, so a diff never lands in the project."""
+    return ([os.path.join(os.path.abspath(data), "audits")] if data else []) + [fallback_root()]
 
 
 def writable(folder):
@@ -379,17 +405,16 @@ def writable(folder):
 
 
 def audits_root(data):
-    root = roots(data)[0]
-    if writable(root):
+    root, fallback = roots(data)[0], fallback_root()
+    if data and writable(root):
         return root
-    fallback = fallback_root()
     try:
         os.makedirs(fallback, mode=0o700, exist_ok=True)
         info = os.lstat(fallback)
     except OSError as error:
         raise Refused(f"neither {root} nor {fallback} can be written ({error})")
-    if not os.path.isdir(fallback) or os.path.islink(fallback) or info.st_uid != os.getuid() \
-            or info.st_mode & 0o077:
+    owner = os.getuid() if hasattr(os, "getuid") else info.st_uid
+    if not os.path.isdir(fallback) or os.path.islink(fallback) or info.st_uid != owner or info.st_mode & 0o077:
         raise Refused(f"{fallback} is not a folder only you can open; delete it and run again")
     return fallback
 
@@ -428,10 +453,11 @@ def resolve_window(project, words, now):
             raise Refused("a window of `last N days` needs N of 1 or more")
         cutoff = int(now.timestamp()) - days * 86400
         if shallow:
-            # The clone's oldest commits are listed in .git/shallow; history before them is missing.
+            # The clone's oldest commits are listed in .git/shallow, and history before each is missing,
+            # so a window reaching back past any of them would leave out commits without saying so.
             shallow_file = os.path.join(project, git(project, "rev-parse", "--git-path", "shallow").stdout.strip())
             cut = (read(shallow_file) or "").split()
-            if not cut or min(commit_date(project, c) for c in cut) >= cutoff:
+            if not cut or max(commit_date(project, c) for c in cut) >= cutoff:
                 raise Refused(f"this clone's history starts after the window does ({days} days back), as in a clone "
                               "made with only recent history; fetch more history, or give a shorter window")
         return ["HEAD", f"--since=@{cutoff}"], f"the last {days} day{'s' if days != 1 else ''}"
@@ -481,7 +507,7 @@ def window(project, words, data, now):
     documents = lifecycle_documents(project)
     touched = {change["path"] for change in changes}
     accepted = [relative for relative, (kind, text) in sorted(documents.items())
-                if kind in ("spec", "ADR") and status_of(text) == ACCEPTED and relative in touched]
+                if kind in ("spec", "ADR") and status(kind, text) == ACCEPTED and relative in touched]
     return {"window": description, "commits": count, "changed": changes,
             "changed_accepted_documents": accepted, "diff": diff}
 
