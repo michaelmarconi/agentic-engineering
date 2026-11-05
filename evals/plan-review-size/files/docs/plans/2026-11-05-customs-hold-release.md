@@ -14,13 +14,12 @@ status: 📝 Draft
 ## ADRs
 
 - [ADR 0003, an architecture decision record: Keep each shipment's status as a history of events](../adrs/0003-shipment-status-history.md)
+- [ADR 0004, an architecture decision record: Send emails with Python's standard smtplib](../adrs/0004-coordinator-email-sending.md)
 
 ## Decisions
 
 - Show "cleared since <time>" on the container's page in place of "held since": the support team
   asked to see when a hold ended when customers call.
-- Send the coordinator's email with Python's standard `smtplib`, to the server named by the
-  `SMTP_HOST` setting: the project has no email code yet, and this needs nothing new installed.
 
 ## Plan
 
@@ -31,7 +30,8 @@ event, "cleared" being the status of a container whose hold has ended, recorded 
 `record_status()` in `src/shipments.py`, the way `src/broker/updates.py` already records holds, as
 ADR 0003 requires. The list in `src/holds/list.py` already shows only containers whose latest event
 is "held", so a cleared container leaves it with no change there. The same handler then emails the logistics coordinator, naming the container and the time of
-the release, through a new `send_release_email()` in `src/notify.py`.
+the release, through a new `send_release_email()` in `src/notify.py`, using `smtplib` as ADR 0004
+requires.
 
 1. Write the failing test from the spec's scenario: hold at 2027-02-12 09:12, release at
    2027-02-13 14:30.
