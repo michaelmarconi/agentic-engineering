@@ -114,5 +114,9 @@ Name a suggested correction, and the skill that makes it, for each drift finding
 
 Make none of them. The audit writes, edits and deletes nothing in the repository, sets no status
 and makes no commit, so the person chooses every correction. If they then ask for one, such as
-deleting a plan it listed, that is a new request. Once you have reported, do whatever the
-project's practices say to do with an audit's findings.
+deleting a plan it listed, that is a new request.
+
+Once you have reported, look in the project's practices, in `AGENTS.md`, `CLAUDE.md` and any files
+under `docs/practices/`, for what to do with an audit's findings, such as filing each as an issue
+or posting a summary, and do it. That is not a correction: the person asked for it when they
+recorded the practice, and it changes nothing in the repository.
