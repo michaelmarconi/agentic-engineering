@@ -55,6 +55,7 @@ ROOT = os.environ.get("CLAUDE_PLUGIN_ROOT") or os.path.normpath(
     os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
 RUBRIC = os.path.join(ROOT, "skills", "build", "references", "rubric.md")
 CHECKER = "build-correction-checker"
+STOPPING = {"build-reviewer": "plan", "general-purpose": "security"}  # agent types a review runs as
 PARTS = (("code", "CODE REVIEW REPORT"), ("security", "SECURITY REVIEW REPORT"),
          ("plan", "BUILD REVIEW REPORT"))
 
@@ -183,14 +184,6 @@ def start_checker(session, tool_input):
                                    "updatedInput": dict(tool_input, prompt=prompt + extra)}}
 
 
-def launched_id(response):
-    """The agent's id when the Agent tool only launched it in the background, else None."""
-    if isinstance(response, dict) and response.get("status") == "async_launched":
-        agent_id = response.get("agentId")
-        return agent_id if isinstance(agent_id, str) and agent_id else None
-    return None
-
-
 def runs(record, key):
     """The record's background runs: `launched` maps an agent's id to its call, and `stopped`
     holds the report of an agent that finished before its launch was seen."""
@@ -205,25 +198,26 @@ def keep(record, call, part, report):
 
 
 def agent_stopped(session, event):
-    """A background review agent finished: keep its report, or hold it until its launch is seen."""
+    """A background review agent finished: keep its report, or hold it until its launch is seen
+    while a review of its kind has no report yet. The launch's note is kept, so if the agent stops
+    again, as when another hook kept it going, its last report is the one kept."""
     agent_id = event.get("agent_id")
-    agent = str(event.get("agent_type") or "").split(":")[-1]
-    if (not isinstance(agent_id, str) or not agent_id or agent not in ("build-reviewer", "general-purpose")
+    part = STOPPING.get(str(event.get("agent_type") or "").split(":")[-1])
+    if (not isinstance(agent_id, str) or not agent_id or not part
             or not fresh_session.building(session) or not record_path(session)):
         return None
-    report = subagent_report.report(event)
     with locked(session):
         record = load(session)
-        if not record:
+        if not record or not isinstance(record.get("started"), dict):
             return None
         launched, stopped = runs(record, "launched"), runs(record, "stopped")
-        call = launched.pop(agent_id, None)
-        if call is None:
-            stopped[agent_id] = report
-        elif isinstance(call, str):
-            part = record.get("started", {}).get(call)
-            if part:
-                keep(record, call, part, report)
+        call = launched.get(agent_id)
+        if isinstance(call, str):
+            keep(record, call, record["started"].get(call), subagent_report.report(event))
+        elif part in record["started"].values() and part not in record["reports"]:
+            subagent_report.hold(stopped, agent_id, subagent_report.report(event))
+        else:
+            return None
         save(session, record)
     return None
 
@@ -275,9 +269,10 @@ def handle(event):
             if not record or not isinstance(record.get("started"), dict):
                 return None
             response = event.get("tool_response")
-            agent_id = launched_id(response)
+            agent_id = subagent_report.launched_id(response)
             if agent_id is None:
                 report = text_of(response)
+                runs(record, "stopped").pop(str(subagent_report.agent_id(response)), None)
             else:
                 launched, stopped = runs(record, "launched"), runs(record, "stopped")
                 report = stopped.pop(agent_id, None)

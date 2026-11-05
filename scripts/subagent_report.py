@@ -12,12 +12,17 @@ agent hands its report back by calling its SubagentHandback tool, so the report 
 A hand-back wins over the last message, which may be only a line written before it. A transcript
 that is missing or can't be read gives no hand-back.
 
+Both relays also need `launched_id`, which tells a launch notice from a finished run, and `hold`,
+which keeps the report of an agent that finished before its launch was seen. SubagentStop fires
+for foreground runs too, whose launch is never seen, so only the last few held reports are kept.
+
 This module has no command; the hooks import it.
 """
 
 import json
 
 HANDBACK = "SubagentHandback"
+HELD = 5  # reports held for launches not yet seen
 
 
 def handed_back(path):
@@ -51,3 +56,24 @@ def report(event):
         return text
     last = event.get("last_assistant_message")
     return last if isinstance(last, str) else ""
+
+
+def launched_id(response):
+    """The agent's id when the Agent tool only launched it in the background, else None."""
+    if isinstance(response, dict) and response.get("status") == "async_launched":
+        return agent_id(response)
+    return None
+
+
+def agent_id(response):
+    """The agent's id in an Agent tool result, or None."""
+    value = response.get("agentId") if isinstance(response, dict) else None
+    return value if isinstance(value, str) and value else None
+
+
+def hold(held, key, value):
+    """Hold `value` under `key` in the dict `held`, keeping only the newest HELD entries."""
+    held.pop(key, None)
+    held[key] = value
+    for old in list(held)[:-HELD]:
+        del held[old]

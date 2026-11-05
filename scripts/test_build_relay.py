@@ -255,6 +255,24 @@ class Corrections(Relay):
         self.stopped("sdlc:build-reviewer", "a1", "plan finding", session="s2")
         self.assertFalse(os.path.exists(os.path.join(self.tmp.name, "data", "builds", "s2.json")))
 
+    def test_an_agent_that_stops_again_has_its_last_report_kept(self):
+        self.code_review()
+        self.launch(*self.SECURITY, "a1")
+        self.launch(*self.REVIEW, "a2")
+        self.stopped("general-purpose", "a1", "an early line")
+        self.stopped("general-purpose", "a1", "security finding")
+        self.stopped("sdlc:build-reviewer", "a2", "plan finding")
+        self.commit("Correct")
+        prompt = self.check()["updatedInput"]["prompt"]
+        self.assertIn("security finding", prompt)
+        self.assertNotIn("an early line", prompt)
+
+    def test_agents_no_review_waits_for_are_not_held(self):
+        self.all_reviews()
+        self.stopped("general-purpose", "a9", "an implementer's summary")
+        with open(build_relay.record_path("s1"), encoding="utf-8") as f:
+            self.assertNotIn("implementer", f.read())
+
     def test_review_asked_to_run_in_the_background_is_allowed(self):
         self.code_review()
         self.assertIsNone(self.launch(*self.SECURITY, "a1", run_in_background=True)[0])

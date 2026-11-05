@@ -370,17 +370,11 @@ def keep_report(session, name, call, agent, report):
             break
 
 
-def launched_id(response):
-    """The agent's id when the Agent tool only launched it in the background, else None."""
-    if isinstance(response, dict) and response.get("status") == "async_launched":
-        agent_id = response.get("agentId")
-        return agent_id if isinstance(agent_id, str) and agent_id else None
-    return None
-
-
 def agent_stopped(session, event):
-    """A background agent finished: save its report in the review its run started in, or keep it
-    until its launch is seen, when the agent is a reviewer or the language checker."""
+    """A background agent finished: save its report in the review its run started in, or hold it
+    until its launch is seen, when the agent is a reviewer or the language checker. The launch's
+    note is kept, so if the agent stops again, as when another hook kept it going, its last
+    report is the one saved."""
     agent_id = event.get("agent_id")
     agent = str(event.get("agent_type") or "").split(":")[-1]
     if not isinstance(agent_id, str) or not agent_id or not folder(session):
@@ -392,9 +386,9 @@ def agent_stopped(session, event):
         if not os.path.isdir(folder(session)):
             return None
         runs = load_runs(session)
-        run = runs["launched"].pop(agent_id, None)
+        run = runs["launched"].get(agent_id)
         if run is None:
-            runs["stopped"][agent_id] = {"agent": agent, "report": report}
+            subagent_report.hold(runs["stopped"], agent_id, {"agent": agent, "report": report})
         elif isinstance(run.get("name"), str) and isinstance(run.get("call"), str):
             keep_report(session, run["name"], run["call"], str(run.get("agent")), report)
         save_runs(session, runs)
@@ -534,11 +528,14 @@ def handle(event):
             return start
         elif when == "PostToolUse":
             response = event.get("tool_response")
-            agent_id = launched_id(response)
+            agent_id = subagent_report.launched_id(response)
+            runs = load_runs(session)
             if agent_id is None:
                 keep_report(session, name, call, agent, response_text(response))
+                # A foreground run stops too: its report needs no holding.
+                if runs["stopped"].pop(str(subagent_report.agent_id(response)), None) is not None:
+                    save_runs(session, runs)
                 return None
-            runs = load_runs(session)
             stopped = runs["stopped"].pop(agent_id, None)
             if stopped is None:
                 runs["launched"][agent_id] = {"name": name, "call": call, "agent": agent}

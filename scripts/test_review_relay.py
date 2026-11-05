@@ -531,6 +531,42 @@ class Relay(unittest.TestCase):
         self.put(SPEC, "v2\n")
         self.assertRefused(self.check(), "stop and show the person")
 
+    def test_an_agent_that_stops_again_has_its_last_report_kept(self):
+        # Another plugin's SubagentStop hook may keep an agent going; it then stops again.
+        self.put(SPEC, "v1\n")
+        self.launch("sdlc:spec-reviewer", f"Document: {SPEC}\nReview this spec.", "a1")
+        self.stopped("sdlc:spec-reviewer", "a1", "an early line")
+        self.stopped("sdlc:spec-reviewer", "a1", REPORT)
+        self.language()
+        self.put(SPEC, "v2\n")
+        prompt = self.assertAllowed(self.check())["prompt"]
+        self.assertIn(REPORT, prompt)
+        self.assertNotIn("an early line", prompt)
+
+    def held(self):
+        path = [p for p in self.saved() if p.endswith("background-runs.json")]
+        if not path:
+            return {}
+        with open(path[0], encoding="utf-8") as f:
+            return json.load(f)["stopped"]
+
+    def test_a_foreground_run_leaves_no_report_held(self):
+        # SubagentStop fires for foreground runs too, before their tool result.
+        self.put(SPEC, "v1\n")
+        review = f"Document: {SPEC}\nReview this spec."
+        self.agent("PreToolUse", "sdlc:spec-reviewer", review)
+        self.stopped("sdlc:spec-reviewer", "a1", REPORT)
+        self.post("sdlc:spec-reviewer", review, {"status": "completed", "agentId": "a1",
+                                                 "content": [{"type": "text", "text": REPORT}]})
+        self.assertEqual(self.held(), {})
+
+    def test_only_the_last_few_reports_are_held(self):
+        self.put(SPEC, "v1\n")
+        self.agent("PreToolUse", "sdlc:spec-reviewer", f"Document: {SPEC}\nReview this spec.")
+        for n in range(8):
+            self.stopped("sdlc:spec-reviewer", f"a{n}", REPORT)
+        self.assertEqual(sorted(self.held()), ["a3", "a4", "a5", "a6", "a7"])
+
     def test_reviewer_or_language_checker_asked_to_run_in_the_background_is_allowed(self):
         self.put(SPEC, "v1\n")
         review, check = f"Document: {SPEC}\nReview.", f"Document: {SPEC}\nCheck the wording."
