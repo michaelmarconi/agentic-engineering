@@ -6,7 +6,7 @@ After a review, the drafting agent corrects the document once and starts the cor
 and the document as it stood when reviewed. A model copying them can reword them, so this hook
 saves them and adds them to the checker's request itself.
 
-Claude Code runs it on PreToolUse and PostToolUse for the Agent tool, and on SessionEnd. It reads
+Claude Code runs it on PreToolUse and PostToolUse for the Agent tool. It reads
 the hook's JSON from stdin. A reviewer's or checker's request must start with the line
 `Document: <path>`. Skills give the document's full path; a relative path is read from a
 `Repository: <folder>` second line if the request has one, or else from the project
@@ -51,8 +51,8 @@ feedback, practices or spike) and the shared language checker, which checks the 
   it tells Claude to stop and show the person.
 - When the checker finishes, it deletes that document's saved review, so a later review of the
   same document, such as a spike record's verdict review after its design review, starts a new
-  cycle; at the end of the session
-  it deletes all of the session's.
+  cycle. A review whose checker never runs is deleted once unchanged for 30 days (see
+  saved_records.py), not when the session ends, since a resumed session carries on.
 
 Saved reviews live in $CLAUDE_PLUGIN_DATA/reviews/<session>/, outside the project, one file per
 document. Without $CLAUDE_PLUGIN_DATA nothing is saved. Any other agent or tool, and any input it
@@ -65,9 +65,10 @@ import hashlib
 import json
 import os
 import re
-import shutil
 import sys
 import tempfile
+
+import saved_records
 
 try:
     import fcntl
@@ -305,6 +306,7 @@ def save(session, name, reviews):
     with os.fdopen(handle, "w", encoding="utf-8") as f:
         json.dump({"reviews": trim(reviews)}, f)
     os.replace(temp, path)
+    saved_records.prune(os.path.dirname(os.path.dirname(path)))
 
 
 def forget(session, name):
@@ -396,11 +398,6 @@ def handle(event):
         return None
     session = str(event.get("session_id") or "unknown")
     when = event.get("hook_event_name")
-    if when == "SessionEnd":
-        base = folder(session)
-        if base:
-            shutil.rmtree(base, ignore_errors=True)
-        return None
     tool_input = event.get("tool_input")
     if event.get("tool_name") not in ("Agent", "Task") or not isinstance(tool_input, dict):
         return None

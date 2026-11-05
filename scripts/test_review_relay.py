@@ -3,6 +3,7 @@ import os
 import subprocess
 import sys
 import tempfile
+import time
 import unittest
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -648,22 +649,30 @@ class Relay(unittest.TestCase):
         self.assertRefused(self.check(prompt=prompt), "No review")
         self.assertAllowed(self.check(prompt=f"Document: {other}\nCheck."))
 
-    def test_session_end_deletes_that_sessions_reviews_only(self):
+    def test_a_review_survives_the_session_ending_so_a_resumed_session_can_check_it(self):
+        # Issue #37: `claude --resume`, or a restarted container, brings the same session back.
         self.put(SPEC, "v1\n")
         self.review()
-        self.review(session="other")
         self.assertIsNone(self.run_hook({"hook_event_name": "SessionEnd", "session_id": self.session}))
         self.put(SPEC, "v2\n")
-        self.assertRefused(self.check(), "No review")
-        self.assertAllowed(self.check(session="other"))
+        self.assertAllowed(self.check())
 
-    def test_nothing_is_left_once_the_checker_finishes_and_the_session_ends(self):
+    def test_saving_a_review_deletes_another_sessions_reviews_once_they_are_a_month_old(self):
+        self.put(SPEC, "v1\n")
+        self.review(session="old")
+        self.review(session="recent")
+        month = time.time() - 31 * 24 * 60 * 60
+        os.utime(os.path.join(self.data, "reviews", "old"), (month, month))
+        self.review()
+        self.assertFalse(os.path.exists(os.path.join(self.data, "reviews", "old")))
+        self.assertTrue(os.path.exists(os.path.join(self.data, "reviews", "recent")))
+
+    def test_nothing_is_left_once_the_checker_finishes(self):
         self.put(SPEC, "v1\n")
         self.review()
         self.put(SPEC, "v2\n")
         self.check()
         self.agent("PostToolUse", "sdlc:correction-checker", f"Document: {SPEC}\nCheck.", response="ok")
-        self.run_hook({"hook_event_name": "SessionEnd", "session_id": self.session})
         self.assertEqual(self.saved(), [])
 
     # Several files named on one Document: line (ADR 0018)

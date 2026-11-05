@@ -6,6 +6,7 @@ import os
 import subprocess
 import sys
 import tempfile
+import time
 import unittest
 from contextlib import redirect_stdout
 from unittest import mock
@@ -211,11 +212,22 @@ class LeftAlone(Relay):
         self.assertIsNone(self.agent("Explore", "Find the code", "found"))
         self.assertIsNone(self.agent("general-purpose", f"Document: {PLAN}\nDo something else.", "x"))
 
-    def test_session_end_forgets(self):
-        self.plan_review()
+    def test_reports_survive_the_session_ending_so_a_resumed_build_can_check_them(self):
+        # Issue #37: `claude --resume`, or a restarted container, brings the same session back.
+        self.all_reviews()
         self.hook({"hook_event_name": "SessionEnd"})
-        self.assertFalse(os.path.exists(os.path.join(self.tmp.name, "data", "builds")) and
-                         os.listdir(os.path.join(self.tmp.name, "data", "builds")))
+        self.commit("Correct")
+        self.assertEqual(self.check()["permissionDecision"], "allow")
+
+    def test_saving_reports_deletes_another_sessions_once_they_are_a_month_old(self):
+        fresh_session.save("old", {"fresh": True, "messages": 1, "building": True})
+        self.plan_review(session="old")
+        builds = os.path.join(self.tmp.name, "data", "builds")
+        month = time.time() - 31 * 24 * 60 * 60
+        for name in os.listdir(builds):
+            os.utime(os.path.join(builds, name), (month, month))
+        self.plan_review()
+        self.assertEqual(sorted(os.listdir(builds)), ["s1.json", "s1.json.lock"])
 
     def test_bad_input_ignored(self):
         out = io.StringIO()
