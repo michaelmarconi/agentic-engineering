@@ -43,33 +43,29 @@ window <words>
     and lists the files those commits added (A), changed (M), renamed (R, with the old name) or
     deleted (D), and the `👍 Accepted` specs and ADRs whose own text changed. A merge commit counts
     as its change from its first parent, so work merged in the window counts even when its own
-    commits are older. It writes the window's changes, as `git log -p`, to a diff file in a
-    folder for this project and this run, <hash of the project path>-<run>/, inside a folder only
-    this user can open in the system's temporary folder, sdlc-audits-<user id>/, outside the
-    project, where agents can read it; and it first deletes any folder an earlier run of the same
-    project left there, so two audits of one project run at the same time can
-    delete each other's diff file; run them one after another. It refuses, with the reason, words
-    it can't read, a commit that doesn't exist or isn't on this branch, and a window older than
-    the history the clone holds; it never falls back to every commit.
+    commits are older. It writes the window's changes, as `git log -p`, to sdlc-audit/diff.patch
+    in git's own folder (.git, or a worktree's folder under it), which agents can read without
+    asking since it is inside the project, and which is never part of the working tree, so
+    `git status` doesn't change. Each run replaces the file an earlier run left, so two audits of
+    one checkout run at the same time can delete each other's diff file; run them one after
+    another. It refuses, with the reason, words it can't read, a commit that doesn't exist or
+    isn't on this branch, and a window older than the history the clone holds; it never falls
+    back to every commit.
 
 clean
-    Deletes every folder `window` left for this project. Other projects' folders
-    are never touched.
+    Deletes the folder `window` wrote, if it is there.
 
 Exit codes: 0 done; 1 refused or failed, with the reason on stderr and nothing on stdout.
 """
 
 import argparse
 import datetime
-import hashlib
 import json
 import os
 import re
 import shutil
-import stat
 import subprocess
 import sys
-import tempfile
 
 # The plugin's scripts/ folder holds the status hook, whose parsing this script shares.
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "..", "scripts"))
@@ -379,45 +375,21 @@ def check_documents(project):
 
 # ---- window and clean ----
 
-def project_key(project):
-    return hashlib.sha256(os.path.abspath(project).encode("utf-8")).hexdigest()[:12]
-
-
-def fallback_root():
-    """A folder in the system's temporary folder that only this user can open. Windows has no
-    os.getuid; there the folder is still checked to be a real folder, not a link."""
-    user = os.getuid() if hasattr(os, "getuid") else "user"
-    return os.path.join(tempfile.gettempdir(), f"sdlc-audits-{user}")
-
-
-def audits_root():
-    """fallback_root(), made if need be, refusing one that another user could have made or opened,
-    or a link to somewhere else."""
-    root = fallback_root()
-    try:
-        os.makedirs(root, mode=0o700, exist_ok=True)
-        info = os.lstat(root)
-    except OSError as error:
-        raise Refused(f"{root} can't be written ({error})")
-    owner = os.getuid() if hasattr(os, "getuid") else info.st_uid
-    if not stat.S_ISDIR(info.st_mode) or info.st_uid != owner or info.st_mode & 0o077:
-        raise Refused(f"{root} is not a folder only you can open; delete it and run again")
-    return root
+def audit_folder(project):
+    """sdlc-audit/ in the checkout's own git folder, or None outside a git repository."""
+    found = git(project, "rev-parse", "--git-path", "sdlc-audit", check=False)
+    if found.returncode != 0:
+        return None
+    return os.path.normpath(os.path.join(project, found.stdout.strip()))
 
 
 def clean(project):
-    """Delete every folder `window` left for this project; the folders deleted."""
-    prefix, root = project_key(project) + "-", fallback_root()
-    try:
-        names = sorted(os.listdir(root)) if os.path.isdir(root) and not os.path.islink(root) else []
-    except OSError:
-        names = []
-    deleted = []
-    for name in names:
-        if name.startswith(prefix):
-            shutil.rmtree(os.path.join(root, name), ignore_errors=True)
-            deleted.append(os.path.join(root, name))
-    return deleted
+    """Delete the folder `window` wrote; the folders deleted."""
+    folder = audit_folder(project)
+    if not folder or not os.path.isdir(folder) or os.path.islink(folder):
+        return []
+    shutil.rmtree(folder, ignore_errors=True)
+    return [folder]
 
 
 def commit_date(project, commit):
@@ -484,7 +456,8 @@ def window(project, words, now):
     selection, description = resolve_window(project, words, now)
     count, changes = changed_files(project, selection)
     clean(project)
-    folder = tempfile.mkdtemp(prefix=project_key(project) + "-", dir=audits_root())
+    folder = audit_folder(project)
+    os.makedirs(folder)
     diff = os.path.join(folder, "diff.patch")
     with open(diff, "w", encoding="utf-8") as f:
         f.write(git(project, "log", "-p", "-M", "--diff-merges=first-parent",
@@ -526,8 +499,8 @@ def main(argv=None):
     window_parser.add_argument("words", nargs="+", help="`last N days` or `since <commit>`")
     window_parser.add_argument("--now", help="the time the window ends, in ISO 8601; for tests (default: now)")
     clean_parser = commands.add_parser(
-        "clean", help="delete the diff files window left for this project",
-        description="Delete every folder window left for this project. Output: JSON with deleted, the folders "
+        "clean", help="delete the diff file window wrote",
+        description="Delete the folder window wrote in git's own folder. Output: JSON with deleted, the folders "
                     "deleted. Exit codes: 0 done; 1 failed, with the reason on stderr.")
     for sub in (documents_parser, window_parser, clean_parser):
         sub.add_argument("--project", default=".", help="the project's folder (default: the current folder)")

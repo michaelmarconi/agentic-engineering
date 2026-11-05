@@ -20,7 +20,7 @@ python3 "${CLAUDE_SKILL_DIR}/scripts/audit.py" <command> ...
 - `documents` checks every lifecycle document and lists the accepted specs and ADRs. Run it in
   every audit.
 - `window <words>` works out what a window of commits changed and writes their diff to a file
-  outside the repository. Run it before anything else when the person gives a window.
+  in git's own folder, never in the working tree. Run it before anything else when the person gives a window.
 - `clean` deletes that diff file. Run it once the agents have reported.
 
 Each prints JSON. If a command exits with 1, or Claude Code doesn't let it run, as in a routine
