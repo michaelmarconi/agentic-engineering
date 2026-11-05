@@ -1,0 +1,8 @@
+schema_version: "1.1"
+name: audit-spec-drift
+expected_outcome: |
+  The reminder code lists invoices only after 45 days, against the spec's 30. The audit reports it
+  as drift, quoting the requirement and the code with its file and line, after a checker confirmed
+  it.
+context:
+  scaffold_script: place-files.sh

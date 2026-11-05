@@ -1,0 +1,7 @@
+schema_version: "1.1"
+name: audit-adr-drift
+expected_outcome: |
+  The new VAT total multiplies an amount by a float, which ADR 0002's Confirmation rules out. The
+  audit reports it as drift against that ADR.
+context:
+  scaffold_script: place-files.sh

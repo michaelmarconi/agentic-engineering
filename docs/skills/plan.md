@@ -19,7 +19,7 @@ decision. That belongs in an ADR.
 Not every change needs a plan. Tidying code, a routine upgrade or a quick fix that builds no
 requirement and follows no ADR is done straight from a conversation, with Claude's ordinary
 planning if it helps. If you run `/plan` on such work, it tells you so. Should that work ever
-contradict a spec, `/audit` will report it, once it is built.
+contradict a spec, [`/audit`](audit.md) reports it.
 
 ## Where plans live
 

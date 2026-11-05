@@ -16,6 +16,21 @@ minor version may need such a change, and its entry says so.
   so they can't hold a feature list, a design or a guess, and a spec's requirements stay under
   Requirements. Before, the reviewer failed any section beyond the six.
 
+## [0.22.0] - 2026-11-05
+
+### Added
+
+- `/sdlc:audit` finds drift, where the code and its documents no longer agree. A script checks
+  every spec, ADR, plan and spike record as it stands: statuses, open questions, references,
+  supersede pairs, ready plans and plans that build the same requirement. Then one fresh agent per
+  `👍 Accepted` spec and ADR checks the code against it, and a second agent tries to disprove
+  each drift it reports before you see it. Each finding comes with quotes of the document and the
+  code, and a suggested correction and the skill that makes it. It can check the whole
+  repository, the commits of a window (`last 7 days`, or `since <commit>`), or one named
+  document, and it changes nothing in your repository, so it is safe to run as a scheduled
+  routine. If your practices say what to do with its findings, such as filing issues, it does
+  that once it has reported.
+
 ## [0.21.0] - 2026-11-04
 
 ### Added
