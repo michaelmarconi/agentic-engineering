@@ -45,8 +45,9 @@ within that. If the work asked for is bigger, or exploring shows it is, say so, 
 practice, propose how to split it into several plans that can each be built and reviewed on their
 own, and ask which to plan first. Ask this before any decision, since the decisions depend on
 what this plan covers. If the person keeps the work whole, give it a line under Decisions saying
-so and why. Where the practices say neither, or there are none, plan as below. Never edit the
-practices from here: that belongs to `/practices`.
+it was kept as one plan against the practice, quoting the practice, and the person's reason.
+Where the practices say neither, or there are none, plan as below. Never edit the practices from
+here: that belongs to `/practices`.
 
 ## Explore
 
