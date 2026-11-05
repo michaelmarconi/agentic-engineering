@@ -1,0 +1,9 @@
+schema_version: "1.1"
+name: adr-review-from-another-folder
+expected_outcome: |
+  The session starts in the folder above the repository. The skill gives the reviewers the ADR's
+  full path, the hook starts them on the right repository, and the review sees the accepted ADR
+  0002, which already decides where sessions are stored, so the new decision is recorded as
+  superseding it or the person is asked whether it should.
+context:
+  scaffold_script: place-files.sh
