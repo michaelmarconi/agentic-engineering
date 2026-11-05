@@ -23,9 +23,9 @@ class OwnFiles(unittest.TestCase):
         with open(self.rubric, "w") as f:
             f.write("rubric\n")
 
-    def run_hook(self, tool, tool_input, raw=None, root=None, data=None):
+    def run_hook(self, tool, tool_input, raw=None, root=None):
         env = dict(os.environ, CLAUDE_PLUGIN_ROOT=root if root is not None else self.plugin)
-        env["CLAUDE_PLUGIN_DATA"] = data if data is not None else os.path.join(self.tmp.name, "data")
+        env["CLAUDE_PLUGIN_DATA"] = os.path.join(self.tmp.name, "data")
         env["TMPDIR"] = self.temporary
         event = {"hook_event_name": "PreToolUse", "tool_name": tool, "tool_input": tool_input}
         done = subprocess.run([sys.executable, SCRIPT], input=raw if raw is not None else json.dumps(event),
@@ -76,14 +76,7 @@ class OwnFiles(unittest.TestCase):
         self.assertIsNone(self.run_hook("Read", {}, raw="not json"))
         self.assertIsNone(self.run_hook("Read", {}, raw=json.dumps({"tool_name": "Read"})))
 
-    def test_reading_an_audit_diff_file_in_the_data_folder_is_allowed(self):
-        diff = os.path.join(self.tmp.name, "data", "audits", "0123456789ab-x", "diff.patch")
-        os.makedirs(os.path.dirname(diff))
-        open(diff, "w").close()
-        self.assert_allowed(self.run_hook("Read", {"file_path": diff}))
-        self.assert_allowed(self.run_hook("Grep", {"pattern": "x", "path": os.path.dirname(diff)}))
-
-    def test_reading_an_audit_diff_file_in_the_temporary_fallback_is_allowed(self):
+    def test_reading_an_audit_diff_file_in_its_temporary_folder_is_allowed(self):
         os.makedirs(self.fallback, mode=0o700)
         self.assert_allowed(self.run_hook("Read", {"file_path": os.path.join(self.fallback, "0123456789ab-x", "diff.patch")}))
 
@@ -98,15 +91,11 @@ class OwnFiles(unittest.TestCase):
         os.chmod(self.fallback, 0o755)
         self.assertIsNone(self.run_hook("Read", {"file_path": os.path.join(self.fallback, "x")}))
 
-    def test_the_rest_of_the_data_folder_is_left_to_the_person(self):
-        data = os.path.join(self.tmp.name, "data")
-        self.assertIsNone(self.run_hook("Read", {"file_path": os.path.join(data, "spikes", "x", "check.sh")}))
-        self.assertIsNone(self.run_hook("Read", {"file_path": os.path.join(data, "audits", "..", "secret.md")}))
+    def test_other_temporary_folders_and_the_data_folder_are_left_to_the_person(self):
+        os.makedirs(self.fallback, mode=0o700)
+        self.assertIsNone(self.run_hook("Read", {"file_path": os.path.join(self.fallback, "..", "secret.md")}))
         self.assertIsNone(self.run_hook("Read", {"file_path": os.path.join(self.temporary, "sdlc-audits-other", "x")}))
-
-    def test_without_a_data_folder_only_the_fallback_is_allowed(self):
-        diff = os.path.join(self.tmp.name, "audits", "x", "diff.patch")
-        self.assertIsNone(self.run_hook("Read", {"file_path": diff}, data=""))
+        self.assertIsNone(self.run_hook("Read", {"file_path": os.path.join(self.tmp.name, "data", "audits", "x")}))
 
     def test_help_describes_the_hook(self):
         done = subprocess.run([sys.executable, SCRIPT, "--help"], capture_output=True, text=True)

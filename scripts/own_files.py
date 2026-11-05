@@ -6,14 +6,12 @@ folder. That folder sits outside the person's project, so Claude Code asks permi
 read there, and when the person can't be asked, as in a session run without them, the read is
 refused and the skill works without its rubric.
 
-/audit's agents read a diff file the audit script writes outside the project, in the plugin's
-data folder, or in a temporary folder when that can't be written; a routine runs with nobody to
-answer a prompt, so those reads must be approved too.
+/audit's agents read a diff file the audit script writes outside the project, in a temporary
+folder; a routine runs with nobody to answer a prompt, so those reads must be approved too.
 
 Claude Code runs this hook on PreToolUse for Read, Glob and Grep. It reads the hook's JSON from
 stdin. When the file or folder the tool would read resolves, links followed, to a place inside
-$CLAUDE_PLUGIN_ROOT, inside $CLAUDE_PLUGIN_DATA/audits, or inside sdlc-audits-<user id> in the
-system's temporary folder when that is a folder only this user owns and can open, it approves
+$CLAUDE_PLUGIN_ROOT, or inside sdlc-audits-<user id> in the system's temporary folder when that is a folder only this user owns and can open, it approves
 the call. Anything else, including a search with no path, is left to the person's own permission
 rules, so the hook never widens access beyond the plugin's own folders.
 """
@@ -50,9 +48,6 @@ def private_folder(folder):
 def allowed_roots():
     """The folders whose files the plugin's skills and agents may read without asking."""
     roots = [os.environ.get("CLAUDE_PLUGIN_ROOT", "")]
-    data = os.environ.get("CLAUDE_PLUGIN_DATA", "")
-    if data:
-        roots.append(os.path.join(data, "audits"))
     # The audit script's fallback, as skills/audit/scripts/audit.py names it. os.getuid is missing
     # on Windows, where there is no fallback.
     if hasattr(os, "getuid"):

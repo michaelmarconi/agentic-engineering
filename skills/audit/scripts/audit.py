@@ -37,23 +37,23 @@ documents
     `❔ Not answered`) and the unfinished ones with the date their name starts with. `lifecycle`
     is false when the project has no lifecycle document at all.
 
-window <words> --data <folder>
+window <words>
     Reads `last N days` (commits whose commit date falls in the N days before now) or
     `since <commit>` (the commits after that commit, not including it) on the checked-out branch,
     and lists the files those commits added (A), changed (M), renamed (R, with the old name) or
     deleted (D), and the `👍 Accepted` specs and ADRs whose own text changed. A merge commit counts
     as its change from its first parent, so work merged in the window counts even when its own
     commits are older. It writes the window's changes, as `git log -p`, to a diff file in a
-    folder for this project and this run, <data>/audits/<hash of the project path>-<run>/, or,
-    when the data folder can't be written, in a folder only this user can open in the system's
-    temporary folder, sdlc-audits-<user id>/; and it first deletes any folder an earlier run of
-    the same project left in either place, so two audits of one project run at the same time can
+    folder for this project and this run, <hash of the project path>-<run>/, inside a folder only
+    this user can open in the system's temporary folder, sdlc-audits-<user id>/, outside the
+    project, where agents can read it; and it first deletes any folder an earlier run of the same
+    project left there, so two audits of one project run at the same time can
     delete each other's diff file; run them one after another. It refuses, with the reason, words
     it can't read, a commit that doesn't exist or isn't on this branch, and a window older than
     the history the clone holds; it never falls back to every commit.
 
-clean --data <folder>
-    Deletes every folder `window` left for this project, in either place. Other projects' folders
+clean
+    Deletes every folder `window` left for this project. Other projects' folders
     are never touched.
 
 Exit codes: 0 done; 1 refused or failed, with the reason on stderr and nothing on stdout.
@@ -66,6 +66,7 @@ import json
 import os
 import re
 import shutil
+import stat
 import subprocess
 import sys
 import tempfile
@@ -389,49 +390,33 @@ def fallback_root():
     return os.path.join(tempfile.gettempdir(), f"sdlc-audits-{user}")
 
 
-def roots(data):
-    """Where diff files go: <data>/audits, then the fallback. An empty --data, as when
-    CLAUDE_PLUGIN_DATA is not set, leaves only the fallback, so a diff never lands in the project."""
-    return ([os.path.join(os.path.abspath(data), "audits")] if data else []) + [fallback_root()]
-
-
-def writable(folder):
+def audits_root():
+    """fallback_root(), made if need be, refusing one that another user could have made or opened,
+    or a link to somewhere else."""
+    root = fallback_root()
     try:
-        os.makedirs(folder, exist_ok=True)
-        os.rmdir(tempfile.mkdtemp(dir=folder))
-        return True
-    except OSError:
-        return False
-
-
-def audits_root(data):
-    root, fallback = roots(data)[0], fallback_root()
-    if data and writable(root):
-        return root
-    try:
-        os.makedirs(fallback, mode=0o700, exist_ok=True)
-        info = os.lstat(fallback)
+        os.makedirs(root, mode=0o700, exist_ok=True)
+        info = os.lstat(root)
     except OSError as error:
-        raise Refused(f"neither {root} nor {fallback} can be written ({error})")
+        raise Refused(f"{root} can't be written ({error})")
     owner = os.getuid() if hasattr(os, "getuid") else info.st_uid
-    if not os.path.isdir(fallback) or os.path.islink(fallback) or info.st_uid != owner or info.st_mode & 0o077:
-        raise Refused(f"{fallback} is not a folder only you can open; delete it and run again")
-    return fallback
+    if not stat.S_ISDIR(info.st_mode) or info.st_uid != owner or info.st_mode & 0o077:
+        raise Refused(f"{root} is not a folder only you can open; delete it and run again")
+    return root
 
 
-def clean(project, data):
-    """Delete every folder `window` left for this project, in either place; the names deleted."""
-    prefix = project_key(project) + "-"
+def clean(project):
+    """Delete every folder `window` left for this project; the folders deleted."""
+    prefix, root = project_key(project) + "-", fallback_root()
+    try:
+        names = sorted(os.listdir(root)) if os.path.isdir(root) and not os.path.islink(root) else []
+    except OSError:
+        names = []
     deleted = []
-    for root in roots(data):
-        try:
-            names = sorted(os.listdir(root)) if os.path.isdir(root) and not os.path.islink(root) else []
-        except OSError:
-            continue
-        for name in names:
-            if name.startswith(prefix):
-                shutil.rmtree(os.path.join(root, name), ignore_errors=True)
-                deleted.append(os.path.join(root, name))
+    for name in names:
+        if name.startswith(prefix):
+            shutil.rmtree(os.path.join(root, name), ignore_errors=True)
+            deleted.append(os.path.join(root, name))
     return deleted
 
 
@@ -494,12 +479,12 @@ def changed_files(project, selection):
     return len(commits), [changes[path] for path in sorted(changes)]
 
 
-def window(project, words, data, now):
+def window(project, words, now):
     project = os.path.abspath(project)
     selection, description = resolve_window(project, words, now)
     count, changes = changed_files(project, selection)
-    clean(project, data)
-    folder = tempfile.mkdtemp(prefix=project_key(project) + "-", dir=audits_root(data))
+    clean(project)
+    folder = tempfile.mkdtemp(prefix=project_key(project) + "-", dir=audits_root())
     diff = os.path.join(folder, "diff.patch")
     with open(diff, "w", encoding="utf-8") as f:
         f.write(git(project, "log", "-p", "-M", "--diff-merges=first-parent",
@@ -544,10 +529,6 @@ def main(argv=None):
         "clean", help="delete the diff files window left for this project",
         description="Delete every folder window left for this project. Output: JSON with deleted, the folders "
                     "deleted. Exit codes: 0 done; 1 failed, with the reason on stderr.")
-    for sub in (window_parser, clean_parser):
-        sub.add_argument("--data", required=True, help='the plugin\'s data folder: "${CLAUDE_PLUGIN_DATA}"')
-    # documents writes nothing, but takes --data too, so every command can be run the same way.
-    documents_parser.add_argument("--data", help="accepted and not used, as documents writes nothing")
     for sub in (documents_parser, window_parser, clean_parser):
         sub.add_argument("--project", default=".", help="the project's folder (default: the current folder)")
     args = parser.parse_args(argv)
@@ -555,9 +536,9 @@ def main(argv=None):
         if args.command == "documents":
             out = check_documents(args.project)
         elif args.command == "window":
-            out = window(args.project, " ".join(args.words), args.data, parse_now(args.now))
+            out = window(args.project, " ".join(args.words), parse_now(args.now))
         else:
-            out = {"deleted": clean(os.path.abspath(args.project), args.data)}
+            out = {"deleted": clean(os.path.abspath(args.project))}
     except Refused as error:
         print(f"audit {args.command}: {error}", file=sys.stderr)
         return 1
