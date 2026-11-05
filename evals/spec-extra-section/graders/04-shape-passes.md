@@ -1,7 +1,7 @@
 ---
 type: regex
 target: trace
-pattern: '\|\s*1\.\s*Shape\s*\|\s*fail'
+pattern: 'Shape[*\s]*\|[*\s]*fail'
 flags: i
 match: not_contains
 weight: 1

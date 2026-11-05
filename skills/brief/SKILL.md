@@ -43,9 +43,8 @@ later stage (rubric checks 2 and 7), leave it out and tell them where it goes: h
 behaves goes in its spec, so suggest `/spec`; a technology or design they have decided goes in an
 ADR, and one they have not becomes an open question.
 
-The template's six sections are the minimum, not the limit. When the person asks for a section of
-its own, such as "Safety and security", add it where it fits before Open questions (rubric check 1); never
-add one they did not ask for, but put each fact in the section that already holds it.
+Add a section beyond the template's, such as "Safety and security", only when the person asks
+for one, and place it as rubric check 1 says.
 
 Then ask about what the draft or the review leaves open: say how many questions there are and ask
 only the first, as one question rather than two joined together, with any examples given as possible
