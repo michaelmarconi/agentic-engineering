@@ -6,7 +6,7 @@ What changed in each version of the plugin, newest first. Versions follow
 past a major version: it says what you need to change in your documents. Until 1.0.0, any
 minor version may need such a change, and its entry says so.
 
-## [0.25.0] - 2026-11-05
+## [0.26.0] - 2026-11-05
 
 ### Added
 
@@ -19,6 +19,13 @@ minor version may need such a change, and its entry says so.
   it plans within that; when the work is bigger, it proposes splitting it into several plans and
   asks which to plan first. If you keep the work as one plan, the plan says why under Decisions,
   and the plan's reviewer checks this.
+## [0.24.3] - 2026-11-05
+
+### Fixed
+
+- On Python 3.6, the plugin now warns you when a session starts, rather than
+  letting its checks fail later with an unclear error. The README now gives the minimum
+  version, Python 3.7.
 
 ## [0.24.2] - 2026-11-05
 
