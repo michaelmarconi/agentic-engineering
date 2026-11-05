@@ -79,8 +79,30 @@ class OwnFiles(unittest.TestCase):
         self.assert_allowed(self.run_hook("Grep", {"pattern": "x", "path": os.path.dirname(diff)}))
 
     def test_reading_an_audit_diff_file_in_the_temporary_fallback_is_allowed(self):
-        diff = os.path.join(tempfile.gettempdir(), f"sdlc-audits-{os.getuid()}", "0123456789ab-x", "diff.patch")
-        self.assert_allowed(self.run_hook("Read", {"file_path": diff}))
+        fallback = os.path.join(tempfile.gettempdir(), f"sdlc-audits-{os.getuid()}")
+        if not os.path.lexists(fallback):
+            os.makedirs(fallback, mode=0o700)
+            self.addCleanup(os.rmdir, fallback)
+        self.assert_allowed(self.run_hook("Read", {"file_path": os.path.join(fallback, "0123456789ab-x", "diff.patch")}))
+
+    def test_a_temporary_fallback_that_is_a_link_is_left_to_the_person(self):
+        fallback = os.path.join(tempfile.gettempdir(), f"sdlc-audits-{os.getuid()}")
+        if os.path.lexists(fallback):
+            self.skipTest("the real fallback folder exists")
+        target = os.path.join(self.tmp.name, "home")
+        os.makedirs(target)
+        os.symlink(target, fallback)
+        self.addCleanup(os.remove, fallback)
+        self.assertIsNone(self.run_hook("Read", {"file_path": os.path.join(fallback, "secret")}))
+
+    def test_a_temporary_fallback_others_can_open_is_left_to_the_person(self):
+        fallback = os.path.join(tempfile.gettempdir(), f"sdlc-audits-{os.getuid()}")
+        if os.path.lexists(fallback):
+            self.skipTest("the real fallback folder exists")
+        os.makedirs(fallback, mode=0o755)
+        os.chmod(fallback, 0o755)
+        self.addCleanup(os.rmdir, fallback)
+        self.assertIsNone(self.run_hook("Read", {"file_path": os.path.join(fallback, "x")}))
 
     def test_the_rest_of_the_data_folder_is_left_to_the_person(self):
         data = os.path.join(self.tmp.name, "data")

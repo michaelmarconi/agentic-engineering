@@ -272,6 +272,19 @@ class Documents(Project):
             {"document": "docs/spikes/2026-10-03-open.md", "status": "📝 Draft", "date": "2026-10-03"},
             {"document": "docs/spikes/2026-10-04-ready.md", "status": "🟢 Ready to run", "date": "2026-10-04"}])
 
+    def test_a_status_without_its_emoji_still_counts_for_what_is_checked(self):
+        self.put("docs/specs/statement-import.spec.md", spec(status="Accepted"))
+        out = self.documents()
+        self.assertEqual(out["accepted"]["specs"], ["docs/specs/statement-import.spec.md"])
+        self.assertEqual([p["check"] for p in out["problems"]], ["status"])
+
+    def test_an_accepted_adr_naming_its_replacement_is_a_problem(self):
+        self.put("docs/adrs/0001-a.md", adr(superseded_by="0002"))
+        self.put("docs/adrs/0002-b.md", adr(supersedes="0001"))
+        found = self.problems("supersede")
+        self.assertEqual([p["document"] for p in found], ["docs/adrs/0001-a.md"])
+        self.assertIn("`↪️ Superseded`", found[0]["detail"])
+
     def test_documents_never_change_the_working_tree(self):
         self.init()
         self.put("docs/specs/statement-import.spec.md", spec(status="Accepted"))
@@ -399,6 +412,19 @@ class Window(Project):
         self.addCleanup(lambda: self.run_audit("clean", "--data", blocked))
         self.assertTrue(diff.startswith(audit.fallback_root() + os.sep))
         self.assertEqual(os.stat(audit.fallback_root()).st_mode & 0o077, 0)
+
+    def test_a_file_name_that_is_not_ascii_is_listed_as_it_is(self):
+        self.put("docs/specs/caf\u00e9.spec.md", spec())
+        self.commit("Add", date="2026-11-01T12:00:00+00:00")
+        out = self.ok("last", "7", "days")
+        self.assertEqual(out["changed_accepted_documents"], ["docs/specs/caf\u00e9.spec.md"])
+
+    def test_an_empty_data_folder_never_puts_the_diff_in_the_project(self):
+        done = self.run_audit("window", "last", "7", "days", "--data", "", "--now", NOW)
+        self.assertEqual(done.returncode, 0, done.stderr)
+        self.addCleanup(lambda: self.run_audit("clean", "--data", ""))
+        self.assertTrue(json.loads(done.stdout)["diff"].startswith(audit.fallback_root() + os.sep))
+        self.assertEqual(self.git("status", "--porcelain"), "")
 
     def test_unreadable_words_are_refused(self):
         self.assertIn("last N days", self.refused("yesterday"))
