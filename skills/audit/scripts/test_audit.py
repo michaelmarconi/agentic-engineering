@@ -347,8 +347,16 @@ class Window(Project):
         out = self.ok("since", self.start)
         found = {c["path"]: c for c in out["changed"]}
         self.assertEqual(found["src/new.py"], {"status": "R", "path": "src/new.py", "from": "src/old.py"})
-        self.assertEqual(found["src/old.py"]["status"], "M")
+        self.assertNotIn("src/old.py", found)
         self.assertEqual(found["src/gone.py"]["status"], "D")
+
+    def test_a_file_added_then_renamed_in_the_window_is_listed_as_added_under_its_new_name(self):
+        self.put("src/first.py", "a = 1\nb = 2\nc = 3\n")
+        self.commit("Add", date="2026-11-01T12:00:00+00:00")
+        os.rename(os.path.join(self.project, "src/first.py"), os.path.join(self.project, "src/second.py"))
+        self.commit("Rename", date="2026-11-02T12:00:00+00:00")
+        out = self.ok("since", self.start)
+        self.assertEqual(out["changed"], [{"status": "A", "path": "src/second.py"}])
 
     def test_accepted_documents_whose_text_changed_are_named(self):
         self.put("docs/specs/statement-import.spec.md", spec(extra="More.\n\n"))
