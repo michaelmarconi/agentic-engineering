@@ -455,6 +455,24 @@ class Window(Project):
         self.assertIn("history", refused.stderr)
         self.assertEqual(in_clone("since", self.start).returncode, 1)
 
+    def test_a_window_past_any_of_a_shallow_clones_cut_points_is_refused(self):
+        # Cloned two commits deep from a merge, the history is cut in two places: on main at an
+        # old commit, and on the merged branch at a recent one, which leaves 2026-11-01 out.
+        self.put("src/main.py", "m\n")
+        self.commit("Main", date="2026-10-01T12:00:00+00:00")
+        self.git("checkout", "-q", "-b", "side", self.start)
+        for day in ("2026-11-01", "2026-11-03"):
+            self.put(f"src/{day}.py", "s\n")
+            self.commit(day, date=f"{day}T12:00:00+00:00")
+        self.git("checkout", "-q", "main")
+        self.git("merge", "-q", "--no-ff", "-m", "Merge side", "side", date="2026-11-04T12:00:00+00:00")
+        clone = os.path.join(self.tmp.name, "clone")
+        self.git("clone", "-q", "--depth", "2", "file://" + self.project, clone, cwd=self.tmp.name)
+        refused = subprocess.run([sys.executable, SCRIPT, "window", "last", "7", "days", "--data", self.data,
+                                  "--now", NOW], capture_output=True, text=True, cwd=clone)
+        self.assertEqual(refused.returncode, 1, refused.stdout)
+        self.assertIn("history", refused.stderr)
+
     def test_outside_a_git_repository_a_window_is_refused(self):
         plain_folder = os.path.join(self.tmp.name, "plain")
         os.makedirs(plain_folder)
