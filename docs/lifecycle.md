@@ -49,7 +49,8 @@ the `sdlc:` prefix. Some skills are not built yet, and only those Claude Code li
 - `/build` builds a plan on a branch of its own, has it reviewed, and pushes the branch to your
   remote.
   Verifying the software, opening a pull request and merging stay with you.
-- `/audit` (not built yet) will find drift, where the code and its documents disagree, at any time.
+- `/audit` finds drift, where the code and its documents disagree, at any time. It changes
+  nothing: you choose each correction.
 - `/practices` records how the project does things, such as the commands that check the work and
   the rules an agent follows, one topic at a time. It is not a step in the sequence: run it
   whenever you need it. Practices are not a lifecycle document and have no status: their essentials
@@ -133,8 +134,8 @@ flowchart LR
 - **A plan builds only on settled documents.** A plan is `🟢 Ready to build` only when each spec
   and each ADR it touches is `👍 Accepted`. No two
   plans that are not `✅ Built` name the same requirement.
-- **Drift is a finding, not a status.** `/audit` reports it with a suggested way back: fix the
-  code, return the spec to `📝 Draft`, or supersede the ADR.
+- **Drift is a finding, not a status.** `/audit` reports it with a suggested correction: correct
+  the code, return the spec to `📝 Draft`, or supersede the ADR.
 
 ## Plain words
 

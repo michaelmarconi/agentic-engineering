@@ -75,9 +75,10 @@ project can also record its **practices**, such as how it is built, tested and r
 The plugin works through three parts:
 
 - **Skills:** the steps above, each run as a `/sdlc:<name>` command.
-- **Reviewer agents:** separate Claude instances that check each document, or each build, with
-  no memory of your conversation, so the conversation cannot sway their judgement. They always
-  run on Sonnet, so the same document gets the same judgement whatever model you use.
+- **Reviewer agents:** separate Claude instances that check each document, each build, or, for
+  `/sdlc:audit`, the code against each document, with no memory of your conversation, so the
+  conversation cannot sway their judgement. They always run on Sonnet, so the same document gets
+  the same judgement whatever model you use.
 - **Hooks:** small checks Claude Code runs automatically. They give Claude the lifecycle rules at
   the start of every session in a repository that has a brief or a spec, and refuse any status
   change the lifecycle does not allow.
@@ -96,10 +97,8 @@ documents by hand.
 | [`/sdlc:plan`](docs/skills/plan.md) | Plans a piece of work against its specs and ADRs |
 | [`/sdlc:build`](docs/skills/build.md) | Builds a plan on a branch, has it reviewed and hands it back |
 | [`/sdlc:practices`](docs/skills/practices.md) | Records how the project does things, one topic at a time |
+| [`/sdlc:audit`](docs/skills/audit.md) | Finds where the code and its documents no longer agree, and changes nothing |
 | [`/sdlc:feedback`](docs/skills/feedback.md) | Drafts a GitHub issue about the plugin itself |
-
-Planned: [`/sdlc:audit`](docs/skills/audit.md), to find where code and documents have drifted
-apart.
 
 ```mermaid
 flowchart LR

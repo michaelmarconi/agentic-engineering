@@ -56,8 +56,8 @@ template.[^madr]
 | Confirmation | What the decision applies to, such as "any code that stores or reads session data", and how to check the code follows it: by test, demonstration, inspection or analysis |
 | Open questions | What only you can settle, such as an option nobody named or why one was rejected; empty before the ADR can be `👍 Accepted` |
 
-Confirmation is what `/build`, and `/audit` once it is built, use to check that the code still follows each
-accepted decision. It names a concern rather than files, because the code may not exist yet and
+Confirmation is what `/build` and [`/audit`](audit.md) use to check that the code still follows
+each accepted decision. It names a concern rather than files, because the code may not exist yet and
 an accepted ADR cannot be updated when files move.
 
 ## Statuses
