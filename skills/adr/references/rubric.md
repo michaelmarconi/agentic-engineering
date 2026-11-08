@@ -50,9 +50,10 @@ reviewer needs to build and check it. Footnotes explaining terms come last, afte
     Technical detail gives it in full when one line is not enough.
 11. **Readable.** In the plain part, each section opens with its point; sentences are under 25
     words and paragraphs at most three sentences; versions, flags, settings, file names and
-    command names appear only when the decision is about one of them; a term is explained once,
-    in a footnote at its first use; every sentence names its subject, never a bare "it" with
-    nothing before it to point to; options, steps and checks are tables or lists, not sentences.
+    command names appear only when the decision is about one of them; each domain term the Plain
+    words rule footnotes is explained once, in a footnote at its first use, while computing terms,
+    such as "Redis", need none; every sentence names its subject, never a bare "it" with nothing
+    before it to point to; options, steps and checks are tables or lists, not sentences.
 12. **Detail at the foot.** Technical detail holds the exact mechanism, rules and settings the
     decision needs, and any evidence in the ADR's own words, or says only "None.". It makes no
     choice that the sections above do not state.
