@@ -6,6 +6,29 @@ What changed in each version of the plugin, newest first. Versions follow
 past a major version: it says what you need to change in your documents. Until 1.0.0, any
 minor version may need such a change, and its entry says so.
 
+## [0.27.0] - 2026-11-08
+
+### Changed
+
+- Spike records are written to be read by people first. A record now tests a hypothesis, a claim
+  the experiment confirms or refutes, rather than answering a question, and reads from plain to
+  technical: the hypothesis and the finding at the top, then How we'll know, Out of scope, How the
+  test works, Risks and safeguards, Results and Surprises, with the experiment's detail, its code
+  and its runs at the foot. The part above Experiment is at most 600 words; `spike.py words`
+  counts it, and the status hook refuses to move a longer record forward.
+- The Finding opens with Confirmed, Refuted or Not settled and then says what was found in full,
+  so it makes sense on its own, never a bare "Yes" or "No". Results lists every run in a table,
+  saying which runs count. The status hook refuses a finishing status the Finding does not open
+  with.
+- The finished statuses are now `💡 Confirmed`, `🚫 Refuted` and `❔ Not settled`, replacing
+  `💡 Answered` and `❔ Not answered`. Where it goes is now Next steps.
+
+### What you need to change
+
+- Spike records written before this version use the old sections and statuses, which the hooks,
+  the run script and `/sdlc:audit` no longer recognise. Rewrite any you keep in the new layout
+  from the template, or delete them once their finding has reached its spec or ADR.
+
 ## [0.26.0] - 2026-11-05
 
 ### Added
