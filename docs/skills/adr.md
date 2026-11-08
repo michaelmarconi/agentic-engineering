@@ -67,8 +67,9 @@ core parts kept, reordered and tightened.[^madr]
 
 How we'll check is what `/build` and [`/audit`](audit.md) use to check that the code still
 follows each accepted decision. It names a concern rather than files, because the code may not
-exist yet and an accepted ADR cannot be updated when files move. ADRs written before this layout,
-with MADR's section names, are still read the same way.
+exist yet and an accepted ADR cannot be updated when files move. Accepted ADRs written before this layout,
+with MADR's section names, are still read the same way; a draft in the old layout is re-laid
+before it can be accepted.
 
 ## Statuses
 

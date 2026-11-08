@@ -34,7 +34,8 @@ For an ADR (architecture decision record) it refuses:
 - `👍 Accepted` while the Open questions section is missing, or holds anything but "None.", while
   the Decision section does not open with "Chosen:" and the option, or while the ADR's plain part,
   everything between the frontmatter and `## Technical detail` apart from HTML comments, holds more
-  than 500 words, counted as for a spike record;
+  than 500 words, counted as for a spike record; a draft in the layout from before those
+  sections is told to re-lay it first;
 - `↪️ Superseded`, except from `👍 Accepted` with a `superseded-by:` line added and nothing else
   changed, naming the four-digit number of a `👍 Accepted` ADR in the same folder whose
   `supersedes:` names this one (it may name several);
@@ -672,14 +673,20 @@ def adr_rules(path, before, after, old, new):
             )
         if new == ACCEPTED and has_open_questions(after):
             return open_questions_refusal(name, after, ACCEPTED, "ADR")
+        if new == ACCEPTED and section(after, "Decision") is None and section(after, "Decision Outcome") is not None:
+            return (
+                f"{name}: this draft ADR is in the layout from before Question, Decision and Technical "
+                f"detail, so it cannot be `{ACCEPTED}` as it stands. Re-lay it from the ADR template, "
+                "have it reviewed, and ask the person again."
+            )
         if new == ACCEPTED and not decision_chosen(after):
             return (
                 f"{name}: its Decision section must open with \"Chosen:\" and name the option in full, "
                 f"so the ADR cannot be `{ACCEPTED}` as it stands. Write the person's choice there, have "
                 "it reviewed, and ask them again."
             )
-        words = plain_words(after, ADR_DETAIL)
-        if new == ACCEPTED and words > ADR_PLAIN_LIMIT:
+        words = plain_words(after, ADR_DETAIL) if new == ACCEPTED else 0
+        if words > ADR_PLAIN_LIMIT:
             return (
                 f"{name}: its plain part, from the title down to {ADR_DETAIL}, holds {words} words, more "
                 f"than the {ADR_PLAIN_LIMIT} a person is asked to read, so it cannot be `{ACCEPTED}`. "
@@ -742,7 +749,7 @@ def decision_chosen(text):
     """Whether an ADR's Decision, without comments, opens with "Chosen:" (bold or not) and goes on
     to name the option."""
     decision = uncommented(section(text, "Decision") or []).strip()
-    return re.match(r"[*_]*chosen[*_]*:[*_]*\s*[^\s*_]", decision, re.IGNORECASE) is not None
+    return re.match(r"[*_]*chosen[*_]*:[\s*_]*[^\W_]", decision, re.IGNORECASE) is not None
 
 
 def finding_opens_with(text, word):

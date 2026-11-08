@@ -80,7 +80,7 @@ any way, by hyperlink, path or title, and never edit them, even when the person 
 decision there: they change while an ADR does not, so the reference would go stale, and the
 lifecycle allows no references between them. Tell the person so. Material they hand over that is not
 a web page, such as a requirements document or notes, is drawn on but never referred to (rubric
-check 10): state what matters from it in the ADR's own words, and tell them it can change or vanish
+check 14): state what matters from it in the ADR's own words, and tell them it can change or vanish
 without the ADR being touched. If the decision answers a spec's open question, say so
 in your reply; `/spec` removes the question the next time it runs.
 
@@ -92,7 +92,7 @@ your next edit. Write every new ADR as `📝 Draft` and edit it freely while it 
 
 Only a person accepts or rejects a decision. Set `👍 Accepted` or `❌ Rejected` only when
 the person explicitly says so about the ADR's text as it now stands, as its own last edit.
-`👍 Accepted` also needs no open questions (rubric check 12), which a plugin hook enforces: if
+`👍 Accepted` also needs no open questions (rubric check 16), which a plugin hook enforces: if
 questions remain, say how many, ask the first and leave the ADR as `📝 Draft`, even if the person
 says they do not matter. And it needs the review below to have ended with a pass on that text,
 from the review itself or from the correction check after it, while a rejection needs neither.

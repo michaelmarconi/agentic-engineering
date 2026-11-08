@@ -337,6 +337,15 @@ class Adr(AdrWorkspace):
         self.put(adr(body="**Chosen:** keep sessions in Redis, because it is fast enough."))
         self.assertIsNone(self.edit("status: 📝 Draft", "status: 👍 Accepted"))
 
+    def test_bold_option_name_allowed(self):
+        self.put(adr(body="Chosen: **keep sessions in Redis**, because it is fast enough."))
+        self.assertIsNone(self.edit("status: 📝 Draft", "status: 👍 Accepted"))
+
+    def test_old_layout_draft_told_to_re_lay(self):
+        text = adr().replace("## Decision\n\nChosen: keep sessions in Redis,", "## Decision Outcome\n\nChosen option: Redis,")
+        self.put(text)
+        self.assertIn("layout", self.edit("status: 📝 Draft", "status: 👍 Accepted"))
+
     def test_rejecting_without_a_choice_allowed(self):
         self.put(adr(body="Not chosen yet; see Open questions."))
         self.assertIsNone(self.edit("status: 📝 Draft", "status: ❌ Rejected"))
