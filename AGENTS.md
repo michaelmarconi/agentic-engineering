@@ -64,8 +64,8 @@ everything else is judgement.
    - The hand-over gives the person the reports, the number of items they must settle, and the
      first of them; suggestions are listed apart as optional.
    - A document with a status has an Open questions section, last apart from a spike record's
-     Experiment, Code and Runs, its technical part, which follow it so the record reads plain
-     first. The skill writes there
+     Experiment, Code and Runs and an ADR's Technical detail, their technical parts, which follow
+     it so the document reads plain first. The skill writes there
      whatever only the person can settle, and never moves the document forward while the
      section holds anything. The status hook (`scripts/status_check.py`) refuses such a move
      for specs, ADRs, plans and spike records; a new document type with a status adds its rule there.

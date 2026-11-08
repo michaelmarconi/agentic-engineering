@@ -36,8 +36,8 @@ flowchart LR
   the spec, through [`/spec`](spec.md). A refuted hypothesis counts too: a spike that shows a
   feature is harder than it looked may change what the spec asks for.[^shore]
 - **A choice** between ways of building something goes into an ADR, through [`/adr`](adr.md). The
-  spike's measurements go into the ADR's Considered options, so the reason for the choice stays
-  with it.
+  spike's measurements go into the ADR's Options and Technical detail, so the reason for the
+  choice stays with it.
 
 `/spike` never edits a spec or an ADR itself. Whoever looks after that document runs `/spec` or
 `/adr` with the spike record as input, whenever suits them, possibly in another session.

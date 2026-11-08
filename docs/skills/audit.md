@@ -10,7 +10,7 @@ A spec's status describes the document, never the software (see
 [the lifecycle rules](../lifecycle.md#documents)). So once work is merged, nothing claims the
 code still does what each spec says, or still follows each accepted ADR (architecture decision
 record). Most work is checked when it is built: [`/build`](build.md)'s reviewer checks each build
-against the specs its plan names, and against each accepted ADR whose Confirmation section, the
+against the specs its plan names, and against each accepted ADR whose How we'll check section, the
 part saying what the decision applies to and how to check it, covers the code being changed.
 Drift comes from everything else:
 
@@ -64,12 +64,12 @@ small.
 - For a spec, each requirement is reported as **agrees**, **contradicts**, or **not found**. A
   requirement the code contradicts is drift. A requirement not found is not drift: it is listed
   apart, as not built yet: for each spec, how many requirements were not found, and their names.
-- For an ADR, the code its Confirmation section covers is checked against the decision, in the
-  way the Confirmation names. A Confirmation is what is sometimes called an architecture fitness
+- For an ADR, the code its How we'll check section covers is checked against the decision, in the
+  way each check names. Those checks are what is sometimes called an architecture fitness
   function: an objective check that the code keeps a property the architecture depends
   on.[^fitness] `/build` applies it to the code each build changes; `/audit` applies every one of
   them to the whole code.
-- A Confirmation that can only be checked by running something, such as a test command, is
+- An ADR check that can only be made by running something, such as a test command, is
   listed apart as needing a run, with what to run; it is not reported as drift.
 - Agents read the code and its tests; they run nothing. Whether the tests pass is the job of your
   continuous integration, the service that builds and tests every change; running the software

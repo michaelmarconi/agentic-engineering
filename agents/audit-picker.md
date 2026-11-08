@@ -20,7 +20,7 @@ Read each changed file that still exists, then each listed document. A deleted f
 read: judge it by its path and the commit subjects. A spec is affected when a change could alter
 whether the code still does what one of its requirements says: code that carries out a
 requirement, its tests, its data or its configuration. An ADR is affected when a change touches
-what its Confirmation's Applies to line covers. When you can't tell, pick the document: a
+what the Applies to line of its How we'll check section (Confirmation in an older ADR) covers. When you can't tell, pick the document: a
 document picked without need costs one check, and one missed is not checked at all. You may read
 the code around a change to see what it does.
 

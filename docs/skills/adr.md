@@ -45,23 +45,30 @@ any other hyperlink or path.
 
 ## Anatomy
 
-ADRs use the core of MADR (Markdown Architectural Decision Records), a widely used
-template.[^madr]
+An ADR is written for a person first. It reads from plain to technical: the top part says what
+had to be chosen, what was chosen, why and what it costs, in at most 500 words; the exact
+mechanism and evidence sit at the foot, for whoever builds and checks it. The layout is based on
+MADR (Markdown Architectural Decision Records), a widely used template, with every one of its
+core parts kept, reordered and tightened.[^madr]
 
-| Part | Holds |
-|---|---|
-| `status:` and `date:` | `📝 Draft`, `👍 Accepted`, `❌ Rejected` or `↪️ Superseded`, and when it was written; `supersedes:` or `superseded-by:` name another ADR by number |
-| Title | The decision, such as "Store sessions in Redis" |
-| Context and Problem Statement | What forces a decision now |
-| Considered Options | At least two options, and why each one not chosen was rejected |
-| Decision Outcome | The option chosen and why |
-| Consequences | What gets better and what gets worse because of it |
-| Confirmation | What the decision applies to, such as "any code that stores or reads session data", and how to check the code follows it: by test, demonstration, inspection or analysis |
-| Open questions | What only you can settle, such as an option nobody named or why one was rejected; empty before the ADR can be `👍 Accepted` |
+| Part | Holds | In MADR |
+|---|---|---|
+| `status:` and `date:` | `📝 Draft`, `👍 Accepted`, `❌ Rejected` or `↪️ Superseded`, and when it was written; `supersedes:` or `superseded-by:` name another ADR by number | Status and date |
+| Title | The decision in plain words, such as "Keep session data in Redis" | Title |
+| Question | The one choice to make, in at most three sentences, written first | Part of Context and Problem Statement |
+| Decision | "Not chosen yet" until you pick; then "Chosen:" and the option in full, with the reason | Decision Outcome, moved up |
+| Background | What forces the choice now, and the earlier ADRs it builds on | Context and Problem Statement |
+| Options | A table: each option, whether it was chosen or rejected, and why, in one line | Considered Options, with pros and cons cut to one line |
+| Consequences | Good and bad results of the choice, one line each | Consequences |
+| Out of scope | Each limit, untested part and decision left to another ADR, stated once | None |
+| How we'll check | What the decision applies to, such as "any code that stores or reads session data", and numbered checks by test, demonstration, inspection or analysis | Confirmation |
+| Open questions | What only you can settle, such as which option to choose; empty before the ADR can be `👍 Accepted` | None |
+| Technical detail | The exact mechanism, rules and settings, evidence in the ADR's own words, and each check in full | More Information |
 
-Confirmation is what `/build` and [`/audit`](audit.md) use to check that the code still follows
-each accepted decision. It names a concern rather than files, because the code may not exist yet and
-an accepted ADR cannot be updated when files move.
+How we'll check is what `/build` and [`/audit`](audit.md) use to check that the code still
+follows each accepted decision. It names a concern rather than files, because the code may not
+exist yet and an accepted ADR cannot be updated when files move. ADRs written before this layout,
+with MADR's section names, are still read the same way.
 
 ## Statuses
 
@@ -86,25 +93,28 @@ stateDiagram-v2
 Only you can accept or reject an ADR. `/adr` asks you once the reviewed text is final, and
 approval given earlier, or by another skill, does not count. A plugin hook refuses status changes
 the lifecycle does not allow, a status without its emoji, accepting an ADR while Open questions is
-not empty, and any edit to an ADR that is no longer `📝 Draft`, when Claude makes them with its
+not empty, while its Decision does not open with "Chosen:" or while its plain part is over 500
+words, and any edit to an ADR that is no longer `📝 Draft`, when Claude makes them with its
 file-editing tools.
 
 ## Using `/adr`
 
 Run `/adr` and say what you want: record a decision, accept or reject one, or replace one.
 
+- **Question first.** `/adr` writes the question before anything else and leaves the Decision
+  empty until you choose, so the draft never claims a choice you have not made.
 - **Drafts from the conversation.** If you have already talked the decision through, `/adr`
   drafts from that, and where you changed your mind, the latest word wins. It writes what is
   missing, such as an option nobody named or why one was rejected, into the ADR's Open questions,
   tells you how many there are and asks them one at a time. Your answer goes into the ADR and the
   question is removed.
 - **One decision per record.** If the conversation holds several decisions, `/adr` says how many
-  and writes one ADR for each.
+  and writes one ADR for each. It splits them itself, rather than asking you whether to.
 - **Replacing a decision.** A new ADR names the one it replaces. The old one stays `👍 Accepted`
   until you accept the new one; then it becomes `↪️ Superseded`. If you reject the new one, the old one
   stands.
 - **Uses spike records.** Given a finished [spike record](spike.md), `/adr` puts its measurements
-  into the Considered Options in its own words. The ADR never refers to the record, which may be
+  into Options and Technical detail in its own words. The ADR never refers to the record, which may be
   deleted.
 - **Leaves specs alone.** `/adr` never edits or refers to a spec. If the decision answers a
   spec's open question, it tells you, and `/spec` removes the question the next time you run it.
@@ -112,9 +122,11 @@ Run `/adr` and say what you want: record a decision, accept or reject one, or re
 ## Review
 
 Before you see an ADR, `/adr` has its reviewer agent check it against a short list of
-pass-or-fail checks: one decision, a title that states it, real options with reasons, good and
-bad consequences, a Confirmation that can really be carried out, references only to other ADRs, and
-no clash with another ADR. The reviewer sees only the ADRs, not your conversation, so it judges
+pass-or-fail checks: one decision, a plain title and question, a decision that reads on its own,
+real options with reasons, good and bad consequences, each limit stated once, checks that can
+really be carried out, technical detail kept at the foot, references only to other ADRs, and no
+clash with another ADR. Before each review, `/adr` counts the words in the plain part and trims it
+to fit. The reviewer sees only the ADRs, not your conversation, so it judges
 the page as a newcomer would. At the same time, a language checker reads it for words a newcomer
 could not follow, by the [Plain words](../lifecycle.md#plain-words) rule: a term from your field
 gets a footnote, and team shorthand is rewritten. `/adr` corrects what both find, once, and
@@ -126,6 +138,9 @@ with the reports.
 [^fowler]: Martin Fowler, [Architecture Decision Record](https://www.martinfowler.com/bliki/ArchitectureDecisionRecord.html).
     We take never reopening an accepted record, only superseding it, and numbered files that read
     well in a directory listing.
-[^madr]: [MADR](https://adr.github.io/madr/), version 4.0. We take its core sections and its
-    Confirmation section, and leave out decision drivers, per-option pros and cons, and the
-    fields for who decided, was consulted or was informed.
+[^madr]: [MADR](https://adr.github.io/madr/), version 4.0. We take its core sections, its
+    Confirmation section and its More Information section, renamed so no heading needs
+    explaining. We put the decision before the options, cut each option's pros and cons to one
+    line, and add a question written first, a section for limits and a word limit on the part
+    a person reads. We leave out decision drivers and the fields for who decided, was consulted
+    or was informed.

@@ -95,8 +95,8 @@ suggests. For each requirement:
    checking its THEN with the scenario's own values. Run them and see them fail, so you know
    they test something. Commit them.
 2. Write the code that makes them pass, following the Plan section, each line under Decisions,
-   each ADR the plan lists, and any other `👍 Accepted` ADR whose Confirmation section says it
-   applies to the code you change.
+   each ADR the plan lists, and any other `👍 Accepted` ADR whose How we'll check section (Confirmation in
+   an older ADR) says it applies to the code you change.
 3. Run the whole test suite and the linters, as the practices say, so you notice at once if the
    new code breaks something already built. Commit.
 

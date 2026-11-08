@@ -93,7 +93,7 @@ Finally, it runs your tests once. Any test that already fails is noted for the s
 the spec's scenarios and sees them fail, then writes the code that makes them pass. It then runs
 your whole test suite and your linters, as your practices say, before moving on, so it notices at
 once if the new code breaks something already built. It follows every `👍 Accepted` ADR the plan
-names, and any other whose Confirmation section says it applies to the code being changed. It
+names, and any other whose How we'll check section says it applies to the code being changed. It
 commits as it goes, so the branch always holds the work so far.
 
 Two rules hold throughout:
