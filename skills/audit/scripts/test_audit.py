@@ -47,7 +47,7 @@ def plan(status="📝 Draft", specs=(("statement-import.spec.md", ("Import a sta
 
 
 def spike(status="📝 Draft", open_questions="None."):
-    return (f"---\nstatus: {status}\n---\n\n# Can it?\n\n## Question\n\nCan it?\n\n## Open questions\n\n"
+    return (f"---\nstatus: {status}\n---\n\n# It can\n\n## Hypothesis\n\nIt can.\n\n## Open questions\n\n"
             f"- {open_questions}\n\n## Code\n\n## Runs\n")
 
 
@@ -125,7 +125,7 @@ class Documents(Project):
         self.put("docs/specs/statement-import.spec.md", spec(status="Accepted"))
         self.put("docs/adrs/0001-cents.md", adr(status="Approved"))
         self.put("docs/plans/2026-11-01-work.md", plan(status="🟢 Built"))
-        self.put("docs/spikes/2026-11-01-can-it.md", spike(status="Answered"))
+        self.put("docs/spikes/2026-11-01-can-it.md", spike(status="Confirmed"))
         found = {p["document"]: p["detail"] for p in self.problems("status")}
         self.assertEqual(sorted(found), ["docs/adrs/0001-cents.md", "docs/plans/2026-11-01-work.md",
                                          "docs/specs/statement-import.spec.md", "docs/spikes/2026-11-01-can-it.md"])
@@ -168,7 +168,7 @@ class Documents(Project):
         self.put("docs/adrs/0002-floats.md", adr(extra=" Unlike ADR 0001."))
         self.put("docs/plans/2026-11-01-work.md", plan(adrs=("0001-cents.md",)))
         self.put("docs/spikes/2026-11-01-can-it.md",
-                 spike().replace("Can it?\n\n## Open", "Can it? For docs/specs/exports.spec.md, not "
+                 spike().replace("It can.\n\n## Open", "It can. For docs/specs/exports.spec.md, not "
                                  "docs/plans/2026-11-01-work.md.\n\n## Open"))
         found = sorted((p["document"], p["detail"]) for p in self.problems("references"))
         self.assertEqual([document for document, _ in found], [
@@ -260,13 +260,15 @@ class Documents(Project):
     def test_built_plans_and_spike_records_are_listed(self):
         self.put("docs/plans/2026-11-01-a.md", plan(status="✅ Built", specs=()))
         self.put("docs/plans/2026-11-02-b.md", plan(specs=()))
-        self.put("docs/spikes/2026-10-01-done.md", spike(status="💡 Answered"))
-        self.put("docs/spikes/2026-10-02-gave-up.md", spike(status="❔ Not answered"))
+        self.put("docs/spikes/2026-10-01-done.md", spike(status="💡 Confirmed"))
+        self.put("docs/spikes/2026-10-02-gave-up.md", spike(status="❔ Not settled"))
+        self.put("docs/spikes/2026-10-05-wrong.md", spike(status="🚫 Refuted"))
         self.put("docs/spikes/2026-10-03-open.md", spike(status="📝 Draft"))
         self.put("docs/spikes/2026-10-04-ready.md", spike(status="🟢 Ready to run"))
         out = self.documents()
         self.assertEqual(out["built_plans"], ["docs/plans/2026-11-01-a.md"])
-        self.assertEqual(out["finished_spikes"], ["docs/spikes/2026-10-01-done.md", "docs/spikes/2026-10-02-gave-up.md"])
+        self.assertEqual(out["finished_spikes"], ["docs/spikes/2026-10-01-done.md", "docs/spikes/2026-10-02-gave-up.md",
+                                                  "docs/spikes/2026-10-05-wrong.md"])
         self.assertEqual(out["unfinished_spikes"], [
             {"document": "docs/spikes/2026-10-03-open.md", "status": "📝 Draft", "date": "2026-10-03"},
             {"document": "docs/spikes/2026-10-04-ready.md", "status": "🟢 Ready to run", "date": "2026-10-04"}])

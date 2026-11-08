@@ -3,19 +3,46 @@
 status: 🟢 Ready to run
 ---
 
-# Does the till printer print the euro sign?
+# The till printer prints the euro sign
 
-## Question
+## Hypothesis
 
-Does the till printer in the first bakery print the euro sign on a receipt?
+The till printer in the first bakery prints the euro sign on a receipt.
 
-## What would answer it
+## Finding
 
-The test receipt shows `€ 1,00` with the euro sign as drawn on the till's screen.
+## Next steps
+
+## How we'll know
+
+The test receipt shows `€ 1,00`, with the euro sign as drawn on the till's screen.
+
+## Out of scope
+
+- One till stands for every till in the bakeries.
+
+## How the test works
+
+1. The accounts clerk prints the till's test receipt.
+2. They say what the amount line shows.
+
+Only a person standing at the till can do this, so the run is their observation. One print is enough, since the printer prints the same character every time.
+
+## Risks and safeguards
+
+- The till is real: the test receipt is its own test print, so no sale is recorded.
+
+## Results
+
+## Surprises
+
+## Open questions
+
+- None.
 
 ## Experiment
 
-The accounts clerk prints the till's test receipt and says what the amount line shows. Only a person standing at the till can do this, so the run is their observation. One print is enough, since the printer prints the same character every time.
+The run is recorded through the run script as the clerk's observation, in their words. It holds when they report `€ 1,00` with the euro sign; any other character refutes it.
 
 - Runs: 1
 - Stop early if: None.
@@ -23,16 +50,6 @@ The accounts clerk prints the till's test receipt and says what the amount line 
 - Inputs: None.
 - Secrets: None.
 - Command: None.
-
-## Answer
-
-## Surprises
-
-## Where it goes
-
-## Open questions
-
-- None.
 
 ## Code
 

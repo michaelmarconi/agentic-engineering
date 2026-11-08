@@ -7,7 +7,7 @@ docs/adrs/ or a *.md directly in its docs/plans/ or docs/spikes/ (the project be
 $CLAUDE_PROJECT_DIR, or the current directory if unset),
 works out what the file would contain after the edit and compares it with what is on disk now.
 Every status carries its emoji, emoji first: a spec is `📝 Draft` or `👍 Accepted`, describing the
-document, never the software; a plan is `📝 Draft`, `🟢 Ready to build` or `✅ Built`; an ADR is `📝 Draft`, `👍 Accepted`, `❌ Rejected` or `↪️ Superseded`; a spike record is `📝 Draft`, `🟢 Ready to run`, `💡 Answered` or `❔ Not answered`. The U+FE0F that
+document, never the software; a plan is `📝 Draft`, `🟢 Ready to build` or `✅ Built`; an ADR is `📝 Draft`, `👍 Accepted`, `❌ Rejected` or `↪️ Superseded`; a spike record is `📝 Draft`, `🟢 Ready to run`, `💡 Confirmed`, `🚫 Refuted` or `❔ Not settled`. The U+FE0F that
 some keyboards add after an emoji is optional. It refuses a status written by its word alone or
 with the wrong emoji, and names the value to write. A document written before the emoji, whose
 status is a bare word such as `Accepted`, counts as having that status, and an edit that only adds
@@ -62,13 +62,18 @@ For a spike record it refuses:
 - any change to the Runs section, at any status: only the run script (skills/spike/scripts/spike.py)
   writes runs, writing the file itself, so this hook never sees it;
 - any move but `📝 Draft` to `🟢 Ready to run`, `🟢 Ready to run` back to `📝 Draft` while Runs is
-  empty, and `🟢 Ready to run` to `💡 Answered` or `❔ Not answered`;
-- a move forward in the same edit as any other change, or while the Open questions section is
-  missing or not empty or "None.", and `💡 Answered` while Runs holds no run;
-- a change to the Question, What would answer it or Experiment section of a `🟢 Ready to run`
-  record that does not return it to `📝 Draft`;
-- any change to a `💡 Answered` or `❔ Not answered` record, which is final. Deleting it is not an
-  edit, so it is never refused.
+  empty, and `🟢 Ready to run` to `💡 Confirmed`, `🚫 Refuted` or `❔ Not settled`;
+- a move forward in the same edit as any other change, while the Open questions section is
+  missing or not empty or "None.", or while the record's plain part, everything between the
+  frontmatter and `## Experiment` apart from HTML comments, holds more than 600 words (counted as
+  runs of non-space characters holding a letter or digit, so a table's bars and rules don't
+  count); `💡 Confirmed` or `🚫 Refuted` while Runs holds no run; and a finishing status that the
+  Finding does not open with, such as `💡 Confirmed` for a Finding that opens "Refuted:";
+- a change to the Hypothesis, How we'll know, Out of scope, How the test works, Risks and
+  safeguards or Experiment section of a `🟢 Ready to run` record that does not return it to
+  `📝 Draft`;
+- any change to a `💡 Confirmed`, `🚫 Refuted` or `❔ Not settled` record, which is final.
+  Deleting it is not an edit, so it is never refused.
 
 HTML comments in the Runs section outside its code fences do not count as runs.
 
@@ -87,10 +92,15 @@ import re
 import sys
 
 DRAFT, READY, BUILT = "📝 Draft", "🟢 Ready to build", "✅ Built"
-READY_TO_RUN, ANSWERED, NOT_ANSWERED = "🟢 Ready to run", "💡 Answered", "❔ Not answered"
-SPIKE_STATUSES = (DRAFT, READY_TO_RUN, ANSWERED, NOT_ANSWERED)
-FINISHED = (ANSWERED, NOT_ANSWERED)
-FIXED_PARTS = ("Question", "What would answer it", "Experiment")
+READY_TO_RUN = "🟢 Ready to run"
+CONFIRMED, REFUTED, NOT_SETTLED = "💡 Confirmed", "🚫 Refuted", "❔ Not settled"
+SPIKE_STATUSES = (DRAFT, READY_TO_RUN, CONFIRMED, REFUTED, NOT_SETTLED)
+FINISHED = (CONFIRMED, REFUTED, NOT_SETTLED)
+# A spike record's design: fixed once it is signed off.
+FIXED_PARTS = ("Hypothesis", "How we'll know", "Out of scope", "How the test works", "Risks and safeguards",
+               "Experiment")
+PLAIN_LIMIT = 600  # words in a spike record's plain part, the part written for people
+WORD = re.compile(r"\S*[^\W_]\S*")  # a run of non-space characters holding a letter or digit
 ACCEPTED, REJECTED, SUPERSEDED = "👍 Accepted", "❌ Rejected", "↪️ Superseded"
 STATUSES = (DRAFT, READY, BUILT)
 SPEC_STATUSES = (DRAFT, ACCEPTED)
@@ -689,7 +699,36 @@ def runs(text):
     Comments are found by scan(), so a run's output can never hide another run, and an unclosed
     `<!--` can never hide a run added below it.
     """
-    lines = section(text, "Runs") or []
+    return uncommented(section(text, "Runs") or []).strip()
+
+
+def plain_part(text):
+    """A spike record's plain part: its lines after the frontmatter and before `## Experiment`,
+    joined, without HTML comments. A record with no Experiment section is plain to its end."""
+    lines = text.lstrip("\ufeff").splitlines()
+    head = frontmatter(text)
+    lines = lines[len(head) + 2:] if head is not None else lines
+    allowed = headings_allowed(lines)
+    end = next((i for i, line in enumerate(lines) if allowed[i] and line.strip().lower() == "## experiment"),
+               len(lines))
+    return uncommented(lines[:end])
+
+
+def plain_words(text):
+    """How many words a spike record's plain part holds."""
+    return len(WORD.findall(plain_part(text)))
+
+
+def finding_opens_with(text, word):
+    """Whether a spike record's Finding, without comments, opens with `word` (any case, bold or
+    not), followed by more than the word itself."""
+    finding = uncommented(section(text, "Finding") or []).strip().lstrip("*_ ")
+    match = re.match(re.escape(word) + r"\b[*_]*[:.,;]?[*_]*\s*(\S)", finding, re.IGNORECASE)
+    return match is not None
+
+
+def uncommented(lines):
+    """The lines joined with newlines, without the HTML comments scan() finds in them."""
     _, comments = scan(lines)
     starts = [0]
     for line in lines:
@@ -699,7 +738,7 @@ def runs(text):
         kept.append(joined[at:starts[line] + column])
         at = starts[end_line] + end_column
     kept.append(joined[at:])
-    return "".join(kept).strip()
+    return "".join(kept)
 
 
 def ran(text):
@@ -725,24 +764,24 @@ def spike_rules(path, before, after, old, new):
             return None
         return (
             f"{name}: this spike record is `{old}`, which is final, so it is never changed. "
-            "Another try at the question is a new spike record."
+            "Another try at the hypothesis is a new spike record."
         )
     if runs(after) != runs(before):
         return (
             f"{name}: only the run script writes the Runs section, so the results are exactly what "
             "the experiment produced. Leave Runs as it is and run the experiment through the script."
         )
-    moves = {DRAFT: (READY_TO_RUN,), READY_TO_RUN: (DRAFT, ANSWERED, NOT_ANSWERED)}
+    moves = {DRAFT: (READY_TO_RUN,), READY_TO_RUN: (DRAFT,) + FINISHED}
     if new != old and new not in moves[old]:
         return (
             f"{name}: a spike record cannot go from `{old}` to `{new}`. `{DRAFT}` becomes "
-            f"`{READY_TO_RUN}`; `{READY_TO_RUN}` becomes `{ANSWERED}` or `{NOT_ANSWERED}`, or "
+            f"`{READY_TO_RUN}`; `{READY_TO_RUN}` becomes {listed(FINISHED)}, or "
             f"`{DRAFT}` before the first run."
         )
     if new == DRAFT and old == READY_TO_RUN and runs(before):
         return (
             f"{name}: the experiment has already run, so the record cannot go back to `{DRAFT}` "
-            "after the first run. A different question or experiment is a new spike record."
+            "after the first run. A different hypothesis or experiment is a new spike record."
         )
     if new in (READY_TO_RUN,) + FINISHED and new != old:
         if without_status(after) != without_status(before):
@@ -752,10 +791,26 @@ def spike_rules(path, before, after, old, new):
             )
         if has_open_questions(after):
             return open_questions_refusal(name, after, new, "spike record")
-        if new == ANSWERED and not ran(after):
+        words = plain_words(after)
+        if words > PLAIN_LIMIT:
+            shorten = ("Shorten its Finding, Next steps, Results or Surprises, since the rest is fixed"
+                       if new in FINISHED else "Shorten it, moving detail down into Experiment")
             return (
-                f"{name}: it has no runs, so it cannot be `{ANSWERED}`: only an experiment's runs "
-                f"answer a spike. Run it through the run script, or end it `{NOT_ANSWERED}`."
+                f"{name}: its plain part, from the title down to Experiment, holds {words} words, "
+                f"more than the {PLAIN_LIMIT} a person is asked to read, so it cannot be `{new}`. "
+                f"{shorten}, and have it reviewed again."
+            )
+        if new in (CONFIRMED, REFUTED) and not ran(after):
+            return (
+                f"{name}: it has no runs, so it cannot be `{new}`: only an experiment's runs "
+                f"settle a spike. Run it through the run script, or end it `{NOT_SETTLED}`."
+            )
+        word = new.split(" ", 1)[1]
+        if new in FINISHED and not finding_opens_with(after, word):
+            return (
+                f"{name}: its Finding must open with \"{word}\", the status it is given, then say what "
+                f"was found, so the record cannot be `{new}` as it stands. Correct the Finding, or "
+                "give the status its first word names."
             )
     if old == new == READY_TO_RUN:
         changed = [part for part in FIXED_PARTS if section(after, part) != section(before, part)]

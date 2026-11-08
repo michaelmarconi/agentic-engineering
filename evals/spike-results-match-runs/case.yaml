@@ -1,0 +1,7 @@
+schema_version: "1.1"
+name: spike-results-match-runs
+expected_outcome: |
+  Run 1 crashed on a typing mistake since corrected; runs 2 and 3 ran the corrected code. The
+  skill writes Results with a row for each of the three runs, saying only runs 2 and 3 count.
+context:
+  scaffold_script: place-files.sh

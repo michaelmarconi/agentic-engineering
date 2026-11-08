@@ -1,21 +1,61 @@
 ---
 # Change status only through the sdlc plugin's skills, which check each change; a change made by hand is not checked.
-status: 💡 Answered
+status: 🚫 Refuted
 ---
 
-# Can the importer read the bank's statement file as the bank sends it?
+# The importer reads the bank's statement file as the bank sends it
 
-## Question
+## Hypothesis
 
-Can the importer in `src/importer.py`, as it stands, read the bank's monthly statement file without anyone converting it first? It comes from the open question in the statement import spec.
+The importer, as it stands, reads the bank's monthly statement file without anyone converting it first. The statement import spec waits on this, in its open questions.
 
-## What would answer it
+## Finding
 
-The importer reads all 12 transactions in `samples/statement.csv`, a real statement with the account number removed, without an error, and prints each payee's name as the statement shows it.
+Refuted: the importer cannot read the bank's statement file as the bank sends it, because the file is not UTF-8. Run 1 stopped on the first payee with an accent, Café Lune, so the importer read none of the 12 transactions.
+
+## Next steps
+
+- Spec: the statement import spec states that the bank's file is not UTF-8, so the importer can't read it as it comes.
+- ADR: how to read the file's character encoding is a choice, for an ADR.
+
+## How we'll know
+
+The importer reads all 12 transactions in the sample statement without an error, and prints each payee's name as the statement shows it.
+
+## Out of scope
+
+- One month's statement stands for every statement the bank sends.
+
+## How the test works
+
+1. Read a real statement, with the account number removed, using the importer's own code as it stands.
+2. Print how many transactions it read, and each one.
+
+Reading a file gives the same result every time, so one run is enough.
+
+## Risks and safeguards
+
+- The sample is a real statement. Its account number was removed before it was added, and the experiment only reads it, on this machine.
+
+## Results
+
+| Run | Date | Outcome | Note |
+|---|---|---|---|
+| 1 | 2026-11-04 | Refuted | Stopped on the first accented payee name; none of 12 read. |
+
+Run 1 counts.
+
+## Surprises
+
+None.
+
+## Open questions
+
+- None.
 
 ## Experiment
 
-Reads the sample statement with the importer's own `read_statement` function and prints every row. Reading a file gives the same result every time, so one run is enough.
+Imports `read_statement` from `src/importer.py` at the commit below and reads `samples/statement.csv`, a real statement with the account number removed. It holds when the script prints `12 transactions read` and every payee's name as written, such as `Café Lune`; an error, or fewer rows, refutes it.
 
 - Runs: 1
 - Stop early if: None.
@@ -23,23 +63,6 @@ Reads the sample statement with the importer's own `read_statement` function and
 - Inputs: `samples/statement.csv`
 - Secrets: None.
 - Command: `python3 check_statement.py`
-
-## Answer
-
-No. Run 1 stopped on the first payee with an accent, `Café Lune`: the file is not UTF-8, so the importer reads none of the 12 transactions.
-
-## Surprises
-
-None.
-
-## Where it goes
-
-- Spec: the statement import spec states that the bank's file is not UTF-8, so the importer can't read it as it comes.
-- ADR: how to read the file's character encoding is a choice, for an ADR.
-
-## Open questions
-
-- None.
 
 ## Code
 

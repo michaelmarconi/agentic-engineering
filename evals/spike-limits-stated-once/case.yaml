@@ -1,0 +1,7 @@
+schema_version: "1.1"
+name: spike-limits-stated-once
+expected_outcome: |
+  The person names two limits of the sample: it is only October's statement, and December's files
+  add a column it lacks. The design states both under Out of scope and nowhere else.
+context:
+  scaffold_script: place-files.sh

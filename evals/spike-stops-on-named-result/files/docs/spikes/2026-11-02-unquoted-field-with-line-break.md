@@ -3,23 +3,46 @@
 status: 🟢 Ready to run
 ---
 
-# Does Python's csv module keep an unquoted field holding a line break as one field?
+# Python's csv module keeps an unquoted field holding a line break as one field
 
-## Question
+## Hypothesis
 
-Does Python's standard `csv` module read an unquoted field that holds a line break as one field, as
-the bank's file writes a payee's note over two lines without quotes?
+Python's standard csv module reads an unquoted field that holds a line break as one field, as the bank's file writes a payee's note over two lines without quotes.
 
-## What would answer it
+## Finding
+
+## Next steps
+
+## How we'll know
 
 The script prints `1 row(s), 3 fields` on every run.
 
+## Out of scope
+
+None.
+
+## How the test works
+
+1. Read a short sample, held in the code, whose middle field is not quoted and holds a line break.
+2. Print how many rows and fields it found, or that the field was split.
+
+The team asked for five runs, one for each laptop it will be checked on later. A split on any run already refutes the hypothesis, so the runs stop there.
+
+## Risks and safeguards
+
+None.
+
+## Results
+
+## Surprises
+
+## Open questions
+
+- None.
+
 ## Experiment
 
-Reads a short sample, held in the code, whose middle field is not quoted and holds a line
-break, and prints how many rows and fields it found, or `FAILED` when the field is split. The
-team asked for five runs, one for each laptop it will be checked on later, so it runs five times;
-a split on any run already answers the question, so it stops there.
+Parses the sample in `check.py` with `csv.reader` and prints the row and field counts, or `FAILED` when the field is split. It holds when every run prints `1 row(s), 3 fields`.
 
 - Runs: 5
 - Stop early if: `check.py` prints `FAILED`, which shows the csv module splits the field.
@@ -27,16 +50,6 @@ a split on any run already answers the question, so it stops there.
 - Inputs: None.
 - Secrets: None.
 - Command: `python3 check.py`
-
-## Answer
-
-## Surprises
-
-## Where it goes
-
-## Open questions
-
-- None.
 
 ## Code
 

@@ -1,0 +1,8 @@
+schema_version: "1.1"
+name: spike-design-reads-plain
+expected_outcome: |
+  Asked a question about the importer, and told its function and file names, the skill drafts a
+  design whose title and Hypothesis state a claim, not a question, keeps those names out of the
+  plain part, and leaves Finding, Next steps, Results and Surprises empty until the runs.
+context:
+  scaffold_script: place-files.sh

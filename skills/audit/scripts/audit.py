@@ -33,8 +33,8 @@ documents
       with `git show`; nothing is fetched. A plan is known by its file name, so the same plan on
       several branches is one plan, and a plan `✅ Built` on any of them is built.
 
-    It also lists the `✅ Built` plans, the finished spike records (`💡 Answered` or
-    `❔ Not answered`) and the unfinished ones with the date their name starts with. `lifecycle`
+    It also lists the `✅ Built` plans, the finished spike records (`💡 Confirmed`,
+    `🚫 Refuted` or `❔ Not settled`) and the unfinished ones with the date their name starts with. `lifecycle`
     is false when the project has no lifecycle document at all. Every path is relative to `root`,
     the project's full path, which both commands print, so an agent started from another folder
     can be given whole paths.
@@ -63,7 +63,7 @@ import sys
 
 # The plugin's scripts/ folder holds the status hook, whose parsing this script shares.
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "..", "scripts"))
-from status_check import (ACCEPTED, ADR_STATUSES, ANSWERED, BUILT, DRAFT, NOT_ANSWERED,  # noqa: E402
+from status_check import (ACCEPTED, ADR_STATUSES, BUILT, DRAFT, FINISHED,  # noqa: E402
                           READY, READY_TO_RUN, SPEC_STATUSES, SPIKE_STATUSES, STATUSES, SUPERSEDED,
                           field, frontmatter, has_open_questions, lifecycle_status, listed,
                           reference_problem, requirements, status_of)
@@ -71,7 +71,6 @@ from doc_references import targets  # noqa: E402
 
 KINDS = {"spec": SPEC_STATUSES, "ADR": ADR_STATUSES, "plan": STATUSES, "spike record": SPIKE_STATUSES}
 SETTLED = {"spec": ACCEPTED, "ADR": ACCEPTED, "plan": READY, "spike record": READY_TO_RUN}
-FINISHED = (ANSWERED, NOT_ANSWERED)
 ADR_NAME = re.compile(r"^(\d{4})-.*\.md$", re.IGNORECASE)
 DATED_NAME = re.compile(r"^(\d{4}-\d{2}-\d{2})-.*\.md$", re.IGNORECASE)
 LAST = re.compile(r"^\s*last\s+(\d+)\s+days?\s*$", re.IGNORECASE)

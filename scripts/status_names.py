@@ -17,7 +17,7 @@ value bare, is skipped. It reports:
 
 U+FE0F after an emoji is optional throughout, as it is for the status-check hook.
 
-Draft, Built, Accepted, Rejected, Superseded, Answered and Not answered on their own are ordinary words too, so prose
+Draft, Built, Accepted, Rejected, Superseded, Confirmed, Refuted and Not settled on their own are ordinary words too, so prose
 that names those statuses without backticks is left to the reader.
 """
 

@@ -64,7 +64,8 @@ everything else is judgement.
    - The hand-over gives the person the reports, the number of items they must settle, and the
      first of them; suggestions are listed apart as optional.
    - A document with a status has an Open questions section, last apart from a spike record's
-     Code and Runs, which follow it so the record reads as prose first. The skill writes there
+     Experiment, Code and Runs, its technical part, which follow it so the record reads plain
+     first. The skill writes there
      whatever only the person can settle, and never moves the document forward while the
      section holds anything. The status hook (`scripts/status_check.py`) refuses such a move
      for specs, ADRs, plans and spike records; a new document type with a status adds its rule there.
@@ -130,7 +131,7 @@ everything else is judgement.
     the lifecycle's own terms, since Claude reads them with the lifecycle page in hand.
 14. **Statuses by their exact value.** A document status is its emoji and its word: `📝 Draft`,
     `🟢 Ready to build`, `✅ Built`, `👍 Accepted`, `❌ Rejected`, `↪️ Superseded`, `🟢 Ready to run`,
-    `💡 Answered` and `❔ Not answered`. The
+    `💡 Confirmed`, `🚫 Refuted` and `❔ Not settled`. The
     status line holds that value bare. Everywhere else, name a status in backticks with its emoji,
     exactly as the status line has it, so a reader can find it and copy it; never put an emoji in
     running prose. `scripts/test_status_names.py` catches a backticked status that is wrong, and

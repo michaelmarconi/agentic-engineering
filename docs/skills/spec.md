@@ -113,7 +113,7 @@ Run `/spec` and tell it what you want to do:
 - **New:** start a spec for a capability. `/spec` first checks whether an existing spec already
   covers it.
 - **Change:** edit a spec in place, including answering an open question, for example with the
-  answer from a finished [spike record](spike.md). The spec states the spike's evidence in its own
+  finding of a finished [spike record](spike.md). The spec states the spike's evidence in its own
   words and never refers to the record, which may be deleted.
 - **Accept:** mark a spec `👍 Accepted`.
 
