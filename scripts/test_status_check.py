@@ -341,6 +341,11 @@ class Adr(AdrWorkspace):
         self.put(adr(body="Chosen: **keep sessions in Redis**, because it is fast enough."))
         self.assertIsNone(self.edit("status: 📝 Draft", "status: 👍 Accepted"))
 
+    def test_option_in_code_or_quotes_allowed(self):
+        for body in ("Chosen: `Redis`, because it is fast.", 'Chosen: "Redis", because it is fast.'):
+            self.put(adr(body=body))
+            self.assertIsNone(self.edit("status: 📝 Draft", "status: 👍 Accepted"), body)
+
     def test_old_layout_draft_told_to_re_lay(self):
         text = adr().replace("## Decision\n\nChosen: keep sessions in Redis,", "## Decision Outcome\n\nChosen option: Redis,")
         self.put(text)

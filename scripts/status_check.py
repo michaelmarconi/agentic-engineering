@@ -749,7 +749,7 @@ def decision_chosen(text):
     """Whether an ADR's Decision, without comments, opens with "Chosen:" (bold or not) and goes on
     to name the option."""
     decision = uncommented(section(text, "Decision") or []).strip()
-    return re.match(r"[*_]*chosen[*_]*:[\s*_]*[^\W_]", decision, re.IGNORECASE) is not None
+    return re.match(r"[*_]*chosen[*_]*:[\s*_]*[^\s*_]", decision, re.IGNORECASE) is not None
 
 
 def finding_opens_with(text, word):
