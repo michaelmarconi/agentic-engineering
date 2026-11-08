@@ -8,7 +8,7 @@ date: 2026-10-20
 
 ## Question
 
-How should the web app send its emails, so a slow or failing email provider never holds up a request?
+How should the web app send its emails, so a slow or failing email provider never slows down a request?
 
 ## Decision
 
