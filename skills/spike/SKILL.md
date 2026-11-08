@@ -126,13 +126,15 @@ Once the runs are done, write:
   and what is still unknown: the spike is `❔ Not settled`.
 - **Next steps:** a fact goes to the spec, a choice between ways of building something to an
   ADR, each named by its title if one exists in `docs/specs/` or `docs/adrs/`, or "Nothing".
-- **Results:** a table with a row for every run in Runs, giving its date, its outcome and one
-  line, and saying which runs count.
-- **Surprises:** what the runs showed that the hypothesis didn't cover, or "None."
+- **Results:** a table with a row for every run in Runs, with the columns Run (its number),
+  Date, Outcome and Note (one line), then a sentence saying which runs count.
+- **Surprises:** what the runs showed that the hypothesis didn't cover, or "None.". A limit the
+  runs uncover goes here, since Out of scope is fixed once the design is signed off.
 
 Never edit a spec or an ADR yourself: whoever looks after it takes the finding there with `/spec`
 or `/adr`, stating the evidence in that document's own words, since nothing may refer to a spike
-record. Check the plain part's size, then run the verdict review.
+record. Check the plain part's size, then run the verdict review. The design is fixed by now, so
+a verdict over the limit shortens its own sections, not the design's.
 
 ## Status
 

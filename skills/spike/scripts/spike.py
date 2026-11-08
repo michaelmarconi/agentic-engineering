@@ -504,15 +504,16 @@ def execute(command, folder, env, timeout):
 
 def words(path):
     try:
-        with open(path, encoding="utf-8") as f:
-            text = f.read()
-    except (OSError, UnicodeDecodeError):
+        text = read_record(path)
+    except RecordError:
         print(f"{os.path.basename(path)}: can't read {path}", file=sys.stderr)
         return 1
     count = plain_words(text)
     if count > PLAIN_LIMIT:
+        shorten = ("shorten its Finding, Next steps, Results or Surprises, since the rest is fixed"
+                   if status_of(text) == READY_TO_RUN else "shorten it, moving detail down into Experiment")
         print(f"{os.path.basename(path)}: the plain part holds {count} words, {count - PLAIN_LIMIT} over the "
-              f"{PLAIN_LIMIT} allowed; shorten it, moving detail down into Experiment")
+              f"{PLAIN_LIMIT} allowed; {shorten}")
         return 1
     print(f"{os.path.basename(path)}: the plain part holds {count} words, within the {PLAIN_LIMIT} allowed")
     return 0

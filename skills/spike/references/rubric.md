@@ -48,7 +48,9 @@ Experiment; its technical part, for agents and reviewers, is Experiment, Code an
     are named under `- Secrets:` by their environment variable names only, and no secret's value
     appears anywhere in the record.
 11. **Limits** (design). Out of scope names each limit of what the experiment can show, or says
-    only "None.". No other section states a limit again; it refers to Out of scope instead.
+    only "None.". No other section states a limit again; it refers to Out of scope instead. A
+    limit the runs uncover is under Surprises, since Out of scope is fixed once the design is
+    signed off.
 12. **Safeguards** (design). An experiment that changes or reads anything real, such as a live
     account, real data, money or someone else's system, has Risks and safeguards naming each way
     it could do harm and what stops it, with the details in Experiment. One that touches nothing
@@ -68,8 +70,9 @@ Experiment; its technical part, for agents and reviewers, is Experiment, Code an
     with How we'll know, and rests on nothing but those runs: documentation, other people's
     reports and reasoning are not evidence. A spike that settled nothing says what was learned
     and what is still unknown, and is `❔ Not settled`.
-16. **Results agree** (verdict). Results has a row for every run in Runs, with the same outcome,
-    and says which runs count.
+16. **Results agree** (verdict). Results is a table with the columns Run, Date, Outcome and
+    Note, with a row for every run in Runs, by its number, with the same outcome, and says which
+    runs count.
 17. **Surprises** (verdict). Surprises lists what the runs showed that the hypothesis did not
     cover, or says only "None."
 18. **Next steps** (verdict). Next steps has a `- Spec:` and an `- ADR:` line. A fact the spike
@@ -80,4 +83,5 @@ Experiment; its technical part, for agents and reviewers, is Experiment, Code an
     `🚫 Refuted` or `❔ Not settled` has an Open questions section that says only "None."
 
 The plain part's size, at most 600 words, tables included, is checked by the run script's `words`
-command and by the status hook, not by the reviewer.
+command and by the status hook, not by the reviewer. So is a finishing status that the Finding
+does not open with, such as `💡 Confirmed` for a Finding that opens "Refuted:".

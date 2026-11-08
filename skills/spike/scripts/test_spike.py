@@ -97,6 +97,13 @@ class Words(Project):
         self.assertEqual(done.returncode, 1)
         self.assertIn("over", done.stdout)
 
+    def test_long_ready_record_is_told_to_shorten_the_verdict(self):
+        self.put(record("🟢 Ready to run").replace("Prints things.", " ".join(["word"] * 650), 1))
+        done = self.words(self.path())
+        self.assertEqual(done.returncode, 1)
+        self.assertIn("Finding, Next steps, Results or Surprises", done.stdout)
+        self.assertNotIn("into Experiment", done.stdout)
+
     def test_unreadable_record(self):
         done = self.words(os.path.join(self.tmp.name, "missing.md"))
         self.assertEqual(done.returncode, 1)

@@ -46,12 +46,15 @@ status: 📝 Draft
 
 ## Results
 
-<!-- Written after the runs: a table with a row for every run in Runs, giving its date, its
-     outcome and one line, and saying which runs count. -->
+<!-- Written after the runs: a table with a row for every run in Runs, then which runs count.
+     | Run | Date | Outcome | Note |
+     |---|---|---|---|
+     | 1 | 2026-11-04 | Confirmed | All 12 transactions read. | -->
 
 ## Surprises
 
-<!-- Written after the runs: anything unexpected they showed, or "None." -->
+<!-- Written after the runs: anything unexpected they showed, including any limit they
+     uncovered, since Out of scope is fixed by then; or "None." -->
 
 ## Open questions
 

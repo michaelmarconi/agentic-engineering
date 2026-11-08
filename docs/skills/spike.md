@@ -81,7 +81,7 @@ stated once, under Out of scope.
 | How the test works | What the experiment does, step by step, why that tests the hypothesis, and why it runs as many times as it does |
 | Risks and safeguards | When the experiment changes or reads anything real, such as a live account, real data or money: what could go wrong and what stops it; otherwise "None." |
 | Results | After the runs: a row for every run, with its date and outcome, saying which runs count |
-| Surprises | Anything unexpected the experiment showed, or "None." |
+| Surprises | Anything unexpected the experiment showed, including any limit it uncovered, or "None." |
 | Open questions | What only you can settle about the spike; "None." before it moves on |
 | Experiment | The full method, the exact rules for what counts as confirmed or refuted, every safeguard in detail, and then its settings: how many times it runs, and any result that would end it early, such as a crash showing the approach can't work; each input, as a path in the commit it starts from or a web address; the names of any secrets it needs; the command that runs it, including any install step; and the commit it starts from, when it needs the product's own code or files |
 | Code | The experiment's code in code blocks, each naming its file on its first line; for an experiment on the product's own code, its changes as a diff |
@@ -132,9 +132,9 @@ nobody needs it. Another try at a hypothesis that was not settled is a new spike
 
 A plugin hook enforces these rules when Claude edits a record with its file-editing tools: it
 refuses any move not shown above, a move forward while Open questions holds anything or while the
-top part is over 600 words, a change to the design of a `🟢 Ready to run` record that does not
-return it to `📝 Draft` before the first run, any change to Runs, and any change to a finished
-record. A change made by hand, or by a shell command, is not checked.
+top part is over 600 words, a finishing status that the Finding does not open with, a change to
+the design of a `🟢 Ready to run` record that does not return it to `📝 Draft` before the first
+run, any change to Runs, and any change to a finished record. A change made by hand, or by a shell command, is not checked.
 
 ## Using `/spike`
 

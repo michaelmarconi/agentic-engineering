@@ -67,7 +67,8 @@ For a spike record it refuses:
   missing or not empty or "None.", or while the record's plain part, everything between the
   frontmatter and `## Experiment` apart from HTML comments, holds more than 600 words (counted as
   runs of non-space characters holding a letter or digit, so a table's bars and rules don't
-  count); and `💡 Confirmed` or `🚫 Refuted` while Runs holds no run;
+  count); `💡 Confirmed` or `🚫 Refuted` while Runs holds no run; and a finishing status that the
+  Finding does not open with, such as `💡 Confirmed` for a Finding that opens "Refuted:";
 - a change to the Hypothesis, How we'll know, Out of scope, How the test works, Risks and
   safeguards or Experiment section of a `🟢 Ready to run` record that does not return it to
   `📝 Draft`;
@@ -718,6 +719,14 @@ def plain_words(text):
     return len(WORD.findall(plain_part(text)))
 
 
+def finding_opens_with(text, word):
+    """Whether a spike record's Finding, without comments, opens with `word` (any case, bold or
+    not), followed by more than the word itself."""
+    finding = uncommented(section(text, "Finding") or []).strip().lstrip("*_ ")
+    match = re.match(re.escape(word) + r"\b[*_]*[:.,;]?[*_]*\s*(\S)", finding, re.IGNORECASE)
+    return match is not None
+
+
 def uncommented(lines):
     """The lines joined with newlines, without the HTML comments scan() finds in them."""
     _, comments = scan(lines)
@@ -784,15 +793,24 @@ def spike_rules(path, before, after, old, new):
             return open_questions_refusal(name, after, new, "spike record")
         words = plain_words(after)
         if words > PLAIN_LIMIT:
+            shorten = ("Shorten its Finding, Next steps, Results or Surprises, since the rest is fixed"
+                       if new in FINISHED else "Shorten it, moving detail down into Experiment")
             return (
                 f"{name}: its plain part, from the title down to Experiment, holds {words} words, "
                 f"more than the {PLAIN_LIMIT} a person is asked to read, so it cannot be `{new}`. "
-                "Shorten it, moving detail down into Experiment, and have it reviewed again."
+                f"{shorten}, and have it reviewed again."
             )
         if new in (CONFIRMED, REFUTED) and not ran(after):
             return (
                 f"{name}: it has no runs, so it cannot be `{new}`: only an experiment's runs "
                 f"settle a spike. Run it through the run script, or end it `{NOT_SETTLED}`."
+            )
+        word = new.split(" ", 1)[1]
+        if new in FINISHED and not finding_opens_with(after, word):
+            return (
+                f"{name}: its Finding must open with \"{word}\", the status it is given, then say what "
+                f"was found, so the record cannot be `{new}` as it stands. Correct the Finding, or "
+                "give the status its first word names."
             )
     if old == new == READY_TO_RUN:
         changed = [part for part in FIXED_PARTS if section(after, part) != section(before, part)]

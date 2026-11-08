@@ -917,20 +917,23 @@ class Spike(SpikeWorkspace):
         for status in ("💡 Confirmed", "🚫 Refuted"):
             self.put(record("🟢 Ready to run", runs=not_run))
             self.assertIn("no runs", self.move("🟢 Ready to run", status), status)
+        self.put(record("🟢 Ready to run", answer="Not settled: the key was not set.", runs=not_run))
         self.assertIsNone(self.move("🟢 Ready to run", "❔ Not settled"))
 
     def test_confirmed_or_refuted_needs_a_run(self):
         for status in ("💡 Confirmed", "🚫 Refuted"):
             self.put(record("🟢 Ready to run"))
             self.assertIn("no runs", self.move("🟢 Ready to run", status), status)
+        self.put(record("🟢 Ready to run", answer="Not settled: the tool would not install."))
         self.assertIsNone(self.move("🟢 Ready to run", "❔ Not settled"))
 
     def test_plain_part_over_the_limit_cannot_move_forward(self):
         long = " ".join(["word"] * 600)
         self.put(record(steps=long))
         self.assertIn("plain part", self.move("📝 Draft", "🟢 Ready to run"))
-        self.put(record("🟢 Ready to run", steps=long, runs=RUN))
         for status in ("💡 Confirmed", "🚫 Refuted", "❔ Not settled"):
+            word = status.split(" ", 1)[1]
+            self.put(record("🟢 Ready to run", steps=long, answer=f"{word}: it opens.", runs=RUN))
             self.assertIn("plain part", self.move("🟢 Ready to run", status), status)
 
     def test_a_long_draft_is_allowed(self):
@@ -953,8 +956,31 @@ class Spike(SpikeWorkspace):
 
     def test_finish_on_its_own_allowed(self):
         for status in ("💡 Confirmed", "🚫 Refuted", "❔ Not settled"):
-            self.put(record("🟢 Ready to run", answer="No.", runs=RUN))
+            word = status.split(" ", 1)[1]
+            self.put(record("🟢 Ready to run", answer=f"{word}: the library opens 20 of 20 files.", runs=RUN))
             self.assertIsNone(self.move("🟢 Ready to run", status), status)
+
+    def test_finding_opens_with_the_status_it_is_given(self):
+        self.put(record("🟢 Ready to run", answer="Refuted: the library opens 3 of 20 files.", runs=RUN))
+        refusal = self.move("🟢 Ready to run", "💡 Confirmed")
+        self.assertIn("Finding", refusal)
+        self.assertIn("Confirmed", refusal)
+        self.assertIsNone(self.move("🟢 Ready to run", "🚫 Refuted"))
+
+    def test_finding_status_word_may_be_bold_and_any_case(self):
+        self.put(record("🟢 Ready to run", answer="**Not settled.** The tool would not install.", runs=RUN))
+        self.assertIsNone(self.move("🟢 Ready to run", "❔ Not settled"))
+
+    def test_an_empty_finding_cannot_finish(self):
+        self.put(record("🟢 Ready to run", runs=RUN))
+        self.assertIn("Finding", self.move("🟢 Ready to run", "🚫 Refuted"))
+
+    def test_a_long_verdict_is_told_to_shorten_the_verdict_sections(self):
+        long = " ".join(["word"] * 600)
+        self.put(record("🟢 Ready to run", answer="Confirmed: " + long, runs=RUN))
+        refusal = self.move("🟢 Ready to run", "💡 Confirmed")
+        self.assertIn("Finding, Next steps, Results or Surprises", refusal)
+        self.assertNotIn("into Experiment", refusal)
 
     def test_finish_with_other_changes_refused(self):
         self.put(record("🟢 Ready to run", runs=RUN))
