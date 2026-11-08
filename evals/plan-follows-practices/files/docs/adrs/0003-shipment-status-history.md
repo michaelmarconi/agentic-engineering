@@ -6,26 +6,40 @@ date: 2027-01-20
 
 # Keep each shipment's status as a history of events
 
-## Context and Problem Statement
+## Question
+
+How does the system keep a shipment's status, so support staff can see what happened and when?
+
+## Decision
+
+Chosen: record every status change as an event, because the history answers customers' questions.
+
+## Background
 
 Support staff need to see what happened to a shipment and when, not only where it is now.
 
-## Considered Options
+## Options
 
-- Overwrite a single status field: rejected, because it loses what happened before.
-- Record every status change as an event: chosen.
+| Option | Outcome | Why |
+| --- | --- | --- |
+| Overwrite a single status field | Rejected | Loses what happened before |
+| Record every status change as an event | Chosen | The history answers customers' questions |
 
-## Decision Outcome
-
-Chosen option: record every status change as an event, because the history answers customers'
-questions.
-
-### Consequences
+## Consequences
 
 - Good: the full history of every shipment is kept.
 - Bad: reading the current status means finding the latest event.
 
-### Confirmation
+## Out of scope
+
+None.
+
+## How we'll check
 
 Applies to: any code that changes a shipment's status.
-Checked by: inspection that status changes go through the one function that records events.
+
+1. Inspection shows status changes go through the one function that records events.
+
+## Technical detail
+
+None.

@@ -1,0 +1,5 @@
+schema_version: "1.1"
+name: adr-detail-at-foot
+expected_outcome: |
+  The person chooses Redis for sessions and gives exact settings and key names. Those details go
+  in Technical detail, at the foot, and not in the plain part above it.

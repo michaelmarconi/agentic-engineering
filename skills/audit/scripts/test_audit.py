@@ -34,8 +34,9 @@ def adr(status="👍 Accepted", supersedes=None, superseded_by=None, open_questi
         lines.append(f"supersedes: {supersedes}")
     if superseded_by:
         lines.append(f"superseded-by: {superseded_by}")
-    return ("---\n" + "\n".join(lines) + "\n---\n\n# Keep amounts in cents\n\n## Context and Problem Statement\n\n"
-            f"C.{extra}\n\n### Confirmation\n\nApplies to: money.\nChecked by: test.\n\n## Open questions\n\n- {open_questions}\n")
+    return ("---\n" + "\n".join(lines) + "\n---\n\n# Keep amounts in cents\n\n## Question\n\nQ?\n\n## Decision\n\nChosen: cents.\n\n"
+            f"## Background\n\nC.{extra}\n\n## How we'll check\n\nApplies to: money.\n\n1. A test.\n\n"
+            f"## Open questions\n\n- {open_questions}\n\n## Technical detail\n\nNone.\n")
 
 
 def plan(status="📝 Draft", specs=(("statement-import.spec.md", ("Import a statement",)),), adrs=(), open_questions="None."):

@@ -6,28 +6,43 @@ date: 2026-09-01
 
 # Keep amounts as decimal numbers of pounds
 
-## Context and Problem Statement
+## Question
+
+In what form does the code keep amounts of money?
+
+## Decision
+
+Chosen: decimal numbers of pounds, because the clerk thinks in pounds.
+
+## Background
 
 Amounts need one form throughout the code.
 
-## Considered Options
+## Options
 
-- The other way: rejected, it was worse.
+| Option | Outcome | Why |
+| --- | --- | --- |
+| The other way | Rejected | It was worse |
 
-## Decision Outcome
-
-Chosen option: decimal numbers of pounds, because the clerk thinks in pounds.
-
-### Consequences
+## Consequences
 
 - Good: it is simpler.
 - Bad: none known.
 
-### Confirmation
+## Out of scope
+
+None.
+
+## How we'll check
 
 Applies to: any code that stores or works out amounts of money.
-Checked by: inspection: amounts are floats of pounds.
+
+1. Inspection: amounts are floats of pounds.
 
 ## Open questions
 
 - None.
+
+## Technical detail
+
+None.

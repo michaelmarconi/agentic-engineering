@@ -5,28 +5,45 @@ status: 👍 Accepted
 
 # 0001. Keep amounts as whole numbers of cents
 
-## Context and problem statement
+## Question
+
+In what form does the ledger keep amounts of money?
+
+## Decision
+
+Chosen: keep every amount as a whole number of cents, because floating-point sums drift by
+fractions of a cent.
+
+## Background
 
 The ledger adds up thousands of amounts each month, and must never be a cent out.
 
-## Considered options
+## Options
 
-- Whole numbers of cents.
-- Floating-point numbers.
+| Option | Outcome | Why |
+| --- | --- | --- |
+| Whole numbers of cents | Chosen | Sums are exact |
+| Floating-point numbers | Rejected | Sums drift by fractions of a cent |
 
-## Decision outcome
+## Consequences
 
-Chosen option: whole numbers of cents, because floating-point sums drift by fractions of a cent.
+- Good: sums are exact.
+- Bad: every amount read from a file must be converted.
 
-### Consequences
+## Out of scope
 
-- Good, because sums are exact.
-- Bad, because every amount read from a file must be converted.
+None.
 
-### Confirmation
+## How we'll check
 
-A test sums 10,000 amounts of 0.10 and expects exactly 100000 cents.
+Applies to: any code that stores or adds up amounts.
+
+1. A test sums 10,000 amounts of 0.10 and expects exactly 100000 cents.
 
 ## Open questions
+
+None.
+
+## Technical detail
 
 None.
