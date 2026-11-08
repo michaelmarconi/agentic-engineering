@@ -13,8 +13,9 @@ Experiment; its technical part, for agents and reviewers, is Experiment, Code an
    `💡 Confirmed`, `🚫 Refuted` or `❔ Not settled`, emoji included. Under a `# ` title that is
    the hypothesis in plain words, the sections are Hypothesis, Finding, Next steps, How we'll know,
    Out of scope, How the test works, Risks and safeguards, Results, Surprises, Open questions,
-   Experiment, Code and Runs, in that order, and no template comment is left in. In a design,
-   Finding, Next steps, Results and Surprises are empty.
+   Experiment, Code and Runs, in that order, and no `<!-- -->` comment from the template is left
+   in; the frontmatter's `#` line stays. In a design, Finding, Next steps, Results and Surprises
+   are empty.
 2. **One hypothesis** (design). Hypothesis states one claim, the one the title states, that one
    experiment can confirm or refute, in at most three sentences, without describing the method.
    A claim with parts that could each be tested without the others fails, naming the parts.
