@@ -14,8 +14,8 @@ Where should sessions live now that loading them from Postgres is the busiest da
 ## Decision
 
 Chosen: store sessions in Redis, the in-memory store every server shares and we already run for
-caching. It takes session reads off the database, adds under 1 ms per request in our load test,
-and lets the server end a session at once.
+caching. Redis takes session reads off the database and adds under 1 ms per request in our load
+test. The server can still end a session at once.
 
 ## Background
 

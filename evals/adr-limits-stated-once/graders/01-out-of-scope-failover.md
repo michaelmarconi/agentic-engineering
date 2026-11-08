@@ -1,7 +1,7 @@
 ---
 type: regex
 target: { source: file, path: docs/adrs/0001-session-data-storage.md }
-pattern: '## Out of scope(?:(?!\n## )[\s\S])*fail'
+pattern: '## Out of scope(?:(?!\n## )[\s\S])*(?:fail|replica)'
 flags: i
 weight: 1
 ---
