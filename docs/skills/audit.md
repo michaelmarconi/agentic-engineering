@@ -42,7 +42,7 @@ repository. It always checks every document, whatever window the run was given (
   that still exist, which catches a spec changed by hand after the plan was signed off;
 - no two plans that are not `✅ Built` name the same requirement, including plans on other
   branches that git already knows, local or remote; `/audit` fetches nothing;
-- `✅ Built` plans, and finished spike records (`💡 Answered` or `❔ Not answered`), are listed,
+- `✅ Built` plans, and finished spike records (`💡 Confirmed`, `🚫 Refuted` or `❔ Not settled`), are listed,
   so you can decide whether to delete any; nothing refers to either, so deleting one leaves no
   other document wrong;
 - spike records still `📝 Draft` or `🟢 Ready to run` are listed with their date, so a spike

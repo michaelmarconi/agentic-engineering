@@ -779,16 +779,19 @@ class Plan(PlanWorkspace):
         self.assertIsNone(self.write("# Notes\n", path=path))
 
 
-def record(status="📝 Draft", question="Can the library read our TIFF files?", answer_if="All 20 open.",
+def record(status="📝 Draft", hypothesis="The library reads our TIFF files.", answer_if="All 20 open.",
+           scope="None.", steps="Opens each file once.", risks="None.",
            experiment="Opens each file. Runs: 1.\nCommand: `python3 check.py`", answer="", questions="None.",
            code="```python\n# file: check.py\nprint('ok')\n```", runs=""):
     return (
         "---\n"
         f"status: {status}\n"
-        "---\n\n# Can the library read our TIFF files?\n\n"
-        f"## Question\n\n{question}\n\n## What would answer it\n\n{answer_if}\n\n"
-        f"## Experiment\n\n{experiment}\n\n## Answer\n\n{answer}\n\n## Surprises\n\n\n\n"
-        f"## Where it goes\n\n\n\n## Open questions\n\n{questions}\n\n## Code\n\n{code}\n\n"
+        "---\n\n# The library reads our TIFF files\n\n"
+        f"## Hypothesis\n\n{hypothesis}\n\n## Finding\n\n{answer}\n\n## Next steps\n\n\n\n"
+        f"## How we'll know\n\n{answer_if}\n\n## Out of scope\n\n{scope}\n\n"
+        f"## How the test works\n\n{steps}\n\n## Risks and safeguards\n\n{risks}\n\n"
+        "## Results\n\n\n\n## Surprises\n\n\n\n"
+        f"## Open questions\n\n{questions}\n\n## Experiment\n\n{experiment}\n\n## Code\n\n{code}\n\n"
         f"## Runs\n\n{runs}"
     )
 
@@ -813,7 +816,7 @@ class Spike(SpikeWorkspace):
         self.assertIn("Runs", self.write(record(runs=RUN)))
 
     def test_new_record_not_draft_refused(self):
-        for status in ("🟢 Ready to run", "💡 Answered", "❔ Not answered"):
+        for status in ("🟢 Ready to run", "💡 Confirmed", "🚫 Refuted", "❔ Not settled"):
             self.assertIn("📝 Draft", self.write(record(status)), status)
 
     def test_template_comment_in_runs_is_empty(self):
@@ -841,11 +844,11 @@ class Spike(SpikeWorkspace):
 
     def test_draft_cannot_be_finished(self):
         self.put(record())
-        for status in ("💡 Answered", "❔ Not answered"):
+        for status in ("💡 Confirmed", "🚫 Refuted", "❔ Not settled"):
             self.assertIn("cannot go from", self.move("📝 Draft", status), status)
 
     def test_fixed_parts_of_ready_record_refused(self):
-        for part in ("question", "answer_if", "experiment"):
+        for part in ("hypothesis", "answer_if", "scope", "steps", "risks", "experiment"):
             self.put(record("🟢 Ready to run"))
             changed = record("🟢 Ready to run", **{part: "Something else."})
             self.assertIn("fixed", self.write(changed), part)
@@ -909,39 +912,67 @@ class Spike(SpikeWorkspace):
         self.put(record("🟢 Ready to run", runs="<!--\n## x\n-->\n" + RUN))
         self.assertIn("run script", self.edit("```\nok\n```", "```\nfine\n```"))
 
-    def test_answered_needs_a_run_that_ran(self):
+    def test_confirmed_or_refuted_needs_a_run_that_ran(self):
         not_run = "### Run 1\n\n2026-11-04 15:02, Linux, a cloud session, code `a91c03e7b2d4`, did not run\n\n```\nx\n```\n"
-        self.put(record("🟢 Ready to run", runs=not_run))
-        self.assertIn("no runs", self.move("🟢 Ready to run", "💡 Answered"))
-        self.assertIsNone(self.move("🟢 Ready to run", "❔ Not answered"))
+        for status in ("💡 Confirmed", "🚫 Refuted"):
+            self.put(record("🟢 Ready to run", runs=not_run))
+            self.assertIn("no runs", self.move("🟢 Ready to run", status), status)
+        self.assertIsNone(self.move("🟢 Ready to run", "❔ Not settled"))
 
-    def test_answered_needs_a_run(self):
-        self.put(record("🟢 Ready to run"))
-        self.assertIn("no runs", self.move("🟢 Ready to run", "💡 Answered"))
-        self.assertIsNone(self.move("🟢 Ready to run", "❔ Not answered"))
+    def test_confirmed_or_refuted_needs_a_run(self):
+        for status in ("💡 Confirmed", "🚫 Refuted"):
+            self.put(record("🟢 Ready to run"))
+            self.assertIn("no runs", self.move("🟢 Ready to run", status), status)
+        self.assertIsNone(self.move("🟢 Ready to run", "❔ Not settled"))
+
+    def test_plain_part_over_the_limit_cannot_move_forward(self):
+        long = " ".join(["word"] * 600)
+        self.put(record(steps=long))
+        self.assertIn("plain part", self.move("📝 Draft", "🟢 Ready to run"))
+        self.put(record("🟢 Ready to run", steps=long, runs=RUN))
+        for status in ("💡 Confirmed", "🚫 Refuted", "❔ Not settled"):
+            self.assertIn("plain part", self.move("🟢 Ready to run", status), status)
+
+    def test_a_long_draft_is_allowed(self):
+        self.assertIsNone(self.write(record(steps=" ".join(["word"] * 900))))
+
+    def test_experiment_comments_and_table_rules_are_not_counted(self):
+        text = record(steps="| a | b |\n|---|---|\n| 1 | 2 |\n<!-- " + "x " * 900 + "-->",
+                      experiment=" ".join(["word"] * 900))
+        self.assertEqual(status_check.plain_words(text), status_check.plain_words(record(steps="| a | b |\n| 1 | 2 |")))
+        self.assertLess(status_check.plain_words(text), 100)
+
+    def test_plain_words_counts_up_to_experiment(self):
+        text = "---\nstatus: 📝 Draft\n---\n\n# One two\n\n## Hypothesis\n\nthree four.\n\n## Experiment\n\nfive six\n"
+        self.assertEqual(status_check.plain_words(text), 5)
+        self.assertEqual(status_check.plain_words(text.replace("## Experiment", "## Notes")), 8)
+
+    def test_a_heading_in_a_comment_does_not_end_the_plain_part(self):
+        text = "# One\n\n<!--\n## Experiment\n-->\n\ntwo three\n\n## Experiment\n\nfour\n"
+        self.assertEqual(status_check.plain_words(text), 3)
 
     def test_finish_on_its_own_allowed(self):
-        for status in ("💡 Answered", "❔ Not answered"):
+        for status in ("💡 Confirmed", "🚫 Refuted", "❔ Not settled"):
             self.put(record("🟢 Ready to run", answer="No.", runs=RUN))
             self.assertIsNone(self.move("🟢 Ready to run", status), status)
 
     def test_finish_with_other_changes_refused(self):
         self.put(record("🟢 Ready to run", runs=RUN))
-        self.assertIn("on its own", self.write(record("💡 Answered", answer="No.", runs=RUN)))
+        self.assertIn("on its own", self.write(record("💡 Confirmed", answer="Confirmed: all 20 open.", runs=RUN)))
 
     def test_finish_with_open_questions_refused(self):
         self.put(record("🟢 Ready to run", questions="- Is one run enough?", runs=RUN))
-        self.assertIn("open questions", self.move("🟢 Ready to run", "💡 Answered"))
+        self.assertIn("open questions", self.move("🟢 Ready to run", "💡 Confirmed"))
 
     def test_finished_record_never_changed(self):
-        for status in ("💡 Answered", "❔ Not answered"):
+        for status in ("💡 Confirmed", "🚫 Refuted", "❔ Not settled"):
             self.put(record(status, answer="No.", runs=RUN))
             self.assertIn("never changed", self.edit("No.", "Yes."), status)
             self.assertIn("never changed", self.move(status, "📝 Draft"), status)
 
     def test_finished_records_cannot_swap(self):
-        self.put(record("💡 Answered", answer="No.", runs=RUN))
-        self.assertIn("never changed", self.move("💡 Answered", "❔ Not answered"))
+        self.put(record("💡 Confirmed", answer="No.", runs=RUN))
+        self.assertIn("never changed", self.move("💡 Confirmed", "🚫 Refuted"))
 
     def test_status_word_without_emoji_refused(self):
         self.assertIn("`📝 Draft`", self.write(record("Draft")))
@@ -955,7 +986,7 @@ class Spike(SpikeWorkspace):
     def test_other_files_in_spikes_ignored(self):
         self.assertIsNone(self.write("# Notes\n", os.path.join(self.tmp.name, "docs", "spikes", "README.txt")))
         nested = os.path.join(self.tmp.name, "docs", "spikes", "old", "x.md")
-        self.assertIsNone(self.write(record("💡 Answered", runs=RUN), nested))
+        self.assertIsNone(self.write(record("💡 Confirmed", runs=RUN), nested))
 
     def test_plan_status_on_a_record_refused(self):
         self.put(record())

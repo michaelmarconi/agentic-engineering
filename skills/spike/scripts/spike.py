@@ -38,6 +38,10 @@ it records the person's words, marked as their observation, instead.
 
 Finally it deletes the working folder, and any folder this project left in either place for a
 record that is finished or no longer exists. Other projects' folders are never touched.
+
+The `words` command counts the words in a record's plain part, everything from the title down to
+`## Experiment` apart from HTML comments, and says whether it is within the 600 the status hook
+allows when the record moves forward.
 """
 
 import argparse
@@ -60,10 +64,9 @@ import urllib.request
 # The record is read with the status hook's own parsing, so the two always agree on where each
 # section ends and what the status is. The hook lives in the plugin's scripts/ folder.
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "..", "scripts"))
-from status_check import (FENCE, NOT_ANSWERED, READY_TO_RUN, SPIKE_STATUSES, ANSWERED,  # noqa: E402
-                          headings_allowed, lifecycle_status, section)
+from status_check import (FENCE, FINISHED, PLAIN_LIMIT, READY_TO_RUN, SPIKE_STATUSES,  # noqa: E402
+                          headings_allowed, lifecycle_status, plain_words, section)
 
-FINISHED = (ANSWERED, NOT_ANSWERED)
 MAX_LINES, KEPT_LINES = 500, 200
 TIME_LIMIT = 540  # seconds: under the 10 minutes Claude Code's shell tool allows a command
 # Names of environment variables that hold credentials; only those named under Secrets reach a run.
@@ -499,6 +502,22 @@ def execute(command, folder, env, timeout):
         return log.read(), ended
 
 
+def words(path):
+    try:
+        with open(path, encoding="utf-8") as f:
+            text = f.read()
+    except (OSError, UnicodeDecodeError):
+        print(f"{os.path.basename(path)}: can't read {path}", file=sys.stderr)
+        return 1
+    count = plain_words(text)
+    if count > PLAIN_LIMIT:
+        print(f"{os.path.basename(path)}: the plain part holds {count} words, {count - PLAIN_LIMIT} over the "
+              f"{PLAIN_LIMIT} allowed; shorten it, moving detail down into Experiment")
+        return 1
+    print(f"{os.path.basename(path)}: the plain part holds {count} words, within the {PLAIN_LIMIT} allowed")
+    return 0
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     commands = parser.add_subparsers(dest="command", required=True)
@@ -519,7 +538,18 @@ def main(argv=None):
     run_parser.add_argument("--data", required=True, help='the plugin\'s data folder: "${CLAUDE_PLUGIN_DATA}"')
     run_parser.add_argument("--observation", metavar="TEXT",
                             help="record the person's own words as this run, for a step only they can do")
+    words_parser = commands.add_parser(
+        "words",
+        help="count the words in the record's plain part",
+        description="Count the words in a spike record's plain part, from the title down to Experiment, "
+                    "apart from HTML comments, as the status hook counts them.",
+        epilog=f"Output: the count and the limit, on stdout. Exit codes: 0 within {PLAIN_LIMIT} words; "
+               f"1 over it, or the record can't be read, with the reason on stderr.",
+    )
+    words_parser.add_argument("record", help="the spike record, a .md file in docs/spikes/")
     args = parser.parse_args(argv)
+    if args.command == "words":
+        return words(args.record)
     try:
         entry = run(args.record, args.data, args.observation)
     except RecordError as error:

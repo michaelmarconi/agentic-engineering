@@ -189,7 +189,7 @@ class Relay(unittest.TestCase):
             prompt = self.assertAllowed(self.check(prompt=f"Document: {path}\nCheck."))["prompt"]
             self.assertIn("docs/spikes/", prompt.split("=== END DOCUMENT ===")[-1], agent)
 
-    def test_checker_of_a_spike_record_is_told_the_spike_rubric_and_where_answers_go(self):
+    def test_checker_of_a_spike_record_is_told_the_spike_rubric_and_where_findings_go(self):
         record = "docs/spikes/2026-11-04-x.md"
         self.put(record, "v1\n")
         self.review(agent="sdlc:spike-reviewer", prompt=f"Document: {record}\nReview this spike record's design.")
@@ -200,7 +200,7 @@ class Relay(unittest.TestCase):
 
     def test_a_spike_records_verdict_check_gets_the_verdict_review(self):
         record = "docs/spikes/2026-11-04-x.md"
-        design, verdict = REPORT.replace("Story", "One question"), REPORT.replace("Story", "Answer follows")
+        design, verdict = REPORT.replace("Story", "One hypothesis"), REPORT.replace("Story", "Finding follows")
         reviewer = "sdlc:spike-reviewer"
         check = f"Document: {record}\nCheck the corrections."
         self.put(record, "design v1\n")

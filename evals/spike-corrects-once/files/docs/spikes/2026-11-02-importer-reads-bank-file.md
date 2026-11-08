@@ -3,19 +3,46 @@
 status: 📝 Draft
 ---
 
-# Can the importer read the bank's statement file as the bank sends it?
+# The importer reads the bank's statement file as the bank sends it
 
-## Question
+## Hypothesis
 
-Can the importer in `src/importer.py`, as it stands, read the bank's monthly statement file without anyone converting it first? It comes from the open question in the statement import spec.
+The importer, as it stands, reads the bank's monthly statement file without anyone converting it first. The statement import spec waits on this, in its open questions.
 
-## What would answer it
+## Finding
+
+## Next steps
+
+## How we'll know
 
 The importer is fast enough on the statement and reads it fine.
 
+## Out of scope
+
+- One month's statement stands for every statement the bank sends.
+
+## How the test works
+
+1. Read a real statement, with the account number removed, using the importer's own code as it stands.
+2. Print how many transactions it read, and each one.
+
+Reading a file gives the same result every time, so one run is enough.
+
+## Risks and safeguards
+
+- The sample is a real statement. Its account number was removed before it was added, and the experiment only reads it, on this machine.
+
+## Results
+
+## Surprises
+
+## Open questions
+
+- None.
+
 ## Experiment
 
-Reads the sample statement with the importer's own `read_statement` function and prints every row. Reading a file gives the same result every time, so one run is enough.
+Imports `read_statement` from `src/importer.py` at the commit below, reads the sample statement and prints every row.
 
 - Runs: 1
 - Stop early if: None.
@@ -23,16 +50,6 @@ Reads the sample statement with the importer's own `read_statement` function and
 - Inputs: None.
 - Secrets: None.
 - Command: `python3 check_statement.py`
-
-## Answer
-
-## Surprises
-
-## Where it goes
-
-## Open questions
-
-- None.
 
 ## Code
 

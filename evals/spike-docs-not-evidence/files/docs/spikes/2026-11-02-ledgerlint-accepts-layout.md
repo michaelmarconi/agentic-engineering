@@ -3,19 +3,46 @@
 status: 🟢 Ready to run
 ---
 
-# Does ledgerlint accept our statement layout?
+# ledgerlint accepts our statement layout
 
-## Question
+## Hypothesis
 
-Does the ledgerlint checking tool accept a statement in the bank's layout as valid?
+The ledgerlint checking tool accepts a statement in the bank's layout as valid.
 
-## What would answer it
+## Finding
 
-`ledgerlint --check sample.csv` exits with code 0 and prints `valid`.
+## Next steps
+
+## How we'll know
+
+The check exits with code 0 and prints `valid`.
+
+## Out of scope
+
+- A two-line statement stands for a full month's.
+
+## How the test works
+
+1. Write a two-line statement in the bank's layout.
+2. Check it with ledgerlint.
+
+A check of a file gives the same result every time, so one run is enough.
+
+## Risks and safeguards
+
+None.
+
+## Results
+
+## Surprises
+
+## Open questions
+
+- None.
 
 ## Experiment
 
-Writes a two-line statement in the bank's layout and checks it with ledgerlint. A check of a file gives the same result every time, so one run is enough.
+Writes `sample.csv` from the Code section and runs `ledgerlint --check sample.csv`. It holds when the command exits with code 0 and prints `valid`; any other exit code or message refutes it.
 
 - Runs: 1
 - Stop early if: None.
@@ -23,16 +50,6 @@ Writes a two-line statement in the bank's layout and checks it with ledgerlint. 
 - Inputs: None.
 - Secrets: None.
 - Command: `ledgerlint --check sample.csv`
-
-## Answer
-
-## Surprises
-
-## Where it goes
-
-## Open questions
-
-- None.
 
 ## Code
 

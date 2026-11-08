@@ -33,10 +33,12 @@ def record(status="🟢 Ready to run", command="printf 'hello\\n'", commit="None
     if command is not None:
         lines.append(f"- Command: `{command}`")
     return (
-        f"---\nstatus: {status}\n---\n\n# Can it?\n\n## Question\n\nCan it?\n\n"
-        "## What would answer it\n\nIt prints ok.\n\n## Experiment\n\nPrints things.\n\n"
+        f"---\nstatus: {status}\n---\n\n# It prints ok\n\n## Hypothesis\n\nIt prints ok.\n\n"
+        "## Finding\n\n\n\n## Next steps\n\n\n\n## How we'll know\n\nIt prints ok.\n\n## Out of scope\n\nNone.\n\n"
+        "## How the test works\n\nPrints things.\n\n## Risks and safeguards\n\nNone.\n\n## Results\n\n\n\n"
+        "## Surprises\n\n\n\n## Open questions\n\nNone.\n\n## Experiment\n\nPrints things.\n\n"
         + "\n".join(lines)
-        + "\n\n## Answer\n\n\n\n## Surprises\n\n\n\n## Where it goes\n\n\n\n## Open questions\n\nNone.\n\n"
+        + "\n\n"
         f"## Code\n\n{code}\n\n## Runs\n\n<!-- Only the run script writes here. -->\n{runs}"
     )
 
@@ -78,6 +80,34 @@ class Project(unittest.TestCase):
                               capture_output=True, text=True).stdout.strip()
 
 
+class Words(Project):
+    def words(self, *args):
+        return subprocess.run([sys.executable, SCRIPT, "words", *args], capture_output=True, text=True)
+
+    def test_short_plain_part_passes(self):
+        self.put(record())
+        done = self.words(self.path())
+        self.assertEqual(done.returncode, 0, done.stderr)
+        self.assertIn(f"{spike.plain_words(self.text())} words", done.stdout)
+        self.assertIn("600", done.stdout)
+
+    def test_long_plain_part_fails(self):
+        self.put(record().replace("Prints things.", " ".join(["word"] * 650), 1))
+        done = self.words(self.path())
+        self.assertEqual(done.returncode, 1)
+        self.assertIn("over", done.stdout)
+
+    def test_unreadable_record(self):
+        done = self.words(os.path.join(self.tmp.name, "missing.md"))
+        self.assertEqual(done.returncode, 1)
+        self.assertIn("can't read", done.stderr)
+
+    def test_help(self):
+        done = self.words("--help")
+        self.assertEqual(done.returncode, 0)
+        self.assertIn("Exit codes", done.stdout)
+
+
 class Refusals(Project):
     def test_help(self):
         done = subprocess.run([sys.executable, SCRIPT, "run", "--help"], capture_output=True, text=True)
@@ -86,7 +116,7 @@ class Refusals(Project):
             self.assertIn(word, done.stdout)
 
     def test_refuses_unless_ready_to_run(self):
-        for status in ("📝 Draft", "💡 Answered", "❔ Not answered"):
+        for status in ("📝 Draft", "💡 Confirmed", "🚫 Refuted", "❔ Not settled"):
             self.put(record(status))
             before = self.text()
             done = self.run_spike()
@@ -195,11 +225,11 @@ class Runs(Project):
         self.assertIn("a cloud session", runs.split("### Run 2")[1])
 
     def test_output_cannot_break_the_record(self):
-        self.put(record(command="printf '## Answer\\n\\nYes.\\n````\\n'"))
+        self.put(record(command="printf '## Finding\\n\\nConfirmed.\\n````\\n'"))
         self.run_spike()
         text = self.text()
-        self.assertEqual(spike.section(text, "Answer"), ["", "", ""])
-        self.assertIn("`````\n## Answer", text)
+        self.assertEqual(spike.section(text, "Finding"), ["", "", ""])
+        self.assertIn("`````\n## Finding", text)
 
     def test_shortens_very_long_output(self):
         self.put(record(command="seq 1 2000"))
@@ -367,7 +397,7 @@ class WorkingFolder(Project):
 
     def test_removes_this_projects_leftovers_only(self):
         other = self.make_project("other")
-        self.put(record("💡 Answered"), name="finished")
+        self.put(record("💡 Confirmed"), name="finished")
         self.put(record(), name="unfinished")
         leftovers = {
             "finished": spike.work_folder(self.data, self.path(name="finished")),
@@ -542,7 +572,7 @@ class SecondReview(Project):
             self.assertNotIn(piece, runs)
 
     def test_removes_leftovers_from_the_other_folder_too(self):
-        self.put(record("💡 Answered"), name="finished")
+        self.put(record("💡 Confirmed"), name="finished")
         key = spike.project_key(self.project)
         in_temp = os.path.join(self.fallback(), f"{key}-finished")
         os.makedirs(in_temp)

@@ -42,7 +42,7 @@ checking, and quotes the spec as evidence for every failure.
     requirement here.
 11. **References.** The spec does not refer to the brief, another spec, an ADR, a plan or a spike
     record in any way: no hyperlink, path or title. Those can change or be deleted without this
-    spec being touched, so the reference would go stale. A spike's answer is stated in the spec's
+    spec being touched, so the reference would go stale. A spike's finding is stated in the spec's
     own words, with its evidence. The spec refers to outside material only by a web link. It never
     refers, by hyperlink, path or title, to material handed over in the conversation, to anything
     outside the repository, or to a file under `docs/` that is not a brief, spec, ADR, plan or

@@ -3,19 +3,46 @@
 status: 🟢 Ready to run
 ---
 
-# Can the importer read the bank's statement file as the bank sends it?
+# The importer reads the bank's statement file as the bank sends it
 
-## Question
+## Hypothesis
 
-Can the importer in `src/importer.py`, as it stands, read the bank's monthly statement file without anyone converting it first? It comes from the open question in the statement import spec.
+The importer, as it stands, reads the bank's monthly statement file without anyone converting it first. The statement import spec waits on this, in its open questions.
 
-## What would answer it
+## Finding
 
-The importer reads all 12 transactions in `samples/statement.csv`, a real statement with the account number removed, without an error, and prints each payee's name as the statement shows it.
+## Next steps
+
+## How we'll know
+
+The importer reads all 12 transactions in the sample statement without an error, and prints each payee's name as the statement shows it.
+
+## Out of scope
+
+- One month's statement stands for every statement the bank sends.
+
+## How the test works
+
+1. Read a real statement, with the account number removed, using the importer's own code as it stands.
+2. Print how many transactions it read, and each one.
+
+Reading a file gives the same result every time, so one run is enough.
+
+## Risks and safeguards
+
+- The sample is a real statement. Its account number was removed before it was added, and the experiment only reads it, on this machine.
+
+## Results
+
+## Surprises
+
+## Open questions
+
+- None.
 
 ## Experiment
 
-Reads the sample statement with the importer's own `read_statement` function and prints every row. Reading a file gives the same result every time, so one run is enough.
+Imports `read_statement` from `src/importer.py` at the commit below and reads `samples/statement.csv`, a real statement with the account number removed. It holds when the script prints `12 transactions read` and every payee's name as written, such as `Café Lune`; an error, or fewer rows, refutes it.
 
 - Runs: 1
 - Stop early if: None.
@@ -23,16 +50,6 @@ Reads the sample statement with the importer's own `read_statement` function and
 - Inputs: `samples/statement.csv`
 - Secrets: None.
 - Command: `python3 check_statement.py`
-
-## Answer
-
-## Surprises
-
-## Where it goes
-
-## Open questions
-
-- None.
 
 ## Code
 

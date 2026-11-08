@@ -29,8 +29,8 @@ If `docs/brief.md` exists, read it so the spec fits the product.
 Usually the person has already talked the idea through in this conversation. Draft from that,
 and from whatever they point you to, such as code, tickets or notes; research what else you
 need, as that is part of writing a spec. Where the conversation changed its mind, the latest
-word wins. Given a finished spike record from `docs/spikes/`, draft from its Answer and Where it
-goes, stating its evidence in the spec's own words, such as "all 20 sample files opened": a spike
+word wins. Given a finished spike record from `docs/spikes/`, draft from its Finding and Next
+steps, stating its evidence in the spec's own words, such as "all 20 sample files opened": a spike
 record may be deleted at any time, so the spec never names it. Only when there is nothing to draw
 on, ask about the idea first.
 

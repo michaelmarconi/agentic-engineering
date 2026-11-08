@@ -39,12 +39,12 @@ class StatusNames(unittest.TestCase):
         self.assertPasses()
 
     def test_spike_record_values_pass(self):
-        self.write("README.md", "A record goes `📝 Draft`, `🟢 Ready to run`, `💡 Answered` or `❔ Not answered`.\n")
+        self.write("README.md", "A record goes `📝 Draft`, `🟢 Ready to run`, `💡 Confirmed`, `🚫 Refuted` or `❔ Not settled`.\n")
         self.assertPasses()
 
     def test_spike_word_without_emoji_fails_with_the_value(self):
-        self.write("docs/a.md", "Set `Not answered`.\n")
-        self.assertFails("docs/a.md:1", "`❔ Not answered`")
+        self.write("docs/a.md", "Set `Not settled`.\n")
+        self.assertFails("docs/a.md:1", "`❔ Not settled`")
 
     def test_ready_to_run_outside_backticks_fails(self):
         self.write("docs/a.md", "Mark it Ready to run.\n")
@@ -55,7 +55,7 @@ class StatusNames(unittest.TestCase):
         self.assertFails("`🟢 Ready to run`")
 
     def test_spike_emoji_status_outside_backticks_fails(self):
-        self.write("docs/a.md", "It ends 💡 Answered.\n")
+        self.write("docs/a.md", "It ends 💡 Confirmed.\n")
         self.assertFails("docs/a.md:1")
 
     def test_backticked_word_without_emoji_fails_with_the_value(self):

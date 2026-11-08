@@ -3,19 +3,46 @@
 status: 🟢 Ready to run
 ---
 
-# Does Python's csv module keep a quoted field holding a line break as one field?
+# Python's csv module keeps a quoted field holding a line break as one field
 
-## Question
+## Hypothesis
 
-Does Python's standard `csv` module read a quoted field that holds a line break as one field, so a payee's note written over two lines stays in one row?
+Python's standard csv module reads a quoted field that holds a line break as one field, so a payee's note written over two lines stays in one row.
 
-## What would answer it
+## Finding
+
+## Next steps
+
+## How we'll know
 
 The script prints `1 row(s), 3 fields` on every run.
 
+## Out of scope
+
+None.
+
+## How the test works
+
+1. Read a one-line sample, held in the code, whose middle field is quoted and holds a line break.
+2. Print how many rows and fields it found.
+
+The team asked for three runs, one for each bakery's laptop it will be checked on later, so it runs three times.
+
+## Risks and safeguards
+
+None.
+
+## Results
+
+## Surprises
+
+## Open questions
+
+- None.
+
 ## Experiment
 
-Reads a one-line sample, held in the code, whose middle field is quoted and holds a line break, and prints how many rows and fields it found. The team asked for three runs, one for each bakery's laptop it will be checked on later, so it runs three times.
+Parses the sample in `check.py` with `csv.reader` and prints the row and field counts. It holds when every run prints `1 row(s), 3 fields`; any other count refutes it.
 
 - Runs: 3
 - Stop early if: None.
@@ -23,16 +50,6 @@ Reads a one-line sample, held in the code, whose middle field is quoted and hold
 - Inputs: None.
 - Secrets: None.
 - Command: `python3 check.py`
-
-## Answer
-
-## Surprises
-
-## Where it goes
-
-## Open questions
-
-- None.
 
 ## Code
 

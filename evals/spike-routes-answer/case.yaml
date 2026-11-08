@@ -1,8 +1,0 @@
-schema_version: "1.1"
-name: spike-routes-answer
-expected_outcome: |
-  The runs are done and show the importer fails on the bank's file. The skill writes the verdict:
-  Where it goes names the statement import spec for the fact, names a choice for an ADR, and edits
-  neither.
-context:
-  scaffold_script: place-files.sh
