@@ -9,7 +9,7 @@ supersedes: 0001
 
 ## Question
 
-Where should sessions live now that loading them from Postgres is the busiest database query?
+Where should the web servers keep login sessions?
 
 ## Decision
 
