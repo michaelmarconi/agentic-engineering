@@ -21,7 +21,7 @@ in the same conversation.
 
 This repository is a plugin for Claude Code, Anthropic's AI coding assistant, whose skills write a
 project's documents as files in its repository. No skill says how to show the finished document,
-so Claude chooses a way each time, and has sent the person to a website, which they do not want.
+so Claude has sent the person to a website, which they do not want.
 The person works in three places: a Claude Desktop code session, a claude.ai project thread and
 the Claude Code command line.
 
