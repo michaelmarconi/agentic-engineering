@@ -19,7 +19,7 @@ test. The server can still end a session at once.
 
 ## Background
 
-ADR 0001 stores sessions in Postgres. Loading the session is now the most frequent database
+[ADR 0001](0001-session-data-storage.md) stores sessions in Postgres. Loading the session is now the most frequent database
 query: at peak it is 40% of all queries and adds about 15 ms to every request.
 
 ## Options
