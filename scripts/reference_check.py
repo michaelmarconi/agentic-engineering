@@ -13,7 +13,10 @@ outside code spans and fenced code blocks, and refuses the edit if it adds a tar
 - an absolute path, or one starting `~`;
 - a relative path that leaves the project;
 - a relative path to a file under docs/ that is not a lifecycle document: the brief, a spec, an
-  ADR, a plan or a spike record.
+  ADR, a plan or a spike record;
+- in an ADR, a relative path to an ADR under docs/adrs/ with no file of exactly that name, so
+  that a link to an earlier ADR, such as `[ADR 0001](0001-example-subject.md)`, leads to it on
+  every system, whatever its file names' case rules.
 
 These documents stand on their own: what matters from material they were drafted from is stated
 in their own words, and outside material is referred to only by a web link. Any other target,
@@ -42,6 +45,7 @@ import status_check  # noqa: E402
 WEB = ("http", "https", "mailto")
 ANGLE = re.compile(r"!?\[(?:[^\]\\]|\\.)*\]\(\s*<([^>\n]*)>")
 AUTOLINK = re.compile(r"<([A-Za-z][A-Za-z0-9+.-]{1,31}:[^<>\s]*)>")
+MISSING_ADR = "is an ADR that does not exist in docs/adrs/"
 HTML = re.compile(r"""\b(?:href|src)\s*=\s*(?:"([^"]*)"|'([^']*)')""", re.IGNORECASE)
 
 
@@ -77,6 +81,15 @@ def problems(source, text):
     return found
 
 
+def exists_exactly(path):
+    """True if the file exists under exactly this name, even where names ignore case."""
+    folder, name = os.path.split(path)
+    try:
+        return name in os.listdir(folder) and os.path.isfile(path)
+    except OSError:
+        return False
+
+
 def problem(source, target):
     """Why the target may not be referred to, or None if it may."""
     path = target.strip().partition("#")[0]
@@ -98,6 +111,8 @@ def problem(source, target):
         return None
     if parts[0].lower() == "docs" and not is_lifecycle_document(full):
         return "is a file under docs/ that is not a lifecycle document"
+    if status_check.is_adr(source) and status_check.is_adr(full) and not exists_exactly(full):
+        return MISSING_ADR
     return None
 
 
@@ -127,17 +142,27 @@ def check(payload):
     if after is None:
         return None
     old = problems(path, before)
-    found = [f"- `{target}` {wrong}" for target, wrong in problems(path, after).items()
-             if target not in old]
-    if not found:
+    new = {target: wrong for target, wrong in problems(path, after).items() if target not in old}
+    missing = [f"- `{target}` {wrong}" for target, wrong in new.items() if wrong == MISSING_ADR]
+    outside = [f"- `{target}` {wrong}" for target, wrong in new.items() if wrong != MISSING_ADR]
+    reasons = []
+    if outside:
+        reasons.append(
+            f"The {kind} stands on its own, so it refers to outside material "
+            "only by a web link. Material handed over in the conversation, kept outside the repository "
+            "or under docs/ beside the lifecycle's documents can change or vanish without the "
+            f"{kind} being touched. State what matters from it in the {kind}'s own words, remove "
+            "these references and tell the person why:\n" + "\n".join(outside)
+        )
+    if missing:
+        reasons.append(
+            "These links lead to no file. List docs/adrs/ and link each ADR by its number to "
+            "its file's exact name:\n"
+            + "\n".join(missing)
+        )
+    if not reasons:
         return None
-    return (
-        f"{os.path.basename(path)}: the {kind} stands on its own, so it refers to outside material "
-        "only by a web link. Material handed over in the conversation, kept outside the repository "
-        "or under docs/ beside the lifecycle's documents can change or vanish without the "
-        f"{kind} being touched. State what matters from it in the {kind}'s own words, remove "
-        "these references and tell the person why:\n" + "\n".join(found)
-    )
+    return f"{os.path.basename(path)}: " + "\n\n".join(reasons)
 
 
 def main(argv=None):

@@ -33,7 +33,7 @@ reviewer needs to build and check it. Footnotes explaining terms come last, afte
    name fails.
 6. **Background states the need.** Background says what forces the choice now, in one paragraph
    a newcomer can follow, and does not argue for an option. Each earlier ADR it builds on is named
-   by number with what it decided in a few words, not retold.
+   by number, linked to its file as check 14 says, with what it decided in a few words, not retold.
 7. **Real options.** Options is a table with the columns Option, Outcome and Why, and at least two
    rows that could each meet the need. Each row's Outcome is Chosen, Rejected or Open, and its Why
    is one line. Once Decision names a choice, exactly one row is Chosen, it is that choice, and
@@ -62,15 +62,17 @@ reviewer needs to build and check it. Footnotes explaining terms come last, afte
     replacement. Each number exists in `docs/adrs/`, and an ADR is `↪️ Superseded` only when its
     replacement is `👍 Accepted`, with both ends then naming each other. While the replacement is
     still `📝 Draft`, the ADR it replaces stays `👍 Accepted` with no `superseded-by:`; that passes.
-14. **References.** Of the lifecycle's documents, the ADR refers only to other ADRs, and names them
-    by number. It does not refer to a spec, the brief, a plan or a spike record in any way: no
-    hyperlink, path or title; a spike's measurements are stated in the ADR's own words. Those
-    change while an ADR does not, so the reference would go stale. The ADR refers to outside
-    material only by a web link. It never refers, by hyperlink, path or title, to material handed
-    over in the conversation, to anything outside the repository, or to a file under `docs/` that
-    is not a brief, spec, ADR, plan or spike record: such material can change or vanish without the
-    ADR being touched, so what matters from it is stated in the ADR's own words. References to code
-    are not part of this check.
+14. **References.** Of the lifecycle's documents, the ADR refers only to other ADRs. Each time its
+    text names one by number, the number is a link to that ADR's file by its name alone, such as
+    `[ADR 0003](0003-message-queue.md)`, and the file exists in `docs/adrs/`; a bare number fails.
+    The `supersedes:` and `superseded-by:` fields hold bare numbers. The ADR does not refer to a
+    spec, the brief, a plan or a spike record in any way: no hyperlink, path or title; a spike's
+    measurements are stated in the ADR's own words. Those change while an ADR does not, so the
+    reference would go stale. The ADR refers to outside material only by a web link. It never
+    refers, by hyperlink, path or title, to material handed over in the conversation, to anything
+    outside the repository, or to a file under `docs/` that is not a brief, spec, ADR, plan or spike
+    record: such material can change or vanish without the ADR being touched, so what matters from
+    it is stated in the ADR's own words. References to code are not part of this check.
 15. **No overlap.** No other `📝 Draft` or `👍 Accepted` ADR in `docs/adrs/` decides the same thing or
     contradicts this one, unless this one supersedes it.
 16. **Accepted means settled.** A `👍 Accepted` or `↪️ Superseded` ADR has no open questions: its

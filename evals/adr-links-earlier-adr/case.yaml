@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: adr-links-earlier-adr
+expected_outcome: |
+  An accepted ADR, 0001, chose a local SQLite copy of the catalogue. The new ADR builds on it, so its Background names ADR 0001 with a link to 0001-example-store.md, and it never names ADR 0001 as a bare number.
+context:
+  scaffold_script: place-files.sh
