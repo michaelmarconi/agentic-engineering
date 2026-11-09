@@ -6,6 +6,21 @@ What changed in each version of the plugin, newest first. Versions follow
 past a major version: it says what you need to change in your documents. Until 1.0.0, any
 minor version may need such a change, and its entry says so.
 
+## [0.29.0] - 2026-11-09
+
+### Changed
+
+- An ADR that names an earlier ADR links the number to that ADR's file, such as
+  `[ADR 0001](0001-example-subject.md)`, so a reader can click through. The ADR rubric fails a
+  bare number, and the template shows the linked form. The `supersedes:` and `superseded-by:`
+  fields still hold bare numbers.
+- The plugin's reference check refuses an ADR edit that adds a link to an ADR file that does not
+  exist, matched by its exact name.
+
+### Fixed
+
+- `/sdlc:audit` no longer reports an ADR that links to another ADR as a references problem.
+
 ## [0.28.0] - 2026-11-08
 
 ### Changed
