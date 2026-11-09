@@ -67,7 +67,7 @@ import sys
 # The plugin's scripts/ folder holds the status hook, whose parsing this script shares.
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "..", "scripts"))
 from status_check import (ACCEPTED, ADR_STATUSES, BUILT, DRAFT, FINISHED,  # noqa: E402
-                          READY, READY_TO_RUN, SPEC_STATUSES, SPIKE_STATUSES, STATUSES, SUPERSEDED, TYPES,
+                          READY, READY_TO_RUN, SPEC_STATUSES, SPIKE_STATUSES, STATUSES, SUPERSEDED, TYPES, article,
                           field, frontmatter, has_open_questions, lifecycle_status, listed,
                           reference_problem, requirements, status_of)
 from doc_references import targets  # noqa: E402
@@ -333,7 +333,7 @@ def check_documents(project):
     for relative, (kind, text) in sorted(documents.items()):
         written = field(text, "type")
         if written is not None and written != TYPES[kind]:
-            add(relative, "type", f"its `type:` is '{written}'; a {kind} has `type: {TYPES[kind]}`")
+            add(relative, "type", f"its `type:` is '{written}'; {article(kind)} {kind} has `type: {TYPES[kind]}`")
         if kind != "brief":
             wrong = status_problem(kind, text)
             if wrong:

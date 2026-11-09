@@ -323,6 +323,11 @@ def count_key(text, key):
     return sum(is_key(line, key) for line in frontmatter(text) or [])
 
 
+def article(kind):
+    """The article that goes before a kind's name, as "an ADR" but "a spec"."""
+    return "an" if kind == "ADR" else "a"
+
+
 def type_problem(name, kind, before, after):
     """Why the document's `type:` is wrong, or None. A new document must have one, and one it has
     is never taken away; a document from before types may go without until its skill adds it."""
@@ -337,7 +342,7 @@ def type_problem(name, kind, before, after):
             return f"{name}: keep `type: {expected}` in the frontmatter; it says what the document is."
         return f"{name}: a new {kind} starts its frontmatter with `type: {expected}`; add it."
     if value != expected:
-        return f"{name}: a {kind} in this folder has `type: {expected}` (found '{value}')."
+        return f"{name}: {article(kind)} {kind} in this folder has `type: {expected}` (found '{value}')."
     return None
 
 
@@ -849,8 +854,9 @@ def spike_rules(path, before, after, old, new):
             return f"{name}: a new spike record starts with Runs empty; only the run script adds runs."
         return None
     if old in FINISHED:
-        # Only a `type:` line may be added, which without_status() leaves out.
-        if entry(after, "status") == entry(before, "status") and without_status(after) == without_status(before):
+        # Only a `type:` line may be added, which without_status() leaves out, and the status
+        # written with its emoji if it lacked one, as an old record's may.
+        if new == old and restyled(before, after):
             return None
         return (
             f"{name}: this spike record is `{old}`, which is final, so it is never changed. "

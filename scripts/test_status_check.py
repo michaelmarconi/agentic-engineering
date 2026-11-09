@@ -1214,11 +1214,17 @@ class DocumentType(Workspace):
             f.write(b"\xff\xfe not text")
         self.assertIn("could not read the brief", self.write(BRIEF))
 
-    def test_finished_spike_record_status_not_restyled(self):
-        # A finished record is final: only a `type:` line may be added to it.
+    def test_finished_spike_record_status_gains_its_emoji_with_its_type(self):
+        # An old record's status may lack its emoji; the hook asks for it, so adding it with
+        # `type:` must not count as changing a final record.
         self.at("docs", "spikes", "2026-11-04-tiff-files-open.md")
-        self.put(record("Confirmed", answer="Confirmed: all 20 open.", runs=RUN))
-        self.assertIsNotNone(self.edit("status: Confirmed", "status: 💡 Confirmed"))
+        self.put(record("Confirmed", kind=None, answer="Confirmed: all 20 open.", runs=RUN))
+        self.assertIsNone(self.edit("status: Confirmed", "type: Spike\nstatus: 💡 Confirmed"))
+
+    def test_finished_spike_record_status_comment_not_changed(self):
+        self.at("docs", "spikes", "2026-11-04-tiff-files-open.md")
+        self.put(record("💡 Confirmed", answer="Confirmed: all 20 open.", runs=RUN))
+        self.assertIsNotNone(self.edit("status: 💡 Confirmed", "status: 💡 Confirmed  # done"))
 
     def test_type_value_with_comment_or_quotes_read(self):
         self.assertIsNone(self.write(spec(kind='"Spec"  # the document type')))
