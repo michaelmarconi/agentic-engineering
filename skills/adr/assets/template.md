@@ -17,7 +17,7 @@ Not chosen yet; see Open questions.
 
 ## Background
 
-<What forces the choice now, in one short paragraph a newcomer can follow. Name each earlier ADR it builds on by number, with what it decided in a few words.>
+<What forces the choice now, in one short paragraph a newcomer can follow. Name each earlier ADR it builds on by number, linked to its file, such as `[ADR 0003](0003-message-queue.md)`, with what it decided in a few words.>
 
 ## Options
 

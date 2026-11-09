@@ -182,6 +182,47 @@ class RefusedReferences(Workspace):
         self.assertIsNone(reason)
 
 
+class MissingADRs(Workspace):
+    def assertMissing(self, reason, target):
+        self.assertIsNotNone(reason)
+        self.assertIn(target, reason)
+        self.assertIn("does not exist", reason)
+        self.assertNotIn("own words", reason)
+
+    def test_a_link_to_an_adr_that_does_not_exist_is_refused(self):
+        self.assertMissing(self.write("Builds on [ADR 0002](0002-cache.md).\n", self.adr), "0002-cache.md")
+
+    def test_a_link_to_an_adr_that_exists_passes(self):
+        self.put(self.at("docs/adrs/0002-cache.md"))
+        self.assertIsNone(self.write("Builds on [ADR 0002](0002-cache.md#decision).\n", self.adr))
+
+    def test_a_link_to_an_adr_by_the_wrong_name_is_refused(self):
+        self.put(self.at("docs/adrs/0002-cache.md"))
+        self.assertMissing(self.write("Builds on [ADR 0002](0002-caching.md).\n", self.adr), "0002-caching.md")
+
+    def test_a_missing_adr_is_refused_from_any_checked_document(self):
+        self.assertMissing(self.write("[ADR 0002](../adrs/0002-cache.md)\n", self.spec),
+                           "../adrs/0002-cache.md")
+
+    def test_a_missing_adr_and_outside_material_are_both_named(self):
+        reason = self.write("[ADR 0002](0002-cache.md) from [the PRD](/tmp/prd.md).\n", self.adr)
+        self.assertIn("0002-cache.md", reason)
+        self.assertIn("does not exist", reason)
+        self.assertIn("/tmp/prd.md", reason)
+        self.assertIn("own words", reason)
+
+    def test_an_old_link_to_a_missing_adr_does_not_block_an_edit(self):
+        self.put(self.adr, "# X\n\nBuilds on [ADR 0002](0002-cache.md).\n\nGoal: one.\n")
+        reason = reference_check.check({
+            "tool_name": "Edit",
+            "tool_input": {"file_path": self.adr, "old_string": "Goal: one.", "new_string": "Goal: two."},
+        })
+        self.assertIsNone(reason)
+
+    def test_a_link_to_a_missing_file_outside_docs_adrs_is_not_checked(self):
+        self.assertIsNone(self.write("Checked in [app.py](../../src/app.py).\n", self.adr))
+
+
 class Robustness(Workspace):
     def test_an_edit_that_cannot_be_matched_is_left_to_the_status_check(self):
         self.put(self.brief, "# Brief\n")

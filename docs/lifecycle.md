@@ -115,8 +115,8 @@ flowchart LR
 - **References never go stale.** Documents refer to one another only where neither end can go
   stale: a plan to the specs and ADRs it builds, since a `✅ Built` plan is a record of how they stood
   when it was built; a spike record to the spec or ADR waiting on its hypothesis, since a finished
-  spike record is a record of how that document stood; and an ADR to other ADRs by number, since a
-  decided ADR is never edited or moved. Nothing refers to a plan or a spike record. Otherwise the
+  spike record is a record of how that document stood; and an ADR to other ADRs, by number linked
+  to the other ADR's file, since a decided ADR is never edited or moved. Nothing refers to a plan or a spike record. Otherwise the
   brief, specs and ADRs never refer to one another in
   any way, whether by hyperlink, path or title, because either end can change or be deleted
   without the other being touched, and the reference would quietly go stale. A spec or ADR that

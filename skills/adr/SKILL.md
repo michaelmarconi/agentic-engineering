@@ -75,7 +75,9 @@ An open question is settled only by the person's answer: write the answer into t
 is about, then remove the question. Never remove or reword a question without that answer;
 moving it to another section, or noting that someone will decide later, leaves it open.
 
-Background states the need in words. Never refer to a spec, the brief, a plan or a spike record in
+Background states the need in words. Name an earlier ADR by its number, linked to its file in
+`docs/adrs/`, such as `[ADR 0003](0003-message-queue.md)`, every time, so a reader can click
+through; a plugin hook refuses a link to a file that is not there. Never refer to a spec, the brief, a plan or a spike record in
 any way, by hyperlink, path or title, and never edit them, even when the person asks you to note the
 decision there: they change while an ADR does not, so the reference would go stale, and the
 lifecycle allows no references between them. Tell the person so. Material they hand over that is not
