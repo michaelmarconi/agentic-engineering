@@ -1,3 +1,7 @@
+---
+type: Brief
+---
+
 # Courtside
 
 Courtside lets members of Elm Park Tennis Club book courts online, so two members no longer book the same court for the same time.

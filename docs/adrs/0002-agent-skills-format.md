@@ -1,4 +1,5 @@
 ---
+type: ADR
 status: 👍 Accepted
 date: 2026-10-28
 ---

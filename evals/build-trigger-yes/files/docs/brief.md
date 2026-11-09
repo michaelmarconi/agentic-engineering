@@ -1,3 +1,7 @@
+---
+type: Brief
+---
+
 # Word counter
 
 The word counter is a small command-line tool for writers who must keep a piece of writing

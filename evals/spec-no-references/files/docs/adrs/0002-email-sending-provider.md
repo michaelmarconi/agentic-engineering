@@ -1,4 +1,5 @@
 ---
+type: ADR
 status: 👍 Accepted
 ---
 

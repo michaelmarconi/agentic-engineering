@@ -1,3 +1,7 @@
+---
+type: Brief
+---
+
 # Ledger import
 
 Ledger import lets the accounts clerk at a chain of four bakeries bring the bank's monthly

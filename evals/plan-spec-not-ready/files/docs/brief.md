@@ -1,3 +1,7 @@
+---
+type: Brief
+---
+
 # Shipment tracker
 
 The shipment tracker shows a freight forwarder's support team where each customer's containers

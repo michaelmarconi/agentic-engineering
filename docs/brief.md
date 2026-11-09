@@ -1,3 +1,7 @@
+---
+type: Brief
+---
+
 # Software Development Lifecycle (SDLC) plugin for Claude Code
 
 A software development lifecycle that brings engineering rigour to software built with artificial

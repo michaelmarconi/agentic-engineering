@@ -67,6 +67,7 @@ An example, for one requirement of a customs-holds spec:
 
 ```markdown
 ---
+type: Plan
 status: 🟢 Ready to build
 ---
 

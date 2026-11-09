@@ -1,3 +1,7 @@
+---
+type: Brief
+---
+
 # Ledgerly
 
 Ledgerly lets small charities keep their accounts online, so treasurers stop passing spreadsheets around by email.

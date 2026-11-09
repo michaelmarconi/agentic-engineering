@@ -1,5 +1,6 @@
 ---
 # Change status only through the sdlc plugin's skills. A hand edit skips the lifecycle checks.
+type: ADR
 status: 👍 Accepted
 date: 2026-10-28
 ---
