@@ -16,6 +16,9 @@ documents
 
     - status: the status is not one its kind of document has, written with its emoji (U+FE0F after
       the emoji is optional), or a spec, ADR, plan or spike record has none;
+    - type: the frontmatter's `type:` is not the one for the document's kind (`Brief`, `Spec`,
+      `ADR`, `Plan` or `Spike`). A document without `type:` is not a problem: those written before
+      types gain one on their next edit, and decided ones may never be edited again;
     - open questions: a `👍 Accepted` spec or ADR, a `🟢 Ready to build` plan or a `🟢 Ready to run`
       spike record whose Open questions section is missing or holds anything but "None.";
     - references: a document links to another lifecycle document, or names its file, where the
@@ -64,7 +67,7 @@ import sys
 # The plugin's scripts/ folder holds the status hook, whose parsing this script shares.
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "..", "scripts"))
 from status_check import (ACCEPTED, ADR_STATUSES, BUILT, DRAFT, FINISHED,  # noqa: E402
-                          READY, READY_TO_RUN, SPEC_STATUSES, SPIKE_STATUSES, STATUSES, SUPERSEDED,
+                          READY, READY_TO_RUN, SPEC_STATUSES, SPIKE_STATUSES, STATUSES, SUPERSEDED, TYPES,
                           field, frontmatter, has_open_questions, lifecycle_status, listed,
                           reference_problem, requirements, status_of)
 from doc_references import targets  # noqa: E402
@@ -328,6 +331,9 @@ def check_documents(project):
     accepted = {"specs": [], "adrs": []}
     built, finished, unfinished = [], [], []
     for relative, (kind, text) in sorted(documents.items()):
+        written = field(text, "type")
+        if written is not None and written != TYPES[kind]:
+            add(relative, "type", f"its `type:` is '{written}'; a {kind} has `type: {TYPES[kind]}`")
         if kind != "brief":
             wrong = status_problem(kind, text)
             if wrong:

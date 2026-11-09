@@ -1193,6 +1193,33 @@ class DocumentType(Workspace):
         self.put(record("💡 Confirmed", answer="Confirmed: all 20 open.", runs=RUN))
         self.assertIsNotNone(self.edit("All 20 open.", "All 21 open."))
 
+    def test_removing_type_refused(self):
+        self.put(spec("👍 Accepted"))
+        self.assertIn("type: Spec", self.edit("type: Spec\nstatus: 👍 Accepted", "status: 👍 Accepted"))
+
+    def test_removing_type_from_a_decided_adr_refused(self):
+        self.at("docs", "adrs", "0001-session-data-storage.md")
+        self.put(adr("👍 Accepted"))
+        self.assertIn("type: ADR", self.edit("type: ADR\nstatus: 👍 Accepted", "status: 👍 Accepted"))
+
+    def test_rewriting_the_brief_without_its_type_refused(self):
+        self.at("docs", "brief.md")
+        self.put(BRIEF)
+        self.assertIn("type: Brief", self.write(BRIEF.replace("type: Brief\n", "")))
+
+    def test_unreadable_brief_refused(self):
+        self.at("docs", "brief.md")
+        os.makedirs(os.path.dirname(self.path), exist_ok=True)
+        with open(self.path, "wb") as f:
+            f.write(b"\xff\xfe not text")
+        self.assertIn("could not read the brief", self.write(BRIEF))
+
+    def test_finished_spike_record_status_not_restyled(self):
+        # A finished record is final: only a `type:` line may be added to it.
+        self.at("docs", "spikes", "2026-11-04-tiff-files-open.md")
+        self.put(record("Confirmed", answer="Confirmed: all 20 open.", runs=RUN))
+        self.assertIsNotNone(self.edit("status: Confirmed", "status: 💡 Confirmed"))
+
     def test_type_value_with_comment_or_quotes_read(self):
         self.assertIsNone(self.write(spec(kind='"Spec"  # the document type')))
 

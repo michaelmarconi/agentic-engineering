@@ -133,6 +133,14 @@ class Documents(Project):
         self.assertIn("`👍 Accepted`", found["docs/specs/statement-import.spec.md"])
         self.assertIn("`✅ Built`", found["docs/plans/2026-11-01-work.md"])
 
+    def test_a_wrong_type_is_a_problem_but_a_missing_one_is_not(self):
+        self.put("docs/brief.md", "---\ntype: Spec\n---\n\n# Product\n")
+        self.put("docs/specs/statement-import.spec.md", spec().replace("status:", "type: ADR\nstatus:", 1))
+        self.put("docs/adrs/0001-cents.md", adr())
+        found = {p["document"]: p["detail"] for p in self.problems("type")}
+        self.assertEqual(sorted(found), ["docs/brief.md", "docs/specs/statement-import.spec.md"])
+        self.assertIn("`type: Spec`", found["docs/specs/statement-import.spec.md"])
+
     def test_a_status_written_without_the_variation_selector_is_fine(self):
         self.put("docs/adrs/0001-cents.md", adr(status="↪ Superseded", superseded_by="0002"))
         self.put("docs/adrs/0002-new.md", adr(supersedes="0001"))

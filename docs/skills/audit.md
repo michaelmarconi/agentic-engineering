@@ -32,6 +32,8 @@ repository. It always checks every document, whatever window the run was given (
 [How much a run checks](#how-much-a-run-checks)), and Draft documents too:
 
 - every status is one the lifecycle allows, with its emoji;
+- every `type:` names the document's kind, as its folder does; a document without one is not a
+  problem, since documents written before types gain one only when next edited;
 - no accepted spec or ADR, no `🟢 Ready to build` plan and no `🟢 Ready to run` spike record has
   open questions;
 - no document links to another, or names its path, where

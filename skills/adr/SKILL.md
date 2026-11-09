@@ -18,7 +18,7 @@ checker holds every document to it. New ADRs start from
 [assets/template.md](assets/template.md). Read these with the Read tool, not the shell, so the
 person is not asked to approve a command.
 
-The template's frontmatter holds `type: ADR`, which says what the document is. A ADR written
+The template's frontmatter holds `type: ADR`, which says what the document is. An ADR written
 before it has no `type:`, so add it with your next edit. The title never names the document's type,
 as "Spec:" or "ADR:" in front of it would: the frontmatter's `type:` already says what it is.
 
