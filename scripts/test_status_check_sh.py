@@ -102,12 +102,12 @@ class WithPython(unittest.TestCase):
             )
 
     def test_hands_the_input_to_the_reference_check(self):
-        result = self.run_brief("# Brief\n\nFrom [the PRD](/tmp/prd.md).\n")
+        result = self.run_brief("---\ntype: Brief\n---\n\n# Brief\n\nFrom [the PRD](/tmp/prd.md).\n")
         self.assertEqual(result.returncode, 2)
         self.assertIn("/tmp/prd.md", result.stderr)
 
     def test_allows_a_brief_with_only_web_links(self):
-        result = self.run_brief("# Brief\n\nSee [it](https://example.com).\n")
+        result = self.run_brief("---\ntype: Brief\n---\n\n# Brief\n\nSee [it](https://example.com).\n")
         self.assertEqual((result.returncode, result.stderr), (0, ""))
 
 

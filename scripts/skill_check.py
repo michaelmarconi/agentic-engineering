@@ -18,6 +18,9 @@ For each skills/<folder>/SKILL.md under the given plugin root (default: this plu
   word, so every review is given the full path the review relay hook finds the repository from
   (docs/adrs/0022). A draft never saved as a file, `Document: feedback draft`, is not held to it.
 
+- the skills that write a lifecycle document (DOCUMENT_SKILLS) hold TYPE_RULE word for word, so
+  none puts the document's type in its title.
+
 For each agents/<name>.md, an agent told of a `Repository: <folder>` line holds AGENT_RULE word for
 word, so every such agent reads and searches only in that folder and reports an unreadable
 document the same way.
@@ -44,6 +47,13 @@ REVIEW_RULE = (
     "answer: run the sequence once when the walk-through ends, either because no questions "
     "are left or because the person stops. A change the person makes or asks for at any other"
     " time is reviewed once it is made."
+)
+
+# The skills that write a lifecycle document, which names its kind in its frontmatter's `type:`.
+DOCUMENT_SKILLS = ("brief", "spec", "adr", "plan", "spike")
+TYPE_RULE = (
+    "The title never names the document's type, as \"Spec:\" or \"ADR:\" in front of it would: "
+    "the frontmatter's `type:` already says what it is."
 )
 
 PATH_RULE = (
@@ -121,6 +131,9 @@ def problems(folder, text):
     if REVIEWS in body and not holds(body, REVIEW_RULE):
         found.append("review rule missing: a skill that runs the review sequence must hold "
                      "skill_check.REVIEW_RULE word for word")
+    if folder in DOCUMENT_SKILLS and not holds(body, TYPE_RULE):
+        found.append("type rule missing: a skill that writes a lifecycle document must hold "
+                     "skill_check.TYPE_RULE word for word")
     if REVIEWS in body and "Document: <" in body and not holds(body, PATH_RULE):
         found.append("path rule missing: a skill that reviews a document by its path must hold "
                      "skill_check.PATH_RULE word for word")

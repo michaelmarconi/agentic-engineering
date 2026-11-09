@@ -16,6 +16,11 @@ checker holds every document to it. A new brief starts from
 [assets/template.md](assets/template.md). Read these with the Read tool, not the shell, so the
 person is not asked to approve a command.
 
+The template's frontmatter holds only `type: Brief`, which says what the document is. A brief
+written before it has no frontmatter, so add the template's with your next edit. The title never
+names the document's type, as "Spec:" or "ADR:" in front of it would: the frontmatter's `type:`
+already says what it is.
+
 ## What to read
 
 The brief records what the person intends, which only they know. So draft from what they said in

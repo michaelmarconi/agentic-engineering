@@ -3,7 +3,7 @@
 Each check passes or fails. `/brief` reads this while writing; the brief reviewer reads it while
 checking, and quotes the brief as evidence for every failure.
 
-1. **Shape.** The brief has no status, so no `status:` frontmatter. Under a title naming the
+1. **Shape.** Its frontmatter holds only `type: Brief`; the brief has no status, so no `status:`. Under a title naming the
    product comes one sentence saying what it is and why it exists, then at least the sections
    Problem, Who it's for, Goals, Out of scope, Constraints and Open questions, in that order
    relative to each other. Further sections, such as "Safety and security" or "Risks", may go

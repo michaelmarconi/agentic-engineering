@@ -19,6 +19,10 @@ checker holds every document to it. New plans start from
 [assets/template.md](assets/template.md). Read these with the Read tool, not the shell, so the
 person is not asked to approve a command.
 
+The template's frontmatter holds `type: Plan`, which says what the document is. A plan written
+before it has no `type:`, so add it with your next edit. The title never names the document's type,
+as "Spec:" or "ADR:" in front of it would: the frontmatter's `type:` already says what it is.
+
 You never make a technical decision for the person. Explore first, settle every decision with
 them one at a time, and only then write.
 

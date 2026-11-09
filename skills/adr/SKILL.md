@@ -18,6 +18,10 @@ checker holds every document to it. New ADRs start from
 [assets/template.md](assets/template.md). Read these with the Read tool, not the shell, so the
 person is not asked to approve a command.
 
+The template's frontmatter holds `type: ADR`, which says what the document is. A ADR written
+before it has no `type:`, so add it with your next edit. The title never names the document's type,
+as "Spec:" or "ADR:" in front of it would: the frontmatter's `type:` already says what it is.
+
 An ADR is written for a person first. It reads from plain to technical: the plain part, from the
 title down to Technical detail, says what had to be chosen, what was chosen, why, and what it costs,
 in at most 500 words, tables included; Technical detail below it holds the exact mechanism, rules,

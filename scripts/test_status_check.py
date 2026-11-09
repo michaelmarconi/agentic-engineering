@@ -14,10 +14,16 @@ sys.path.insert(0, HERE)
 import status_check  # noqa: E402
 
 
-def spec(status="📝 Draft", questions="None.", rule="The system SHALL do X."):
+def head(kind):
+    """The frontmatter's `type:` line, or nothing when kind is None (a document from before types)."""
+    return f"type: {kind}\n" if kind else ""
+
+
+def spec(status="📝 Draft", questions="None.", rule="The system SHALL do X.", kind="Spec"):
     return (
         "---\n"
         "# Change status only through /sdlc:spec and /sdlc:build.\n"
+        f"{head(kind)}"
         f"status: {status}\n"
         "---\n\n# Thing\n\n## Problem\n\nP\n\n## Goal\n\nG\n\n## Scope\n\nIn:\n- a\n\n"
         f"## Requirements\n\n### Requirement: X\n\n{rule}\n\n"
@@ -246,9 +252,10 @@ class Transitions(Workspace):
 
 
 def adr(status="📝 Draft", extra="", body="Chosen: keep sessions in Redis, because it is fast enough.",
-        questions="None.", background="B", detail="None."):
+        questions="None.", background="B", detail="None.", kind="ADR"):
     return (
         "---\n"
+        f"{head(kind)}"
         f"status: {status}\n"
         "date: 2026-10-27\n"
         f"{extra}"
@@ -640,12 +647,13 @@ class AdrEmoji(AdrWorkspace):
     put_replacement = Adr.put_replacement
 
 
-def plan(status="📝 Draft", specs=None, adrs="None.", questions="None.", decisions="None."):
+def plan(status="📝 Draft", specs=None, adrs="None.", questions="None.", decisions="None.", kind="Plan"):
     if specs is None:
         specs = "- [Thing](../specs/thing.spec.md)\n  - Requirement: X"
     return (
         "---\n"
         "# Change status only through the sdlc plugin's skills, which check each change; a change made by hand is not checked.\n"
+        f"{head(kind)}"
         f"status: {status}\n"
         "---\n\n# Thing release\n\n"
         f"## Specs\n\n{specs}\n\n## ADRs\n\n{adrs}\n\n## Decisions\n\n{decisions}\n\n"
@@ -842,9 +850,10 @@ class Plan(PlanWorkspace):
 def record(status="📝 Draft", hypothesis="The library reads our TIFF files.", answer_if="All 20 open.",
            scope="None.", steps="Opens each file once.", risks="None.",
            experiment="Opens each file. Runs: 1.\nCommand: `python3 check.py`", answer="", questions="None.",
-           code="```python\n# file: check.py\nprint('ok')\n```", runs=""):
+           code="```python\n# file: check.py\nprint('ok')\n```", runs="", kind="Spike"):
     return (
         "---\n"
+        f"{head(kind)}"
         f"status: {status}\n"
         "---\n\n# The library reads our TIFF files\n\n"
         f"## Hypothesis\n\n{hypothesis}\n\n## Finding\n\n{answer}\n\n## Next steps\n\n\n\n"
@@ -1077,6 +1086,115 @@ class Spike(SpikeWorkspace):
     def test_plan_status_on_a_record_refused(self):
         self.put(record())
         self.assertIsNotNone(self.move("📝 Draft", "🟢 Ready to build"))
+
+
+
+BRIEF = "---\ntype: Brief\n---\n\n# Ledger\n\nA ledger for small shops.\n\n## Problem\n\nP\n"
+
+
+class DocumentType(Workspace):
+    """Every lifecycle document names its type in its frontmatter; the brief is checked too."""
+
+    def at(self, *parts):
+        self.path = os.path.join(self.tmp.name, *parts)
+
+    def test_each_kind_with_its_type_allowed(self):
+        for parts, text in [
+            (("docs", "specs", "thing.spec.md"), spec()),
+            (("docs", "adrs", "0001-session-data-storage.md"), adr()),
+            (("docs", "plans", "2026-10-29-thing-release.md"), plan(specs="None.")),
+            (("docs", "spikes", "2026-11-04-tiff-files-open.md"), record()),
+            (("docs", "brief.md"), BRIEF),
+        ]:
+            self.at(*parts)
+            self.assertIsNone(self.write(text), parts)
+
+    def test_new_document_without_type_refused(self):
+        for parts, text, value in [
+            (("docs", "specs", "thing.spec.md"), spec(kind=None), "Spec"),
+            (("docs", "adrs", "0001-session-data-storage.md"), adr(kind=None), "ADR"),
+            (("docs", "plans", "2026-10-29-thing-release.md"), plan(specs="None.", kind=None), "Plan"),
+            (("docs", "spikes", "2026-11-04-tiff-files-open.md"), record(kind=None), "Spike"),
+            (("docs", "brief.md"), BRIEF.replace("type: Brief\n", ""), "Brief"),
+        ]:
+            self.at(*parts)
+            reason = self.write(text)
+            self.assertIsNotNone(reason, parts)
+            self.assertIn(f"type: {value}", reason, parts)
+
+    def test_new_brief_without_frontmatter_refused(self):
+        self.at("docs", "brief.md")
+        self.assertIn("type: Brief", self.write("# Ledger\n\nA ledger.\n"))
+
+    def test_wrong_type_refused(self):
+        self.assertIn("type: Spec", self.write(spec(kind="ADR")))
+        self.assertIn("type: Spec", self.write(spec(kind="spec")))
+
+    def test_wrong_type_refused_on_an_existing_document(self):
+        self.put(spec(kind=None))
+        reason = self.edit("status: 📝 Draft", "type: Plan\nstatus: 📝 Draft")
+        self.assertIn("type: Spec", reason)
+
+    def test_two_type_lines_refused(self):
+        self.assertIn("more than one `type:`", self.write(spec().replace("type: Spec\n", "type: Spec\ntype: Spec\n")))
+
+    def test_existing_document_without_type_may_be_edited(self):
+        # Documents from before types gain one on their next edit; the skill adds it, not the hook.
+        self.put(spec(kind=None))
+        self.assertIsNone(self.edit("do X.", "do Y."))
+
+    def test_brief_from_before_types_may_be_edited(self):
+        self.at("docs", "brief.md")
+        self.put("# Ledger\n\nA ledger.\n")
+        self.assertIsNone(self.edit("A ledger.", "A ledger for shops."))
+
+    def test_other_files_without_status_ignored(self):
+        self.at("docs", "plans", "notes.md")
+        self.assertIsNone(self.write("# Notes\n"))
+        self.at("docs", "briefing.md")
+        self.assertIsNone(self.write("# Notes\n"))
+
+    def test_adding_type_counts_as_no_change_when_accepting(self):
+        self.put(spec(kind=None))
+        self.assertIsNone(self.edit("status: 📝 Draft", "type: Spec\nstatus: 👍 Accepted"))
+
+    def test_adding_type_to_an_accepted_spec_needs_no_return_to_draft(self):
+        self.put(spec("👍 Accepted", kind=None))
+        self.assertIsNone(self.edit("status: 👍 Accepted", "type: Spec\nstatus: 👍 Accepted"))
+
+    def test_adding_type_to_decided_adrs_allowed(self):
+        self.at("docs", "adrs", "0001-session-data-storage.md")
+        for status in ("👍 Accepted", "❌ Rejected", "↪️ Superseded"):
+            self.put(adr(status, kind=None))
+            self.assertIsNone(self.edit(f"status: {status}", f"type: ADR\nstatus: {status}"), status)
+
+    def test_old_accepted_adr_superseded_while_gaining_type(self):
+        self.at("docs", "adrs", "0001-session-data-storage.md")
+        self.put(adr("👍 Accepted", kind=None))
+        replacement = os.path.join(self.tmp.name, "docs", "adrs", "0002-sessions-in-postgres.md")
+        with open(replacement, "w") as f:
+            f.write(adr("👍 Accepted", extra="supersedes: 0001\n"))
+        reason = self.edit("status: 👍 Accepted", "type: ADR\nstatus: ↪️ Superseded\nsuperseded-by: 0002")
+        self.assertIsNone(reason)
+
+    def test_adding_type_to_a_built_plan_allowed(self):
+        self.at("docs", "plans", "2026-10-29-thing-release.md")
+        self.put(plan("✅ Built", kind=None))
+        self.assertIsNone(self.edit("status: ✅ Built", "type: Plan\nstatus: ✅ Built"))
+
+    def test_adding_type_to_a_finished_spike_record_allowed(self):
+        self.at("docs", "spikes", "2026-11-04-tiff-files-open.md")
+        for status in ("💡 Confirmed", "🚫 Refuted", "❔ Not settled"):
+            self.put(record(status, kind=None, answer=status.split(" ", 1)[1] + ": all 20 open.", runs=RUN))
+            self.assertIsNone(self.edit(f"status: {status}", f"type: Spike\nstatus: {status}"), status)
+
+    def test_finished_spike_record_otherwise_unchanged(self):
+        self.at("docs", "spikes", "2026-11-04-tiff-files-open.md")
+        self.put(record("💡 Confirmed", answer="Confirmed: all 20 open.", runs=RUN))
+        self.assertIsNotNone(self.edit("All 20 open.", "All 21 open."))
+
+    def test_type_value_with_comment_or_quotes_read(self):
+        self.assertIsNone(self.write(spec(kind='"Spec"  # the document type')))
 
 
 class Command(Workspace):

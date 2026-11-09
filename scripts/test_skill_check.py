@@ -8,7 +8,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 SCRIPT = os.path.join(HERE, "skill_check.py")
 ROOT = os.path.join(HERE, "..")
 sys.path.insert(0, HERE)
-from skill_check import AGENT_RULE, PATH_RULE, REVIEW_RULE  # noqa: E402
+from skill_check import AGENT_RULE, DOCUMENT_SKILLS, PATH_RULE, REVIEW_RULE, TYPE_RULE  # noqa: E402
 
 DESCRIPTION = "Write a thing. Use whenever someone wants a thing."
 
@@ -126,6 +126,30 @@ class SkillCheck(unittest.TestCase):
         self.assertEqual(holding, {"spec-reviewer", "brief-reviewer", "adr-reviewer", "plan-reviewer",
                                    "spike-reviewer", "practices-reviewer", "language-checker",
                                    "correction-checker", "auditor", "audit-checker"})
+
+    def test_document_skill_without_type_rule_fails(self):
+        self.put("spec", skill_md(name="spec"))
+        self.assertFails("spec/SKILL.md: type rule missing")
+
+    def test_document_skill_with_type_rule_passes(self):
+        self.put("spec", skill_md(name="spec", body=f"# Spec\n\n{TYPE_RULE}\n"))
+        done = self.check()
+        self.assertEqual((done.returncode, done.stdout), (0, ""))
+
+    def test_reworded_type_rule_fails(self):
+        rule = TYPE_RULE.replace("never", "seldom")
+        self.assertNotEqual(rule, TYPE_RULE)
+        self.put("plan", skill_md(name="plan", body=f"# Plan\n\n{rule}\n"))
+        self.assertFails("plan/SKILL.md: type rule missing")
+
+    def test_other_skills_need_no_type_rule(self):
+        for name in ("practices", "feedback", "audit", "build"):
+            self.put(name, skill_md(name=name))
+        done = self.check()
+        self.assertEqual((done.returncode, done.stdout), (0, ""))
+
+    def test_the_document_skills_are_the_five_that_write_lifecycle_documents(self):
+        self.assertEqual(sorted(DOCUMENT_SKILLS), ["adr", "brief", "plan", "spec", "spike"])
 
     def test_no_skills_folder_passes(self):
         self.assertEqual(self.check().returncode, 0)

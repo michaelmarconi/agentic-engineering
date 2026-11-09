@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""Refuse spec, ADR, plan and spike record status changes the lifecycle does not allow.
+"""Refuse spec, ADR, plan and spike record status changes the lifecycle does not allow, and a
+lifecycle document whose `type:` is wrong.
 
 Claude Code runs this as a PreToolUse hook on Write, Edit and MultiEdit. It reads the hook's
 JSON from stdin and, for a *.spec.md under the project's docs/specs/ or a *.md under its
@@ -81,6 +82,13 @@ For a spike record it refuses:
 
 HTML comments in the Runs section outside its code fences do not count as runs.
 
+Every lifecycle document names its kind in its frontmatter's `type:`: `Brief` for docs/brief.md,
+`Spec`, `ADR`, `Plan` or `Spike`. For the brief and for any document above with a lifecycle status
+before or after the edit, it refuses a `type:` that is not the one for the document's folder, more
+than one `type:` line, and a new document without `type:`. A document written before types may be
+edited without one, and adding one never counts as a change, so it may come with any edit the
+rules above allow, even to a decided ADR, a `✅ Built` plan or a finished spike record.
+
 Whether a person really accepted an ADR or signed off a plan is beyond a hook; the skill asks them.
 
 A file that has no lifecycle status before or after the edit, nor one named by its word, is left
@@ -127,6 +135,8 @@ FOOTNOTE = re.compile(r"^\[[^\]]+\]:")
 LINK = re.compile(r"^- \[[^\]]*\]\(<?([^)>\s]+)>?\)")
 REQUIREMENT_LINE = re.compile(r"^\s+- Requirement:\s*(.+?)\s*$")
 REQUIREMENT_HEADING = re.compile(r"^###\s+Requirement:\s*(.+?)\s*$")
+# Each kind of document by the value its frontmatter's `type:` holds.
+TYPES = {"brief": "Brief", "spec": "Spec", "ADR": "ADR", "plan": "Plan", "spike record": "Spike"}
 
 
 def project_parts(path):
@@ -153,6 +163,11 @@ def is_plan(path):
     parts = project_parts(path)
     return (len(parts) == 3 and [part.lower() for part in parts[:2]] == ["docs", "plans"]
             and parts[-1].lower().endswith(".md"))
+
+
+def is_brief(path):
+    """True for the project's docs/brief.md, whatever the case."""
+    return [part.lower() for part in project_parts(path)] == ["docs", "brief.md"]
 
 
 def is_spike(path):
@@ -234,10 +249,11 @@ def listed(values):
 
 
 def without_status(text, also=()):
-    """The text's lines without its frontmatter status line, nor any line setting a key in `also`."""
+    """The text's lines without its frontmatter status and type lines, nor any line setting a key
+    in `also`. Leaving out `type:` lets a document from before types gain one with any edit."""
     lines = text.lstrip("\ufeff").splitlines()
     end = len(frontmatter(text) or []) + 1
-    return [line for i, line in enumerate(lines) if i > end or not is_key(line, "status", *also)]
+    return [line for i, line in enumerate(lines) if i > end or not is_key(line, "status", "type", *also)]
 
 
 def has_open_questions_section(text):
@@ -300,12 +316,37 @@ def after_edit(tool, tool_input, before):
     return text
 
 
+def type_problem(name, kind, before, after):
+    """Why the document's `type:` is wrong, or None. A new document must have one; a document from
+    before types may go without until its skill adds it, but never with the wrong value."""
+    expected = TYPES[kind]
+    if sum(is_key(line, "type") for line in frontmatter(after) or []) > 1:
+        return f"{name}: the frontmatter has more than one `type:` line; keep one, `type: {expected}`."
+    value = field(after, "type")
+    if value is None:
+        if before:
+            return None
+        return f"{name}: a new {kind} starts its frontmatter with `type: {expected}`; add it."
+    if value != expected:
+        return f"{name}: a {kind} in this folder has `type: {expected}` (found '{value}')."
+    return None
+
+
+def brief_problem(payload, path):
+    """Why an edit to the brief is refused: only for its `type:`, as the brief has no status."""
+    before = read(path) if os.path.exists(path) else None
+    after = after_edit(payload.get("tool_name"), payload.get("tool_input") or {}, before)
+    return None if after is None else type_problem(os.path.basename(path), "brief", before, after)
+
+
 def check(payload):
     """Return the reason to refuse the tool call, or None to allow it."""
     tool_input = payload.get("tool_input") or {}
     path = tool_input.get("file_path", "")
     if not path:
         return None
+    if is_brief(path):
+        return brief_problem(payload, path)
     if is_spec(path):
         kind, statuses, rules = "spec", SPEC_STATUSES, spec_rules
     elif is_adr(path):
@@ -339,6 +380,8 @@ def check(payload):
     # A status missing its emoji is judged as the one it names first, so a move the lifecycle
     # refuses anyway is refused for that, not with advice that only leads to that refusal.
     reason = lifecycle_problem(path, kind, statuses, rules, before, after, old, new, written)
+    if not reason and (old in statuses or new in statuses):
+        reason = type_problem(name, kind, before, after)
     if reason or new == written:
         return reason
     return (
@@ -793,7 +836,7 @@ def spike_rules(path, before, after, old, new):
             return f"{name}: a new spike record starts with Runs empty; only the run script adds runs."
         return None
     if old in FINISHED:
-        if after == before:
+        if after == before or (new == old and restyled(before, after)):
             return None
         return (
             f"{name}: this spike record is `{old}`, which is final, so it is never changed. "
