@@ -13,30 +13,30 @@ person for review?
 
 ## Decision
 
-Chosen: show the document in the app's file viewer where the app offers one, and always name its
-full path, never a website such as GitHub. The person reads it where they already work and answers
+Chosen: show the document in the app's file viewer where one exists, and always name its path,
+never a website. The person reads it where they already work and answers
 in the same conversation.
 
 ## Background
 
 This repository is a plugin for Claude Code, Anthropic's AI coding assistant, whose skills write a
 project's documents as files in its repository. No skill says how to show the finished document,
-so Claude improvises, and has sent the person to GitHub, which they do not want. Claude's apps now
+so Claude improvises, and has sent the person to a website, which they do not want. Claude's apps now
 show a file beside the conversation, and let the person send feedback on lines selected in it.
 
 ## Options
 
 | Option | Outcome | Why |
 | --- | --- | --- |
-| Leave each skill to improvise | Rejected | Claude has sent the person to GitHub links |
-| A separate skill for marking up a document in a GitHub pull request | Rejected | The person does not want GitHub, and needs no lasting comments |
+| Leave each skill to improvise | Rejected | Claude has sent the person to websites |
+| A separate skill for marking up a document on a code-hosting website | Rejected | Takes the person out of the app, and they need no lasting comments |
 | A copy of the document in Claude Docs, claude.ai's shared documents | Rejected | A copy outside the repository; each comment took minutes to handle |
 | The app's file viewer where offered, the path always, no website | Chosen | Feedback reaches Claude at once, with the lines it is about |
 
 ## Consequences
 
-- Good: every document skill hands over the same way, wherever it runs.
-- Good: feedback is a change the person asks for, which a reviewer agent checks once made.
+- Good: every document skill presents its document the same way in each of the three environments.
+- Good: feedback is a change the person asks for, which a separate Claude, started without this conversation, checks once made.
 - Bad: the plugin cannot make a viewer appear; the app must offer one.
 - Bad: where the viewer shows a copy, Claude shows a fresh copy after each change.
 
@@ -50,7 +50,7 @@ show a file beside the conversation, and let the person send feedback on lines s
 
 Applies to: how every skill that writes a document shows it to the person.
 
-1. Inspection: the plugin's skill checker finds the same hand-over sentence in every document skill.
+1. Inspection: the plugin's skill checker finds the same presenting sentence in every document skill.
 2. Test: when a skill presents a document, it names the full path and links to no website.
 3. Demonstration: in each of the three environments, a skill shows the document, or names its path where no viewer exists.
 
@@ -63,12 +63,12 @@ Applies to: how every skill that writes a document shows it to the person.
 **The sentence.** Each skill that writes a document carries one identical sentence in the part that
 tells Claude how to present the finished document: "Show the person the document: if the app you run in
 can show them a file in a viewer, use it, and show a fresh copy after each change if what it shows
-is a copy; always name the document's full path; never send them to a website, such as GitHub, to
+is a copy; always name the document's full path; never send them to a website to
 read it." `scripts/skill_check.py` checks it is present, as it checks the sentence that says when a
 document is reviewed.
 
 **Feedback.** What the person sends back is a change they ask for, so the skill makes it and
-has a separate reviewer agent check it once it is made, as each skill already says.
+has a separate Claude, started without this conversation, check it once it is made, as each skill already says.
 
 **Evidence.** On 9 November 2026 one prompt, naming no tool, asked Claude to write a short file and
 show it for review, or give its path, and never link to a website:
@@ -81,4 +81,4 @@ show it for review, or give its path, and never link to a website:
   It declined to publish the file to claude.ai, since that is a website. With Remote Control on,
   the Desktop app showed the file.
 
-[^skill]: A skill is one step of the plugin, such as `/sdlc:spec`, which writes and accepts specs.
+[^skill]: A skill is one step of the plugin, such as the one that writes a spec, a document describing what one capability of the product should do.
