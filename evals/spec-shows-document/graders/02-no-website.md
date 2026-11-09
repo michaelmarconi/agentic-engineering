@@ -1,7 +1,7 @@
 ---
 type: regex
 target: last_message
-pattern: '(?i)https?://\S*(?:github|gitlab|bitbucket|claude\.ai)'
+pattern: 'https?://\S*(?:github|gitlab|bitbucket|claude\.ai)'
 match: not_contains
 weight: 1
 ---
