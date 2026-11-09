@@ -1,0 +1,11 @@
+schema_version: "1.1"
+name: practices-shows-document
+expected_outcome: |
+  The skill writes the practices topic file and hands it over by naming its full path. The repository's remote
+  is on GitHub, but the hand-over sends the person to no website to read it. No file viewer
+  exists in the eval, so the viewer half of the rule is not tested here.
+  Guard case (AGENTS.md rule 5): Claude already names the path unaided, so this case catches a
+  change that breaks the shared sentence on showing a document (ADR 0025), rather than showing
+  the sentence is needed.
+context:
+  scaffold_script: place-files.sh

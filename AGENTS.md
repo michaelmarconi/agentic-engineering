@@ -61,8 +61,12 @@ everything else is judgement.
    - When the sequence runs again is the same for every such skill: each holds `REVIEW_RULE`
      from `scripts/skill_check.py` word for word, and the script fails a skill that names
      `sdlc:correction-checker` without it.
-   - The hand-over gives the person the reports, the number of items they must settle, and the
-     first of them; suggestions are listed apart as optional.
+   - The hand-over shows the person the document in the app's file viewer where there is one,
+     always names its path and never sends them to a website
+     ([ADR 0025](docs/adrs/0025-document-review-display.md)): the skill holds `SHOW_RULE` from
+     `scripts/skill_check.py` word for word, and the script checks it. The hand-over also gives
+     the reports, the number of items the person must settle, and the first of them; suggestions
+     are listed apart as optional.
    - A document with a status has an Open questions section, last apart from a spike record's
      Experiment, Code and Runs and an ADR's Technical detail, their technical parts, which follow
      it so the document reads plain first. The skill writes there

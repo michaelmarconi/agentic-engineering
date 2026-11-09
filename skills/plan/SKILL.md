@@ -161,13 +161,15 @@ for at any other time is reviewed once it is made. Setting a status on the perso
 change to the plan's content and needs no new review.
 
 Whether the check passed or failed, end with the hand-over. It is what the person acts on, so make
-it hard to miss anything. Give them the plan's path, the review and wording reports and the
-check's report, if there was one, leaving out the decisions they list for the person, which are
-now in the plan's Open questions. Then say how many items must be settled before the plan can be
-ready to build: its open questions, plus any correction the check found not made or broken.
-Say you will take them one at a time, rather than asking whether to, and ask the first only, as a
-single question, giving any examples as possible answers rather than further questions; if the
-person has said not to ask now, ask nothing. Name the count only, not the items: each comes up
-when you reach it. List the reviewers' suggestions separately, as optional: they never hold the
-plan back. Once nothing is left to settle, ask whether the plan is ready to build. Leave committing
-to them.
+it hard to miss anything. Show the person the document: if the app you run in can show them a file
+in a viewer, use it, and show a fresh copy after each change if what it shows is a copy; always name
+the document's full path; never send them to a website to read it. Give them the plan's path, the
+review and wording reports and the check's report, if there was one, leaving out the decisions they
+list for the person, which are now in the plan's Open questions. Then say how many items must be
+settled before the plan can be ready to build: its open questions, plus any correction the check
+found not made or broken. Say you will take them one at a time, rather than asking whether to, and
+ask the first only, as a single question, giving any examples as possible answers rather than
+further questions; if the person has said not to ask now, ask nothing. Name the count only, not the
+items: each comes up when you reach it. List the reviewers' suggestions separately, as optional:
+they never hold the plan back. Once nothing is left to settle, ask whether the plan is ready to
+build. Leave committing to them.
