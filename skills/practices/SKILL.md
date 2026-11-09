@@ -153,11 +153,11 @@ questions with the person, do not review after each answer: run the sequence onc
 walk-through ends, either because no questions are left or because the person stops. A change the
 person makes or asks for at any other time is reviewed once it is made.
 
-Whether the check passed or failed, end with the hand-over. Show the person the document: if the app
-you run in can show them a file in a viewer, use it, and show a fresh copy after each change if what
-it shows is a copy; always name the document's full path; never send them to a website to read it.
-Give the person the files you changed, the review and wording reports and the check's report, if
-there was one. Then say how many items they must settle, such as a finding left for them or a
-correction the check found not made or broken, and ask the first only, as a single question; if the
-person has said not to ask now, ask nothing. List the reviewers' suggestions separately, as
-optional. Leave committing to them.
+Whether the check passed or failed, end with the hand-over. Show the person each document you wrote
+or changed: if the app you run in can show them a file in a viewer, use it, and show a fresh copy
+after each change if what it shows is a copy; always name each one's full path; never send them to a
+code-hosting site to read it. Give the person the files you changed, the review and wording reports
+and the check's report, if there was one. Then say how many items they must settle, such as a
+finding left for them or a correction the check found not made or broken, and ask the first only, as
+a single question; if the person has said not to ask now, ask nothing. List the reviewers'
+suggestions separately, as optional. Leave committing to them.

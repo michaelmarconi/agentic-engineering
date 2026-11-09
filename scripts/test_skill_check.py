@@ -115,9 +115,17 @@ class SkillCheck(unittest.TestCase):
         self.assertEqual(done.returncode, 0, done.stdout)
 
     def test_reworded_show_rule_fails(self):
-        rule = SHOW_RULE.replace("never send them to a website", "send them to GitHub")
+        rule = SHOW_RULE.replace("never send them to a code-hosting site", "send them to GitHub")
         self.assertNotEqual(rule, SHOW_RULE)
         body = self.reviewing("Document: <the demo's full path>", f"{PATH_RULE}\n\n{rule}\n")
+        self.put("demo", skill_md(body=body))
+        self.assertFails("show rule missing")
+
+    def test_the_first_wording_of_the_show_rule_fails(self):
+        old = ("Show the person the document: if the app you run in can show them a file in a viewer, "
+               "use it, and show a fresh copy after each change if what it shows is a copy; always "
+               "name the document's full path; never send them to a website to read it.")
+        body = self.reviewing("Document: <the demo's full path>", f"{PATH_RULE}\n\n{old}\n")
         self.put("demo", skill_md(body=body))
         self.assertFails("show rule missing")
 

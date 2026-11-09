@@ -62,7 +62,7 @@ everything else is judgement.
      from `scripts/skill_check.py` word for word, and the script fails a skill that names
      `sdlc:correction-checker` without it.
    - The hand-over shows the person the document in the app's file viewer where there is one,
-     always names its path and never sends them to a website
+     always names its path and never sends them to a code-hosting site
      ([ADR 0025](docs/adrs/0025-document-review-display.md)): the skill holds `SHOW_RULE` from
      `scripts/skill_check.py` word for word, and the script checks it. The hand-over also gives
      the reports, the number of items the person must settle, and the first of them; suggestions

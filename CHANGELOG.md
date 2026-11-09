@@ -12,7 +12,7 @@ minor version may need such a change, and its entry says so.
 
 - Every skill that writes a document shows it to you the same way when it hands it over: in your
   Claude app's file viewer where there is one, so you can select lines in it to comment on, and
-  always by its full path. It never sends you to a website, such as GitHub, to read it. In a
+  always by its full path. It never sends you to a code-hosting site, such as GitHub, to read it. In a
   claude.ai project thread, where the viewer shows a copy, a fresh copy follows each change.
   See ADR 0025.
 - The plugin's skill check fails a document skill that does not hold this sentence word for word.

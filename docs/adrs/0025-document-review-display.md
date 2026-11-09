@@ -14,14 +14,14 @@ person for review?
 ## Decision
 
 Chosen: show the document in the app's file viewer where one exists, and always name its path,
-never a website. The person reads it where they already work and answers
+never a code-hosting site. The person reads it where they already work and answers
 in the same conversation.
 
 ## Background
 
 This repository is a plugin for Claude Code, Anthropic's AI coding assistant, whose skills write a
 project's documents as files in its repository. No skill says how to show the finished document,
-so Claude has sent the person to a website, which they do not want.
+so Claude has sent the person to a code-hosting site, which they do not want.
 The person works in three places: a Claude Desktop code session, a claude.ai project thread and
 the Claude Code command line.
 
@@ -29,10 +29,10 @@ the Claude Code command line.
 
 | Option | Outcome | Why |
 | --- | --- | --- |
-| Leave Claude to choose a way each time | Rejected | Claude has sent the person to websites |
-| A separate skill for marking up a document on a code-hosting website | Rejected | Takes the person out of the app, and they need no lasting comments |
-| A copy of the document in Claude Docs, claude.ai's shared documents | Rejected | Publishes a separate document outside the repository |
-| The app's file viewer where offered, the path always, no website | Chosen | Feedback reaches Claude at once, with the lines it is about |
+| Leave Claude to choose a way each time | Rejected | Claude has sent the person to code-hosting sites |
+| A separate skill for marking up a document on a code-hosting site | Rejected | Takes the person out of the app, and they need no lasting comments |
+| A copy of the document in Claude Docs, claude.ai's shared documents | Rejected | A second document, edited apart from the repository file |
+| The app's file viewer where offered, the path always, no code-hosting site | Chosen | Feedback reaches Claude at once, with the lines it is about |
 
 ## Consequences
 
@@ -51,7 +51,7 @@ the Claude Code command line.
 Applies to: how every skill that writes a document shows it to the person.
 
 1. Inspection: the plugin's script that checks each skill's instructions finds the same sentence on showing documents in every document skill.
-2. Test: when a skill presents a document, it names the full path and links to no website.
+2. Test: when a skill presents a document, it names the full path and links to no code-hosting site.
 3. Demonstration: in each of the three places, a skill shows the document, or names its path where no viewer exists.
 
 ## Open questions
@@ -61,10 +61,10 @@ Applies to: how every skill that writes a document shows it to the person.
 ## Technical detail
 
 **The sentence.** Each skill that writes a document carries one identical sentence in the part that
-tells Claude how to present the finished document: "Show the person the document: if the app you run in
-can show them a file in a viewer, use it, and show a fresh copy after each change if what it shows
-is a copy; always name the document's full path; never send them to a website to
-read it." `scripts/skill_check.py` checks it is present, as it checks the sentence that says when a
+tells Claude how to present the finished document: "Show the person each document you wrote or
+changed: if the app you run in can show them a file in a viewer, use it, and show a fresh copy after
+each change if what it shows is a copy; always name each one's full path; never send them to a
+code-hosting site to read it." `scripts/skill_check.py` checks it is present, as it checks the sentence that says when a
 document is reviewed.
 
 **Feedback.** What the person sends back is a change they ask for, so the skill makes it and

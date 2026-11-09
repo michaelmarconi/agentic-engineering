@@ -54,9 +54,9 @@ PATH_RULE = (
     "folder you started in. If it refuses to start them, do what its reason says."
 )
 SHOW_RULE = (
-    "Show the person the document: if the app you run in can show them a file in a viewer, use "
-    "it, and show a fresh copy after each change if what it shows is a copy; always name the "
-    "document's full path; never send them to a website to read it."
+    "Show the person each document you wrote or changed: if the app you run in can show them a "
+    "file in a viewer, use it, and show a fresh copy after each change if what it shows is a copy; "
+    "always name each one's full path; never send them to a code-hosting site to read it."
 )
 REPOSITORY_LINE = "`Repository: <folder>`"
 # Every agent given a `Repository:` line: the document reviewers the review relay hook knows (all
