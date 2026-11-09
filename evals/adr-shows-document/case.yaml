@@ -1,11 +1,10 @@
 schema_version: "1.1"
 name: adr-shows-document
 expected_outcome: |
-  The skill writes the ADR and hands it over by naming its full path. The repository's remote
+  The skill writes the ADR and hands it over by naming its full path, from the root of the file system. The repository's remote
   is on GitHub, but the hand-over sends the person to no website to read it. No file viewer
   exists in the eval, so the viewer half of the rule is not tested here.
-  Guard case (AGENTS.md rule 5): Claude already names the path unaided, so this case catches a
-  change that breaks the shared sentence on showing a document (ADR 0025), rather than showing
-  the sentence is needed.
+  Without the plugin, Claude names the path relative to the repository or not at all (0 of 3
+  runs passed on 9 November 2026, against 3 of 3 with it).
 context:
   scaffold_script: place-files.sh
