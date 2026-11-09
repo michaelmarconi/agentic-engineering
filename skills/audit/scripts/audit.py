@@ -20,8 +20,8 @@ documents
       spike record whose Open questions section is missing or holds anything but "None.";
     - references: a document links to another lifecycle document, or names its file, where the
       lifecycle's references rule does not allow it. Plans and spike records may name specs and
-      ADRs; nothing may name a plan or spike record; the brief, specs and ADRs name no other
-      document, though an ADR may name another by number. The frontmatter is not read;
+      ADRs; an ADR may name another ADR; nothing may name a plan or spike record; otherwise the
+      brief, specs and ADRs name no other document. The frontmatter is not read;
     - supersede: an `👍 Accepted` or `↪️ Superseded` ADR's `supersedes:` names an ADR whose
       `superseded-by:` does not name it back, a `superseded-by:` names an ADR whose `supersedes:`
       does not name this one, or a `↪️ Superseded` ADR has no `superseded-by:`. A Draft or
@@ -170,6 +170,8 @@ def body(text):
 
 
 def allowed_reference(source_kind, target_kind):
+    if source_kind == "ADR":
+        return target_kind == "ADR"
     return source_kind in ("plan", "spike record") and target_kind in ("spec", "ADR")
 
 
@@ -203,7 +205,6 @@ def reference_problems(relative, kind, text, documents, project):
             continue
         problems.append(f"it names {other}, a {other_kind}; " + (
             "nothing may refer to a plan or a spike record" if other_kind in ("plan", "spike record")
-            else "an ADR may name another ADR only by its number" if kind == "ADR" and other_kind == "ADR"
             else f"a {kind} names no other lifecycle document"))
     return problems
 

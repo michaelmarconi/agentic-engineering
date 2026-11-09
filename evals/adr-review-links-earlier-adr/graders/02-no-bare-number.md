@@ -1,7 +1,7 @@
 ---
 type: regex
 target: { source: file, path: docs/adrs/0002-catalogue-copy-refresh.md }
-pattern: "(?<!\\[)\\bADR[ -]?0*1\\b(?!\\]\\()"
+pattern: "\\bADR[ -]?0*1\\b(?![^\\[\\]\\n]*\\]\\()"
 match: not_contains
 weight: 1
 ---

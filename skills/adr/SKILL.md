@@ -77,14 +77,14 @@ moving it to another section, or noting that someone will decide later, leaves i
 
 Background states the need in words. Name an earlier ADR by its number, linked to its file in
 `docs/adrs/`, such as `[ADR 0003](0003-message-queue.md)`, every time, so a reader can click
-through; a plugin hook refuses a link to a file that is not there. Never refer to a spec, the brief, a plan or a spike record in
-any way, by hyperlink, path or title, and never edit them, even when the person asks you to note the
-decision there: they change while an ADR does not, so the reference would go stale, and the
-lifecycle allows no references between them. Tell the person so. Material they hand over that is not
-a web page, such as a requirements document or notes, is drawn on but never referred to (rubric
-check 14): state what matters from it in the ADR's own words, and tell them it can change or vanish
-without the ADR being touched. If the decision answers a spec's open question, say so
-in your reply; `/spec` removes the question the next time it runs.
+through; a plugin hook refuses a link to a file that is not there. Never refer to a spec, the brief,
+a plan or a spike record in any way, by hyperlink, path or title, and never edit them, even when the
+person asks you to note the decision there: they change while an ADR does not, so the reference
+would go stale, and the lifecycle allows no references between them. Tell the person so. Material
+they hand over that is not a web page, such as a requirements document or notes, is drawn on but
+never referred to (rubric check 14): state what matters from it in the ADR's own words, and tell
+them it can change or vanish without the ADR being touched. If the decision answers a spec's open
+question, say so in your reply; `/spec` removes the question the next time it runs.
 
 ## Status
 

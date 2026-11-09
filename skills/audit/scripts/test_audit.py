@@ -173,10 +173,18 @@ class Documents(Project):
                                  "docs/plans/2026-11-01-work.md.\n\n## Open"))
         found = sorted((p["document"], p["detail"]) for p in self.problems("references"))
         self.assertEqual([document for document, _ in found], [
-            "docs/adrs/0001-cents.md", "docs/brief.md", "docs/specs/exports.spec.md",
+            "docs/brief.md", "docs/specs/exports.spec.md",
             "docs/specs/statement-import.spec.md", "docs/spikes/2026-11-01-can-it.md"])
         self.assertIn("docs/plans/2026-11-01-work.md", dict(found)["docs/spikes/2026-11-01-can-it.md"])
         self.assertNotIn("exports.spec.md", dict(found)["docs/spikes/2026-11-01-can-it.md"])
+
+    def test_an_adr_may_link_another_adr_but_no_other_document(self):
+        self.put("docs/specs/exports.spec.md", spec())
+        self.put("docs/adrs/0001-cents.md", adr())
+        self.put("docs/adrs/0002-floats.md", adr(extra=" Builds on [ADR 0001](0001-cents.md)."))
+        self.put("docs/adrs/0003-tax.md", adr(extra=" For [exports](../specs/exports.spec.md)."))
+        found = sorted(p["document"] for p in self.problems("references"))
+        self.assertEqual(found, ["docs/adrs/0003-tax.md"])
 
     def test_a_reference_in_frontmatter_comments_or_supersede_fields_is_fine(self):
         self.put("docs/adrs/0001-cents.md", adr(status="↪️ Superseded", superseded_by="0002"))

@@ -14,8 +14,9 @@ outside code spans and fenced code blocks, and refuses the edit if it adds a tar
 - a relative path that leaves the project;
 - a relative path to a file under docs/ that is not a lifecycle document: the brief, a spec, an
   ADR, a plan or a spike record;
-- a relative path to an ADR under docs/adrs/ that does not exist, so that an ADR's link to an
-  earlier ADR, such as `[ADR 0001](0001-example-subject.md)`, always leads to a file.
+- in an ADR, a relative path to an ADR under docs/adrs/ with no file of exactly that name, so
+  that a link to an earlier ADR, such as `[ADR 0001](0001-example-subject.md)`, leads to it on
+  every system, whatever its file names' case rules.
 
 These documents stand on their own: what matters from material they were drafted from is stated
 in their own words, and outside material is referred to only by a web link. Any other target,
@@ -80,6 +81,15 @@ def problems(source, text):
     return found
 
 
+def exists_exactly(path):
+    """True if the file exists under exactly this name, even where names ignore case."""
+    folder, name = os.path.split(path)
+    try:
+        return name in os.listdir(folder) and os.path.isfile(path)
+    except OSError:
+        return False
+
+
 def problem(source, target):
     """Why the target may not be referred to, or None if it may."""
     path = target.strip().partition("#")[0]
@@ -101,7 +111,7 @@ def problem(source, target):
         return None
     if parts[0].lower() == "docs" and not is_lifecycle_document(full):
         return "is a file under docs/ that is not a lifecycle document"
-    if status_check.is_adr(full) and not os.path.isfile(full):
+    if status_check.is_adr(source) and status_check.is_adr(full) and not exists_exactly(full):
         return MISSING_ADR
     return None
 

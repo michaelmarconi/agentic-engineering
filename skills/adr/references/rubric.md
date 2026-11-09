@@ -65,15 +65,14 @@ reviewer needs to build and check it. Footnotes explaining terms come last, afte
 14. **References.** Of the lifecycle's documents, the ADR refers only to other ADRs. Each time its
     text names one by number, the number is a link to that ADR's file by its name alone, such as
     `[ADR 0003](0003-message-queue.md)`, and the file exists in `docs/adrs/`; a bare number fails.
-    The `supersedes:` and `superseded-by:` fields hold bare numbers. A decided ADR is never edited
-    or moved, so the link cannot go stale. The ADR does not refer to a spec, the brief, a plan or a spike record in any way: no
-    hyperlink, path or title; a spike's measurements are stated in the ADR's own words. Those
-    change while an ADR does not, so the reference would go stale. The ADR refers to outside
-    material only by a web link. It never refers, by hyperlink, path or title, to material handed
-    over in the conversation, to anything outside the repository, or to a file under `docs/` that
-    is not a brief, spec, ADR, plan or spike record: such material can change or vanish without the
-    ADR being touched, so what matters from it is stated in the ADR's own words. References to code
-    are not part of this check.
+    The `supersedes:` and `superseded-by:` fields hold bare numbers. The ADR does not refer to a
+    spec, the brief, a plan or a spike record in any way: no hyperlink, path or title; a spike's
+    measurements are stated in the ADR's own words. Those change while an ADR does not, so the
+    reference would go stale. The ADR refers to outside material only by a web link. It never
+    refers, by hyperlink, path or title, to material handed over in the conversation, to anything
+    outside the repository, or to a file under `docs/` that is not a brief, spec, ADR, plan or spike
+    record: such material can change or vanish without the ADR being touched, so what matters from
+    it is stated in the ADR's own words. References to code are not part of this check.
 15. **No overlap.** No other `📝 Draft` or `👍 Accepted` ADR in `docs/adrs/` decides the same thing or
     contradicts this one, unless this one supersedes it.
 16. **Accepted means settled.** A `👍 Accepted` or `↪️ Superseded` ADR has no open questions: its

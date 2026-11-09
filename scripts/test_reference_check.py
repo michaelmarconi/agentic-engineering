@@ -200,9 +200,14 @@ class MissingADRs(Workspace):
         self.put(self.at("docs/adrs/0002-cache.md"))
         self.assertMissing(self.write("Builds on [ADR 0002](0002-caching.md).\n", self.adr), "0002-caching.md")
 
-    def test_a_missing_adr_is_refused_from_any_checked_document(self):
-        self.assertMissing(self.write("[ADR 0002](../adrs/0002-cache.md)\n", self.spec),
-                           "../adrs/0002-cache.md")
+    def test_only_an_adr_is_checked_for_missing_adrs(self):
+        # A spec or the brief may not refer to an ADR at all; that is the reviewer's to catch.
+        self.assertIsNone(self.write("[ADR 0002](../adrs/0002-cache.md)\n", self.spec))
+        self.assertIsNone(self.write("[ADR 0002](adrs/0002-cache.md)\n", self.brief))
+
+    def test_a_link_must_match_the_file_name_exactly(self):
+        self.put(self.at("docs/adrs/0002-cache.md"))
+        self.assertMissing(self.write("Builds on [ADR 0002](0002-Cache.md).\n", self.adr), "0002-Cache.md")
 
     def test_a_missing_adr_and_outside_material_are_both_named(self):
         reason = self.write("[ADR 0002](0002-cache.md) from [the PRD](/tmp/prd.md).\n", self.adr)
