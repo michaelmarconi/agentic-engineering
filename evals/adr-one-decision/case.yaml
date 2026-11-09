@@ -1,4 +1,4 @@
 schema_version: "1.1"
 name: adr-one-decision
 expected_outcome: |
-  The conversation holds three separate decisions. The skill writes three ADRs, one per decision, even though the person asked for one record, and says so.
+  The conversation holds three separate decisions. The skill writes three ADRs, one per decision, even though the person asked for one record, and says so. It splits them itself, never leaving an open question asking whether to split.

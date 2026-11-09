@@ -5,4 +5,4 @@ pattern: "src/session"
 match: not_contains
 weight: 1
 ---
-The Confirmation no longer names file paths.
+How we'll check no longer names file paths.

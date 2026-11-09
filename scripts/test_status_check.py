@@ -245,16 +245,23 @@ class Transitions(Workspace):
         self.assertIsNotNone(result)
 
 
-def adr(status="📝 Draft", extra="", body="Chosen option: Redis, because it is fast enough.", questions="None."):
+def adr(status="📝 Draft", extra="", body="Chosen: keep sessions in Redis, because it is fast enough.",
+        questions="None.", background="B", detail="None."):
     return (
         "---\n"
         f"status: {status}\n"
         "date: 2026-10-27\n"
         f"{extra}"
-        "---\n\n# Store sessions in Redis\n\n## Context and Problem Statement\n\nC\n\n"
-        "## Considered Options\n\n- Redis\n- Postgres: slower\n\n"
-        f"## Decision Outcome\n\n{body}\n\n"
-        f"## Open questions\n\n{questions}\n"
+        "---\n\n# Store sessions in Redis\n\n## Question\n\nWhere do sessions live?\n\n"
+        f"## Decision\n\n{body}\n\n"
+        f"## Background\n\n{background}\n\n"
+        "## Options\n\n| Option | Outcome | Why |\n| --- | --- | --- |\n"
+        "| Redis | Chosen | Fast |\n| Postgres | Rejected | Slower |\n\n"
+        "## Consequences\n\n- Good: fast.\n- Bad: one more service.\n\n"
+        "## Out of scope\n\nNone.\n\n"
+        "## How we'll check\n\nApplies to: code that stores sessions.\n\n1. A test reads a session back.\n\n"
+        f"## Open questions\n\n{questions}\n\n"
+        f"## Technical detail\n\n{detail}\n"
     )
 
 
@@ -299,13 +306,66 @@ class Adr(AdrWorkspace):
         self.put(adr().split("\n## Open questions")[0])
         self.assertIn("no Open questions section", self.edit("status: 📝 Draft", "status: 👍 Accepted"))
 
+    def test_accepting_with_a_long_plain_part_refused(self):
+        self.put(adr(background=" ".join(["word"] * 500)))
+        refusal = self.edit("status: 📝 Draft", "status: 👍 Accepted")
+        self.assertIn("plain part", refusal)
+        self.assertIn("500", refusal)
+
+    def test_technical_detail_is_not_counted(self):
+        self.put(adr(detail=" ".join(["word"] * 2000)))
+        self.assertIsNone(self.edit("status: 📝 Draft", "status: 👍 Accepted"))
+
+    def test_rejecting_a_long_adr_allowed(self):
+        self.put(adr(background=" ".join(["word"] * 500)))
+        self.assertIsNone(self.edit("status: 📝 Draft", "status: ❌ Rejected"))
+
+    def test_accepting_without_a_choice_refused(self):
+        self.put(adr(body="Not chosen yet; see Open questions."))
+        self.assertIn("Chosen:", self.edit("status: 📝 Draft", "status: 👍 Accepted"))
+
+    def test_accepting_a_bare_chosen_refused(self):
+        self.put(adr(body="Chosen:"))
+        self.assertIn("Chosen:", self.edit("status: 📝 Draft", "status: 👍 Accepted"))
+
+    def test_accepting_without_a_decision_section_refused(self):
+        text = adr().replace("## Decision\n\nChosen: keep sessions in Redis, because it is fast enough.\n\n", "")
+        self.put(text)
+        self.assertIn("Chosen:", self.edit("status: 📝 Draft", "status: 👍 Accepted"))
+
+    def test_bold_chosen_allowed(self):
+        self.put(adr(body="**Chosen:** keep sessions in Redis, because it is fast enough."))
+        self.assertIsNone(self.edit("status: 📝 Draft", "status: 👍 Accepted"))
+
+    def test_bold_option_name_allowed(self):
+        self.put(adr(body="Chosen: **keep sessions in Redis**, because it is fast enough."))
+        self.assertIsNone(self.edit("status: 📝 Draft", "status: 👍 Accepted"))
+
+    def test_option_in_code_or_quotes_allowed(self):
+        for body in ("Chosen: `Redis`, because it is fast.", 'Chosen: "Redis", because it is fast.'):
+            self.put(adr(body=body))
+            self.assertIsNone(self.edit("status: 📝 Draft", "status: 👍 Accepted"), body)
+
+    def test_old_layout_draft_told_to_re_lay(self):
+        text = adr().replace("## Decision\n\nChosen: keep sessions in Redis,", "## Decision Outcome\n\nChosen option: Redis,")
+        self.put(text)
+        self.assertIn("layout", self.edit("status: 📝 Draft", "status: 👍 Accepted"))
+
+    def test_rejecting_without_a_choice_allowed(self):
+        self.put(adr(body="Not chosen yet; see Open questions."))
+        self.assertIsNone(self.edit("status: 📝 Draft", "status: ❌ Rejected"))
+
+    def test_adr_plain_words_stop_at_technical_detail(self):
+        text = "---\nstatus: 📝 Draft\n---\n\n# One two\n\n## Question\n\nthree?\n\n## Technical detail\n\nfour five\n"
+        self.assertEqual(status_check.plain_words(text, "Technical detail"), 4)
+
     def test_rejecting_with_open_questions_allowed(self):
         self.put(adr(questions="- How long do sessions last?"))
         self.assertIsNone(self.edit("status: 📝 Draft", "status: ❌ Rejected"))
 
     def test_accepting_with_other_changes_refused(self):
         self.put(adr())
-        self.assertIn("on its own", self.write(adr("👍 Accepted", body="Chosen option: Postgres.")))
+        self.assertIn("on its own", self.write(adr("👍 Accepted", body="Chosen: keep sessions in Postgres.")))
 
     def test_draft_to_superseded_refused(self):
         self.put(adr())
@@ -526,7 +586,7 @@ class AdrEmoji(AdrWorkspace):
 
     def test_moving_over_changes_nothing_else(self):
         self.put(adr("Accepted"))
-        self.assertIsNotNone(self.write(adr("👍 Accepted", body="Chosen option: Postgres.")))
+        self.assertIsNotNone(self.write(adr("👍 Accepted", body="Chosen: keep sessions in Postgres.")))
 
     def test_moving_over_adds_nothing_else_to_the_status_line(self):
         self.put(adr("Accepted"))

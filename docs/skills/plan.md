@@ -61,7 +61,7 @@ matter and the existing code to reuse; and keep it short enough to scan but deta
 carry out. It holds no code.
 
 There is no section on testing. Each requirement in a spec already has a `Verified by:` line,
-and each ADR a Confirmation, saying how to prove it, so the plan does not repeat them.
+and each ADR a How we'll check section, saying how to prove it, so the plan does not repeat them.
 
 An example, for one requirement of a customs-holds spec:
 

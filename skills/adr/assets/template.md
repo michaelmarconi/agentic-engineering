@@ -4,30 +4,46 @@ status: 📝 Draft
 date: <YYYY-MM-DD>
 ---
 
-# <The decision, such as "Store sessions in Redis">
+# <The decision in plain words, such as "Keep session data in Redis"; the question while no option is chosen>
 
-## Context and Problem Statement
+## Question
 
-<What forces a decision now, in words a newcomer can follow.>
+<The one choice to make, in one to three sentences, such as "Where does the service keep session data?">
 
-## Considered Options
+## Decision
 
-- <Option>: <why it was rejected, for each option not chosen>
+Not chosen yet; see Open questions.
+<!-- Once the person picks: "Chosen: <the option in full>, because <the reason, in at most two sentences>." -->
 
-## Decision Outcome
+## Background
 
-Chosen option: <option>, because <reason>.
+<What forces the choice now, in one short paragraph a newcomer can follow. Name each earlier ADR it builds on by number, with what it decided in a few words.>
 
-### Consequences
+## Options
 
-- Good: <...>
-- Bad: <...>
+| Option | Outcome | Why |
+| --- | --- | --- |
+| <Option> | <Open before the choice; then Chosen or Rejected> | <One line: the main trade-off, or why it was chosen or rejected> |
 
-### Confirmation
+## Consequences
+
+- Good: <one line>
+- Bad: <one line>
+
+## Out of scope
+
+- <Each limit, untested assumption or decision left to another ADR, stated once; or "None.">
+
+## How we'll check
 
 Applies to: <the concern, such as "any code that stores or reads session data">.
-Checked by: <test, demonstration, inspection or analysis, and what it checks>.
+
+1. <One check, by test, demonstration, inspection or analysis, in one line>
 
 ## Open questions
 
-- <Unknowns still to answer, or "None.">
+- <What only the person can settle, or "None.">
+
+## Technical detail
+
+<The exact mechanism, rules and settings; evidence, such as a spike's measurements, in this ADR's own words; each check in full where one line was not enough. Or "None.">

@@ -6,6 +6,32 @@ What changed in each version of the plugin, newest first. Versions follow
 past a major version: it says what you need to change in your documents. Until 1.0.0, any
 minor version may need such a change, and its entry says so.
 
+## [0.28.0] - 2026-11-08
+
+### Changed
+
+- ADRs are written to be read by people first, keeping the spirit of MADR. An ADR reads from
+  plain to technical: Question, Decision, Background, Options, Consequences, Out of scope, How
+  we'll check and Open questions, with the exact mechanism, rules and evidence under Technical
+  detail at the foot. The part above Technical detail is at most 500 words; `adr.py words`
+  counts it, and the status hook refuses to accept a longer ADR.
+- `/sdlc:adr` writes the Question first and leaves Decision as "Not chosen yet; see Open
+  questions." until you choose. Once you have, Decision opens with "Chosen:" and names the option
+  in full, so it makes sense on its own; the status hook refuses to accept an ADR whose Decision
+  does not. Options is a table saying of each option whether it was chosen or rejected, and why.
+- A limit, an untested assumption or a decision left for later goes once under Out of scope, not
+  under Consequences. An ADR that bundles two decisions is split by the skill rather than asked
+  about.
+- How we'll check replaces Confirmation. `/sdlc:audit`, `/sdlc:plan` and `/sdlc:build` read How
+  we'll check, Decision and Technical detail, and still read Confirmation and Decision Outcome in
+  ADRs accepted before this version.
+
+### What you need to change
+
+- ADRs already accepted need nothing: they keep working as they are. A draft ADR in the old
+  layout, with Decision Outcome and Confirmation, cannot be accepted until it is re-laid from the
+  new template; `/sdlc:adr` can do this for you.
+
 ## [0.27.0] - 2026-11-08
 
 ### Changed

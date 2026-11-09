@@ -65,7 +65,7 @@ The lifecycle keeps five kinds of document:
 |---|---|---|
 | Brief | `docs/brief.md` | What the product is, who it is for and why. One per product. |
 | Spec | `docs/specs/` | What one capability should do, and how we will know it does. |
-| ADR (architecture decision record) | `docs/adrs/` | One technical decision and why it was made. |
+| ADR (architecture decision record) | `docs/adrs/` | One technical decision and why it was made, written to read plain first. |
 | Plan | `docs/plans/` | One piece of work that builds part of a spec or an ADR, kept once built as the record of what was built. |
 | Spike record | `docs/spikes/` | One hypothesis tested by a throwaway experiment: the experiment, what it produced and the finding, written to read plain first. |
 

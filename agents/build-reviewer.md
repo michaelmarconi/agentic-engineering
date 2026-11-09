@@ -16,8 +16,8 @@ default branch does not have.
 Read:
 - The plan.
 - The rubric at `${CLAUDE_PLUGIN_ROOT}/skills/build/references/rubric.md`.
-- Each spec and ADR the plan lists, and the Confirmation section of every other ADR under
-  `docs/adrs/` whose status is `👍 Accepted`, for rubric check 6.
+- Each spec and ADR the plan lists, and the How we'll check section (Confirmation in an
+  older ADR) of every other ADR under `docs/adrs/` whose status is `👍 Accepted`, for rubric check 6.
 - The build, with these git commands only, run with Bash: `git log --reverse --stat <base>..HEAD`,
   `git diff <base>...HEAD`, and `git show <commit>` for a commit you need to see whole.
 - Any file the build changed, and the code around it, as far as you need to judge a check.

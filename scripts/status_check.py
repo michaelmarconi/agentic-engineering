@@ -31,7 +31,11 @@ For an ADR (architecture decision record) it refuses:
 - an ADR that had a status losing it;
 - a new ADR with any status but `📝 Draft`, including one the lifecycle does not know;
 - `👍 Accepted` or `❌ Rejected`, except from `📝 Draft` and as an edit that changes nothing else;
-- `👍 Accepted` while the Open questions section is missing, or holds anything but "None.";
+- `👍 Accepted` while the Open questions section is missing, or holds anything but "None.", while
+  the Decision section does not open with "Chosen:" and the option, or while the ADR's plain part,
+  everything between the frontmatter and `## Technical detail` apart from HTML comments, holds more
+  than 500 words, counted as for a spike record; a draft in the layout from before those
+  sections is told to re-lay it first;
 - `↪️ Superseded`, except from `👍 Accepted` with a `superseded-by:` line added and nothing else
   changed, naming the four-digit number of a `👍 Accepted` ADR in the same folder whose
   `supersedes:` names this one (it may name several);
@@ -100,6 +104,8 @@ FINISHED = (CONFIRMED, REFUTED, NOT_SETTLED)
 FIXED_PARTS = ("Hypothesis", "How we'll know", "Out of scope", "How the test works", "Risks and safeguards",
                "Experiment")
 PLAIN_LIMIT = 600  # words in a spike record's plain part, the part written for people
+ADR_PLAIN_LIMIT = 500  # words in an ADR's plain part, from the title down to Technical detail
+ADR_DETAIL = "Technical detail"  # the heading that starts an ADR's technical part
 WORD = re.compile(r"\S*[^\W_]\S*")  # a run of non-space characters holding a letter or digit
 ACCEPTED, REJECTED, SUPERSEDED = "👍 Accepted", "❌ Rejected", "↪️ Superseded"
 STATUSES = (DRAFT, READY, BUILT)
@@ -667,6 +673,25 @@ def adr_rules(path, before, after, old, new):
             )
         if new == ACCEPTED and has_open_questions(after):
             return open_questions_refusal(name, after, ACCEPTED, "ADR")
+        if new == ACCEPTED and section(after, "Decision") is None and section(after, "Decision Outcome") is not None:
+            return (
+                f"{name}: this draft ADR is in the layout from before Question, Decision and Technical "
+                f"detail, so it cannot be `{ACCEPTED}` as it stands. Re-lay it from the ADR template, "
+                "have it reviewed, and ask the person again."
+            )
+        if new == ACCEPTED and not decision_chosen(after):
+            return (
+                f"{name}: its Decision section must open with \"Chosen:\" and name the option in full, "
+                f"so the ADR cannot be `{ACCEPTED}` as it stands. Write the person's choice there, have "
+                "it reviewed, and ask them again."
+            )
+        words = plain_words(after, ADR_DETAIL) if new == ACCEPTED else 0
+        if words > ADR_PLAIN_LIMIT:
+            return (
+                f"{name}: its plain part, from the title down to {ADR_DETAIL}, holds {words} words, more "
+                f"than the {ADR_PLAIN_LIMIT} a person is asked to read, so it cannot be `{ACCEPTED}`. "
+                f"Shorten it, moving detail down into {ADR_DETAIL}, and have it reviewed again."
+            )
         return None
     if old == ACCEPTED and new == SUPERSEDED:
         added = [line for line in frontmatter(after) or [] if is_key(line, "superseded-by")]
@@ -702,21 +727,29 @@ def runs(text):
     return uncommented(section(text, "Runs") or []).strip()
 
 
-def plain_part(text):
-    """A spike record's plain part: its lines after the frontmatter and before `## Experiment`,
-    joined, without HTML comments. A record with no Experiment section is plain to its end."""
+def plain_part(text, end_heading="Experiment"):
+    """A document's plain part: its lines after the frontmatter and before the `## ` heading that
+    starts its technical part (Experiment in a spike record, Technical detail in an ADR), joined,
+    without HTML comments. A document without that heading is plain to its end."""
     lines = text.lstrip("\ufeff").splitlines()
     head = frontmatter(text)
     lines = lines[len(head) + 2:] if head is not None else lines
     allowed = headings_allowed(lines)
-    end = next((i for i, line in enumerate(lines) if allowed[i] and line.strip().lower() == "## experiment"),
-               len(lines))
+    stop = "## " + end_heading.lower()
+    end = next((i for i, line in enumerate(lines) if allowed[i] and line.strip().lower() == stop), len(lines))
     return uncommented(lines[:end])
 
 
-def plain_words(text):
-    """How many words a spike record's plain part holds."""
-    return len(WORD.findall(plain_part(text)))
+def plain_words(text, end_heading="Experiment"):
+    """How many words a document's plain part holds."""
+    return len(WORD.findall(plain_part(text, end_heading)))
+
+
+def decision_chosen(text):
+    """Whether an ADR's Decision, without comments, opens with "Chosen:" (bold or not) and goes on
+    to name the option."""
+    decision = uncommented(section(text, "Decision") or []).strip()
+    return re.match(r"[*_]*chosen[*_]*:[\s*_]*[^\s*_]", decision, re.IGNORECASE) is not None
 
 
 def finding_opens_with(text, word):

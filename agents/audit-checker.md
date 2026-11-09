@@ -26,7 +26,8 @@ For each drift finding:
 
 1. Read the document and confirm that its quote is there, word for word, and that it is the rule
    or decision the finding says it is. Read the requirement's whole rule, or the ADR's whole
-   Decision Outcome and Confirmation, not just the quote.
+   Decision, How we'll check and Technical detail (Decision Outcome and Confirmation in an ADR
+   written before those sections), not just the quote.
 2. Read the code at the file and line given, and confirm the quote is there word for word. Then
    read around it, and search the repository with Glob and Grep, for anything that makes the
    finding wrong: other code that does what the rule asks, a check elsewhere that handles the

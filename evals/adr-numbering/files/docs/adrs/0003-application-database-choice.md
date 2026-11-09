@@ -6,29 +6,44 @@ date: 2026-10-20
 
 # Use Postgres for application data
 
-## Context and Problem Statement
+## Question
+
+Which database holds the application's accounts, invoices and settings?
+
+## Decision
+
+Chosen: use Postgres for application data, because the team knows it.
+
+## Background
 
 The application needs one database for accounts, invoices and settings.
 
-## Considered Options
+## Options
 
-- Postgres
-- MySQL: rejected because the team knows Postgres.
+| Option | Outcome | Why |
+| --- | --- | --- |
+| Postgres | Chosen | The team knows it |
+| MySQL | Rejected | The team knows Postgres |
 
-## Decision Outcome
-
-Chosen option: Postgres, because the team knows it.
-
-### Consequences
+## Consequences
 
 - Good: no learning curve.
 - Bad: one server to run.
 
-### Confirmation
+## Out of scope
+
+None.
+
+## How we'll check
 
 Applies to: any code that stores application data.
-Checked by: inspection that application data is stored only in Postgres.
+
+1. Inspection shows application data is stored only in Postgres.
 
 ## Open questions
+
+None.
+
+## Technical detail
 
 None.

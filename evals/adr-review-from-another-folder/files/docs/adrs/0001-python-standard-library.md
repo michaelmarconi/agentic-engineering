@@ -6,30 +6,45 @@ date: 2026-10-01
 
 # Use only Python's standard library
 
-## Context and Problem Statement
+## Question
+
+May the service use packages from outside Python's standard library?
+
+## Decision
+
+Chosen: use only the standard library, because it keeps upkeep low.
+
+## Background
 
 The service is a small Python program that one person maintains. Every outside package must be
 kept up to date and checked for security problems, which takes time we do not have.
 
-## Considered Options
+## Options
 
-- Use only the standard library: no outside packages to keep up to date.
-- Use outside packages freely: rejected because each one adds upkeep and risk.
+| Option | Outcome | Why |
+| --- | --- | --- |
+| Use only the standard library | Chosen | No outside packages to keep up to date |
+| Use outside packages freely | Rejected | Each one adds upkeep and risk |
 
-## Decision Outcome
-
-Chosen option: use only the standard library, because it keeps upkeep low.
-
-### Consequences
+## Consequences
 
 - Good: nothing outside Python itself to update.
 - Bad: some tasks take more code than a package would need.
 
-### Confirmation
+## Out of scope
+
+None.
+
+## How we'll check
 
 Applies to: any code in the service.
-Checked by: inspection that nothing outside the standard library is imported.
+
+1. Inspection shows nothing outside the standard library is imported.
 
 ## Open questions
+
+None.
+
+## Technical detail
 
 None.

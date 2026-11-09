@@ -6,29 +6,44 @@ date: 2026-11-01
 
 # Use only Python's standard library
 
-## Context and Problem Statement
+## Question
+
+May the tool use packages from outside Python's standard library?
+
+## Decision
+
+Chosen: use only the standard library, because the tool then runs wherever Python 3 does.
+
+## Background
 
 The tool must install on a writer's machine by copying one folder, with no package manager.
 
-## Considered Options
+## Options
 
-- Use packages from PyPI where they help: rejected, because each needs an install step.
-- Use only the standard library: chosen.
+| Option | Outcome | Why |
+| --- | --- | --- |
+| Use packages from PyPI where they help | Rejected | Each needs an install step |
+| Use only the standard library | Chosen | Runs wherever Python 3 does |
 
-## Decision Outcome
-
-Chosen option: use only the standard library, because the tool then runs wherever Python 3 does.
-
-### Consequences
+## Consequences
 
 - Good: nothing to install but Python.
 - Bad: no third-party helpers, even for argument parsing.
 
-### Confirmation
+## Out of scope
+
+None.
+
+## How we'll check
 
 Applies to: all code under `src/` and `tests/`.
-Checked by: inspection that every import is from the standard library.
+
+1. Inspection shows every import is from the standard library.
 
 ## Open questions
 
 - None.
+
+## Technical detail
+
+None.

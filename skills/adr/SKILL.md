@@ -1,6 +1,6 @@
 ---
 name: adr
-description: Record one technical decision as an ADR (architecture decision record) in MADR format, with the options considered, why the others were rejected, its consequences and how to check the code follows it; review and correct an existing ADR; accept, reject or supersede an ADR when the person decides. Use whenever someone has chosen, or needs to choose, how something will be built, such as a database, library, service, protocol or structure, wants a technical choice written down, or wants to replace an earlier decision, even if they don't say "ADR". Not for what a feature should do; that is a spec.
+description: Record one technical decision as an ADR (architecture decision record), based on MADR and written to read plain first, with the question, the options considered, why the others were rejected, its consequences and how to check the code follows it; review and correct an existing ADR; accept, reject or supersede an ADR when the person decides. Use whenever someone has chosen, or needs to choose, how something will be built, such as a database, library, service, protocol or structure, wants a technical choice written down, or wants to replace an earlier decision, even if they don't say "ADR". Not for what a feature should do; that is a spec.
 ---
 
 # ADR
@@ -18,6 +18,17 @@ checker holds every document to it. New ADRs start from
 [assets/template.md](assets/template.md). Read these with the Read tool, not the shell, so the
 person is not asked to approve a command.
 
+An ADR is written for a person first. It reads from plain to technical: the plain part, from the
+title down to Technical detail, says what had to be chosen, what was chosen, why, and what it costs,
+in at most 500 words, tables included; Technical detail below it holds the exact mechanism, rules,
+settings and evidence an agent or reviewer needs. Versions, flags, settings and command names go in
+Technical detail unless the decision is about one of them, and each limit is stated once, under Out
+of scope. Check the plain part's size before each review, and fix it until it fits:
+
+```
+python3 "${CLAUDE_SKILL_DIR}/scripts/adr.py" words <the ADR's path>
+```
+
 ## Find what exists
 
 List `docs/adrs/` and read the frontmatter of each ADR. If a `📝 Draft` or `👍 Accepted` ADR
@@ -34,14 +45,21 @@ the decision answers.
 Usually the person has already talked the decision through in this conversation. Draft from
 that, and from whatever they point you to; research what else you need, such as how the options
 compare. Where the conversation changed its mind, the latest word wins. Given a finished
-spike record from `docs/spikes/`, put its measurements into Considered options in the ADR's own
-words, such as "read all 12 of 12 transactions": a spike record may be deleted at any time, so the
-ADR never names it. Only when there is nothing to draw on, ask what needs deciding first.
+spike record from `docs/spikes/`, put its measurements into the ADR's own words, such as "read all
+12 of 12 transactions": a line in Options says what they showed, and Technical detail gives them in
+full. A spike record may be deleted at any time, so the ADR never names it. Only when there is nothing to draw on, ask what needs deciding first.
+
+Write the Question first: the one choice to make, in at most three sentences. Until the person
+has picked an option, Decision says only "Not chosen yet; see Open questions.", every row in
+Options is Open, and Open questions asks for the choice. Once they pick, write "Chosen:" and the
+option in full, so the sentence reads on its own, with the reason; mark that row Chosen and the
+others Rejected, each with why.
 
 One ADR holds one decision, because a decision is superseded whole: if part of a record could
 change while the rest stands, the two parts would have to be untangled later. When the
 conversation holds several decisions, say how many and write one ADR for each, even when they
-were made together or the person asks for one record.
+were made together or the person asks for one record. Split them yourself: never leave an open
+question asking whether part of an ADR should be an ADR of its own.
 
 Never fill a gap with a guess. An option nobody named, a reason nobody gave, or a choice not yet
 made goes into Open questions as a question the person can answer, never as an invented
@@ -57,12 +75,12 @@ An open question is settled only by the person's answer: write the answer into t
 is about, then remove the question. Never remove or reword a question without that answer;
 moving it to another section, or noting that someone will decide later, leaves it open.
 
-Context states the need in words. Never refer to a spec, the brief, a plan or a spike record in
+Background states the need in words. Never refer to a spec, the brief, a plan or a spike record in
 any way, by hyperlink, path or title, and never edit them, even when the person asks you to note the
 decision there: they change while an ADR does not, so the reference would go stale, and the
 lifecycle allows no references between them. Tell the person so. Material they hand over that is not
 a web page, such as a requirements document or notes, is drawn on but never referred to (rubric
-check 10): state what matters from it in the ADR's own words, and tell them it can change or vanish
+check 14): state what matters from it in the ADR's own words, and tell them it can change or vanish
 without the ADR being touched. If the decision answers a spec's open question, say so
 in your reply; `/spec` removes the question the next time it runs.
 
@@ -74,7 +92,7 @@ your next edit. Write every new ADR as `📝 Draft` and edit it freely while it 
 
 Only a person accepts or rejects a decision. Set `👍 Accepted` or `❌ Rejected` only when
 the person explicitly says so about the ADR's text as it now stands, as its own last edit.
-`👍 Accepted` also needs no open questions (rubric check 12), which a plugin hook enforces: if
+`👍 Accepted` also needs no open questions (rubric check 16), which a plugin hook enforces: if
 questions remain, say how many, ask the first and leave the ADR as `📝 Draft`, even if the person
 says they do not matter. And it needs the review below to have ended with a pass on that text,
 from the review itself or from the correction check after it, while a rejection needs neither.

@@ -27,10 +27,11 @@ pass is not yours to judge.
   something the rule rules out, or fails to do what it requires where the code for it exists; it
   is **not found** when no code sets out to do it at all. Scenarios show the rule; the rule
   decides.
-- **An ADR:** read its Decision Outcome and Confirmation. Check the code the Confirmation's
-  Applies to line covers, in the way its Checked by line names. Code that breaks the decision is
-  drift. When the check can only be made by running something, such as a test command or a
-  measurement, it **needs a run**: say what to run, from the Confirmation.
+- **An ADR:** read its Decision, How we'll check and Technical detail; an ADR written before
+  those sections has Decision Outcome and Confirmation instead. Check the code its Applies to line
+  covers, in the way each check names. Code that breaks the decision is drift. When the check can
+  only be made by running something, such as a test command or a measurement, it **needs a run**:
+  say what to run, from the ADR's checks.
 
 Quote exactly: copy the document's words and the code's lines as they are, with the file and
 line number, never paraphrased. A finding you can't quote both sides of is not a finding. Leave
