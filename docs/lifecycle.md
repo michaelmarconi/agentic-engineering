@@ -208,7 +208,7 @@ flowchart LR
 | | `agents/language-checker.md`, shared by every skill that writes a document, at the same time | Checks every phrase of the document against the [Plain words](#plain-words) rule | The wording report: pass or fail, quoting each phrase that breaks the rule |
 | **Correct** | The drafting agent | Makes each correction from both reports once; a decision only you can make becomes an open question, never a guess | The corrected document |
 | **Correction check** | `agents/correction-checker.md`, shared by every skill that writes a document | Checks only that each correction was made and that none broke anything; anything else it notices is a suggestion | The correction report: pass or fail |
-| **Sign-off** | You | Read the document and the reports, settle the open questions, and set the status | The document at its next status |
+| **Sign-off** | You | Read the document, shown in your Claude app's file viewer where there is one and always named by its path, and the reports; settle the open questions, and set the status | The document at its next status |
 
 If both reports pass with nothing left for you to decide, the skill hands the document to you
 with no correction step. If the correction check fails, the skill

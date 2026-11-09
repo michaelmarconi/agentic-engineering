@@ -128,10 +128,11 @@ def problems(folder, text):
     if REVIEWS in body and not holds(body, REVIEW_RULE):
         found.append("review rule missing: a skill that runs the review sequence must hold "
                      "skill_check.REVIEW_RULE word for word")
-    if REVIEWS in body and "Document: <" in body and not holds(body, PATH_RULE):
+    reviews_a_file = REVIEWS in body and "Document: <" in body
+    if reviews_a_file and not holds(body, PATH_RULE):
         found.append("path rule missing: a skill that reviews a document by its path must hold "
                      "skill_check.PATH_RULE word for word")
-    if REVIEWS in body and "Document: <" in body and not holds(body, SHOW_RULE):
+    if reviews_a_file and not holds(body, SHOW_RULE):
         found.append("show rule missing: a skill that writes a document must hold "
                      "skill_check.SHOW_RULE word for word, to show it the same way (ADR 0025)")
     return found

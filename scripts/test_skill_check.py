@@ -8,7 +8,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 SCRIPT = os.path.join(HERE, "skill_check.py")
 ROOT = os.path.join(HERE, "..")
 sys.path.insert(0, HERE)
-from skill_check import AGENT_RULE, PATH_RULE, REVIEW_RULE, SHOW_RULE  # noqa: E402
+from skill_check import AGENT_RULE, PATH_RULE, REVIEW_RULE, SHOW_RULE, holds  # noqa: E402
 
 DESCRIPTION = "Write a thing. Use whenever someone wants a thing."
 
@@ -131,7 +131,7 @@ class SkillCheck(unittest.TestCase):
         skills = os.path.join(ROOT, "skills")
         for name in os.listdir(skills):
             with open(os.path.join(skills, name, "SKILL.md"), encoding="utf-8") as f:
-                if SHOW_RULE in " ".join(f.read().split()):
+                if holds(f.read(), SHOW_RULE):
                     holding.add(name)
         self.assertEqual(holding, {"brief", "spec", "adr", "plan", "spike", "practices"})
 
