@@ -21,42 +21,42 @@ in the same conversation.
 
 This repository is a plugin for Claude Code, Anthropic's AI coding assistant, whose skills write a
 project's documents as files in its repository. No skill says how to show the finished document,
-so Claude improvises, and has sent the person to a website, which they do not want. Claude's apps now
-show a file beside the conversation, and let the person send feedback on lines selected in it.
+so Claude chooses a way each time, and has sent the person to a website, which they do not want.
+The person works in three places: a Claude Desktop code session, a claude.ai project thread and
+the Claude Code command line.
 
 ## Options
 
 | Option | Outcome | Why |
 | --- | --- | --- |
-| Leave each skill to improvise | Rejected | Claude has sent the person to websites |
+| Leave Claude to choose a way each time | Rejected | Claude has sent the person to websites |
 | A separate skill for marking up a document on a code-hosting website | Rejected | Takes the person out of the app, and they need no lasting comments |
-| A copy of the document in Claude Docs, claude.ai's shared documents | Rejected | A copy outside the repository; each comment took minutes to handle |
+| A copy of the document in Claude Docs, claude.ai's shared documents | Rejected | Publishes a separate document outside the repository |
 | The app's file viewer where offered, the path always, no website | Chosen | Feedback reaches Claude at once, with the lines it is about |
 
 ## Consequences
 
-- Good: every document skill presents its document the same way in each of the three environments.
-- Good: feedback is a change the person asks for, which a separate Claude, started without this conversation, checks once made.
+- Good: every document skill shows its document the same way in each of the three places.
+- Good: where a viewer exists, the person comments on lines without leaving the conversation.
 - Bad: the plugin cannot make a viewer appear; the app must offer one.
 - Bad: where the viewer shows a copy, Claude shows a fresh copy after each change.
 
 ## Out of scope
 
-- Environments other than a Claude Desktop code session, a claude.ai project thread and the
-  Claude Code command line, such as the editor extensions.
+- Places other than those three, such as the editor extensions.
 - Which tool shows the file in each app; the app decides, and the skills name none.
 
 ## How we'll check
 
 Applies to: how every skill that writes a document shows it to the person.
 
-1. Inspection: the plugin's skill checker finds the same presenting sentence in every document skill.
+1. Inspection: the plugin's script that checks each skill's instructions finds the same sentence on showing documents in every document skill.
 2. Test: when a skill presents a document, it names the full path and links to no website.
-3. Demonstration: in each of the three environments, a skill shows the document, or names its path where no viewer exists.
+3. Demonstration: in each of the three places, a skill shows the document, or names its path where no viewer exists.
 
 ## Open questions
 
-- The evidence below mentions Remote Control. Proposed footnote: "Remote Control is a Claude Code setting that lets the Claude app follow and drive a session running on the person's computer." Is that right?
+- None.
 
 ## Technical detail
 
@@ -77,8 +77,7 @@ show it for review, or give its path, and never link to a website:
   queued feedback in the message box, carrying the file, line and quoted text.
 - A claude.ai project thread attached a copy from the project's shared files folder. Feedback
   arrived as a message carrying the file, lines and quoted text.
-- The Claude Code command line, with Remote Control off, found no viewer and gave the full path.
-  It declined to publish the file to claude.ai, since that is a website. With Remote Control on,
-  the Desktop app showed the file.
+- The Claude Code command line found no viewer and gave the full path. It declined to publish the
+  file to claude.ai, since that is a website.
 
 [^skill]: A skill is one step of the plugin, such as the one that writes a spec, a document describing what one capability of the product should do.
