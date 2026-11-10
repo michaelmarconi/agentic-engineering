@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: adr-accept-sets-date
+expected_outcome: |
+  The ADR, dated 2026-10-01 when it was drafted, is accepted on the person's word after a passing review; the same edit sets its date to the day it was accepted.
+context:
+  scaffold_script: place-files.sh

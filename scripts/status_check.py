@@ -95,6 +95,15 @@ document written before types may be edited without one, and adding one never co
 so it may come with any edit the rules above allow, even to a decided ADR, a `✅ Built` plan or a
 finished spike record, whose only allowed change it is.
 
+Every spec, ADR, plan and spike record records in its frontmatter's `date:` the day its status
+last changed, as YYYY-MM-DD. For any of them with a lifecycle status before or after the edit, it
+refuses more than one `date:` line, a date that is not a real YYYY-MM-DD date or is after today, a new document or a
+status change whose `date:` is not today's date on this machine, and a change to `date:`, or
+taking it away, while the status stays the same. A document written before dates may be edited
+without one until its next status change, and adding one, any real date, never counts as a change,
+so it may come with any edit the rules above allow, even to a decided ADR, a `✅ Built` plan or a
+finished spike record. A rule that a status be set on its own lets the `date:` line change with it.
+
 Whether a person really accepted an ADR or signed off a plan is beyond a hook; the skill asks them.
 
 Apart from the brief, a file that has no lifecycle status before or after the edit, nor one named
@@ -104,6 +113,7 @@ a shell command, are not seen.
 """
 
 import argparse
+import datetime
 import json
 import os
 import re
@@ -149,6 +159,11 @@ LEADING_NUMBER = re.compile(r"^\d+\s*[.)]?\s+")
 OLD_LAYOUT = "was written for an earlier version of the sdlc plugin; rework it with /spec"
 # Each kind of document by the value its frontmatter's `type:` holds.
 TYPES = {"brief": "Brief", "spec": "Spec", "ADR": "ADR", "plan": "Plan", "spike record": "Spike"}
+
+
+def today():
+    """Today's date on this machine, as YYYY-MM-DD: the date a status change must carry."""
+    return datetime.date.today().isoformat()
 
 
 def project_parts(path):
@@ -261,11 +276,12 @@ def listed(values):
 
 
 def without_status(text, also=()):
-    """The text's lines without its frontmatter status and type lines, nor any line setting a key
-    in `also`. Leaving out `type:` lets a document from before types gain one with any edit."""
+    """The text's lines without its frontmatter status, type and date lines, nor any line setting a
+    key in `also`. Leaving out `type:` lets a document from before types gain one with any edit, and
+    leaving out `date:` lets a status be set on its own with its date; date_problem() checks dates."""
     lines = text.lstrip("\ufeff").splitlines()
     end = len(frontmatter(text) or []) + 1
-    return [line for i, line in enumerate(lines) if i > end or not is_key(line, "status", "type", *also)]
+    return [line for i, line in enumerate(lines) if i > end or not is_key(line, "status", "type", "date", *also)]
 
 
 def has_open_questions_section(text):
@@ -356,6 +372,49 @@ def type_problem(name, kind, before, after):
     return None
 
 
+def real_date(value):
+    """True for a real calendar date written YYYY-MM-DD."""
+    if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", value or ""):
+        return False
+    try:
+        datetime.date.fromisoformat(value)
+    except ValueError:
+        return False
+    return True
+
+
+def date_problem(name, kind, before, after, old, new):
+    """Why the document's `date:` is wrong, or None. It is the day the status last changed: a new
+    document and every status change carry today's date, and it never changes otherwise. A document
+    from before dates may go without one until its next status change, and may gain any real date."""
+    if count_key(after, "date") > 1:
+        return f"{name}: the frontmatter has more than one `date:` line; keep one."
+    value, earlier = field(after, "date"), field(before, "date") if before else None
+    if value is not None and not real_date(value):
+        return (f"{name}: `date:` must be a real date written YYYY-MM-DD, the day the {kind}'s status "
+                f"last changed (found '{value}').")
+    day = today()
+    if value is not None and value > day:
+        return (f"{name}: `date:` is {value}, after today, {day}; it is the day the {kind}'s status "
+                "last changed, so it can't be later than today.")
+    if old != new:
+        if value == day:
+            return None
+        if not before or old is None:
+            return (f"{name}: a new {kind} carries `date: {day}`, today's date, in its frontmatter, "
+                    "under `status:`: the day its status was set.")
+        return (f"{name}: set `date: {day}`, today's date, in the frontmatter in the same edit as this "
+                f"status change; `date:` is the day the {kind}'s status last changed.")
+    if earlier is None:
+        return None
+    if value is None:
+        return f"{name}: keep `date: {earlier}` in the frontmatter; it is the day the {kind}'s status last changed."
+    if value != earlier:
+        return (f"{name}: `date:` changes only with a status change, since it is the day the {kind}'s "
+                f"status last changed; keep `date: {earlier}`.")
+    return None
+
+
 def brief_problem(payload, path):
     """Why an edit to the brief is refused: only for its `type:`, as the brief has no status."""
     before = None
@@ -409,7 +468,7 @@ def check(payload):
     # refuses anyway is refused for that, not with advice that only leads to that refusal.
     reason = lifecycle_problem(path, kind, statuses, rules, before, after, old, new, written)
     if not reason and (old in statuses or new in statuses):
-        reason = type_problem(name, kind, before, after)
+        reason = type_problem(name, kind, before, after) or date_problem(name, kind, before, after, old, new)
     if reason or new == written:
         return reason
     return (

@@ -19,6 +19,9 @@ documents
     - type: the frontmatter's `type:` is not the one for the document's kind (`Brief`, `Spec`,
       `ADR`, `Plan` or `Spike`). A document without `type:` is not a problem: those written before
       types gain one on their next edit, and decided ones may never be edited again;
+    - date: a spec, ADR, plan or spike record has no `date:`, the day its status last changed, or
+      one that is not a real YYYY-MM-DD date. Those written before dates are listed here so they
+      can be given one, which any edit may add;
     - open questions: a `👍 Accepted` spec or ADR, a `🟢 Ready to build` plan or a `🟢 Ready to run`
       spike record whose Open questions section is missing or holds anything but "None.";
     - references: a document links to another lifecycle document, or names its file, where the
@@ -71,7 +74,7 @@ import sys
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "..", "scripts"))
 from status_check import (ACCEPTED, ADR_STATUSES, BUILT, DRAFT, FINISHED,  # noqa: E402
                           READY, READY_TO_RUN, SPEC_STATUSES, SPIKE_STATUSES, STATUSES, SUPERSEDED, TYPES, article,
-                          field, frontmatter, has_open_questions, lifecycle_status, listed,
+                          field, frontmatter, has_open_questions, real_date, lifecycle_status, listed,
                           OLD_LAYOUT, old_layout, reference_problem, requirements, status_of)
 from doc_references import targets  # noqa: E402
 
@@ -341,6 +344,11 @@ def check_documents(project):
             wrong = status_problem(kind, text)
             if wrong:
                 add(relative, "status", wrong)
+            written_date = field(text, "date")
+            if written_date is None:
+                add(relative, "date", "it has no `date:`, the day its status last changed")
+            elif not real_date(written_date):
+                add(relative, "date", f"its `date:` is '{written_date}', not a real date written YYYY-MM-DD")
             current = status(kind, text)
             if current == SETTLED[kind] and has_open_questions(text):
                 add(relative, "open questions",

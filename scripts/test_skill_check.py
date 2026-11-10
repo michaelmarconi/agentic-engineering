@@ -10,7 +10,7 @@ ROOT = os.path.join(HERE, "..")
 sys.path.insert(0, HERE)
 from skill_check import (AGENT_RULE, CORRECT_RULES, DOCUMENT_SKILLS, PATH_RULE, PROPOSED_RULE,  # noqa: E402
                          QUESTIONS_RULE, REPORT_RULES, REVIEW_RULE, SHOW_RULE,
-                         SIGNOFF_RULE, STATUS_SKILLS, TYPE_RULE, holds)
+                         SIGNOFF_RULE, STATUS_SKILLS, TYPE_RULE, DATE_RULE, holds)
 
 DESCRIPTION = "Write a thing. Use whenever someone wants a thing."
 STEPS = "\n\n".join(CORRECT_RULES)
@@ -180,7 +180,7 @@ class SkillCheck(unittest.TestCase):
         self.assertFails("spec/SKILL.md: type rule missing")
 
     def test_document_skill_with_type_rule_passes(self):
-        body = f"# Spec\n\n{TYPE_RULE}\n\n{PROPOSED_RULE}\n\n{SIGNOFF_RULE}\n"
+        body = f"# Spec\n\n{TYPE_RULE}\n\n{PROPOSED_RULE}\n\n{SIGNOFF_RULE}\n\n{DATE_RULE}\n"
         self.put("spec", skill_md(name="spec", body=body))
         done = self.check()
         self.assertEqual((done.returncode, done.stdout), (0, ""))
@@ -238,6 +238,23 @@ class SkillCheck(unittest.TestCase):
         self.assertNotEqual(rule, SIGNOFF_RULE)
         self.put("plan", skill_md(name="plan", body=f"# Plan\n\n{TYPE_RULE}\n\n{PROPOSED_RULE}\n\n{rule}\n"))
         self.assertFails("plan/SKILL.md: sign-off rule missing")
+
+    def test_status_skill_without_date_rule_fails(self):
+        body = f"# ADR\n\n{TYPE_RULE}\n\n{PROPOSED_RULE}\n\n{SIGNOFF_RULE}\n"
+        self.put("adr", skill_md(name="adr", body=body))
+        self.assertFails("adr/SKILL.md: date rule missing")
+
+    def test_reworded_date_rule_fails(self):
+        rule = DATE_RULE.replace("never", "seldom")
+        self.assertNotEqual(rule, DATE_RULE)
+        body = f"# Spike\n\n{TYPE_RULE}\n\n{PROPOSED_RULE}\n\n{SIGNOFF_RULE}\n\n{rule}\n"
+        self.put("spike", skill_md(name="spike", body=body))
+        self.assertFails("spike/SKILL.md: date rule missing")
+
+    def test_brief_needs_no_date_rule(self):
+        self.put("brief", skill_md(name="brief", body=f"# Brief\n\n{TYPE_RULE}\n\n{PROPOSED_RULE}\n"))
+        done = self.check()
+        self.assertEqual((done.returncode, done.stdout), (0, ""))
 
     def test_the_status_skills_are_the_four_with_a_status(self):
         self.assertEqual(sorted(STATUS_SKILLS), ["adr", "plan", "spec", "spike"])

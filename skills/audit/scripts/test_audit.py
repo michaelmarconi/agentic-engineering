@@ -25,7 +25,7 @@ NOW = "2026-11-05T12:00:00+00:00"
 def spec(status="👍 Accepted", requirements=("Import a statement",), open_questions="None.", extra="", old=False):
     body = "".join((f"### Requirement: {name}" if old else f"### {number}. {name}")
                    + "\n\nThe system SHALL do it.\n\n" for number, name in enumerate(requirements, 1))
-    return (f"---\nstatus: {status}\n---\n\n# Statement import\n\n## Story\n\nS.\n\n## Requirements\n\n"
+    return (f"---\nstatus: {status}\ndate: 2026-11-01\n---\n\n# Statement import\n\n## Story\n\nS.\n\n## Requirements\n\n"
             f"{body}{extra}## Open questions\n\n- {open_questions}\n")
 
 
@@ -44,12 +44,12 @@ def plan(status="📝 Draft", specs=(("statement-import.spec.md", ("Import a sta
     spec_lines = "".join(f"- [Spec](../specs/{name})\n" + "".join(f"  - Requirement: {r}\n" for r in reqs)
                          for name, reqs in specs) or "None.\n"
     adr_lines = "".join(f"- [{name[:4]} ADR](../adrs/{name})\n" for name in adrs) or "None.\n"
-    return (f"---\nstatus: {status}\n---\n\n# Work\n\n## Specs\n\n{spec_lines}\n## ADRs\n\n{adr_lines}\n"
+    return (f"---\nstatus: {status}\ndate: 2026-11-01\n---\n\n# Work\n\n## Specs\n\n{spec_lines}\n## ADRs\n\n{adr_lines}\n"
             f"## Decisions\n\nNone.\n\n## Plan\n\nDo it.\n\n## Open questions\n\n- {open_questions}\n")
 
 
 def spike(status="📝 Draft", open_questions="None."):
-    return (f"---\nstatus: {status}\n---\n\n# It can\n\n## Hypothesis\n\nIt can.\n\n## Open questions\n\n"
+    return (f"---\nstatus: {status}\ndate: 2026-11-01\n---\n\n# It can\n\n## Hypothesis\n\nIt can.\n\n## Open questions\n\n"
             f"- {open_questions}\n\n## Code\n\n## Runs\n")
 
 
@@ -141,6 +141,18 @@ class Documents(Project):
         found = {p["document"]: p["detail"] for p in self.problems("type")}
         self.assertEqual(sorted(found), ["docs/brief.md", "docs/specs/statement-import.spec.md"])
         self.assertIn("`type: Spec`", found["docs/specs/statement-import.spec.md"])
+
+    def test_a_missing_or_malformed_date_is_a_problem(self):
+        self.put("docs/brief.md", "---\ntype: Brief\n---\n\n# Product\n")
+        self.put("docs/specs/statement-import.spec.md", spec().replace("date: 2026-11-01\n", ""))
+        self.put("docs/adrs/0001-cents.md", adr().replace("date: 2026-11-01", "date: <YYYY-MM-DD>"))
+        self.put("docs/plans/2026-11-01-work.md", plan().replace("date: 2026-11-01", "date: 2026-02-30"))
+        self.put("docs/spikes/2026-11-01-can-it.md", spike())
+        found = {p["document"]: p["detail"] for p in self.problems("date")}
+        self.assertEqual(sorted(found), ["docs/adrs/0001-cents.md", "docs/plans/2026-11-01-work.md",
+                                         "docs/specs/statement-import.spec.md"])
+        self.assertIn("has no `date:`", found["docs/specs/statement-import.spec.md"])
+        self.assertIn("'<YYYY-MM-DD>'", found["docs/adrs/0001-cents.md"])
 
     def test_a_spec_in_the_old_layout_is_listed(self):
         self.put("docs/specs/statement-import.spec.md", spec(old=True))

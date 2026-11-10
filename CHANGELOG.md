@@ -6,6 +6,28 @@ What changed in each version of the plugin, newest first. Versions follow
 past a major version: it says what you need to change in your documents. Until 1.0.0, any
 minor version may need such a change, and its entry says so.
 
+## [0.34.0] - 2026-11-10
+
+### Changed
+
+- Every spec, ADR, plan and spike record carries `date:` in its frontmatter: the day its status
+  last changed, written YYYY-MM-DD. The skills write today's date into a new document and set it
+  in the same edit as every status change, `/sdlc:build` sets it when it marks a plan `✅ Built`,
+  and the status hook refuses a new document or a status change without today's date, any other
+  change to the date, and a date after today. An ADR's date, which had no stated meaning, now
+  means the same, so superseding an ADR also sets its date (ADR 0027, which supersedes ADR 0012;
+  who approved a change is still recorded by the pull request).
+- `/sdlc:audit` lists each spec, ADR, plan or spike record with no `date:` or a malformed one.
+- The spec and plan reviewers keep the frontmatter's `#` line, as the ADR and spike reviewers do.
+
+### Upgrading
+
+- Documents written before this version have no date, and nothing breaks: they may be edited as
+  before, and the next status change adds today's date. To give one its real date now, add a
+  `date:` line by hand or with any edit, using the day of its last status change from git; adding
+  a date is allowed even to an accepted ADR, a built plan or a finished spike record. `/sdlc:audit`
+  lists the documents still without one.
+
 ## [0.33.0] - 2026-11-10
 
 ### Changed

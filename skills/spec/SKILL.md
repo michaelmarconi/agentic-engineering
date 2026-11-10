@@ -119,6 +119,11 @@ The `status:` frontmatter says whether the person has accepted the spec's text: 
 whether the software meets the spec is found by checking the software against it. A status written as a bare word, from before the emoji, gets its
 emoji in your next edit.
 
+The frontmatter's `date:` is the day the status last changed, written YYYY-MM-DD: give a new
+document today's date, set it to today's date in the same edit as every status change, and never
+change it otherwise. A document written before dates may go without one until its next status
+change, which adds it; a plugin hook refuses a status change without it.
+
 - Write new and changed specs as `📝 Draft`. Changing a spec that is `👍 Accepted` returns it to
   `📝 Draft`, because what was accepted no longer matches: set the status to `📝 Draft` first, as a
   plugin hook refuses any other change to such a spec. A spec still holding `🟢 Ready to build` or

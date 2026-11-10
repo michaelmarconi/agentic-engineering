@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: spec-accept-sets-date
+expected_outcome: |
+  The spec, dated 2026-10-01 when it became Draft, is accepted after a passing review; the same edit sets its date to the day it was accepted.
+context:
+  scaffold_script: place-files.sh
