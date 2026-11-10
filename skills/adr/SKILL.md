@@ -69,7 +69,8 @@ A choice can rest on an untried claim: something about how a system behaves that
 tried, and that would make another option win were it false, such as "the provider sends a
 payment's events in order". It is not a limit, something the decision does not cover that would
 not change the choice whichever way it turned out, such as an untested case whose worst outcome the
-person has already accepted. Put each such claim first in Open questions,
+person has already accepted. Tell the two apart yourself, from what the conversation says, and
+never ask the person which one something is, nor add limits nobody raised. Put each such claim first in Open questions,
 ahead of the choice that waits on it, proposing a spike (`/sdlc:spike`) that tests it, and never
 leave it to be proven later, such as in the build. It stays open until the spike's finding comes
 back. If the finding refutes the claim, remove its question and open the choice again: Decision
