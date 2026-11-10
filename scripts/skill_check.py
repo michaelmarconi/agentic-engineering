@@ -11,9 +11,9 @@ For each skills/<folder>/SKILL.md under the given plugin root (default: this plu
 - the body after the frontmatter is under 500 lines and about 5,000 tokens at most, estimated
   as one token per four characters;
 - a skill that runs the review sequence on a document, which it shows by naming the shared
-  `<plugin>:correction-checker` agent, the plugin's name read from plugin.json, holds REVIEW_RULE word for word (line breaks may differ), so
+  `agentic:correction-checker` agent, holds REVIEW_RULE word for word (line breaks may differ), so
   every such skill reviews at the same points, as the lifecycle page's Review process says.
-  /build, whose checker is `<plugin>:build-correction-checker`, reviews code and is not held to it.
+  /build, whose checker is `agentic:build-correction-checker`, reviews code and is not held to it.
 - such a skill that names a document by its path, as `Document: <...>`, holds PATH_RULE word for
   word, so every review is given the full path the review relay hook finds the repository from
   (docs/adrs/0022). A draft never saved as a file, `Document: feedback draft`, is not held to it.
@@ -42,7 +42,6 @@ that breaks a limit.
 """
 
 import argparse
-import json
 import os
 import re
 import sys
@@ -53,8 +52,7 @@ ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
 NAME = re.compile(r"[a-z0-9]+(-[a-z0-9]+)*")
 RESERVED = ("anthropic", "claude")
 MAX_NAME, MAX_DESCRIPTION, MAX_LINES, MAX_TOKENS = 64, 1024, 500, 5000
-with open(os.path.join(ROOT, ".claude-plugin", "plugin.json")) as manifest:
-    REVIEWS = json.load(manifest)["name"] + ":correction-checker"
+REVIEWS = "agentic:correction-checker"
 REVIEW_RULE = (
     "While you are walking through questions with the person, do not review after each "
     "answer: run the sequence once when the walk-through ends, either because no questions "

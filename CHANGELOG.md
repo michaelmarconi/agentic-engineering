@@ -29,8 +29,9 @@ minor version may need such a change, and its entry says so.
    `sdlc` prefix.
 
 If step 2 cannot reach the catalog, run `claude plugin marketplace remove sdlc` and install from
-the new catalog as above instead. Moving to the new catalog later is described in the README. Never enable both `agentic@sdlc` and
-`agentic@michaelmarconi`.
+the new catalog as above instead, adding `--scope project` if you installed it that way, and
+commit the settings change. Moving to the new catalog later is described in the README. Never
+enable both `agentic@sdlc` and `agentic@michaelmarconi`.
 
 ## [0.35.0] - 2026-11-10
 
