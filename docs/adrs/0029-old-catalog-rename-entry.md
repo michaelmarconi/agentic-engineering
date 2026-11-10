@@ -59,7 +59,7 @@ Applies to: this repository's own catalog, and any change to the plugin's name.
 
 ## Open questions
 
-- Should the Decision claim only project settings, the kind the trial covered? Proposed: no; each other option is worse whatever user and local settings do.
+- None.
 
 ## Technical detail
 
