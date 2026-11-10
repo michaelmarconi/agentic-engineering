@@ -193,12 +193,14 @@ sequence once when the walk-through ends, either because no questions are left o
 person stops. A change the person makes or asks for at any other time is reviewed once it is made.
 Setting a status on the person's word needs no new review.
 
-End with the hand-over. Give the person the record's path, the review and wording reports and the
-check's report, if there was one, leaving out the decisions they list, which are now in Open
-questions. Say how many items must be settled before the record can move on: its open questions,
-plus any correction the check found not made or broken. Say you will take them one at a time and
-ask the first only, as a single question; name the count only, not the items. List the
-reviewers' suggestions apart, as optional. Once nothing is left, ask the person to sign off the
-design, or to confirm the verdict, naming the status it would get. After the verdict, tell them
-which spec or ADR to take the finding to next. Leave committing to them: to hand an unfinished
-spike to a teammate, they commit the record.
+End with the hand-over. Show the person each document you wrote or changed: if the app you run in
+can show them a file in a viewer, use it, and show a fresh copy after each change if what it shows
+is a copy; always name each one's full path; never send them to a code-hosting site to read it. Give
+the person the review and wording reports and the check's report, if there was one, leaving out the
+decisions they list, which are now in Open questions. Say how many items must be settled before the
+record can move on: its open questions, plus any correction the check found not made or broken. Say
+you will take them one at a time and ask the first only, as a single question; name the count only,
+not the items. List the reviewers' suggestions apart, as optional. Once nothing is left, ask the
+person to sign off the design, or to confirm the verdict, naming the status it would get. After the
+verdict, tell them which spec or ADR to take the finding to next. Leave committing to them: to hand
+an unfinished spike to a teammate, they commit the record.

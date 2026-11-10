@@ -42,7 +42,9 @@ repository. This records it in the repository's `.claude/settings.json`.
 ## Quick start
 
 In your repository, run the skills in order. Each one drafts a document with you, has it
-reviewed, corrects it and shows you the result to sign off.
+reviewed, corrects it and shows you the result to sign off. Where your Claude app can show a file
+beside the conversation, the document opens there, and you can select lines in it to comment on;
+anywhere else Claude names the file's path.
 
 1. `/sdlc:brief` writes the product brief: what the product is, who it is for and why.
 2. `/sdlc:spec` writes the spec for one capability: what it should do, and how you will know it

@@ -17,6 +17,8 @@ For each skills/<folder>/SKILL.md under the given plugin root (default: this plu
 - such a skill that names a document by its path, as `Document: <...>`, holds PATH_RULE word for
   word, so every review is given the full path the review relay hook finds the repository from
   (docs/adrs/0022). A draft never saved as a file, `Document: feedback draft`, is not held to it.
+- such a skill also holds SHOW_RULE word for word, so every document is shown to the person the
+  same way, in the app's file viewer where there is one and by its path always (docs/adrs/0025).
 
 For each agents/<name>.md, an agent told of a `Repository: <folder>` line holds AGENT_RULE word for
 word, so every such agent reads and searches only in that folder and reports an unreadable
@@ -50,6 +52,11 @@ PATH_RULE = (
     "Give the document's full path on the `Document:` line, the one you wrote it to: the hook "
     "works out the document's repository from it, so the review reads the right one whatever "
     "folder you started in. If it refuses to start them, do what its reason says."
+)
+SHOW_RULE = (
+    "Show the person each document you wrote or changed: if the app you run in can show them a "
+    "file in a viewer, use it, and show a fresh copy after each change if what it shows is a copy; "
+    "always name each one's full path; never send them to a code-hosting site to read it."
 )
 REPOSITORY_LINE = "`Repository: <folder>`"
 # Every agent given a `Repository:` line: the document reviewers the review relay hook knows (all
@@ -121,9 +128,13 @@ def problems(folder, text):
     if REVIEWS in body and not holds(body, REVIEW_RULE):
         found.append("review rule missing: a skill that runs the review sequence must hold "
                      "skill_check.REVIEW_RULE word for word")
-    if REVIEWS in body and "Document: <" in body and not holds(body, PATH_RULE):
+    reviews_a_file = REVIEWS in body and "Document: <" in body
+    if reviews_a_file and not holds(body, PATH_RULE):
         found.append("path rule missing: a skill that reviews a document by its path must hold "
                      "skill_check.PATH_RULE word for word")
+    if reviews_a_file and not holds(body, SHOW_RULE):
+        found.append("show rule missing: a skill that writes a document must hold "
+                     "skill_check.SHOW_RULE word for word, to show it the same way (ADR 0025)")
     return found
 
 

@@ -149,13 +149,16 @@ either because no questions are left or because the person stops. A change the p
 for at any other time is reviewed once it is made.
 
 Whether the check passed or failed, end with the hand-over. It is what the person acts on, so make
-it hard to miss anything. Give them the spec's path, the review and wording reports and the check's
-report, if there was one, leaving out the decisions they list for the person. When the review
-found a conflict with another spec, name that spec and the rule that conflicts, since the spec
-itself cannot refer to it, so this reply is the only place the person learns of it. Then say how many items must be
-settled before the spec can move on: its open questions, plus any correction the check found not
-made or broken. Say you will take them one at a time, rather than asking whether to, and ask the
-first only, as a single question, giving any examples as possible answers rather than further
-questions; if the person has said not to ask now, ask nothing. Name the count only, not the items:
-each comes up when you reach it. List the reviewers' suggestions separately, as optional: they never
-hold the spec back. Leave committing to them.
+it hard to miss anything. Show the person each document you wrote or changed: if the app you run in
+can show them a file in a viewer, use it, and show a fresh copy after each change if what it shows
+is a copy; always name each one's full path; never send them to a code-hosting site to read it. Give
+them the review and wording reports and the check's report, if there was one, leaving out the
+decisions they list for the person. When the review found a conflict with another spec, name that
+spec and the rule that conflicts, since the spec itself cannot refer to it, so this reply is the
+only place the person learns of it. Then say how many items must be settled before the spec can move
+on: its open questions, plus any correction the check found not made or broken. Say you will take
+them one at a time, rather than asking whether to, and ask the first only, as a single question,
+giving any examples as possible answers rather than further questions; if the person has said not to
+ask now, ask nothing. Name the count only, not the items: each comes up when you reach it. List the
+reviewers' suggestions separately, as optional: they never hold the spec back. Leave committing to
+them.
