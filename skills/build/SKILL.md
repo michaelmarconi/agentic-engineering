@@ -13,10 +13,10 @@ opens any pull request and merges; you never do those.
 
 These hold from the first step to the last, however long the build runs.
 
-- **Never weaken a test to make code pass.** Change a test only to make it check its scenario
-  more closely. A test whose expected value plainly contradicts its scenario in the spec, such as
+- **Never weaken a test to make code pass.** Change a test only to make it check its example
+  more closely. A test whose expected value plainly contradicts its example in the spec, such as
   a typo, may be corrected to the spec's value: say so in the summary. A test that cannot pass as
-  its scenario is worded is a finding to raise, not a test to loosen, skip or delete.
+  its example is worded is a finding to raise, not a test to loosen, skip or delete.
 - **Two attempts, then stop.** If a requirement's tests still fail after two attempts at the
   code, stop and hand over with the failure written down. A third attempt at an approach that
   has failed twice rarely works, and a fresh start with the failure in hand does better.
@@ -59,8 +59,12 @@ Check each of these before changing anything, and stop with the reason if one fa
    message in a session, or the first after `/clear`. If it refuses, pass its reason on.
 2. **The plan is ready.** It is a file in `docs/plans/` with status `🟢 Ready to build`. A
    `✅ Built` plan is built once and never again: say so, and suggest a new plan for more work.
-3. **Nothing it relies on has changed.** Every spec it lists is `👍 Accepted` and still has each
-   `### Requirement:` it names, and every ADR it lists is `👍 Accepted`. If not, name which.
+3. **Nothing it relies on has changed.** Every spec it lists is `👍 Accepted` and still has a
+   numbered requirement heading, as `### 2. <name>`, for each requirement it names, and every
+   ADR it lists is `👍 Accepted`. If not, name which. A spec that heads its requirements
+   `### Requirement: <name>` instead was written for an earlier version of the sdlc plugin: say
+   "<spec> was written for an earlier version of the sdlc plugin; rework it with /spec, accept it
+   again, then sign the plan off again", rather than naming each requirement as missing.
 4. **Find the practices.** Look for a `## Practices` heading in `CLAUDE.md`, or in `AGENTS.md`
    when there is no `CLAUDE.md` or `CLAUDE.md` imports it, and read any file it says to read
    before a task like this one. No practice is required: where one you
@@ -91,8 +95,8 @@ there.
 Work through the requirements the plan names, one at a time, in the order the Plan section
 suggests. For each requirement:
 
-1. Write the tests first, one or more per scenario, setting up its GIVEN, doing its WHEN and
-   checking its THEN with the scenario's own values. Run them and see them fail, so you know
+1. Write the tests first, one or more per example, setting up its Given, doing its When and
+   checking its Then and And rows with the example's own values. Run them and see them fail, so you know
    they test something. Commit them.
 2. Write the code that makes them pass, following the Plan section, each line under Decisions,
    each ADR the plan lists, and any other `👍 Accepted` ADR whose How we'll check section (Confirmation in
@@ -100,7 +104,7 @@ suggests. For each requirement:
 3. Run the whole test suite and the linters, as the practices say, so you notice at once if the
    new code breaks something already built. Commit.
 
-A requirement whose Verified by line names a demonstration needs no test: build it, and list it
+A requirement whose How we'll check names a demonstration needs no test: build it, and list it
 in the summary as left for the person to check. Commit with plain messages that say what changed,
 and nothing about the build itself.
 

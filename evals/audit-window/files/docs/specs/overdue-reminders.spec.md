@@ -6,56 +6,62 @@ status: 👍 Accepted
 
 # Overdue reminders
 
-## Problem
+## Story
 
-Unpaid invoices are forgotten until the firm runs short of cash.
+When an invoice is still unpaid after it falls due, the accounts clerk wants the customer
+reminded, so they can get paid before the firm runs short of cash.
 
-## Goal
+## In scope
 
-The accounts clerk can rely on what the invoice tool does.
-
-## Scope
-
-In:
 - What the requirements below say.
 
-Out:
+## Out of scope
+
 - Anything else.
 
 ## Requirements
 
-### Requirement: First reminder
+### 1. First reminder
 
 When an invoice is still unpaid 30 days or more after its issue date, the system SHALL put it on the reminder list.
 
-#### Scenario: Thirty days
-- GIVEN invoice 17, issued on 1 October and unpaid
-- WHEN the list is made on 31 October
-- THEN invoice 17 is on it
+| Example | Thirty days |
+|---|---|
+| Given | invoice 17, issued on 1 October and unpaid |
+| When | the list is made on 31 October |
+| Then | invoice 17 is on it |
 
-Verified by: test.
+#### How we'll check
 
-### Requirement: No reminder once paid
+Test.
+
+### 2. No reminder once paid
 
 The system SHALL leave paid invoices off the reminder list.
 
-#### Scenario: Paid
-- GIVEN invoice 18, issued on 1 September and paid
-- WHEN the list is made on 31 October
-- THEN invoice 18 is not on it
+| Example | Paid |
+|---|---|
+| Given | invoice 18, issued on 1 September and paid |
+| When | the list is made on 31 October |
+| Then | invoice 18 is not on it |
 
-Verified by: test.
+#### How we'll check
 
-### Requirement: Second reminder
+Test.
+
+### 3. Second reminder
 
 When an invoice is still unpaid 60 days or more after its issue date, the system SHALL put it on the second reminder list.
 
-#### Scenario: Sixty days
-- GIVEN invoice 19, issued on 1 September and unpaid
-- WHEN the second list is made on 31 October
-- THEN invoice 19 is on it
+| Example | Sixty days |
+|---|---|
+| Given | invoice 19, issued on 1 September and unpaid |
+| When | the second list is made on 31 October |
+| Then | invoice 19 is on it |
 
-Verified by: test.
+#### How we'll check
+
+Test.
 
 ## Constraints
 

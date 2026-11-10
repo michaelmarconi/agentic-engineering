@@ -29,6 +29,9 @@ documents
       `superseded-by:` does not name it back, a `superseded-by:` names an ADR whose `supersedes:`
       does not name this one, or a `↪️ Superseded` ADR has no `superseded-by:`. A Draft or
       Rejected ADR naming the one it would supersede is not checked;
+    - layout: a spec still heads its requirements `### Requirement: <name>`, as specs written for an
+      earlier version of the plugin did. Nothing breaks while it is left alone, but no plan naming
+      it can be signed off until it is reworked with /spec and accepted again;
     - ready plan: a `🟢 Ready to build` plan names a spec or ADR that is missing or not
       `👍 Accepted`, or a requirement its spec no longer has;
     - overlap: two plans that are not `✅ Built` name the same requirement of the same spec. Plans
@@ -69,7 +72,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."
 from status_check import (ACCEPTED, ADR_STATUSES, BUILT, DRAFT, FINISHED,  # noqa: E402
                           READY, READY_TO_RUN, SPEC_STATUSES, SPIKE_STATUSES, STATUSES, SUPERSEDED, TYPES, article,
                           field, frontmatter, has_open_questions, lifecycle_status, listed,
-                          reference_problem, requirements, status_of)
+                          OLD_LAYOUT, old_layout, reference_problem, requirements, status_of)
 from doc_references import targets  # noqa: E402
 
 KINDS = {"spec": SPEC_STATUSES, "ADR": ADR_STATUSES, "plan": STATUSES, "spike record": SPIKE_STATUSES}
@@ -342,6 +345,9 @@ def check_documents(project):
             if current == SETTLED[kind] and has_open_questions(text):
                 add(relative, "open questions",
                     f"it is `{current}` but its Open questions section is missing or not \"None.\"")
+            if kind == "spec" and old_layout(text):
+                add(relative, "layout", f"it {OLD_LAYOUT}, and accept it again, before a plan that names it "
+                    "is signed off")
             if kind == "spec" and current == ACCEPTED:
                 accepted["specs"].append(relative)
             if kind == "ADR" and current == ACCEPTED:

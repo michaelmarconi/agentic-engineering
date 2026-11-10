@@ -60,7 +60,7 @@ it leaves for later; give one recommended approach, not the alternatives; name t
 matter and the existing code to reuse; and keep it short enough to scan but detailed enough to
 carry out. It holds no code.
 
-There is no section on testing. Each requirement in a spec already has a `Verified by:` line,
+There is no section on testing. Each requirement in a spec already has a How we'll check heading,
 and each ADR a How we'll check section, saying how to prove it, so the plan does not repeat them.
 
 An example, for one requirement of a customs-holds spec:
@@ -95,7 +95,7 @@ list of holds. A release becomes a "cleared" status event, recorded the same way
 each container's latest event, so it needs no change. Telling anyone about a release is left
 for later; the spec doesn't ask for it.
 
-1. Write the failing test from the spec's scenario.
+1. Write the failing test from the spec's example.
 2. Turn the broker's release message into a "cleared" event.
 3. Show "cleared since" on the container's page.
 

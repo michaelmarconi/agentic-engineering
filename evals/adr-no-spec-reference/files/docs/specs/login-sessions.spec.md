@@ -5,34 +5,34 @@ status: 📝 Draft
 
 # Login sessions
 
-## Problem
+## Story
 
-Priya works across two browser tabs, and is logged out of both several times a day, losing what she was typing.
+When Priya works across two browser tabs, Priya wants to stay logged in until they log out or are
+away for 30 days, so they can keep working without losing what they were typing.
 
-## Goal
+## In scope
 
-People stay logged in until they log out or are away for 30 days.
-
-## Scope
-
-In:
 - Staying logged in across tabs and visits
 
-Out:
+## Out of scope
+
 - Logging in from a second device
 
 ## Requirements
 
-### Requirement: Stay logged in
+### 1. Stay logged in
 
 WHILE a person has been active in the last 30 days and has not logged out, the system SHALL keep them logged in.
 
-#### Scenario: Back after 29 days
-- GIVEN Priya last used the app 29 days ago
-- WHEN she opens it
-- THEN she is still logged in
+| Example | Back after 29 days |
+|---|---|
+| Given | Priya last used the app 29 days ago |
+| When | she opens it |
+| Then | she is still logged in |
 
-Verified by: test that ages a session to 29 days and checks it still works.
+#### How we'll check
+
+Test that ages a session to 29 days and checks it still works.
 
 ## Constraints
 
@@ -40,4 +40,4 @@ Verified by: test that ages a session to 29 days and checks it still works.
 
 ## Open questions
 
-- Which store will hold sessions so every server can read them?
+- Which store will hold sessions so every server can read them? Proposed: settle it in an ADR.

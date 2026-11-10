@@ -8,8 +8,9 @@ checking, and quotes the plan as evidence for every failure.
    `✅ Built`, emoji included. Under a `# ` title, the sections are Specs, ADRs, Decisions, Plan
    and Open questions, in that order, and no template comment is left in.
 2. **Specs.** Each entry under Specs is a reference to a spec under `docs/specs/`, by its title
-   and path, with at least one `- Requirement: <name>` line beneath it, and each name is a
-   `### Requirement:` heading in that spec, word for word. Specs says "None." only when ADRs
+   and path, with at least one `- Requirement: <name>` line beneath it, and each name is the
+   name of a numbered requirement heading in that spec, as `### 2. <name>`, word for word and
+   without its number. Specs says "None." only when ADRs
    lists at least one ADR, so the plan always builds something.
 3. **ADRs.** Each entry under ADRs is a reference to an ADR under `docs/adrs/` that exists, by its
    number, title and path, or the section says only "None."

@@ -6,55 +6,58 @@ status: 📝 Draft
 
 # Word count
 
-## Problem
+## Story
 
-Asha writes articles for a magazine whose editor rejects any article over 800 words. She drafts
-in a plain text editor that shows no word count, so before sending each article she pastes it
-into a website to count the words, and twice this year she sent one that was over the limit.
+When Asha has drafted an article in a plain text editor for a magazine that rejects any
+article over 800 words, Asha wants to count its words from the command line, so they can check
+it is within the limit before sending it, without pasting it into a website.
 
-## Goal
+## In scope
 
-A writer can count the words in a text file from the command line.
-
-## Scope
-
-In:
 - Counting the words in one plain text file named on the command line
 
-Out:
+## Out of scope
+
 - Counting characters or lines
 - Reading from standard input
 
 ## Requirements
 
-### Requirement: Count words
+### 1. Count words
 
 WHEN a person runs `wordcount <file>` on a file that exists, the system SHALL print the number of
 words in it, where a word is a run of characters that are not whitespace.
 
-#### Scenario: Two words
-- GIVEN a file holding `hello  world` followed by a newline
-- WHEN the person runs `wordcount` on it
-- THEN the system prints `2`
+| Example | Two words |
+|---|---|
+| Given | a file holding `hello  world` followed by a newline |
+| When | the person runs `wordcount` on it |
+| Then | the system prints `2` |
 
-#### Scenario: Empty file
-- GIVEN an empty file
-- WHEN the person runs `wordcount` on it
-- THEN the system prints `0`
+| Example | Empty file |
+|---|---|
+| Given | an empty file |
+| When | the person runs `wordcount` on it |
+| Then | the system prints `0` |
 
-Verified by: unit tests for both scenarios, run on temporary files.
+#### How we'll check
 
-### Requirement: Missing file
+Unit tests for both examples, run on temporary files.
+
+### 2. Missing file
 
 IF the file named does not exist, THEN the system SHALL print `No such file: <name>` and exit with
 status 1.
 
-#### Scenario: File not there
-- GIVEN no file named `draft.txt`
-- WHEN the person runs `wordcount draft.txt`
-- THEN the system prints `No such file: draft.txt` and exits with status 1
+| Example | File not there |
+|---|---|
+| Given | no file named `draft.txt` |
+| When | the person runs `wordcount draft.txt` |
+| Then | the system prints `No such file: draft.txt` and exits with status 1 |
 
-Verified by: a unit test that runs the command on a name with no file behind it.
+#### How we'll check
+
+A unit test that runs the command on a name with no file behind it.
 
 ## Constraints
 

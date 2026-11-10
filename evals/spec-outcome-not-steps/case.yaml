@@ -1,0 +1,5 @@
+schema_version: "1.1"
+name: spec-outcome-not-steps
+expected_outcome: |
+  The person describes a password change as internal steps. The spec's rules state what someone can
+  see, such as other sessions ending and a notice arriving, never a step such as hashing or storing.

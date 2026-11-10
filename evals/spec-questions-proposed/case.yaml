@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: spec-questions-proposed
+expected_outcome: |
+  Every open question the skill leaves in the spec ends with a proposed answer the person can accept.

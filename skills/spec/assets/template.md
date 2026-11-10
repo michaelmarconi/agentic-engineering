@@ -6,34 +6,33 @@ status: 📝 Draft
 
 # <Capability>
 
-## Problem
+## Story
 
-<Who has the problem, and what happens to them today, told as one specific situation.>
+When <situation>, <who> wants to <do something>, so they can <outcome>.
 
-## Goal
+## In scope
 
-<What changes for them when this is built.>
-
-## Scope
-
-In:
 - <...>
 
-Out:
+## Out of scope
+
 - <...>
 
 ## Requirements
 
-### Requirement: <Name>
+### 1. <Name>
 
 <One EARS rule, using SHALL once.>
 
-#### Scenario: <Name>
-- GIVEN <...>
-- WHEN <...>
-- THEN <...>
+| Example | <Name> |
+|---|---|
+| Given | <...> |
+| When | <...> |
+| Then | <...> |
 
-Verified by: <test, demonstration, inspection or analysis, and what it checks.>
+#### How we'll check
+
+<Test, demonstration, inspection or analysis, and what it checks.>
 
 ## Constraints
 
@@ -41,4 +40,4 @@ Verified by: <test, demonstration, inspection or analysis, and what it checks.>
 
 ## Open questions
 
-- <Unknowns still to answer, or "None.">
+- <A question still to answer, ending "Proposed:" and the answer you would choose (or, if only the person can know, what would settle it), or "None.">

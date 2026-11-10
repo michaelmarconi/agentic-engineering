@@ -90,7 +90,7 @@ Finally, it runs your tests once. Any test that already fails is noted for the s
 ## Building
 
 `/build` works through the requirements the plan names. For each one, it first writes tests from
-the spec's scenarios and sees them fail, then writes the code that makes them pass. It then runs
+the spec's examples and sees them fail, then writes the code that makes them pass. It then runs
 your whole test suite and your linters, as your practices say, before moving on, so it notices at
 once if the new code breaks something already built. It follows every `👍 Accepted` ADR the plan
 names, and any other whose How we'll check section says it applies to the code being changed. It
@@ -99,7 +99,7 @@ commits as it goes, so the branch always holds the work so far.
 Two rules hold throughout:
 
 - **A test is never weakened to make the code pass.** `/build` changes a test only to make it
-  check its scenario more closely, or to correct an expected value that plainly contradicts the
+  check its example more closely, or to correct an expected value that plainly contradicts the
   spec, such as a typo, which its summary then points out.
 - **Two attempts, then stop.** If a requirement's tests still fail after two attempts, `/build`
   stops and hands over with the failure written down, rather than keep retrying an approach that fails.
@@ -146,7 +146,7 @@ seen the conversation:
   reviews the whole build, not just its latest commits.[^localreview]
 - **Security:** Claude Code's own `/security-review`, looking for security holes.
 - **Plan:** the plugin's build reviewer. It checks that each requirement the plan names is built,
-  with a test that checks each of its scenarios as the spec words it; that nothing unrequested was
+  with a test that checks each of its examples as the spec words it; that nothing unrequested was
   added; that the code follows the ADRs it must; and that no choice that should have been raised
   was made quietly. This is the review Anthropic suggests writing yourself: against your spec,
   reporting gaps that affect correctness and skipping style.[^specreview]

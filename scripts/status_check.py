@@ -54,10 +54,12 @@ For a plan it refuses:
 - `🟢 Ready to build` in the same edit as any other change, or while the Open questions section is
   missing or not empty or "None.";
 - `🟢 Ready to build` unless the plan names something to build, each spec listed under Specs
-  exists, is `👍 Accepted` and has a `### Requirement:` heading for each
-  `- Requirement:` line beneath it, each ADR listed under ADRs exists and is `👍 Accepted`, and no
-  other plan in the folder that is not `✅ Built` names the same requirement of the same spec.
-  References are paths relative to the plan;
+  exists, is `👍 Accepted` and has a numbered heading under `## Requirements`, as
+  `### 2. <name>`, for each `- Requirement: <name>` line beneath it, which gives the name alone, each ADR listed under ADRs exists and is `👍 Accepted`, and no
+  other plan in the folder that is not `✅ Built` names the same requirement of the same spec. A
+  spec still heading its requirements `### Requirement: <name>` is refused with a message saying it
+  was written for an earlier version of the plugin and needs reworking with /spec. References are
+  paths relative to the plan;
 - a change to a `🟢 Ready to build` plan that does not return it to `📝 Draft`.
 
 For a spike record it refuses:
@@ -136,7 +138,13 @@ EMPTY_ANSWERS = {"", "none", "none."}
 FOOTNOTE = re.compile(r"^\[[^\]]+\]:")
 LINK = re.compile(r"^- \[[^\]]*\]\(<?([^)>\s]+)>?\)")
 REQUIREMENT_LINE = re.compile(r"^\s+- Requirement:\s*(.+?)\s*$")
-REQUIREMENT_HEADING = re.compile(r"^###\s+Requirement:\s*(.+?)\s*$")
+# A requirement is a numbered `###` heading inside `## Requirements`, as `### 2. Reply to all`;
+# the number is for reading only, and a plan names the requirement by the rest.
+REQUIREMENT_HEADING = re.compile(r"^###\s+\d+\.\s+(.+?)\s*$")
+# Specs written before numbered requirements headed each one `### Requirement: <name>`.
+OLD_REQUIREMENT_HEADING = re.compile(r"^###\s+Requirement:")
+LEADING_NUMBER = re.compile(r"^\d+\s*[.)]?\s+")
+OLD_LAYOUT = "was written for an earlier version of the sdlc plugin; rework it with /spec"
 # Each kind of document by the value its frontmatter's `type:` holds.
 TYPES = {"brief": "Brief", "spec": "Spec", "ADR": "ADR", "plan": "Plan", "spike record": "Spike"}
 
@@ -448,6 +456,12 @@ def spec_rules(path, before, after, old, new):
             )
         if has_open_questions(after):
             return open_questions_refusal(name, after, ACCEPTED, "spec")
+        if old_layout(after):
+            return (f"{name} {OLD_LAYOUT} before it is accepted: it still heads a requirement "
+                    "`### Requirement: <name>`.")
+        if not spec_requirements(after):
+            return (f"{name}: a spec is accepted only with at least one requirement, a numbered "
+                    "heading under `## Requirements`, as `### 1. <name>`.")
     return None
 
 
@@ -591,6 +605,27 @@ def requirements(plan_path, text):
     return {(spec, name) for spec, _, names in named_specs(plan_path, text)[0] for name in names}
 
 
+def headings(text):
+    """The text's lines that can be headings: outside fenced code blocks and HTML comments."""
+    lines = text.splitlines()
+    return [line for line, allowed in zip(lines, headings_allowed(lines)) if allowed]
+
+
+def spec_requirements(text):
+    """The names of a spec's requirements, in order: its numbered headings under Requirements."""
+    body = section(text, "Requirements") or []
+    return [m.group(1) for m in map(REQUIREMENT_HEADING.match, headings("\n".join(body))) if m]
+
+
+def old_layout(text):
+    """True if the spec heads a requirement `### Requirement: <name>`, as before numbering."""
+    return any(OLD_REQUIREMENT_HEADING.match(line) for line in headings(text))
+
+
+def old_layout_problem(link):
+    return f"the spec {link} {OLD_LAYOUT}, accept it again, then sign the plan off again"
+
+
 def described(status):
     return f"is '{status}'" if status else "has no status"
 
@@ -614,10 +649,17 @@ def reference_problem(path, text):
             return f"the spec {link} {described(status)}, not `{ACCEPTED}`"
         if not names:
             return f"no requirement is named under {link}; list each one as `- Requirement: <name>`"
-        headings = {m.group(1) for m in map(REQUIREMENT_HEADING.match, spec_text.splitlines()) if m}
+        numbered = set(spec_requirements(spec_text))
         for name in names:
-            if name not in headings:
-                return f"the spec {link} has no `### Requirement: {name}`"
+            if name in numbered:
+                continue
+            if old_layout(spec_text):
+                return old_layout_problem(link)
+            if LEADING_NUMBER.sub("", name) in numbered:
+                return (f"`- Requirement: {name}` gives the requirement's number; give the name "
+                        f"alone, as `- Requirement: {LEADING_NUMBER.sub('', name)}`, since numbers "
+                        "change when requirements are added or removed")
+            return f"the spec {link} has no requirement named '{name}'"
     for adr_path, link in adrs:
         if not is_adr(adr_path):
             return f"{link} is not an ADR: an ADR is a file in docs/adrs/"

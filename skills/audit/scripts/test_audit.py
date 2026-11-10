@@ -22,9 +22,10 @@ GIT_ENV = dict(GIT_AUTHOR_NAME="Test", GIT_AUTHOR_EMAIL="test@example.com", GIT_
 NOW = "2026-11-05T12:00:00+00:00"
 
 
-def spec(status="👍 Accepted", requirements=("Import a statement",), open_questions="None.", extra=""):
-    body = "".join(f"### Requirement: {name}\n\nThe system SHALL do it.\n\n" for name in requirements)
-    return (f"---\nstatus: {status}\n---\n\n# Statement import\n\n## Problem\n\nP.\n\n## Requirements\n\n"
+def spec(status="👍 Accepted", requirements=("Import a statement",), open_questions="None.", extra="", old=False):
+    body = "".join((f"### Requirement: {name}" if old else f"### {number}. {name}")
+                   + "\n\nThe system SHALL do it.\n\n" for number, name in enumerate(requirements, 1))
+    return (f"---\nstatus: {status}\n---\n\n# Statement import\n\n## Story\n\nS.\n\n## Requirements\n\n"
             f"{body}{extra}## Open questions\n\n- {open_questions}\n")
 
 
@@ -140,6 +141,21 @@ class Documents(Project):
         found = {p["document"]: p["detail"] for p in self.problems("type")}
         self.assertEqual(sorted(found), ["docs/brief.md", "docs/specs/statement-import.spec.md"])
         self.assertIn("`type: Spec`", found["docs/specs/statement-import.spec.md"])
+
+    def test_a_spec_in_the_old_layout_is_listed(self):
+        self.put("docs/specs/statement-import.spec.md", spec(old=True))
+        self.put("docs/specs/exports.spec.md", spec(status="📝 Draft", old=True))
+        self.put("docs/specs/refunds.spec.md", spec())
+        found = {p["document"]: p["detail"] for p in self.problems("layout")}
+        self.assertEqual(sorted(found), ["docs/specs/exports.spec.md", "docs/specs/statement-import.spec.md"])
+        self.assertIn("written for an earlier version of the sdlc plugin; rework it with /spec",
+                      found["docs/specs/statement-import.spec.md"])
+
+    def test_a_ready_plan_on_an_old_layout_spec_says_so(self):
+        self.put("docs/specs/statement-import.spec.md", spec(old=True))
+        self.put("docs/plans/2026-11-01-good.md", plan(status="🟢 Ready to build"))
+        found = {p["document"]: p["detail"] for p in self.problems("ready plan")}
+        self.assertIn("written for an earlier version of the sdlc plugin", found["docs/plans/2026-11-01-good.md"])
 
     def test_a_status_written_without_the_variation_selector_is_fine(self):
         self.put("docs/adrs/0001-cents.md", adr(status="↪ Superseded", superseded_by="0002"))

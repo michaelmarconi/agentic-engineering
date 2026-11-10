@@ -1,0 +1,5 @@
+schema_version: "1.1"
+name: spec-first-requirement-outcome
+expected_outcome: |
+  Given a story and the steps that serve it, the skill makes requirement 1 the outcome the story asks
+  for, not the first step.

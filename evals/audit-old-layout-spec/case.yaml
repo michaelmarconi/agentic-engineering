@@ -1,0 +1,7 @@
+schema_version: "1.1"
+name: audit-old-layout-spec
+expected_outcome: |
+  One accepted spec still uses the layout of an earlier version of the plugin. The audit lists it
+  as needing rework with /spec, as a problem with the documents.
+context:
+  scaffold_script: place-files.sh

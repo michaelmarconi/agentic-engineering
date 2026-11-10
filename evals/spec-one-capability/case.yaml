@@ -1,0 +1,5 @@
+schema_version: "1.1"
+name: spec-one-capability
+expected_outcome: |
+  The request bundles two capabilities, importing a statement and exporting the ledger. The skill
+  offers to split them into two specs rather than writing both into one.

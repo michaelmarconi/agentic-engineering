@@ -6,34 +6,34 @@ status: 📝 Draft
 
 # Credit notes
 
-## Problem
+## Story
 
-Refunds are written as negative invoices, which confuses the accountant.
+When the firm refunds a customer, the accounts clerk wants to issue a credit note rather than
+a negative invoice, so they can record refunds in a way the accountant understands.
 
-## Goal
+## In scope
 
-The accounts clerk can rely on what the invoice tool does.
-
-## Scope
-
-In:
 - What the requirements below say.
 
-Out:
+## Out of scope
+
 - Anything else.
 
 ## Requirements
 
-### Requirement: Issue a credit note
+### 1. Issue a credit note
 
 When the clerk refunds part of an invoice, the system SHALL issue a credit note for that amount, naming the invoice.
 
-#### Scenario: Partial refund
-- GIVEN invoice 17 for 1950 cents
-- WHEN the clerk refunds 500 cents
-- THEN credit note 1 for 500 cents names invoice 17
+| Example | Partial refund |
+|---|---|
+| Given | invoice 17 for 1950 cents |
+| When | the clerk refunds 500 cents |
+| Then | credit note 1 for 500 cents names invoice 17 |
 
-Verified by: test.
+#### How we'll check
+
+Test.
 
 ## Constraints
 
@@ -41,4 +41,4 @@ Verified by: test.
 
 ## Open questions
 
-- Should a credit note get its own number sequence?
+- Should a credit note get its own number sequence? Proposed: yes, separate from invoices.

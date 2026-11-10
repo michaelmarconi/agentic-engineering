@@ -30,7 +30,11 @@ them one at a time, and only then write.
 
 Work out which specs, which requirements within them, and which ADRs the work builds, from what
 the person says and from `docs/specs/` and `docs/adrs/`. Each requirement is a
-`### Requirement:` heading in its spec; name it word for word.
+numbered heading under Requirements in its spec, as `### 2. Reply to all`; name it by the words
+after the number, word for word, and never by its number, which changes when requirements are
+added or removed. A spec that heads its requirements `### Requirement: <name>` was written for an
+earlier version of the sdlc plugin: no plan can be signed off on it until it is reworked with
+/spec and accepted again, so tell the person so before planning against it.
 
 - If the work builds no requirement and follows no ADR, such as tidying code, a routine upgrade or
   a quick fix, it needs no plan. Say so, suggest doing it straight from the conversation, and stop.

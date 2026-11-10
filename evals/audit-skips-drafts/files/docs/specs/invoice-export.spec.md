@@ -6,34 +6,34 @@ status: 👍 Accepted
 
 # Invoice export
 
-## Problem
+## Story
 
-The accountant retypes every invoice into their own software.
+When the accountant needs the firm's invoices, the accounts clerk wants to export them, so
+they can hand them over without the accountant retyping each one into their own software.
 
-## Goal
+## In scope
 
-The accounts clerk can rely on what the invoice tool does.
-
-## Scope
-
-In:
 - What the requirements below say.
 
-Out:
+## Out of scope
+
 - Anything else.
 
 ## Requirements
 
-### Requirement: Export as CSV
+### 1. Export as CSV
 
 When the clerk exports invoices, the system SHALL write one CSV row per invoice, after a header row, with the columns number, date and total, in that order, the total in cents.
 
-#### Scenario: One invoice
-- GIVEN invoice 17, dated 2026-10-01, totalling 1950 cents
-- WHEN the clerk exports
-- THEN the file is `number,date,total` then `17,2026-10-01,1950`
+| Example | One invoice |
+|---|---|
+| Given | invoice 17, dated 2026-10-01, totalling 1950 cents |
+| When | the clerk exports |
+| Then | the file is `number,date,total` then `17,2026-10-01,1950` |
 
-Verified by: test.
+#### How we'll check
+
+Test.
 
 ## Constraints
 

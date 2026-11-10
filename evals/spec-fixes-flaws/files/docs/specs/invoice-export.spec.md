@@ -5,43 +5,47 @@ status: 📝 Draft
 
 # Invoice export
 
-## Problem
+## Story
 
-Finance staff need a PDF export button on the invoices page.
+When finance staff need an invoice, finance staff want a PDF export button on the invoices page, so they
+can get invoices out of the system quickly.
 
-## Goal
+## In scope
 
-Finance can get invoices out of the system quickly.
-
-## Scope
-
-In:
 - Exporting one invoice as a PDF
+
+## Out of scope
 
 ## Requirements
 
-### Requirement: Export an invoice
+### 1. Export an invoice
 
 The system SHALL let a finance user export an invoice as a PDF. The PDF SHALL include the
 invoice number, the customer's name and the total, and SHALL look professional.
 
-#### Scenario: Export
-- GIVEN an invoice
-- WHEN a finance user exports it
-- THEN a PDF of the invoice is produced
+| Example | Export |
+|---|---|
+| Given | an invoice |
+| When | a finance user exports it |
+| Then | a PDF of the invoice is produced |
 
-Verified by: test.
+#### How we'll check
 
-### Requirement: Paid stamp
+Test.
+
+### 2. Paid stamp
 
 When an invoice has been paid, the PDF shows a "PAID" stamp with the payment date.
 
-#### Scenario: Paid invoice
-- GIVEN invoice INV-1042 for £120.00, paid in full on 3 March 2026
-- WHEN a finance user exports it
-- THEN the PDF shows "PAID 3 March 2026"
+| Example | Paid invoice |
+|---|---|
+| Given | invoice INV-1042 for £120.00, paid in full on 3 March 2026 |
+| When | a finance user exports it |
+| Then | the PDF shows "PAID 3 March 2026" |
 
-Verified by: test that pays INV-1042 through the live card payment gateway, exports it and
+#### How we'll check
+
+Test that pays INV-1042 through the live card payment gateway, exports it and
 checks the stamp.
 
 ## Open questions
