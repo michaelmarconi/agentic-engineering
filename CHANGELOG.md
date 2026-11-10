@@ -28,7 +28,8 @@ minor version may need such a change, and its entry says so.
 4. Use `/agentic:<name>` from now on, and change any notes or scheduled commands that use the old
    `sdlc` prefix.
 
-Moving to the new catalog later is described in the README. Never enable both `agentic@sdlc` and
+If step 2 cannot reach the catalog, run `claude plugin marketplace remove sdlc` and install from
+the new catalog as above instead. Moving to the new catalog later is described in the README. Never enable both `agentic@sdlc` and
 `agentic@michaelmarconi`.
 
 ## [0.35.0] - 2026-11-10

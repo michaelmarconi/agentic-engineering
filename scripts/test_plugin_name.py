@@ -41,7 +41,7 @@ class PluginName(unittest.TestCase):
             dirs[:] = [d for d in dirs if d not in (".git", "__pycache__")]
             for name in files:
                 path = os.path.relpath(os.path.join(folder, name), ROOT)
-                if path.startswith(KEPT) or "/files/" in path:
+                if path.startswith(KEPT):
                     continue
                 try:
                     with open(os.path.join(ROOT, path), encoding="utf-8") as f:

@@ -157,9 +157,16 @@ works, and moves your install to the new name:
 4. Use `/agentic:<name>` from now on, and change any notes or scheduled commands that use the
    old `sdlc` prefix.
 
-When convenient, move to the new catalog: `claude plugin marketplace remove sdlc`, then install
-as above. Never enable both `agentic@sdlc` and `agentic@michaelmarconi`: with two plugins of the
-same name, Claude Code drops one copy's hooks. Your documents need no change.
+When convenient, move to the new catalog, again with no review, build or spike in progress, since
+the saved records move to a new folder once more:
+
+1. Run `claude plugin marketplace remove sdlc`. This also takes `agentic@sdlc` out of your
+   settings, including a repository's `.claude/settings.json`.
+2. Install as above, adding `--scope project` if you installed it that way, and commit the
+   settings change.
+
+Never enable both `agentic@sdlc` and `agentic@michaelmarconi`: with two plugins of the same name,
+Claude Code drops one copy's hooks. Your documents need no change.
 
 ## Feedback
 

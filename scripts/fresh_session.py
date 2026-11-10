@@ -10,8 +10,9 @@ Claude Code runs this on three hook events:
 - UserPromptSubmit: each message from the person is counted. In a Claude project thread,
   messages arrive wrapped in a `<wake>` envelope; only one that holds a message `from="human"`
   counts, so the note that opens a thread and events such as a pull request closing do not.
-  A typed `/build` or `/agentic:build` is blocked unless it is the first message counted.
-- PreToolUse on Skill: starting `build` or `agentic:build` is refused unless the session is fresh
+  A typed `/build`, or `/build` with the plugin's prefix as plugin.json names it, such as
+  `/agentic:build`, is blocked unless it is the first message counted.
+- PreToolUse on Skill: starting `build`, or `build` with the plugin's prefix, is refused unless the session is fresh
   and exactly one message has been counted, which covers asking in plain words.
 - A /build that is allowed to start is recorded, so the branch guard knows a build is running.
 - A record is deleted once unchanged for 30 days (see saved_records.py), not when the session
@@ -30,8 +31,11 @@ import sys
 
 import saved_records
 
-BUILD_SKILLS = ("build", "agentic:build")
-TYPED_BUILD = re.compile(r"^\s*/(?:agentic:)?build(?:\s|$)")
+MANIFEST = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".claude-plugin", "plugin.json")
+with open(MANIFEST) as manifest:
+    PLUGIN = json.load(manifest)["name"]
+BUILD_SKILLS = ("build", f"{PLUGIN}:build")
+TYPED_BUILD = re.compile(r"^\s*/(?:%s:)?build(?:\s|$)" % re.escape(PLUGIN))
 REASON = (
     "/build starts only in answer to the first message in a new session, or the first after "
     "/clear, so the build begins with a clean context and the written plan. Start a new session "
