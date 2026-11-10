@@ -1,0 +1,8 @@
+schema_version: "1.1"
+name: plan-old-layout-spec
+expected_outcome: |
+  The plan names a spec written for an earlier version of the plugin. Asked to sign the plan off, the
+  skill leaves it Draft and says plainly that the spec must be reworked with /spec and accepted again
+  first, rather than reporting each requirement as missing.
+context:
+  scaffold_script: place-files.sh

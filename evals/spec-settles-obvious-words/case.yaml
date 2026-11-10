@@ -1,0 +1,5 @@
+schema_version: "1.1"
+name: spec-settles-obvious-words
+expected_outcome: |
+  Words whose meaning is plain from the product, such as "unread" in an email app, are settled from
+  context, not asked about.

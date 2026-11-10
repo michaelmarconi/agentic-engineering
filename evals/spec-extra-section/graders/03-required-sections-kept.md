@@ -1,7 +1,7 @@
 ---
 type: regex
 target: { source: file, path: docs/specs/password-reset.spec.md }
-pattern: '^## Problem\s*$[\s\S]*^## Goal\s*$[\s\S]*^## Scope\s*$[\s\S]*^## Requirements\s*$[\s\S]*^## Constraints\s*$[\s\S]*^## Open questions\s*$'
+pattern: '^## Story\s*$[\s\S]*^## In scope\s*$[\s\S]*^## Out of scope\s*$[\s\S]*^## Requirements\s*$[\s\S]*^## Constraints\s*$[\s\S]*^## Open questions\s*$'
 flags: m
 weight: 1
 ---

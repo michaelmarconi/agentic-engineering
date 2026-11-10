@@ -3,4 +3,4 @@ type: llm
 focus: { source: file, path: docs/specs/password-reset.spec.md }
 weight: 1
 ---
-The Problem section does not describe the solution.
+Every requirement has a "How we'll check" heading naming a method such as a test.

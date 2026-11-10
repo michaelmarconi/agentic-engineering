@@ -1,0 +1,8 @@
+schema_version: "1.1"
+name: spec-reworks-old-spec
+expected_outcome: |
+  An accepted spec written for an earlier version of the plugin is changed. The skill reworks it to
+  the new layout in the same edit, keeping what it says and the requirement names, and returns it to
+  Draft.
+context:
+  scaffold_script: place-files.sh

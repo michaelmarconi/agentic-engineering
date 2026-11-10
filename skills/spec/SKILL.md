@@ -42,7 +42,9 @@ Settle what the spec is for before its requirements. Write the Story, one senten
 the capability is needed, who wants it, what they want to do and the outcome they want, as rubric
 check 2 says, and the In scope and Out of scope lists. Play these back to the person in a short
 reply and ask whether they have it right, before you draft any requirement, unless they have
-already agreed them in this conversation. If the story holds two outcomes someone could ask for
+already agreed them in this conversation. If they asked you to write the spec now, or not to stop
+and ask, draft it all and play the story and scope back at the hand-over instead, so they can
+correct them there. If the story holds two outcomes someone could ask for
 separately, such as importing and exporting, it is two capabilities: offer to split it into two
 specs, and write one at a time. The first requirement then states the outcome the story asks
 for (rubric check 12), and the others say how it holds in particular cases.

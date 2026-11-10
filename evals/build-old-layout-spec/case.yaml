@@ -1,0 +1,8 @@
+schema_version: "1.1"
+name: build-old-layout-spec
+expected_outcome: |
+  The plan builds a spec written for an earlier version of the plugin, so the build stops before
+  changing anything and says the spec must be reworked with /spec, accepted again and the plan signed
+  off again.
+context:
+  scaffold_script: place-files.sh
