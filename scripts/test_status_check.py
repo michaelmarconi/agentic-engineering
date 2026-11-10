@@ -1454,6 +1454,10 @@ class DateField(Workspace):
             self.put(make(status=status, date=None, **extra))
             self.assertIsNone(self.edit(f"status: {status}", f"status: {status}\ndate: 2026-09-14"), status)
 
+    def test_a_date_after_today_refused(self):
+        self.put(spec("👍 Accepted", date=None))
+        self.assertIn("after today", self.edit("status: 👍 Accepted", "status: 👍 Accepted\ndate: 2099-01-01"))
+
     def test_date_on_a_decided_adr_never_changed(self):
         self.at("ADR")
         self.put(adr("👍 Accepted", date="2026-10-01"))

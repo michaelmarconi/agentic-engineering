@@ -97,7 +97,7 @@ finished spike record, whose only allowed change it is.
 
 Every spec, ADR, plan and spike record records in its frontmatter's `date:` the day its status
 last changed, as YYYY-MM-DD. For any of them with a lifecycle status before or after the edit, it
-refuses more than one `date:` line, a date that is not a real YYYY-MM-DD date, a new document or a
+refuses more than one `date:` line, a date that is not a real YYYY-MM-DD date or is after today, a new document or a
 status change whose `date:` is not today's date on this machine, and a change to `date:`, or
 taking it away, while the status stays the same. A document written before dates may be edited
 without one until its next status change, and adding one, any real date, never counts as a change,
@@ -394,6 +394,9 @@ def date_problem(name, kind, before, after, old, new):
         return (f"{name}: `date:` must be a real date written YYYY-MM-DD, the day the {kind}'s status "
                 f"last changed (found '{value}').")
     day = today()
+    if value is not None and value > day:
+        return (f"{name}: `date:` is {value}, after today, {day}; it is the day the {kind}'s status "
+                "last changed, so it can't be later than today.")
     if old != new:
         if value == day:
             return None

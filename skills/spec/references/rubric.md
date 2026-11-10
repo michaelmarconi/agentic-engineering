@@ -4,7 +4,8 @@ Each check passes or fails. `/spec` reads this while writing; the spec reviewer 
 checking, and quotes the spec as evidence for every failure.
 
 1. **Shape.** The spec's frontmatter has `type: Spec`, `status:` set to `📝 Draft` or `👍 Accepted`,
-   emoji included, `date:` as YYYY-MM-DD and the template's `#` line, and at least the sections
+   emoji included, `date:` as YYYY-MM-DD (a document written before dates may have none until its status next changes) and the
+   template's `#` line, and at least the sections
    Story, In scope, Out of scope, Requirements,
    Constraints and Open questions, in that order relative to each other. Further sections, such
    as "Security" or "Privacy", may go wherever they fit before Open questions, which comes last,

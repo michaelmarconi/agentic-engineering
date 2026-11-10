@@ -5,7 +5,7 @@ checking, and quotes the plan as evidence for every failure.
 
 1. **Shape.** The file is `docs/plans/YYYY-MM-DD-<title-in-lowercase-with-hyphens>.md`, directly
    in that folder. Its frontmatter has `type: Plan`, `status:` set to `📝 Draft`, `🟢 Ready to build` or
-   `✅ Built`, emoji included, and `date:` as YYYY-MM-DD. Under a `# ` title, the sections are Specs, ADRs, Decisions, Plan
+   `✅ Built`, emoji included, and `date:` as YYYY-MM-DD (a document written before dates may have none until its status next changes). Under a `# ` title, the sections are Specs, ADRs, Decisions, Plan
    and Open questions, in that order, and no `<!-- -->` comment from the template is left in; the
    frontmatter's `#` line stays.
 2. **Specs.** Each entry under Specs is a reference to a spec under `docs/specs/`, by its title

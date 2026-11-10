@@ -28,7 +28,8 @@ import sys
 
 READY, BUILT = "🟢 Ready to build", "✅ Built"
 STATUS_LINE = re.compile(r"^status:[ \t]*(?P<value>[^\n#]*?)[ \t]*$", re.M)
-DATE_LINE = re.compile(r"^date:[ \t]*(?P<value>[^\n#]*?)[ \t]*(?:#[^\n]*)?$", re.M)
+# The key in any case and with a space before its colon, as the status hook reads it.
+DATE_LINE = re.compile(r"^date[ \t]*:[ \t]*(?P<value>[^\n#]*?)[ \t]*(?:#[^\n]*)?$", re.M | re.I)
 
 
 def today():
@@ -37,14 +38,18 @@ def today():
 
 
 def built(text, match):
-    """The plan's text with the status in `match` set to Built and its `date:` to today."""
-    text = text[:match.start("value")] + BUILT + text[match.end("value"):]
+    """The plan's text with the status in `match` set to Built and its `date:` to today, adding the
+    date line under the status line if the frontmatter has none."""
     end = text.find("\n---", 3)
     date = DATE_LINE.search(text, 4, end + 1)
     if date:
-        return text[:date.start("value")] + today() + text[date.end("value"):]
-    line_end = text.index("\n", match.start("value"))
-    return text[:line_end + 1] + f"date: {today()}\n" + text[line_end + 1:]
+        dated = (date.start("value"), date.end("value"), today())
+    else:
+        line_end = text.index("\n", match.end("value")) + 1
+        dated = (line_end, line_end, f"date: {today()}\n")
+    for start, stop, value in sorted([(match.start("value"), match.end("value"), BUILT), dated], reverse=True):
+        text = text[:start] + value + text[stop:]
+    return text
 
 
 def git(repo, *args):

@@ -164,6 +164,21 @@ class Built(Repo):
         self.run_it("--reviews-passed")
         self.assertIn(f"date: {TODAY}  # status day\n", self.read(PLAN))
 
+    def built_from(self, line):
+        self.put(PLAN, plan(date=None).replace("---\n\n#", f"{line}\n---\n\n#"))
+        self.run_it("--reviews-passed")
+        return self.read(PLAN)
+
+    def test_date_key_in_another_case_replaced_not_doubled(self):
+        text = self.built_from("Date: 2026-11-04")
+        self.assertIn(f"Date: {TODAY}\n", text)
+        self.assertEqual(text.lower().count("date"), 1)
+
+    def test_date_key_with_a_space_replaced_not_doubled(self):
+        text = self.built_from("date : 2026-11-04")
+        self.assertIn(f"date : {TODAY}\n", text)
+        self.assertEqual(text.lower().count("date"), 1)
+
     def test_date_left_alone_when_not_built(self):
         self.run_it()
         self.assertIn("date: 2026-11-04\n", self.read(PLAN))
