@@ -215,8 +215,9 @@ class SkillCheck(unittest.TestCase):
             path = os.path.join(skills, name, "SKILL.md")
             if os.path.isfile(path):
                 with open(path, encoding="utf-8") as f:
-                    if all(holds(f.read(), rule) for rule in CORRECT_RULES):
-                        holding.add(name)
+                    text = f.read()
+                if all(holds(text, rule) for rule in CORRECT_RULES):
+                    holding.add(name)
         self.assertEqual(holding, {"brief", "spec", "adr", "plan", "spike", "practices", "feedback"})
 
     def test_document_skill_without_proposed_rule_fails(self):
