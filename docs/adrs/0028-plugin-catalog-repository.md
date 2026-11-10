@@ -23,7 +23,7 @@ so nobody has to move again.
 
 [ADR 0001](0001-single-plugin.md)[^adr] chose to ship the skills as one plugin, with this repository as its
 own catalog. That catalog is named after the product, so the install name repeats it, and it leaves
-no place for the maintainer's later plugins. Claude Code keeps one catalog per name for each person.
+no place for the maintainer's later plugins.
 Moving a catalog costs each person a step by hand, so the choice is best made while few people
 use it.
 
