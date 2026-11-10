@@ -111,9 +111,9 @@ Run `/adr` and say what you want: record a decision, accept or reject one, or re
   answer `/adr` would choose, such as the option it recommends, or, where only you can know, what
   would settle it. Your answer goes into the ADR and the question is removed.
 - **Spikes before untried claims.** If the choice depends on something nobody has tried, such as
-  how an outside service behaves, `/adr` makes that the first open question and proposes a
-  [spike](spike.md) to test it, rather than leaving it to be proven in the build. If you choose to
-  go ahead without one, the ADR says so under Consequences.
+  how an outside service behaves, `/adr` puts that first in Open questions, ahead of the choice,
+  and proposes a [spike](spike.md) to test it, rather than leaving it to be proven in the build. If
+  you choose to go ahead without one, the ADR says so under Consequences.
 - **One decision per record.** If the conversation holds several decisions, `/adr` says how many
   and writes one ADR for each. It splits them itself, rather than asking you whether to.
 - **Replacing a decision.** A new ADR names the one it replaces. The old one stays `👍 Accepted`
