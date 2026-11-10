@@ -5,7 +5,7 @@ status: 📝 Draft
 date: 2026-11-10
 ---
 
-# Keep this repository's catalog so existing installs move to the plugin's new name by themselves
+# Keep this repository's catalog so existing installs switch to the plugin's new name on update
 
 ## Question
 
@@ -13,41 +13,41 @@ When the plugin[^plugin] is renamed, how do people who installed it under the ol
 
 ## Decision
 
-Chosen: this repository keeps its own catalog[^catalog], still named `sdlc`, listing the plugin under
-its new name with a rename entry from the old one. The catalog stays until no known install uses it.
-Claude Code then moves each install to the new name on its next update, and one install command
-tidies its record.
+Chosen: this repository keeps its catalog[^catalog], named `sdlc`, listing the plugin under its new
+name with a rename entry[^rename]. When this catalog is next updated, Claude Code moves an install to the new name, as a trial showed.
 
 ## Background
 
-[ADR 0028](0028-plugin-catalog-repository.md) moves the plugin to a catalog of its own, and the
-plugin is being renamed, so its skills[^skill] change their names too. Everyone who installed it
-did so from this repository's catalog, by the old names. Claude Code can move an install across a
-rename within one catalog, but not from one catalog to another.
+[ADR 0028](0028-plugin-catalog-repository.md)[^adr] moves the plugin to a catalog of its own, and the
+plugin and its skills[^skill] are being renamed. Every existing install came from this repository's
+catalog. Claude Code can move an install across a rename within one catalog, but not between catalogs.
 
 ## Options
 
 | Option | Outcome | Why |
 | --- | --- | --- |
-| Remove this repository's catalog and let people move by hand | Rejected | Every install not yet moved fails at its next update with "plugin not found" |
+| Remove this repository's catalog and let people move by hand | Rejected | Every install not yet moved fails at its next update |
 | Keep the catalog, listing the plugin under its old name | Rejected | Old installs would never get the new skill names |
-| Keep the catalog, mark the old name removed and uninstall it | Rejected | A clean failure, but every person still moves by hand |
-| Keep the catalog, listing the plugin under its new name with a rename entry from the old one | Chosen | An update moves the install and its settings, as a trial showed |
+| Keep the catalog, mark the old name removed and uninstall it | Rejected | The old install fails with a clear message, and everyone reinstalls by hand |
+| Keep the catalog, listing the plugin under its new name with a rename entry | Chosen | An update moves settings[^settings] and skill names with no editing by hand, as a trial showed |
 
 ## Consequences
 
 - Good: an update moves an install to the new skill names, including settings a team stored in its repository.
-- Good: when the maintainer works in this repository, Claude Code loads the plugin from the files checked out here, listed in this same catalog.
-- Bad: after the update, a person still runs one install command so Claude Code's list of installed plugins matches.
-- Bad: two catalogs list the same plugin, and enabling it from both silently drops one copy's hooks[^hook].
-- Bad: what the plugin saved about work in progress, such as reviews and builds, is not carried to the new name.
+- Good: keeping the catalog also lets the maintainer's own sessions load the plugin from this repository's files.
+- Bad: a person runs one install command after the update.
+- Bad: moved installs stay on this catalog, as `agentic@sdlc`, until each person switches to the plugin's new catalog by hand.
+- Bad: each rename entry stays for as long as the catalog does.
+- Bad: two catalogs list the same plugin, so a person must not enable it from both.
+- Bad: what the plugin saved about work in progress is not carried to the new name.
 
 ## Out of scope
 
 - When this repository's catalog is removed: a later decision, once no known install uses it.
-- Moving from this catalog to the new one, which stays a step by hand.
-- Untested: updates after this repository is renamed, which rely on GitHub sending the old address to the new one.
-- Untested: what an interactive session shows during the update.
+- Untested: updates after this repository is renamed, which rely on GitHub's redirect from the old address.
+- Untested: what an interactive session shows.
+- Untested: the rewrite of user and local settings; the trial covered settings stored in the repository.
+- Untested: two enabled copies dropping one copy's hooks[^hook], which comes from Claude Code's documentation.
 
 ## How we'll check
 
@@ -84,7 +84,7 @@ with `"sdlc@sdlc": true` in its stored project settings had the plugin installed
 repository, then that branch renamed the plugin as above:
 
 - `claude plugin marketplace update sdlc` alone rewrote the stored setting to `"agentic@sdlc": true`.
-- The next session loaded 9 `agentic:` skills and 14 `agentic:` agents and no `sdlc:` ones, and a skill ran to the end.
+- Before any install command, the next session loaded 9 `agentic:` skills and 14 `agentic:` agents and no `sdlc:` ones, and a skill ran to the end.
 - `claude plugin list` showed nothing installed until `claude plugin install agentic@sdlc` ran.
 - The plugin's data folder is named after the plugin: a new `agentic-sdlc` folder started empty, and `sdlc-sdlc` was left behind.
 
@@ -93,5 +93,8 @@ repository, then that branch renamed the plugin as above:
 
 [^plugin]: A plugin is a package of skills, agents and hooks that Claude Code installs and updates as one.
 [^catalog]: A catalog, which Claude Code calls a marketplace, is a file listing plugins and where to fetch each one; its name is the part of an install name after the `@`.
+[^adr]: ADR stands for architecture decision record: a document that records one technical decision and why it was made.
+[^rename]: A rename entry is a line in the catalog saying that the plugin's old name now means its new one.
+[^settings]: Claude Code keeps settings in three places: a person's own settings for every project, a project's settings shared through its repository, and a person's private settings for one project.
 [^skill]: A skill is a set of instructions Claude follows for one step, run as a slash command.
 [^hook]: A hook is a script Claude Code runs automatically at set moments, such as just before Claude edits a file.
