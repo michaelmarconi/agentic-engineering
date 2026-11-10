@@ -55,8 +55,9 @@ and this rubric, keeping what it says. Turn Problem and Goal into the Story and 
 and Out of scope, number the requirements in their order, make each scenario an example table,
 and turn each Verified by line into How we'll check. Anything the new checks need that the old
 spec does not say, such as a first requirement stating the story's outcome, is a question for
-the person, like any other gap. A plan that names an old spec cannot be signed off until it has
-been reworked and accepted again, so say so when you hand the spec over.
+the person, like any other gap. Keep each requirement's name, so plans that name it still match. A plan that names an
+old spec cannot be signed off, nor built, until the spec has been reworked and accepted again, so
+say so when you hand the spec over.
 
 Then ask about what the draft or the review leaves open: say how many questions there are, ask
 only the first (a conflict with another spec, or a decision the review says needs the person,
