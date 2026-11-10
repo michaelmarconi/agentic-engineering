@@ -1,10 +1,10 @@
 {
-  "name": "sdlc",
-  "version": "0.35.0",
-  "description": "Small, independent, evaluated skills for the software development lifecycle.",
+  "name": "agentic",
+  "version": "0.36.0",
+  "description": "Skills for Agentic Engineering: building software with coding agents, with engineering rigour.",
   "author": {
     "name": "Michael Marconi"
   },
-  "repository": "https://github.com/michaelmarconi/sdlc",
+  "repository": "https://github.com/michaelmarconi/agentic-engineering",
   "license": "MIT"
 }
