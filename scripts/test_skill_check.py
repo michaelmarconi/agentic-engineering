@@ -8,7 +8,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 SCRIPT = os.path.join(HERE, "skill_check.py")
 ROOT = os.path.join(HERE, "..")
 sys.path.insert(0, HERE)
-from skill_check import AGENT_RULE, DOCUMENT_SKILLS, PATH_RULE, REVIEW_RULE, TYPE_RULE  # noqa: E402
+from skill_check import AGENT_RULE, DOCUMENT_SKILLS, PATH_RULE, REVIEW_RULE, SHOW_RULE, TYPE_RULE, holds  # noqa: E402
 
 DESCRIPTION = "Write a thing. Use whenever someone wants a thing."
 
@@ -94,9 +94,54 @@ class SkillCheck(unittest.TestCase):
     def test_reviewing_skill_with_path_rule_passes(self):
         rule = PATH_RULE.replace(" the one ", "\nthe one ")
         self.assertNotEqual(rule, PATH_RULE)
-        self.put("demo", skill_md(body=self.reviewing("Document: <the demo's full path>", rule)))
+        extra = f"{rule}\n\n{SHOW_RULE}\n"
+        self.put("demo", skill_md(body=self.reviewing("Document: <the demo's full path>", extra)))
         done = self.check()
         self.assertEqual(done.returncode, 0, done.stdout)
+
+    # Every document is shown the same way (ADR 0025)
+
+    def test_skill_reviewing_a_document_without_the_show_rule_fails(self):
+        body = self.reviewing("Document: <the demo's full path>", PATH_RULE)
+        self.put("demo", skill_md(body=body))
+        self.assertFails("demo/SKILL.md: show rule missing")
+
+    def test_show_rule_wrapped_across_lines_passes(self):
+        rule = SHOW_RULE.replace(" a fresh copy ", "\na fresh copy ")
+        self.assertNotEqual(rule, SHOW_RULE)
+        body = self.reviewing("Document: <the demo's full path>", f"{PATH_RULE}\n\n{rule}\n")
+        self.put("demo", skill_md(body=body))
+        done = self.check()
+        self.assertEqual(done.returncode, 0, done.stdout)
+
+    def test_reworded_show_rule_fails(self):
+        rule = SHOW_RULE.replace("never send them to a code-hosting site", "send them to GitHub")
+        self.assertNotEqual(rule, SHOW_RULE)
+        body = self.reviewing("Document: <the demo's full path>", f"{PATH_RULE}\n\n{rule}\n")
+        self.put("demo", skill_md(body=body))
+        self.assertFails("show rule missing")
+
+    def test_the_first_wording_of_the_show_rule_fails(self):
+        old = ("Show the person the document: if the app you run in can show them a file in a viewer, "
+               "use it, and show a fresh copy after each change if what it shows is a copy; always "
+               "name the document's full path; never send them to a website to read it.")
+        body = self.reviewing("Document: <the demo's full path>", f"{PATH_RULE}\n\n{old}\n")
+        self.put("demo", skill_md(body=body))
+        self.assertFails("show rule missing")
+
+    def test_a_draft_never_saved_needs_no_show_rule(self):
+        self.put("demo", skill_md(body=self.reviewing("Document: feedback draft")))
+        done = self.check()
+        self.assertNotIn("show rule missing", done.stdout)
+
+    def test_every_document_skill_holds_the_show_rule(self):
+        holding = set()
+        skills = os.path.join(ROOT, "skills")
+        for name in os.listdir(skills):
+            with open(os.path.join(skills, name, "SKILL.md"), encoding="utf-8") as f:
+                if holds(f.read(), SHOW_RULE):
+                    holding.add(name)
+        self.assertEqual(holding, {"brief", "spec", "adr", "plan", "spike", "practices"})
 
     def test_a_draft_never_saved_needs_no_path_rule(self):
         self.put("demo", skill_md(body=self.reviewing("Document: feedback draft")))
