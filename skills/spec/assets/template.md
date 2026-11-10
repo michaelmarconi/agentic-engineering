@@ -40,4 +40,4 @@ When <situation>, <who> wants to <do something>, so they can <outcome>.
 
 ## Open questions
 
-- <A question still to answer, ending "Proposed:" and the answer you would choose, or "None.">
+- <A question still to answer, ending "Proposed:" and the answer you would choose (or, if only the person can know, what would settle it), or "None.">
