@@ -6,6 +6,39 @@ What changed in each version of the plugin, newest first. Versions follow
 past a major version: it says what you need to change in your documents. Until 1.0.0, any
 minor version may need such a change, and its entry says so.
 
+## [0.32.0] - 2026-11-10
+
+### Changed
+
+- Specs have a new layout. A one-sentence Story, "When <situation>, <who> wants to <do
+  something>, so they can <outcome>", replaces Problem and Goal; In scope and Out of scope replace
+  Scope. Requirements are numbered headings, as `### 2. Reply to all`; the number is only for
+  reading, and plans still name a requirement by its name alone. Each example is a two-column
+  table headed `| Example | <name> |` with Given, When, Then and And rows, and How we'll check
+  replaces Verified by.
+- The spec rubric adds three checks: the first requirement states the outcome the story asks for,
+  a spec covers one capability, and every open question proposes an answer. A rule's subject is
+  something someone can see, never an internal step.
+- `/sdlc:spec` plays the story and scope back for your yes before it drafts requirements, unless
+  you asked it to write the spec straight away, and offers to split a story that holds two
+  capabilities. It never writes a default it chose as a rule: that goes into Open questions as its
+  proposed answer. It asks what happens when each requirement cannot be met, and settles words
+  whose meaning is plain from the product without asking.
+- The status hook refuses a plan line that gives a requirement's number, and refuses to accept a
+  spec with no numbered requirement.
+
+### Upgrading
+
+- A spec written for an earlier version, with Problem, Goal and Scope sections and
+  `### Requirement:` headings, breaks nothing while left alone. But a plan naming it cannot be
+  signed off as Ready to build, and `/sdlc:build` will not start on such a plan, until the spec is
+  reworked: the next edit `/sdlc:spec` makes to it brings it to the new layout and checks, keeping
+  what it says and the requirement names, and asks about anything the new checks need. That edit
+  returns an accepted spec to Draft, so accept it again, then sign the plan off again. The hook,
+  `/sdlc:plan` and `/sdlc:build` each say this plainly, and `/sdlc:audit` lists every spec still
+  in the old layout, so you can see the rework before it is in the way. Briefs, ADRs, plans and
+  spike records need no change.
+
 ## [0.31.0] - 2026-11-10
 
 ### Added
