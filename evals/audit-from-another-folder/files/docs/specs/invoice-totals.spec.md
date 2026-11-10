@@ -6,45 +6,48 @@ status: 👍 Accepted
 
 # Invoice totals
 
-## Problem
+## Story
 
-The clerk adds up invoice lines by hand and makes mistakes.
+When the accounts clerk writes an invoice, the clerk wants its lines added up for them, so they can
+send invoices whose totals are right without adding them up by hand.
 
-## Goal
+## In scope
 
-The accounts clerk can rely on what the invoice tool does.
-
-## Scope
-
-In:
 - What the requirements below say.
 
-Out:
+## Out of scope
+
 - Anything else.
 
 ## Requirements
 
-### Requirement: Line amount
+### 1. Line amount
 
 The system SHALL work out each line's amount as its quantity times its unit price.
 
-#### Scenario: Three at a price
-- GIVEN a line of 3 hinges at 250 cents each
-- WHEN the line's amount is worked out
-- THEN it is 750 cents
+| Example | Three at a price |
+|---|---|
+| Given | a line of 3 hinges at 250 cents each |
+| When | the line's amount is worked out |
+| Then | it is 750 cents |
 
-Verified by: test.
+#### How we'll check
 
-### Requirement: Invoice total
+Test.
+
+### 2. Invoice total
 
 The system SHALL work out an invoice's total as the sum of its lines' amounts.
 
-#### Scenario: Two lines
-- GIVEN lines of 750 and 1200 cents
-- WHEN the total is worked out
-- THEN it is 1950 cents
+| Example | Two lines |
+|---|---|
+| Given | lines of 750 and 1200 cents |
+| When | the total is worked out |
+| Then | it is 1950 cents |
 
-Verified by: test.
+#### How we'll check
+
+Test.
 
 ## Constraints
 
