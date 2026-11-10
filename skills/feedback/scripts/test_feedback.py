@@ -20,7 +20,7 @@ import feedback  # noqa: E402
 
 def make_plugin(root, repository="https://github.com/acme/tools", version="1.2.3"):
     os.makedirs(os.path.join(root, ".claude-plugin"))
-    manifest = {"name": "sdlc", "version": version}
+    manifest = {"name": "agentic", "version": version}
     if repository is not None:
         manifest["repository"] = repository
     with open(os.path.join(root, ".claude-plugin", "plugin.json"), "w") as f:
@@ -132,7 +132,7 @@ class ContextTest(unittest.TestCase):
                     mock.patch.object(feedback, "os_name", return_value="macOS 15.1"):
                 text = feedback.context(root)
         self.assertEqual(
-            text, "- Plugin: sdlc 1.2.3\n- Claude Code: 2.1.0 (Claude Code)\n- OS: macOS 15.1\n"
+            text, "- Plugin: agentic 1.2.3\n- Claude Code: 2.1.0 (Claude Code)\n- OS: macOS 15.1\n"
         )
 
     def test_claude_version_unknown_when_missing(self):

@@ -68,7 +68,7 @@ class SessionMap(unittest.TestCase):
     def test_prints_map_when_brief_exists(self):
         os.makedirs(os.path.join(self.tmp.name, "docs"))
         open(os.path.join(self.tmp.name, "docs", "brief.md"), "w").close()
-        self.assertIn("/sdlc:", self.output()["hookSpecificOutput"]["additionalContext"])
+        self.assertIn("/agentic:", self.output()["hookSpecificOutput"]["additionalContext"])
 
     def test_help(self):
         done = self.run_map("--help")

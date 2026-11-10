@@ -22,7 +22,7 @@ class VersionCheck(unittest.TestCase):
     def manifest(self, version="0.4.0"):
         path = os.path.join(self.tmp.name, ".claude-plugin", "plugin.json")
         os.makedirs(os.path.dirname(path), exist_ok=True)
-        fields = {"name": "sdlc"} if version is None else {"name": "sdlc", "version": version}
+        fields = {"name": "agentic"} if version is None else {"name": "agentic", "version": version}
         with open(path, "w") as f:
             json.dump(fields, f)
 

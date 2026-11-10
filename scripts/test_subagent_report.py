@@ -12,7 +12,7 @@ import subagent_report  # noqa: E402
 
 def stop(**fields):
     return dict({"hook_event_name": "SubagentStop", "session_id": "s1", "agent_id": "a1",
-                 "agent_type": "sdlc:spec-reviewer"}, **fields)
+                 "agent_type": "agentic:spec-reviewer"}, **fields)
 
 
 def assistant(*blocks):

@@ -64,7 +64,7 @@ class Relay(unittest.TestCase):
         return before
 
     def plan_review(self, report="Result: FAIL\nplan finding", session="s1"):
-        return self.agent("sdlc:build-reviewer", f"Document: {PLAN}\nBase: main\nReview this build.", report, session)
+        return self.agent("agentic:build-reviewer", f"Document: {PLAN}\nBase: main\nReview this build.", report, session)
 
     def security_review(self, report="security finding", session="s1"):
         return self.agent("general-purpose", f"Document: {PLAN}\nRun /security-review and report.", report, session)
@@ -81,7 +81,7 @@ class Relay(unittest.TestCase):
 
     def check(self, session="s1"):
         return self.hook({"hook_event_name": "PreToolUse", "tool_name": "Agent", "tool_use_id": "check",
-                          "tool_input": {"subagent_type": "sdlc:build-correction-checker",
+                          "tool_input": {"subagent_type": "agentic:build-correction-checker",
                                          "prompt": f"Document: {PLAN}\nCheck the corrections."}}, session)
 
 
@@ -143,7 +143,7 @@ class Checker(Relay):
 
     def test_refused_without_document_line(self):
         result = self.hook({"hook_event_name": "PreToolUse", "tool_name": "Agent",
-                            "tool_input": {"subagent_type": "sdlc:build-correction-checker", "prompt": "Check."}})
+                            "tool_input": {"subagent_type": "agentic:build-correction-checker", "prompt": "Check."}})
         self.assertEqual(result["permissionDecision"], "deny")
 
 
@@ -168,7 +168,7 @@ class Corrections(Relay):
         self.code_review()
         for agent, prompt, report in [
                 ("general-purpose", f"Document: {PLAN}\nRun /security-review and report.", "security finding"),
-                ("sdlc:build-reviewer", f"Document: {PLAN}\nBase: main\nReview this build.", "plan finding")]:
+                ("agentic:build-reviewer", f"Document: {PLAN}\nBase: main\nReview this build.", "plan finding")]:
             tool_input = {"subagent_type": agent, "prompt": prompt}
             self.hook({"hook_event_name": "PreToolUse", "tool_name": "Agent", "tool_use_id": agent,
                        "tool_input": tool_input})
@@ -200,14 +200,14 @@ class Corrections(Relay):
                           "stop_hook_active": False, "last_assistant_message": report}, session)
 
     SECURITY = ("general-purpose", f"Document: {PLAN}\nRun /security-review and report.")
-    REVIEW = ("sdlc:build-reviewer", f"Document: {PLAN}\nBase: main\nReview this build.")
+    REVIEW = ("agentic:build-reviewer", f"Document: {PLAN}\nBase: main\nReview this build.")
 
     def test_reports_of_background_reviews_are_attached(self):
         self.code_review()
         self.assertIsNone(self.launch(*self.SECURITY, "a1")[0])
         self.assertIsNone(self.launch(*self.REVIEW, "a2")[0])
         self.assertIsNone(self.stopped("general-purpose", "a1", "security finding"))
-        self.assertIsNone(self.stopped("sdlc:build-reviewer", "a2", "plan finding"))
+        self.assertIsNone(self.stopped("agentic:build-reviewer", "a2", "plan finding"))
         self.commit("Correct")
         prompt = self.check()["updatedInput"]["prompt"]
         self.assertIn("=== SECURITY REVIEW REPORT ===\nsecurity finding\n", prompt)
@@ -243,7 +243,7 @@ class Corrections(Relay):
 
     def test_an_agent_the_relay_never_saw_start_changes_nothing(self):
         self.all_reviews()
-        self.stopped("sdlc:build-reviewer", "a9", "another report")
+        self.stopped("agentic:build-reviewer", "a9", "another report")
         self.stopped("general-purpose", "a8", "another report")
         self.commit("Correct")
         prompt = self.check()["updatedInput"]["prompt"]
@@ -252,7 +252,7 @@ class Corrections(Relay):
 
     def test_a_stop_outside_a_build_saves_nothing(self):
         fresh_session.save("s2", {"fresh": True, "messages": 1})
-        self.stopped("sdlc:build-reviewer", "a1", "plan finding", session="s2")
+        self.stopped("agentic:build-reviewer", "a1", "plan finding", session="s2")
         self.assertFalse(os.path.exists(os.path.join(self.tmp.name, "data", "builds", "s2.json")))
 
     def test_an_agent_that_stops_again_has_its_last_report_kept(self):
@@ -261,7 +261,7 @@ class Corrections(Relay):
         self.launch(*self.REVIEW, "a2")
         self.stopped("general-purpose", "a1", "an early line")
         self.stopped("general-purpose", "a1", "security finding")
-        self.stopped("sdlc:build-reviewer", "a2", "plan finding")
+        self.stopped("agentic:build-reviewer", "a2", "plan finding")
         self.commit("Correct")
         prompt = self.check()["updatedInput"]["prompt"]
         self.assertIn("security finding", prompt)
@@ -278,7 +278,7 @@ class Corrections(Relay):
         self.assertIsNone(self.launch(*self.SECURITY, "a1", run_in_background=True)[0])
         self.assertIsNone(self.launch(*self.REVIEW, "a2", run_in_background=True)[0])
         self.stopped("general-purpose", "a1", "security finding")
-        self.stopped("sdlc:build-reviewer", "a2", "plan finding")
+        self.stopped("agentic:build-reviewer", "a2", "plan finding")
         self.commit("Correct")
         self.assertEqual(self.check()["permissionDecision"], "allow")
 
@@ -287,7 +287,7 @@ class Corrections(Relay):
         self.commit("Correct")
         self.assertEqual(self.check()["permissionDecision"], "allow")
         self.hook({"hook_event_name": "PostToolUse", "tool_name": "Agent", "tool_use_id": "check",
-                   "tool_input": {"subagent_type": "sdlc:build-correction-checker",
+                   "tool_input": {"subagent_type": "agentic:build-correction-checker",
                                   "prompt": f"Document: {PLAN}\nCheck the corrections."},
                    "tool_response": {"content": [{"type": "text", "text": "Result: FAIL"}]}})
         self.commit("Correct again")
