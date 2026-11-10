@@ -40,13 +40,14 @@ reviewer needs to build and check it. Footnotes explaining terms come last, afte
    every other row is Rejected with why; before, every row is Open.
 8. **Consequences.** Consequences names at least one good and one bad result of the choice, one
    line each. A limit or a decision left for later is not a consequence: it goes under Out of
-   scope. An untried claim the person chose to go ahead without testing is a `Bad:` line saying so.
-9. **Limits stated once.** Out of scope names every limit the decision relies on, one it holds
-   through whatever the answer is, and each decision left to another ADR, or says only "None.". No
-   other section states a limit again. An untried claim the choice depends on, one that would make
-   another option win were it false, is not a limit: it is the first open question, proposing a
-   spike, unless Consequences says the person chose to go ahead without one. No section leaves it
-   to be proven later.
+   scope.
+9. **Limits stated once.** Out of scope names every limit the decision relies on, something it
+   does not cover that would not change the choice whichever way it turned out, and each decision
+   left to another ADR, or says only "None.". No other section states a limit again. An untried
+   claim the choice depends on, one that would make another option win were it false, is not a
+   limit: it comes first in Open questions, proposing a spike, unless a `Bad:` line under
+   Consequences says the person chose to go ahead without one. No section leaves it to be proven
+   later.
 10. **How we'll check.** It says what the decision applies to, as a concern such as "any code that
     stores or reads session data", never as file paths, then lists numbered checks, one line each,
     each by test, demonstration, inspection or analysis. Each check can really be carried out;

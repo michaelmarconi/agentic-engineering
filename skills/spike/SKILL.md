@@ -135,7 +135,7 @@ Once the runs are done, write:
   its limits. Nothing but the runs is evidence. If the runs settled nothing, say what was learned
   and what is still unknown: the spike is `❔ Not settled`.
 - **Next steps:** a fact goes to the spec, a choice between ways of building something to an
-  ADR, each named by its title if one exists in `docs/specs/` or `docs/adrs/`, or "Nothing".
+  ADR, and a finding that settles an ADR's open question to that ADR, each named by its title if one exists in `docs/specs/` or `docs/adrs/`, or "Nothing".
 - **Results:** a table with a row for every run in Runs, with the columns Run (its number),
   Date, Outcome and Note (one line), then a sentence saying which runs count.
 - **Surprises:** what the runs showed that the hypothesis didn't cover, or "None.". A limit the
