@@ -22,11 +22,12 @@ Read the document, then find and read the code it concerns, its tests included, 
 and Grep. Read nothing outside the repository, change nothing, and run nothing: whether tests
 pass is not yours to judge.
 
-- **A spec:** judge each `### Requirement:` against the code. It **agrees** when the code does
+- **A spec:** judge each requirement, a numbered `###` heading under Requirements, or a
+  `### Requirement:` heading in a spec written for an earlier version of the plugin, against the code. It **agrees** when the code does
   what the rule says in every case the rule covers; it **contradicts** when the code does
   something the rule rules out, or fails to do what it requires where the code for it exists; it
-  is **not found** when no code sets out to do it at all. Scenarios show the rule; the rule
-  decides.
+  is **not found** when no code sets out to do it at all. Examples, or scenarios in an older
+  spec, show the rule; the rule decides.
 - **An ADR:** read its Decision, How we'll check and Technical detail; an ADR written before
   those sections has Decision Outcome and Confirmation instead. Check the code its Applies to line
   covers, in the way each check names. Code that breaks the decision is drift. When the check can

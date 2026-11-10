@@ -189,7 +189,7 @@ class ParseDraftTest(unittest.TestCase):
                       "_private names leak", "__init__.py files are read as specs",
                       "`status:` is ignored", ".spec.md suffix is required",
                       "feedback-reviewer passes a draft that quotes a path",
-                      '"Verified by: manual testing" passes /spec review',
+                      '"How we\'ll check: manual testing" passes /spec review',
                       "(Minor) /spec repeats a question"):
             self.assertEqual(feedback.parse_draft(title + "\n\nb")[0], title)
 

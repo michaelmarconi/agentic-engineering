@@ -29,7 +29,7 @@ build, such as a conflict with the brief. Leave out matters of style or taste: a
 something the builder would otherwise get wrong. Keep apart the findings only a person can settle:
 those are decisions, not fixes. Under Needs a person goes a decision about what the spec
 already says: a sentence two builders would read differently, a conflict, or something only the
-person can supply, such as the Problem's story or what a rule should be. Quote the sentence or
+person can supply, such as who the Story is about or what a rule should be. Quote the sentence or
 section it is about. Behaviour that no sentence in the spec asks for, such as an extra case or
 feature, goes under Suggestions: the person may add it, but the spec can be built as written
 without it. If you cannot quote what a decision is about, it is a suggestion. Leave out a
@@ -49,7 +49,7 @@ Other findings:
 - <finding, with a quote>
 
 Needs a person:
-- <a decision, with the options>
+- <a decision, with the options and the one you would propose>
 
 Suggestions:
 - <behaviour the person may want to add, with a quote showing where it would go>

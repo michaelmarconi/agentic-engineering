@@ -1,6 +1,6 @@
 ---
 name: spec
-description: Write or change a spec, the living document that says what one capability of a product should do and how we will know it does, as EARS rules with Given/When/Then scenarios. Use whenever someone wants to specify, describe or pin down a feature or behaviour before building it, change what an existing feature should do, answer a spec's open questions, or accept a spec, signing off its text, even if they don't say "spec".
+description: Write or change a spec, the living document that says what one capability of a product should do and how we will know it does: a one-sentence story, then numbered EARS rules, each with Given/When/Then examples and how we'll check it. Use whenever someone wants to specify, describe or pin down a feature or behaviour before building it, change what an existing feature should do, answer a spec's open questions, or accept a spec, signing off its text, even if they don't say "spec".
 ---
 
 # Spec
@@ -38,6 +38,24 @@ steps, stating its evidence in the spec's own words, such as "all 20 sample file
 record may be deleted at any time, so the spec never names it. Only when there is nothing to draw
 on, ask about the idea first.
 
+Settle what the spec is for before its requirements. Write the Story, one sentence saying when
+the capability is needed, who wants it, what they want to do and the outcome they want, as rubric
+check 2 says, and the In scope and Out of scope lists. Play these back to the person in a short
+reply and ask whether they have it right, before you draft any requirement, unless they have
+already agreed them in this conversation. If the story holds two outcomes someone could ask for
+separately, such as importing and exporting, it is two capabilities: offer to split it into two
+specs, and write one at a time. The first requirement then states the outcome the story asks
+for (rubric check 12), and the others say how it holds in particular cases.
+
+A spec written for an earlier version of the plugin has Problem, Goal and Scope sections and
+`### Requirement:` headings. Rework it in your next edit to it: bring it to the template's layout
+and this rubric, keeping what it says. Turn Problem and Goal into the Story and Scope into In scope
+and Out of scope, number the requirements in their order, make each scenario an example table,
+and turn each Verified by line into How we'll check. Anything the new checks need that the old
+spec does not say, such as a first requirement stating the story's outcome, is a question for
+the person, like any other gap. A plan that names an old spec cannot be signed off until it has
+been reworked and accepted again, so say so when you hand the spec over.
+
 Then ask about what the draft or the review leaves open: say how many questions there are, ask
 only the first (a conflict with another spec, or a decision the review says needs the person,
 comes first), and do not mention any of the others anywhere in that reply, not even in passing
@@ -48,10 +66,15 @@ person answers part of what you asked, take that part and ask again about the re
 silence is not agreement; if they ask what you think, recommend something and wait for them to
 accept it. If they would rather not answer now, leave the rest in Open questions.
 
-Never fill a gap with a guess, including the person and situation in the Problem: if the
-person has not told you who has the problem and how, write only what you were told, without adding a
-purpose or detail of your own, say the rest is not known yet and ask in Open questions. Use
-only people the person named, anywhere in the spec; scenario values such as
+Never fill a gap with a guess, including who the Story is about, their situation and the outcome:
+if the person has not told you, write only what you were told, without adding a purpose or detail
+of your own, say the rest is not known yet and ask in Open questions. A default you would choose,
+such as how a reply quotes the message it answers, is never written as a rule: it goes into Open
+questions, with the default as the proposed answer. Every open question ends with "Proposed:" and
+the answer you would choose (rubric check 14), so the person can accept it in a word. Words
+whose meaning is plain from the conversation or the product, such as "reply" in an email tool,
+are settled from that context, not asked about. Use
+only people the person named, anywhere in the spec; example values such as
 `user@example.com` need no name.
 An unknown goes into Open questions, worded so it can be answered. When the person names how
 something should be built (a library, a service, a named bucket or database, a design), keep the
@@ -69,8 +92,11 @@ spec's own words, and tell them it can change or vanish without the spec being t
 Add only behaviour the person asked for or agreed to. A case they have not covered, such as who
 may not use the feature, what happens on an error, or what happens when a rule's condition does
 not hold, is an open question, not a rule you choose: a rule for paid invoices says nothing
-about unpaid ones. Write each requirement as rubric checks 5 to 8 describe: one EARS rule, scenarios that
-add concrete cases, and a Verified by line.
+about unpaid ones. For each requirement, ask yourself what happens when it cannot be met, such as
+when a service it needs cannot be reached, and unless the person has said, make that an open
+question. Write each requirement as rubric checks 5 to 8 describe: a numbered heading, one EARS
+rule about something someone can see, example tables that add concrete cases, and How we'll
+check.
 
 Add a section beyond the template's, such as "Security", only when the person asks for one, and
 place it as rubric check 1 says.
@@ -130,7 +156,8 @@ more, and each round of corrections brings new mistakes.
    the reports list: each failed check and each item under Other findings in the review report,
    and each finding in the wording report. A wording item under Needs a person, whose
    meaning only the person knows, is a decision like any other. A decision under Needs a person
-   becomes an entry in the spec's Open questions, never a guess at the answer. Leave
+   becomes an entry in the spec's Open questions, with the answer you would propose, never a
+   guess written into the spec as settled. Leave
    suggestions alone and change nothing else, since an edit beyond the reports is the likeliest
    way to break something. Wait until every edit has succeeded. If nothing in the reports was
    yours to correct, there is nothing to check: go straight to handing over.

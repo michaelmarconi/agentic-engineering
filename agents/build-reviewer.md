@@ -42,7 +42,7 @@ Result: PASS | FAIL
 | ... | fail | <file:line or commit>: "<quote>": <what would make it pass> |
 
 Left for the person to check:
-- <each requirement verified by demonstration, and what its Verified by line says to show>
+- <each requirement checked by demonstration, and what its How we'll check says to show>
 
 Other findings:
 - <finding, with a quote>

@@ -17,45 +17,61 @@ A spec is edited in place on a branch, and git is its history.
 
 | Section | Holds |
 |---|---|
-| Problem | Who is stuck, and what happens today, told as one specific story[^shapeup] |
-| Goal | What changes for them when this is built |
-| Scope | What is in, and what is explicitly out[^shapeup] |
-| Requirements | The behaviour, one requirement at a time |
+| Story | One sentence: when the capability is needed, who wants it, what they want to do and the outcome they want[^story] |
+| In scope | What the capability covers |
+| Out of scope | What it explicitly does not do[^shapeup] |
+| Requirements | The behaviour, one numbered requirement at a time, the first stating the story's outcome |
 | Constraints | Hard limits the behaviour must respect |
-| Open questions | Unknowns still to answer; empty before the spec can be `👍 Accepted` |
+| Open questions | Unknowns still to answer, each with a proposed answer; empty before the spec can be `👍 Accepted` |
 
 These sections are the minimum. A spec can have more, such as "Security" or "Privacy", when you
 ask `/spec` for them; they go before Open questions and are held to the same checks, and
 each requirement stays under Requirements.
 
-Each requirement has a name, one rule and some scenarios. The rule is a single sentence in
-EARS, a small set of sentence patterns for requirements such as "IF ..., THEN the system SHALL
-...", where SHALL means the requirement is mandatory.[^ears][^rfc2119] The scenarios use
-Gherkin's Given/When/Then, the format behaviour-driven development uses to describe one
-example.[^gherkin] The rule covers every case; each scenario pins down one concrete case, such
-as a boundary or an example with real values, and never has an outcome that no rule in the spec
-states. A scenario that only restates the rule is left out.[^openspec] *Verified by* names the
-method that shows the requirement holds: usually a test, otherwise a demonstration, inspection
-or analysis.[^nasa]
+`/spec` settles the Story, In scope and Out of scope with you before it writes any requirement,
+playing them back for your yes. When the story holds two outcomes you could ask for separately,
+it offers to split it into two specs.
+
+Each requirement has a number and a name, one rule, some examples and how we'll check it. The
+number is only for reading, so you can tell where you are in a long spec: plans name a
+requirement by its name, and the numbers change when requirements are added or removed. The
+rule is a single sentence in EARS, a small set of sentence patterns for requirements such as
+"IF ..., THEN the system SHALL ...", where SHALL means the requirement is
+mandatory.[^ears][^rfc2119] It states something a person or another system can see, never a
+step inside the system. The examples use Gherkin's Given/When/Then, the format
+behaviour-driven development uses to describe one example,[^gherkin] written as a table so long
+lines wrap rather than scroll. The rule covers every case; each example pins down one concrete
+case, such as a boundary or a case with real values, and never has an outcome that no rule in
+the spec states. An example that only restates the rule is left out.[^openspec] *How we'll
+check* names the method that shows the requirement holds: usually a test, otherwise a
+demonstration, inspection or analysis.[^nasa]
 
 ```markdown
-### Requirement: Reset links expire
+### 2. Reset links expire
 
 WHEN a person opens a reset link, the system SHALL let them set a new password if the link is
 at most 24 hours old, and reject the link otherwise.
 
-#### Scenario: Link used just before expiry
-- GIVEN a reset link issued 23 hours 59 minutes ago
-- WHEN the user opens it
-- THEN the system lets them set a new password
+| Example | Link used just before expiry |
+|---|---|
+| Given | a reset link issued 23 hours 59 minutes ago |
+| When | the person opens it |
+| Then | the system lets them set a new password |
 
-#### Scenario: Link used just after expiry
-- GIVEN a reset link issued 24 hours 1 minute ago
-- WHEN the user opens it
-- THEN the system rejects the link
+| Example | Link used just after expiry |
+|---|---|
+| Given | a reset link issued 24 hours 1 minute ago |
+| When | the person opens it |
+| Then | the system rejects the link |
 
-Verified by: unit tests for both scenarios.
+#### How we'll check
+
+Unit tests for both examples.
 ```
+
+`/spec` never writes a default it chose as a rule. Where you have not said what should happen,
+such as how a reply quotes the message it answers, or what happens when a requirement cannot be
+met, it asks in Open questions, with the answer it would choose, so you can accept it in a word.
 
 ## Lifecycle
 
@@ -81,14 +97,21 @@ find out whether the software meets a spec, check the software against it.
 
 Changing a `👍 Accepted` spec returns it to `📝 Draft`. An older spec whose status is
 `🟢 Ready to build` or `✅ Built`, which specs no longer use, must be set back to `📝 Draft` before
-it can be accepted. A capability that is no longer wanted has
+it can be accepted. A spec written for an earlier version of the plugin, with Problem, Goal and
+Scope sections and `### Requirement:` headings, breaks nothing while left alone, but no plan
+naming it can be signed off, and `/build` will not start on such a plan, until the spec is
+reworked: the next time `/spec` edits it, it brings it to this layout and these checks, keeping
+what it says and asking about anything the new checks need. That edit returns an accepted spec
+to `📝 Draft`, so accept it again, then sign the plan off again. [`/audit`](audit.md) lists the
+specs still in the old layout. A capability that is no longer wanted has
 its spec deleted; git keeps the history.[^openspec]
 
 Two things keep specs in this shape, and a third is planned:
 
 - **Review.** Before you see a spec, `/spec` has its reviewer agent check it against a short
   list of pass-or-fail checks: the sections are all there, each requirement has one EARS rule,
-  its scenarios add real cases, Verified by names a method, and the spec refers to no other spec,
+  its examples add real cases, How we'll check names a method, the first requirement states the
+  story's outcome, the spec covers one capability, every open question has a proposed answer, and the spec refers to no other spec,
   nor the brief, an ADR or a plan, nor any material outside the lifecycle's documents except a web
   page, such as a requirements document you handed over, by hyperlink, path or title, since those
   can change without the spec being touched and the reference would go stale. A plugin hook also
@@ -134,10 +157,10 @@ status; the hook would see a spec written in a new place as a new spec and requi
     [Wikipedia](https://en.wikipedia.org/wiki/Easy_Approach_to_Requirements_Syntax). We take its
     sentence patterns for each requirement's rule.
 [^gherkin]: Cucumber, [Gherkin reference](https://cucumber.io/docs/gherkin/reference/). We take
-    Given/When/Then for scenarios, without requiring a test runner.
+    Given/When/Then for examples, without requiring a test runner, and write each as a table.
 [^openspec]: Fission AI, [OpenSpec: Writing Good Specs](https://github.com/Fission-AI/OpenSpec/blob/main/docs/writing-specs.md).
-    We take its rule that a spec describes behaviour, not code; its requirement and scenario
-    headings; its rule that a scenario must exercise its requirement rather than restate it;
+    We take its rule that a spec describes behaviour, not code; a heading per requirement; its
+    rule that an example must exercise its requirement rather than restate it;
     and deleting a capability's spec when it is retired. We leave out its change folders and
     delta specs.
 [^rfc2119]: Bradner, [RFC 2119: Key words for use in RFCs to Indicate Requirement Levels](https://www.rfc-editor.org/info/rfc2119/),
@@ -145,5 +168,8 @@ status; the hook would see a spec written in a new place as a new spec and requi
 [^nasa]: NASA, [Systems Engineering Handbook, 5.3 Product Verification](https://www.nasa.gov/reference/5-3-product-verification/).
     We take its four verification methods: test, demonstration, inspection and analysis.
 [^shapeup]: Ryan Singer, [Shape Up, chapter 6: Write the Pitch](https://basecamp.com/shapeup/1.5-chapter-06),
-    Basecamp, 2019. We take its Problem, told as one specific story, and its no-gos, things
-    explicitly excluded, which become our out of scope.
+    Basecamp, 2019. We take its no-gos, things explicitly excluded, which become our Out of
+    scope.
+[^story]: Paul Adams, [Intercom blog](https://www.intercom.com/blog/accidentally-invented-job-stories),
+    2016. We take its one-sentence story of a situation, a motivation and an outcome, "When ...,
+    I want to ..., so I can ...", told of the person who wants the capability.
