@@ -185,6 +185,15 @@ class Transitions(Workspace):
         self.put(spec().split("\n## Open questions")[0])
         self.assertIn("no Open questions section", self.edit("status: 📝 Draft", "status: 👍 Accepted"))
 
+    def test_accepting_an_old_layout_spec_refused(self):
+        self.put(old_spec("📝 Draft"))
+        reason = self.edit("status: 📝 Draft", "status: 👍 Accepted")
+        self.assertIn("written for an earlier version of the sdlc plugin; rework it with /spec", reason)
+
+    def test_accepting_a_spec_without_a_numbered_requirement_refused(self):
+        self.put(spec().replace("### 1. X", "### X"))
+        self.assertIn("at least one requirement", self.edit("status: 📝 Draft", "status: 👍 Accepted"))
+
     def test_draft_to_accepted_with_questions_refused(self):
         self.put(spec(questions="- Who approves?"))
         self.assertIn("open questions", self.edit("status: 📝 Draft", "status: 👍 Accepted"))
@@ -770,6 +779,27 @@ class Plan(PlanWorkspace):
     def test_a_requirement_heading_in_a_code_block_does_not_count(self):
         self.put_at(self.spec_path, spec("👍 Accepted", rule="The system SHALL do X.\n\n```\n### 2. Y\n```"))
         self.assertIn("no requirement named 'Y'",
+                      self.ready(specs="- [Thing](../specs/thing.spec.md)\n  - Requirement: Y"))
+
+    def test_a_requirement_heading_in_a_nested_code_block_does_not_count(self):
+        rule = "The system SHALL do X.\n\n~~~markdown\n```\n### 9. Fake\n```\n~~~\n\n### 2. Y\n\nThe system SHALL do Y."
+        self.put_at(self.spec_path, spec("👍 Accepted", rule=rule))
+        self.assertIsNone(self.ready(specs="- [Thing](../specs/thing.spec.md)\n  - Requirement: Y"))
+        self.assertIn("no requirement named 'Fake'",
+                      self.ready(specs="- [Thing](../specs/thing.spec.md)\n  - Requirement: Fake"))
+
+    def test_a_requirement_heading_in_a_comment_does_not_count(self):
+        rule = "The system SHALL do X.\n\n<!--\n### 2. Dropped\n### Requirement: Older\n-->"
+        self.put_at(self.spec_path, spec("👍 Accepted", rule=rule))
+        self.assertIsNone(self.ready())
+        self.assertIn("no requirement named 'Dropped'",
+                      self.ready(specs="- [Thing](../specs/thing.spec.md)\n  - Requirement: Dropped"))
+
+    def test_a_leftover_old_heading_blocks_only_a_requirement_it_hides(self):
+        text = spec("👍 Accepted").replace("## Constraints", "### Requirement: Y\n\nThe system SHALL do Y.\n\n## Constraints")
+        self.put_at(self.spec_path, text)
+        self.assertIsNone(self.ready())
+        self.assertIn("written for an earlier version",
                       self.ready(specs="- [Thing](../specs/thing.spec.md)\n  - Requirement: Y"))
 
     def test_requirement_heading_spacing_is_ignored(self):

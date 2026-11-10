@@ -1,4 +1,6 @@
 schema_version: "1.1"
+# Guard case: Claude seldom asks what a plain word means unaided; this catches a change to the skill
+# that makes it ask about words the product already settles.
 name: spec-settles-obvious-words
 expected_outcome: |
   Words whose meaning is plain from the product, such as "unread" in an email app, are settled from

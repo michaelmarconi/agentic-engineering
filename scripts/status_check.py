@@ -144,8 +144,7 @@ REQUIREMENT_HEADING = re.compile(r"^###\s+\d+\.\s+(.+?)\s*$")
 # Specs written before numbered requirements headed each one `### Requirement: <name>`.
 OLD_REQUIREMENT_HEADING = re.compile(r"^###\s+Requirement:")
 LEADING_NUMBER = re.compile(r"^\d+\s*[.)]?\s+")
-SECTION = re.compile(r"^##\s")
-FENCE = re.compile(r"^\s*(```|~~~)")
+OLD_LAYOUT = "was written for an earlier version of the sdlc plugin; rework it with /spec"
 # Each kind of document by the value its frontmatter's `type:` holds.
 TYPES = {"brief": "Brief", "spec": "Spec", "ADR": "ADR", "plan": "Plan", "spike record": "Spike"}
 
@@ -457,6 +456,12 @@ def spec_rules(path, before, after, old, new):
             )
         if has_open_questions(after):
             return open_questions_refusal(name, after, ACCEPTED, "spec")
+        if old_layout(after):
+            return (f"{name} {OLD_LAYOUT} before it is accepted: it still heads a requirement "
+                    "`### Requirement: <name>`.")
+        if not spec_requirements(after):
+            return (f"{name}: a spec is accepted only with at least one requirement, a numbered "
+                    "heading under `## Requirements`, as `### 1. <name>`.")
     return None
 
 
@@ -600,38 +605,25 @@ def requirements(plan_path, text):
     return {(spec, name) for spec, _, names in named_specs(plan_path, text)[0] for name in names}
 
 
-def unfenced(text):
-    """The text's lines outside fenced code blocks."""
-    lines, fenced = [], False
-    for line in text.splitlines():
-        if FENCE.match(line):
-            fenced = not fenced
-        elif not fenced:
-            lines.append(line)
-    return lines
+def headings(text):
+    """The text's lines that can be headings: outside fenced code blocks and HTML comments."""
+    lines = text.splitlines()
+    return [line for line, allowed in zip(lines, headings_allowed(lines)) if allowed]
 
 
 def spec_requirements(text):
     """The names of a spec's requirements, in order: its numbered headings under Requirements."""
-    names, inside = [], False
-    for line in unfenced(text):
-        if SECTION.match(line):
-            inside = line.strip() == "## Requirements"
-        elif inside:
-            heading = REQUIREMENT_HEADING.match(line)
-            if heading:
-                names.append(heading.group(1))
-    return names
+    body = section(text, "Requirements") or []
+    return [m.group(1) for m in map(REQUIREMENT_HEADING.match, headings("\n".join(body))) if m]
 
 
 def old_layout(text):
-    """True if the spec heads its requirements `### Requirement: <name>`, as before numbering."""
-    return any(OLD_REQUIREMENT_HEADING.match(line) for line in unfenced(text))
+    """True if the spec heads a requirement `### Requirement: <name>`, as before numbering."""
+    return any(OLD_REQUIREMENT_HEADING.match(line) for line in headings(text))
 
 
 def old_layout_problem(link):
-    return (f"the spec {link} was written for an earlier version of the sdlc plugin; rework it with "
-            "/spec, accept it again, then sign the plan off again")
+    return f"the spec {link} {OLD_LAYOUT}, accept it again, then sign the plan off again"
 
 
 def described(status):
@@ -657,13 +649,13 @@ def reference_problem(path, text):
             return f"the spec {link} {described(status)}, not `{ACCEPTED}`"
         if not names:
             return f"no requirement is named under {link}; list each one as `- Requirement: <name>`"
-        if old_layout(spec_text):
-            return old_layout_problem(link)
-        headings = set(spec_requirements(spec_text))
+        numbered = set(spec_requirements(spec_text))
         for name in names:
-            if name in headings:
+            if name in numbered:
                 continue
-            if LEADING_NUMBER.sub("", name) in headings:
+            if old_layout(spec_text):
+                return old_layout_problem(link)
+            if LEADING_NUMBER.sub("", name) in numbered:
                 return (f"`- Requirement: {name}` gives the requirement's number; give the name "
                         f"alone, as `- Requirement: {LEADING_NUMBER.sub('', name)}`, since numbers "
                         "change when requirements are added or removed")

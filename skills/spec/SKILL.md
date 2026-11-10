@@ -73,7 +73,8 @@ if the person has not told you, write only what you were told, without adding a 
 of your own, say the rest is not known yet and ask in Open questions. A default you would choose,
 such as how a reply quotes the message it answers, is never written as a rule: it goes into Open
 questions, with the default as the proposed answer. Every open question ends with "Proposed:" and
-the answer you would choose (rubric check 14), so the person can accept it in a word. Words
+the answer you would choose (rubric check 14), so the person can accept it in a word; where only
+the person can know, such as who the Story is about, it says what you need from them instead. Words
 whose meaning is plain from the conversation or the product, such as "reply" in an email tool,
 are settled from that context, not asked about. Use
 only people the person named, anywhere in the spec; example values such as

@@ -72,7 +72,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."
 from status_check import (ACCEPTED, ADR_STATUSES, BUILT, DRAFT, FINISHED,  # noqa: E402
                           READY, READY_TO_RUN, SPEC_STATUSES, SPIKE_STATUSES, STATUSES, SUPERSEDED, TYPES, article,
                           field, frontmatter, has_open_questions, lifecycle_status, listed,
-                          old_layout, reference_problem, requirements, status_of)
+                          OLD_LAYOUT, old_layout, reference_problem, requirements, status_of)
 from doc_references import targets  # noqa: E402
 
 KINDS = {"spec": SPEC_STATUSES, "ADR": ADR_STATUSES, "plan": STATUSES, "spike record": SPIKE_STATUSES}
@@ -346,8 +346,8 @@ def check_documents(project):
                 add(relative, "open questions",
                     f"it is `{current}` but its Open questions section is missing or not \"None.\"")
             if kind == "spec" and old_layout(text):
-                add(relative, "layout", "it was written for an earlier version of the sdlc plugin; rework it "
-                    "with /spec, and accept it again, before a plan that names it is signed off")
+                add(relative, "layout", f"it {OLD_LAYOUT}, and accept it again, before a plan that names it "
+                    "is signed off")
             if kind == "spec" and current == ACCEPTED:
                 accepted["specs"].append(relative)
             if kind == "ADR" and current == ACCEPTED:

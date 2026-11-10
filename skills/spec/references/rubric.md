@@ -27,7 +27,8 @@ checking, and quotes the spec as evidence for every failure.
    spec, and has exactly one rule sentence in an EARS pattern, using SHALL once.
 6. **Examples add cases.** Each requirement has at least one example: a two-column table whose
    header row is `| Example | <name> |`, then a Given, a When and a Then row, with And rows after
-   any of them, and exact values in backticks. Each example pins down a concrete case, such as a
+   any of them. Exact text, such as a message the system shows or an email address, is in
+   backticks. Each example pins down a concrete case, such as a
    boundary or a case with real values. Where a rule has a limit, such as a time or a count,
    examples sit just on each side of it, and the spec's rules state the outcome on both sides
    (one rule may cover both, as in "SHALL accept the link if it is at most 24 hours old, and
@@ -41,7 +42,7 @@ checking, and quotes the spec as evidence for every failure.
    the method can really be carried out: a test that depends on an outside system names the
    stand-in it uses, and something only a person can check is a demonstration or inspection, not
    a test.
-8. **Testable words.** No rule, scenario or constraint relies on words that cannot be checked,
+8. **Testable words.** No rule, example or constraint relies on words that cannot be checked,
    such as "fast", "user-friendly" or "as appropriate", without a measure.
 9. **Accepted means settled.** A spec with status `👍 Accepted` has no open questions: its
    Open questions section is empty or says only "None."
@@ -64,5 +65,8 @@ checking, and quotes the spec as evidence for every failure.
     outcome. A requirement that serves an outcome someone could ask for on its own, such as
     exporting what another requirement imports, fails: it belongs in a spec of its own.
 14. **Proposed answers.** Each open question ends with "Proposed:" and the answer the writer
-    would choose, so the person can accept it in a word or give another. A default the person did
-    not give is never stated as a rule: it is an open question with that default proposed.
+    would choose, so the person can accept it in a word or give another. A question only the
+    person can answer, such as who the Story is about, proposes no guess: its "Proposed:" says what
+    would settle it, such as "tell me who asked for this and what happens to them today". A default
+    the person did not give is never stated as a rule: it is an open question with that default
+    proposed.
