@@ -1,7 +1,7 @@
 ---
 type: regex
 target: { source: file, path: docs/specs/invite-expiry.spec.md }
-pattern: "\\bSam\\b[\\s\\S]{0,200}?\\b(left|leaver|former)\\b"
+pattern: "\\b(left the company|leaver|former (employee|member|colleague))"
 weight: 1
 ---
-The spec keeps Sam's story from the conversation, that Sam had left the company, in its Story or an example.
+The spec keeps the reason from the conversation, that someone who had left the company joined with an old invite, in its Story or an example, with or without Sam's name.

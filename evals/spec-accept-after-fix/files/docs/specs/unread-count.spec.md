@@ -8,8 +8,8 @@ status: 📝 Draft
 ## Story
 
 When forty or so notifications a day come in, Lena wants to see how many have not been
-opened yet without opening the list, so they can find the new ones, including those that came
-in overnight, without clicking through them all.
+opened yet without opening the list, so they can tell whether any are still unopened,
+including ones that came in overnight.
 
 ## In scope
 
@@ -31,8 +31,8 @@ number on the bell icon.
 
 | Example | Some unopened |
 |---|---|
-| Given | Lena has 40 notifications, 3 of which she has not opened |
-| When | she loads any page |
+| Given | Lena has 40 notifications, 3 of them unopened |
+| When | Lena loads any page |
 | Then | the bell icon shows 3 |
 
 #### How we'll check
@@ -46,8 +46,8 @@ with no number.
 
 | Example | None unopened |
 |---|---|
-| Given | Lena has opened all 40 of her notifications |
-| When | she loads any page |
+| Given | Lena has opened all 40 of Lena's notifications |
+| When | Lena loads any page |
 | Then | the bell icon shows no number |
 
 #### How we'll check
@@ -56,18 +56,19 @@ Test.
 
 ### 3. Opening a notification
 
-WHEN a person clicks a notification in the list, the system SHALL count it as opened.
+WHEN a person clicks a notification in the list, the system SHALL leave it out of the number on
+the bell icon from the next page load on.
 
 | Example | First open |
 |---|---|
-| Given | Lena has 3 notifications she has not opened |
-| When | she clicks one of them in the list and then loads any page |
+| Given | Lena has 3 unopened notifications |
+| When | Lena clicks one of them in the list and then loads any page |
 | Then | the bell icon shows 2 |
 
 | Example | Opening one already opened |
 |---|---|
-| Given | Lena has 2 notifications she has not opened |
-| When | she clicks a notification she opened yesterday and then loads any page |
+| Given | Lena has 2 unopened notifications |
+| When | Lena clicks a notification opened yesterday and then loads any page |
 | Then | the bell icon still shows 2 |
 
 #### How we'll check
@@ -83,13 +84,13 @@ update the number on the bell icon without the page being reloaded.
 | Example | One fewer |
 |---|---|
 | Given | the bell icon shows 3 |
-| When | Lena clicks one of her unopened notifications in the list |
+| When | Lena clicks one of Lena's unopened notifications in the list |
 | Then | the bell icon shows 2 without the page being reloaded |
 
 | Example | Last unopened |
 |---|---|
 | Given | the bell icon shows 1 |
-| When | Lena clicks her last unopened notification in the list |
+| When | Lena clicks the last unopened notification in the list |
 | Then | the bell icon shows no number without the page being reloaded |
 
 #### How we'll check
