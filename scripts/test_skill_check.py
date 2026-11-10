@@ -9,7 +9,7 @@ SCRIPT = os.path.join(HERE, "skill_check.py")
 ROOT = os.path.join(HERE, "..")
 sys.path.insert(0, HERE)
 from skill_check import (AGENT_RULE, CORRECT_RULES, DOCUMENT_SKILLS, PATH_RULE, PROPOSED_RULE,  # noqa: E402
-                         QUESTION_REVIEWERS, QUESTIONS_RULE, REPORT_RULES, REVIEW_RULE, SHOW_RULE,
+                         QUESTIONS_RULE, REPORT_RULES, REVIEW_RULE, SHOW_RULE,
                          SIGNOFF_RULE, STATUS_SKILLS, TYPE_RULE, holds)
 
 DESCRIPTION = "Write a thing. Use whenever someone wants a thing."
@@ -210,9 +210,13 @@ class SkillCheck(unittest.TestCase):
 
     def test_every_reviewing_skill_holds_every_shared_step(self):
         skills = os.path.join(ROOT, "skills")
-        holding = {name for name in os.listdir(skills)
-                   if all(holds(open(os.path.join(skills, name, "SKILL.md"), encoding="utf-8").read(), r)
-                          for r in CORRECT_RULES)}
+        holding = set()
+        for name in os.listdir(skills):
+            path = os.path.join(skills, name, "SKILL.md")
+            if os.path.isfile(path):
+                with open(path, encoding="utf-8") as f:
+                    if all(holds(f.read(), rule) for rule in CORRECT_RULES):
+                        holding.add(name)
         self.assertEqual(holding, {"brief", "spec", "adr", "plan", "spike", "practices", "feedback"})
 
     def test_document_skill_without_proposed_rule_fails(self):
@@ -260,9 +264,6 @@ class SkillCheck(unittest.TestCase):
         self.put_agent("feedback-reviewer", self.reviewer(*REPORT_RULES))
         done = self.check()
         self.assertEqual((done.returncode, done.stdout), (0, ""))
-
-    def test_the_question_reviewers_review_the_five_lifecycle_documents(self):
-        self.assertEqual(sorted(QUESTION_REVIEWERS), sorted(f"{s}-reviewer" for s in DOCUMENT_SKILLS))
 
     def test_no_skills_folder_passes(self):
         self.assertEqual(self.check().returncode, 0)

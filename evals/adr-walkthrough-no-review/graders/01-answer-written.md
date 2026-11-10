@@ -1,7 +1,7 @@
 ---
 type: regex
 target: { source: file, path: docs/adrs/0003-how-email-is-sent.md }
-pattern: "restart[\\s\\S]*^## Open questions"
+pattern: "(in memory|lost)[\\s\\S]*^## Open questions"
 flags: m
 weight: 1
 ---

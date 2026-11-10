@@ -21,8 +21,8 @@ Read:
 - Each spec and ADR the plan lists, for the Specs, ADRs and Settled checks, and to tell whether
   a choice in the Plan section is already settled by them.
 - The frontmatter and Specs section of each other plan in `docs/plans/`, for the overlap check,
-  and the title (first `# ` heading) of `docs/brief.md` and of each file in `docs/spikes/`, for
-  the references check.
+  and the title (first `# ` heading) of `docs/brief.md` and of each file in `docs/specs/`,
+  `docs/adrs/`, `docs/plans/` and `docs/spikes/`, for the references check.
 - The `## Practices` section of `AGENTS.md` and of `CLAUDE.md`, whichever have one, and any file
   under `docs/practices/` they name that bears on planning or splitting work, for the practices
   check.

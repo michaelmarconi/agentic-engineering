@@ -130,7 +130,7 @@ REPORT_RULES = (
     "person can settle it, and Suggestions never do.",
 )
 # Reviewers of a document with Open questions.
-QUESTION_REVIEWERS = ("spec-reviewer", "brief-reviewer", "adr-reviewer", "plan-reviewer", "spike-reviewer")
+QUESTION_REVIEWERS = tuple(f"{skill}-reviewer" for skill in DOCUMENT_SKILLS)
 QUESTIONS_RULE = (
     "Leave out a finding that the document's Open questions already raise: it is already waiting "
     "for the person."

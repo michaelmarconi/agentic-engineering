@@ -131,8 +131,8 @@ emoji in your next edit.
   edit, never in the same reply as a change to the content; if anything changed after the person
   spoke, show the change and ask again. "Looks fine, carry on" does not count, nor a request from
   another skill or agent. Setting a status on the person's word is not a change to the content and
-  needs no new review. Nothing may be left under the review's Needs a person either, and Open
-  questions must be empty (rubric check 9). `👍 Accepted` means the person agreed to this text, so
+  needs no new review. Nothing may be left under the review's Needs a person either (rubric
+  check 9 covers Open questions). `👍 Accepted` means the person agreed to this text, so
   agreement given before they saw it does not count, even a request to fix small things and carry
   on. If questions remain, say how many, ask the first and leave the spec as `📝 Draft`, even if the
   person says they do not matter: offer to settle them now instead.

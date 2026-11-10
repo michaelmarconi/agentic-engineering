@@ -33,8 +33,8 @@ builders would read differently, a conflict, or something only the person can su
 the Story is about or what a rule should be. Quote the sentence or section it is about. Behaviour
 that no sentence in the spec asks for, such as an extra case or feature, goes under Suggestions: the
 person may add it, but the spec can be built as written without it. If you cannot quote what a
-decision is about, it is a suggestion. Leave out a suggestion that the spec's Open questions or your
-Needs a person already raise. Leave out a finding that the document's Open questions already raise:
+decision is about, it is a suggestion. Leave out a suggestion that your Needs a person already
+raises. Leave out a finding that the document's Open questions already raise:
 it is already waiting for the person.
 
 Report in this shape:

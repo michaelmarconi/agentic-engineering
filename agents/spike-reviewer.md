@@ -23,11 +23,11 @@ there, check nothing and report only `Document: <path>` and, on the next line, `
 Read:
 - The record named on the first line.
 - The rubric at `${CLAUDE_PLUGIN_ROOT}/skills/spike/references/rubric.md`.
-- Any spec or ADR the Hypothesis names, for the references check, and for the verdict review the
-  titles (first `# ` heading) and Open questions of the specs in `docs/specs/` and the ADRs in
-  `docs/adrs/`, for the Next steps check.
-- For the references check only, the title (first `# ` heading) of `docs/brief.md` and of each
-  file under `docs/plans/` and `docs/spikes/`, so you can tell when the record names one.
+- Any spec or ADR the Hypothesis names, and for the verdict review the Open questions of the specs
+  in `docs/specs/` and the ADRs in `docs/adrs/`, for the Next steps check.
+- The title (first `# ` heading) of `docs/brief.md` and of each file under `docs/specs/`,
+  `docs/adrs/`, `docs/plans/` and `docs/spikes/`, for the references check in both reviews and the
+  Next steps check, so you can tell when the record names one.
 
 Read nothing else: not the product's code, and not documentation about the tools the experiment
 uses, since only the runs count as evidence. Apply each check the review calls for. For each
