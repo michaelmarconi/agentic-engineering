@@ -6,6 +6,19 @@ What changed in each version of the plugin, newest first. Versions follow
 past a major version: it says what you need to change in your documents. Until 1.0.0, any
 minor version may need such a change, and its entry says so.
 
+## [0.35.0] - 2026-11-10
+
+### Changed
+
+- `/sdlc:adr` no longer lets a choice rest on something nobody has tried. When the conversation says
+  the choice depends on such a claim, such as "this only works if the provider sends events in
+  order", the claim becomes the first open question, proposing a spike to test it, instead of being
+  left under Out of scope "to be proven in the build". It stays open until the spike's finding comes
+  back; a refuted claim opens the choice again. Only if you choose to go ahead without a spike does
+  the ADR record the claim as untested at your word, under Consequences. Caveats you mention stay
+  under Out of scope as limits.
+- `/sdlc:spike` sends a finding that settles an ADR's open question to that ADR.
+
 ## [0.34.0] - 2026-11-10
 
 ### Changed

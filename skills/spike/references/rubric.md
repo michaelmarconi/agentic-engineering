@@ -79,7 +79,8 @@ Experiment; its technical part, for agents and reviewers, is Experiment, Code an
 17. **Surprises** (verdict). Surprises lists what the runs showed that the hypothesis did not
     cover, or says only "None."
 18. **Next steps** (verdict). Next steps has a `- Spec:` and an `- ADR:` line. A fact the spike
-    found goes to the spec, a choice between ways of building something to an ADR, and each line
+    found goes to the spec, a choice between ways of building something to an ADR, a finding that
+    settles an ADR's open question to that ADR, and each line
     says what should change or only "Nothing". A spec or ADR named by title exists under
     `docs/specs/` or `docs/adrs/`. It never asks a document to refer to this record.
 19. **Ready means ready** (design). A record that is `🟢 Ready to run`, `💡 Confirmed`,
