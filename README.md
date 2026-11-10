@@ -107,7 +107,7 @@ documents by hand.
 flowchart LR
     Brief --> Spec
     Spec -->|unknowns| Spike
-    ADR -->|untried claims| Spike
+    ADR -->|untested assumptions| Spike
     Spike -->|facts| Spec
     Spike -->|choices| ADR
     Spec -->|decisions| ADR

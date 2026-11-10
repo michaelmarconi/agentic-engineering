@@ -73,7 +73,7 @@ The steps fall into two phases, and the other skills belong to neither.
 flowchart LR
     Brief --> Spec
     Spec -->|unknowns| Spike
-    ADR -->|untried claims| Spike
+    ADR -->|untested assumptions| Spike
     Spike -->|facts| Spec
     Spike -->|choices| ADR
     Spec -->|decisions| ADR
