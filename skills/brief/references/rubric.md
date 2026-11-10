@@ -41,3 +41,8 @@ checking, and quotes the brief as evidence for every failure.
    outside the repository, or to a file under `docs/` that is not a brief, spec, ADR, plan or spike
    record: such material can change or vanish without the brief being touched, so what matters from
    it is stated in the brief's own words. References to code are not part of this check.
+10. **Proposed answers.** Each open question ends with "Proposed:". Where something the person
+    said or showed points to an answer, it is that answer, so the person can accept it in a word
+    or give another. Where nothing does, such as who the users are when the person has not said,
+    it proposes no guess: it says what would settle it, such as "tell me who handles these
+    requests today".

@@ -82,7 +82,7 @@ stated once, under Out of scope.
 | Risks and safeguards | When the experiment changes or reads anything real, such as a live account, real data or money: what could go wrong and what stops it; otherwise "None." |
 | Results | After the runs: a row for every run, with its date and outcome, saying which runs count |
 | Surprises | Anything unexpected the experiment showed, including any limit it uncovered, or "None." |
-| Open questions | What only you can settle about the spike; "None." before it moves on |
+| Open questions | What only you can settle about the spike, each with a proposed answer; "None." before it moves on |
 | Experiment | The full method, the exact rules for what counts as confirmed or refuted, every safeguard in detail, and then its settings: how many times it runs, and any result that would end it early, such as a crash showing the approach can't work; each input, as a path in the commit it starts from or a web address; the names of any secrets it needs; the command that runs it, including any install step; and the commit it starts from, when it needs the product's own code or files |
 | Code | The experiment's code in code blocks, each naming its file on its first line; for an experiment on the product's own code, its changes as a diff |
 | Runs | Last, written only by the run script (see [The run script](#the-run-script)): for each run, when and where it ran, a short hash of the code it ran, and its output; or what you saw, for a step only a person can do |

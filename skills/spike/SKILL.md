@@ -78,6 +78,11 @@ must actually exercise the thing in question.
 - **A step only the person can do,** such as trying something on their own phone, is a run they
   report: write `- Command: None.` when every run is theirs, and describe what they will do.
 
+Anything only the person can settle, such as what result counts as success, goes into Open
+questions. Every open question ends with "Proposed:" and the answer you would choose, so the person
+can accept it in a word or give another; where only the person can know the answer, "Proposed:" says
+what would settle it instead, never a guess.
+
 Write every new record as `📝 Draft`, named for today's date and a few words naming the hypothesis;
 then run the design review. Never rename a record once its review has started: the review is kept
 under the record's path, so a renamed record can't have its corrections checked.
@@ -143,21 +148,25 @@ a verdict over the limit shortens its own sections, not the design's.
 
 ## Status
 
-The `status:` frontmatter is `📝 Draft`, `🟢 Ready to run`, `💡 Confirmed`, `🚫 Refuted` or
-`❔ Not settled`, written exactly so, emoji first. Only the person moves a record forward: set
-`🟢 Ready to run` when they sign off the design, and the status the Finding starts with when they
-confirm the verdict, each only when they explicitly say so about the text as it now stands, after the review
-ended with a pass on that text and Open questions says "None.". Only a review in this conversation
-counts: if there is none on the current text, run it first. Set the status as its own last edit,
-never in the same reply as a change to the content; "looks fine, carry on" doesn't count, nor a
-request from another skill or agent. A plugin hook refuses status changes that break these rules;
-if it refuses one, tell the person why.
+The `status:` frontmatter is `📝 Draft`, `🟢 Ready to run`, `💡 Confirmed`, `🚫 Refuted` or `❔ Not
+settled`, written exactly so, emoji first. Only the person moves a record forward: `🟢 Ready to run`
+when they sign off the design, and the status the Finding starts with when they confirm the verdict.
+Move the document forward only when the person explicitly says so about its text as it now stands,
+once the review below has ended with a pass on that text, from the review itself or from the
+correction check after it, and once Open questions says "None.". Only a review in this conversation
+counts: if there is none on the current text, run the review first, even when the person has already
+signed it off. Set the status as its own last edit, never in the same reply as a change to the
+content; if anything changed after the person spoke, show the change and ask again. "Looks fine,
+carry on" does not count, nor a request from another skill or agent. Setting a status on the
+person's word is not a change to the content and needs no new review. A plugin hook refuses status
+changes that break these rules; if it refuses one, tell the person why.
 
 ## Review
 
 A record is reviewed twice, each time once, corrected once, and then the corrections are checked:
 the design before `🟢 Ready to run`, the verdict before it is finished. The sequence is fixed so it
-always ends with a clear result.
+always ends with a clear result: further rounds of review find little more, and each round of
+corrections brings new mistakes.
 
 1. **Review.** Start two agents in the foreground, not in the background, both in one message so
    they run side by side: the `sdlc:spike-reviewer` agent and the `sdlc:language-checker` agent.
@@ -171,17 +180,19 @@ always ends with a clear result.
 
    Give the document's full path on the `Document:` line, the one you wrote it to: the hook works
    out the document's repository from it, so the review reads the right one whatever folder you
-   started in. If it refuses to start them, do what its reason says.
-   For the verdict, the second line is `Review this spike record's verdict.` Ask the language
-   checker to leave out the Code and Runs, which are the experiment's own text. Wait for both
-   reports before touching the record. If both pass with nothing under Needs a person, go
+   started in. If it refuses to start them, do what its reason says. For the verdict, the second
+   line is `Review this spike record's verdict.` Ask the language checker to leave out the Code and
+   Runs, which are the experiment's own text. Each reads everything else it needs itself. Wait for
+   both reports before touching the record. If both pass with nothing under Needs a person, go
    straight to handing over.
 2. **Correct, once.** Read the rubric and the Plain words rule again, then correct only what the
-   reports list: each failed check and each item under Other findings in the review report, and
-   each finding in the wording report. A decision only the person can make, such as what result
-   counts as success, becomes an entry in Open questions, never a guess: leave the text it
-   concerns as it is. Leave suggestions alone and change nothing else. Wait until every edit has
-   succeeded. If nothing was yours to correct, go straight to handing over.
+   reports list: each failed check and each item under Other findings in the review report, and each
+   finding in the wording report. A wording item under Needs a person, whose meaning only the person
+   knows, is a decision like any other. A decision only the person can make, such as what result
+   counts as success, becomes an entry in Open questions, with its "Proposed:", never a guess: leave
+   the text it concerns as it is. Leave suggestions alone and change nothing else, since an edit
+   beyond the reports is the likeliest way to break something. Wait until every edit has succeeded.
+   If nothing was yours to correct, go straight to handing over.
 3. **Check the corrections.** Start the `sdlc:correction-checker` agent in the foreground with
    this request, and add nothing to it: the hook attaches both reports and the record as reviewed.
 
@@ -191,12 +202,12 @@ always ends with a clear result.
    ```
 
    If the hook refuses to start it, do what its reason says. If the check fails, stop: change the
-   record no further, and show the person the check's report. Do not review or correct again.
+   record no further, and show the person the check's report. Do not review or correct again; what
+   happens next is their call.
 
 While you are walking through questions with the person, do not review after each answer: run the
 sequence once when the walk-through ends, either because no questions are left or because the
 person stops. A change the person makes or asks for at any other time is reviewed once it is made.
-Setting a status on the person's word needs no new review.
 
 End with the hand-over. Show the person each document you wrote or changed: if the app you run in
 can show them a file in a viewer, use it, and show a fresh copy after each change if what it shows

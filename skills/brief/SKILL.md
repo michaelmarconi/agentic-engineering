@@ -38,17 +38,22 @@ fact they gave that the brief's sections hold, such as who does what; where the
 conversation changed its mind, the latest word wins. Only when there is nothing to draw on, ask
 what they are building and for whom first.
 
-Write only what they said or showed you, as rubric check 8 describes. What they haven't said becomes an open question, each asking one
-thing: "What do they do today, and how long does it take?" is two questions. When they want the
-brief to refer to a spec, an ADR (architecture decision record), a plan or a spike record, by
-hyperlink, path or title, leave it out (check 9) and tell them why: that document can change or be deleted without the
-brief being touched, so the reference would go stale. Material they hand over that is not a web
-page, such as a requirements document or notes, is drawn on but never referred to (check 9): state
-what matters from it in the brief's own words, and tell them it can change or vanish without the
-brief being touched. When they mention something that belongs to a
-later stage (rubric checks 2 and 7), leave it out and tell them where it goes: how one capability
-behaves goes in its spec, so suggest `/spec`; a technology or design they have decided goes in an
-ADR, and one they have not becomes an open question.
+Write only what they said or showed you, as rubric check 8 describes. What they haven't said becomes
+an open question, each asking one thing: "What do they do today, and how long does it take?" is two
+questions. Every open question ends with "Proposed:" and the answer you would choose, so the person
+can accept it in a word or give another; where only the person can know the answer, "Proposed:" says
+what would settle it instead, never a guess. In a brief, an answer you would choose rests on
+something the person said or showed, since the brief holds only what they intend (rubric checks 8
+and 10); where nothing does, say what would settle it, such as "tell me what support staff do
+today". When they want the brief to refer to a spec, an ADR (architecture decision record), a plan
+or a spike record, by hyperlink, path or title, leave it out (check 9) and tell them why: that
+document can change or be deleted without the brief being touched, so the reference would go stale.
+Material they hand over that is not a web page, such as a requirements document or notes, is drawn
+on but never referred to (check 9): state what matters from it in the brief's own words, and tell
+them it can change or vanish without the brief being touched. When they mention something that
+belongs to a later stage (rubric checks 2 and 7), leave it out and tell them where it goes: how one
+capability behaves goes in its spec, so suggest `/spec`; a technology or design they have decided
+goes in an ADR, and one they have not becomes an open question.
 
 Add a section beyond the template's, such as "Safety and security", only when the person asks
 for one, and place it as rubric check 1 says.
@@ -91,7 +96,8 @@ more, and each round of corrections brings new mistakes.
    and each finding in the wording report. A wording item under Needs a person, whose
    meaning only the person knows, is a decision like any other. Correct by making the brief
    accurate, never by dropping or hedging what the person said. A decision under Needs a person
-   becomes an entry in the brief's Open questions, never a guess at the answer. Leave
+   becomes an entry in the brief's Open questions, with its "Proposed:", never a guess at the
+   answer. Leave
    suggestions alone and change nothing else, since an edit beyond the reports is the likeliest
    way to break something. Wait until every edit has succeeded. If nothing in the reports was
    yours to correct, there is nothing to check: go straight to handing over.

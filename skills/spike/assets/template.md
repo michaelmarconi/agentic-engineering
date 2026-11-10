@@ -59,7 +59,9 @@ status: 📝 Draft
 
 ## Open questions
 
-<!-- What only the person can settle about the spike; "None." before it moves on. -->
+<!-- What only the person can settle about the spike, each ending "Proposed:" and the answer
+     you would choose (or, if only the person can know, what would settle it); "None." before it
+     moves on. -->
 - None.
 
 ## Experiment

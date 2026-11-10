@@ -8,9 +8,12 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 SCRIPT = os.path.join(HERE, "skill_check.py")
 ROOT = os.path.join(HERE, "..")
 sys.path.insert(0, HERE)
-from skill_check import AGENT_RULE, DOCUMENT_SKILLS, PATH_RULE, REVIEW_RULE, SHOW_RULE, TYPE_RULE, holds  # noqa: E402
+from skill_check import (AGENT_RULE, CORRECT_RULES, DOCUMENT_SKILLS, PATH_RULE, PROPOSED_RULE,  # noqa: E402
+                         QUESTIONS_RULE, REPORT_RULES, REVIEW_RULE, SHOW_RULE,
+                         SIGNOFF_RULE, STATUS_SKILLS, TYPE_RULE, holds)
 
 DESCRIPTION = "Write a thing. Use whenever someone wants a thing."
+STEPS = "\n\n".join(CORRECT_RULES)
 
 
 def skill_md(name="demo", description=DESCRIPTION, body="# Demo\n\nDo the thing.\n"):
@@ -60,7 +63,7 @@ class SkillCheck(unittest.TestCase):
     def test_reviewing_skill_with_review_rule_passes(self):
         rule = REVIEW_RULE.replace(" walk-through ends,", "\nwalk-through ends,")
         self.assertNotEqual(rule, REVIEW_RULE)
-        body = f"# Demo\n\nStart the `sdlc:correction-checker` agent.\n\n{rule}\n"
+        body = f"# Demo\n\nStart the `sdlc:correction-checker` agent.\n\n{STEPS}\n\n{rule}\n"
         self.put("demo", skill_md(body=body))
         done = self.check()
         self.assertEqual(done.returncode, 0, done.stdout)
@@ -68,7 +71,7 @@ class SkillCheck(unittest.TestCase):
     def test_reworded_review_rule_fails(self):
         rule = REVIEW_RULE.replace("run the sequence once", "run the sequence each time")
         self.assertNotEqual(rule, REVIEW_RULE)
-        body = f"# Demo\n\nStart the `sdlc:correction-checker` agent.\n\n{rule}\n"
+        body = f"# Demo\n\nStart the `sdlc:correction-checker` agent.\n\n{STEPS}\n\n{rule}\n"
         self.put("demo", skill_md(body=body))
         self.assertFails("review rule missing")
 
@@ -84,7 +87,7 @@ class SkillCheck(unittest.TestCase):
     # Reviews find the document's repository (ADR 0022)
 
     def reviewing(self, document_line, extra=""):
-        return (f"# Demo\n\nStart the `sdlc:correction-checker` agent.\n\n{REVIEW_RULE}\n\n"
+        return (f"# Demo\n\nStart the `sdlc:correction-checker` agent.\n\n{REVIEW_RULE}\n\n{STEPS}\n\n"
                 f"```\n{document_line}\n```\n{extra}")
 
     def test_reviewing_skill_without_path_rule_fails(self):
@@ -177,7 +180,8 @@ class SkillCheck(unittest.TestCase):
         self.assertFails("spec/SKILL.md: type rule missing")
 
     def test_document_skill_with_type_rule_passes(self):
-        self.put("spec", skill_md(name="spec", body=f"# Spec\n\n{TYPE_RULE}\n"))
+        body = f"# Spec\n\n{TYPE_RULE}\n\n{PROPOSED_RULE}\n\n{SIGNOFF_RULE}\n"
+        self.put("spec", skill_md(name="spec", body=body))
         done = self.check()
         self.assertEqual((done.returncode, done.stdout), (0, ""))
 
@@ -195,6 +199,72 @@ class SkillCheck(unittest.TestCase):
 
     def test_the_document_skills_are_the_five_that_write_lifecycle_documents(self):
         self.assertEqual(sorted(DOCUMENT_SKILLS), ["adr", "brief", "plan", "spec", "spike"])
+
+    # Shared review steps, proposed answers and sign-off
+
+    def test_reviewing_skill_missing_a_shared_step_fails(self):
+        steps = "\n\n".join(CORRECT_RULES[:3] + CORRECT_RULES[4:])
+        body = f"# Demo\n\nStart the `sdlc:correction-checker` agent.\n\n{REVIEW_RULE}\n\n{steps}\n"
+        self.put("demo", skill_md(body=body))
+        self.assertFails("demo/SKILL.md: review step rule 4 missing")
+
+    def test_every_reviewing_skill_holds_every_shared_step(self):
+        skills = os.path.join(ROOT, "skills")
+        holding = set()
+        for name in os.listdir(skills):
+            path = os.path.join(skills, name, "SKILL.md")
+            if os.path.isfile(path):
+                with open(path, encoding="utf-8") as f:
+                    text = f.read()
+                if all(holds(text, rule) for rule in CORRECT_RULES):
+                    holding.add(name)
+        self.assertEqual(holding, {"brief", "spec", "adr", "plan", "spike", "practices", "feedback"})
+
+    def test_document_skill_without_proposed_rule_fails(self):
+        self.put("brief", skill_md(name="brief", body=f"# Brief\n\n{TYPE_RULE}\n"))
+        self.assertFails("brief/SKILL.md: proposed rule missing")
+
+    def test_status_skill_without_signoff_rule_fails(self):
+        self.put("adr", skill_md(name="adr", body=f"# ADR\n\n{TYPE_RULE}\n\n{PROPOSED_RULE}\n"))
+        self.assertFails("adr/SKILL.md: sign-off rule missing")
+
+    def test_brief_has_no_status_so_needs_no_signoff_rule(self):
+        self.put("brief", skill_md(name="brief", body=f"# Brief\n\n{TYPE_RULE}\n\n{PROPOSED_RULE}\n"))
+        done = self.check()
+        self.assertEqual((done.returncode, done.stdout), (0, ""))
+
+    def test_reworded_signoff_rule_fails(self):
+        rule = SIGNOFF_RULE.replace("does not count", "counts")
+        self.assertNotEqual(rule, SIGNOFF_RULE)
+        self.put("plan", skill_md(name="plan", body=f"# Plan\n\n{TYPE_RULE}\n\n{PROPOSED_RULE}\n\n{rule}\n"))
+        self.assertFails("plan/SKILL.md: sign-off rule missing")
+
+    def test_the_status_skills_are_the_four_with_a_status(self):
+        self.assertEqual(sorted(STATUS_SKILLS), ["adr", "plan", "spec", "spike"])
+
+    # Every reviewer reports in the same shape
+
+    def reviewer(self, *rules):
+        return "---\nname: x\n---\n\n" + "\n\n".join(rules) + "\n"
+
+    def test_reviewer_missing_a_report_rule_fails(self):
+        self.put_agent("feedback-reviewer", self.reviewer(*REPORT_RULES[:2]))
+        self.assertFails("agents/feedback-reviewer.md: report rule 3 missing")
+
+    def test_reviewer_of_a_document_with_questions_needs_the_questions_rule(self):
+        self.put_agent("brief-reviewer", self.reviewer(AGENT_RULE, *REPORT_RULES))
+        self.assertFails("agents/brief-reviewer.md: questions rule missing")
+
+    def test_reviewer_with_every_rule_passes(self):
+        self.put_agent("brief-reviewer", self.reviewer(AGENT_RULE, *REPORT_RULES, QUESTIONS_RULE))
+        done = self.check()
+        self.assertEqual((done.returncode, done.stdout), (0, ""))
+
+    def test_reviewers_without_open_questions_need_no_questions_rule(self):
+        self.put_agent("practices-reviewer", self.reviewer(AGENT_RULE, *REPORT_RULES))
+        self.put_agent("feedback-reviewer", self.reviewer(*REPORT_RULES))
+        done = self.check()
+        self.assertEqual((done.returncode, done.stdout), (0, ""))
 
     def test_no_skills_folder_passes(self):
         self.assertEqual(self.check().returncode, 0)

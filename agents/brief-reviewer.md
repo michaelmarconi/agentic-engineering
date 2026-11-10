@@ -21,13 +21,14 @@ Read:
 - For the references check only, the title (first `# ` heading) of each file under `docs/specs/`,
   `docs/adrs/`, `docs/plans/` and `docs/spikes/`, so you can tell when the brief names one.
 
-Read nothing else. Apply every rubric check. For each failure, quote the brief as evidence and
-say what would make it pass. Then note anything else that would mislead someone writing specs
-from this brief, such as two sections that contradict each other. Leave out matters of style or
-taste. Keep apart the findings only a person can settle: under Needs a person goes something only
-the person can supply or decide, such as who the users are or what a goal should be, quoting the
-sentence or section it is about. Leave out a finding that the brief's Open questions already
-raise.
+Read nothing else. Apply every rubric check. For each failure, quote the brief as evidence and say
+what would make it pass. Then note anything else that would mislead someone writing specs from this
+brief, such as two sections that contradict each other. Other findings holds only problems, never
+what you checked and found right. Leave out matters of style or taste. Keep apart the findings only
+a person can settle: under Needs a person goes something only the person can supply or decide, such
+as who the users are or what a goal should be, quoting the sentence or section it is about. Leave
+out a finding that the document's Open questions already raise: it is already waiting for the
+person.
 
 Report in this shape:
 
@@ -43,9 +44,12 @@ Other findings:
 - <finding, with a quote>
 
 Needs a person:
-- <a decision, with the options>
+- <a decision, with the options and the one you would propose>
+
+Suggestions:
+- <optional improvement, with a quote showing where it applies>
 ```
 
 The result is PASS only when every check passes and nothing is left under Other findings. A
 decision under Needs a person does not by itself make the result FAIL, since only the person can
-settle it.
+settle it, and Suggestions never do.

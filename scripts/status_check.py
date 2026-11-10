@@ -21,7 +21,9 @@ For a spec it refuses:
 - a spec that had none being given any status but `📝 Draft`, so new specs start as Draft;
 - `👍 Accepted` while the Open questions section is missing or holds anything but "None.", or in
   the same edit as any other change;
-- a change to a `👍 Accepted` spec that does not return it to `📝 Draft`.
+- a change to a `👍 Accepted` spec that does not return it to `📝 Draft`;
+- `👍 Accepted` for a spec still heading a requirement `### Requirement: <name>`, as specs written
+  for an earlier version of the plugin did, until it is reworked with /spec.
 
 A spec still holding `🟢 Ready to build` or `✅ Built`, statuses specs had before, is no longer
 checked until it is set back to `📝 Draft`, which is allowed; setting it to `👍 Accepted` straight
@@ -48,7 +50,7 @@ For a plan it refuses:
 - a plan that had a lifecycle status losing it, and a new plan with any status but `📝 Draft`;
 - setting `✅ Built`: only `/build`'s hand-over script may, writing the file itself, so this hook
   never sees it;
-- any change to a `✅ Built` plan, which is kept as the record of what was built, apart from adding
+- any change to a `✅ Built` plan, which is frozen once built (it may be deleted), apart from adding
   the emoji to its status line;
 - `🟢 Ready to build` to anything but `📝 Draft`;
 - `🟢 Ready to build` in the same edit as any other change, or while the Open questions section is
@@ -695,8 +697,8 @@ def plan_rules(path, before, after, old, new):
         return None
     if old == BUILT and not (new == old and (after == before or restyled(before, after))):
         return (
-            f"{name}: this plan is `{BUILT}`, the record of what was built and how, so it is never "
-            "changed. For more work on the same requirements, write a new plan."
+            f"{name}: this plan is `{BUILT}`, so it is frozen: it is never changed, though it may be "
+            "deleted. For more work on the same requirements, write a new plan."
         )
     if new == old:
         if new != DRAFT and without_status(after) != without_status(before):

@@ -34,5 +34,6 @@ status: 📝 Draft
 
 ## Open questions
 
-<!-- "None." before `🟢 Ready to build`. -->
+<!-- Each question ends "Proposed:" and the answer you would choose (or, if only the person
+     can know, what would settle it). "None." before `🟢 Ready to build`. -->
 - None.

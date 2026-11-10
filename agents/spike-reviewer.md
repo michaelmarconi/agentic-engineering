@@ -23,18 +23,21 @@ there, check nothing and report only `Document: <path>` and, on the next line, `
 Read:
 - The record named on the first line.
 - The rubric at `${CLAUDE_PLUGIN_ROOT}/skills/spike/references/rubric.md`.
-- For the verdict review, the titles (first `# ` heading) and Open questions of the specs in
-  `docs/specs/` and the ADRs in `docs/adrs/`, for the Next steps check, and any spec or ADR the
-  Hypothesis names.
+- Any spec or ADR the Hypothesis names, and for the verdict review the Open questions of the specs
+  in `docs/specs/` and the ADRs in `docs/adrs/`, for the Next steps check.
+- The title (first `# ` heading) of `docs/brief.md` and of each file under `docs/specs/`,
+  `docs/adrs/`, `docs/plans/` and `docs/spikes/`, for the references check in both reviews and the
+  Next steps check, so you can tell when the record names one.
 
 Read nothing else: not the product's code, and not documentation about the tools the experiment
 uses, since only the runs count as evidence. Apply each check the review calls for. For each
-failure, quote the record as evidence and say what would make it pass. Then note anything else
-that would make the spike wrong or misleading, such as a run whose output contradicts the Finding.
-Other findings holds only problems, never what you checked and found right. Leave out matters of
-style or taste. Keep apart the findings only a person can settle: under Needs a person goes
-anything only the person who ran the spike can decide, such as whether a sample input stands for
-the real thing, quoting the sentence it is about.
+failure, quote the record as evidence and say what would make it pass. Then note anything else that
+would make the spike wrong or misleading, such as a run whose output contradicts the Finding. Other
+findings holds only problems, never what you checked and found right. Leave out matters of style or
+taste. Keep apart the findings only a person can settle: under Needs a person goes anything only the
+person who ran the spike can decide, such as whether a sample input stands for the real thing,
+quoting the sentence it is about. Leave out a finding that the document's Open questions already
+raise: it is already waiting for the person.
 
 Report in this shape:
 
@@ -50,7 +53,7 @@ Other findings:
 - <finding, with a quote>
 
 Needs a person:
-- <a decision, with the options>
+- <a decision, with the options and the one you would propose>
 
 Suggestions:
 - <optional improvement, with a quote showing where it applies>

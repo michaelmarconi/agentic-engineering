@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: adr-walkthrough-no-review
+expected_outcome: |
+  The person answers the first of the ADR's three open questions during the walk-through. The answer is written into the ADR and the question removed, with no review started, and the reply asks the next open question.
+context:
+  scaffold_script: place-files.sh

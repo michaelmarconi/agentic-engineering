@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: brief-questions-proposed
+expected_outcome: |
+  Every open question the skill leaves in the brief ends with "Proposed:": an answer the person's own words point to, or what would settle it, never a bare question.

@@ -38,7 +38,9 @@ everything else is judgement.
      may also run the commands its definition names). It starts fresh,
      reads the rubric through `${CLAUDE_PLUGIN_ROOT}`, and reads only the files its own
      definition names. It reports pass or fail for each check, quoting the evidence for each
-     failure, then Other findings, Needs a person and Suggestions.
+     failure, then Other findings, Needs a person and Suggestions. It holds `REPORT_RULES` from
+     `scripts/skill_check.py` word for word, and `QUESTIONS_RULE` too when its document has Open
+     questions; the script checks both.
    - The skill starts the reviewer and the shared language checker
      (`agents/language-checker.md`, [ADR 0013](docs/adrs/0013-language-checker.md))
      side by side, then the shared correction checker (`agents/correction-checker.md`), each
@@ -57,7 +59,8 @@ everything else is judgement.
      reports list, turns each
      decision for the person into an open question, leaves suggestions alone and changes
      nothing else. A failed correction check stops and shows the person; there is never a
-     second review of the skill's own corrections.
+     second review of the skill's own corrections. The sentences every skill shares for these
+     steps are `CORRECT_RULES` in `scripts/skill_check.py`, held word for word.
    - When the sequence runs again is the same for every such skill: each holds `REVIEW_RULE`
      from `scripts/skill_check.py` word for word, and the script fails a skill that names
      `sdlc:correction-checker` without it.
@@ -70,8 +73,9 @@ everything else is judgement.
    - A document with a status has an Open questions section, last apart from a spike record's
      Experiment, Code and Runs and an ADR's Technical detail, their technical parts, which follow
      it so the document reads plain first. The skill writes there
-     whatever only the person can settle, and never moves the document forward while the
-     section holds anything. The status hook (`scripts/status_check.py`) refuses such a move
+     whatever only the person can settle, each question ending with a proposed answer
+     (`PROPOSED_RULE`), and never moves the document forward while the section holds anything, nor
+     without the person's sign-off on the reviewed text (`SIGNOFF_RULE`). The status hook (`scripts/status_check.py`) refuses such a move
      for specs, ADRs, plans and spike records; a new document type with a status adds its rule there.
 5. **Evaluated.** Every skill ships with evals under the plugin's `evals/`, in the case-folder
    layout that skill-creator writes and `claude plugin eval` runs. Write the rubric first, then

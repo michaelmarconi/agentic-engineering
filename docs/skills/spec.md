@@ -13,6 +13,13 @@ system as it should behave now. It says
 a spec belongs in a [spike](spike.md) or an [ADR](adr.md).[^openspec]
 A spec is edited in place on a branch, and git is its history.
 
+## Where specs live
+
+`docs/specs/<capability>.spec.md`, named for the capability. Specs start flat; when there are
+enough to need it, group them into folders of your choosing. The plugin finds specs anywhere
+under `docs/specs/` and gives folders no meaning. Move a spec with `git mv`, which keeps its
+status; the hook would see a spec written in a new place as a new spec and require `📝 Draft`.
+
 ## Anatomy
 
 | Section | Holds |
@@ -73,7 +80,7 @@ Unit tests for both examples.
 such as how a reply quotes the message it answers, or what happens when a requirement cannot be
 met, it asks in Open questions, with the answer it would choose, so you can accept it in a word.
 
-## Lifecycle
+## Statuses
 
 ```mermaid
 stateDiagram-v2
@@ -106,26 +113,14 @@ to `📝 Draft`, so accept it again, then sign the plan off again. [`/audit`](au
 specs still in the old layout. A capability that is no longer wanted has
 its spec deleted; git keeps the history.[^openspec]
 
-Two things keep specs in this shape, and a third is planned:
+Two more things keep specs in this shape:
 
-- **Review.** Before you see a spec, `/spec` has its reviewer agent check it against a short
-  list of pass-or-fail checks: the sections are all there, each requirement has one EARS rule,
-  its examples add real cases, How we'll check names a method, the first requirement states the
-  story's outcome, the spec covers one capability, every open question has a proposed answer, and the spec refers to no other spec,
-  nor the brief, an ADR or a plan, nor any material outside the lifecycle's documents except a web
-  page, such as a requirements document you handed over, by hyperlink, path or title, since those
-  can change without the spec being touched and the reference would go stale. A plugin hook also
-  refuses any such hyperlink or path. At the same time, a language checker
-  reads it for words a newcomer could not follow, by the
-  [Plain words](../lifecycle.md#plain-words) rule: a term from your field gets a footnote, and
-  team shorthand is rewritten. `/spec` corrects what both find, once, and has the corrections checked (see [Review process](../lifecycle.md#review-process));
-  then you get the spec with the reports.
 - **Status.** A hook checks each edit Claude makes to a spec with its file-editing tools and
   refuses one the lifecycle does not allow: a new spec that is not `📝 Draft`,
   `👍 Accepted` while Open questions is not empty or in the same edit as a change to the text, a
   change to a `👍 Accepted` spec that does not return it to `📝 Draft`, any other status, or a
-  status without its emoji. Plans get the same kind of check; see
-  [`/plan`](plan.md).
+  status without its emoji. ADRs, plans and spike records get the same kind of check; see
+  [`/adr`](adr.md), [`/plan`](plan.md) and [`/spike`](spike.md).
 - **Audit.** [`/audit`](audit.md) finds specs and code that no longer agree, and specs left
   wrong by a hand edit, which the hook does not see.
 
@@ -144,12 +139,20 @@ When the spec has open questions, `/spec` tells you how many there are and asks 
 time; the rest wait in the spec's Open questions section. If you say you would rather not
 answer now, it leaves them there.
 
-## Where specs live
+## Review
 
-`docs/specs/<capability>.spec.md`, named for the capability. Specs start flat; when there are
-enough to need it, group them into folders of your choosing. The plugin finds specs anywhere
-under `docs/specs/` and gives folders no meaning. Move a spec with `git mv`, which keeps its
-status; the hook would see a spec written in a new place as a new spec and require `📝 Draft`.
+Before you see a spec, `/spec` has its reviewer agent check it against a short list of pass-or-fail
+checks: the sections are all there, each requirement has one EARS rule, its examples add real cases,
+How we'll check names a method, the first requirement states the story's outcome, the spec covers
+one capability, every open question has a proposed answer, and the spec refers to no other spec, nor
+the brief, an ADR, a plan or a spike record, nor any material outside the lifecycle's documents
+except a web page, such as a requirements document you handed over, by hyperlink, path or title,
+since those can change without the spec being touched and the reference would go stale. A plugin
+hook also refuses any such hyperlink or path. At the same time, a language checker reads it for
+words a newcomer could not follow, by the [Plain words](../lifecycle.md#plain-words) rule: a term
+from your field gets a footnote, and team shorthand is rewritten. `/spec` corrects what both find,
+once, and has the corrections checked (see [Review process](../lifecycle.md#review-process)); then
+you get the spec with the reports.
 
 [^ears]: Mavin, Wilkinson, Harwood and Novak, "Easy Approach to Requirements Syntax (EARS)",
     17th IEEE International Requirements Engineering Conference, 2009,

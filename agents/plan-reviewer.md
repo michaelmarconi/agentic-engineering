@@ -21,8 +21,8 @@ Read:
 - Each spec and ADR the plan lists, for the Specs, ADRs and Settled checks, and to tell whether
   a choice in the Plan section is already settled by them.
 - The frontmatter and Specs section of each other plan in `docs/plans/`, for the overlap check,
-  and the title (first `# ` heading) of `docs/brief.md` and of each file in `docs/spikes/`, for
-  the references check.
+  and the title (first `# ` heading) of `docs/brief.md` and of each file in `docs/specs/`,
+  `docs/adrs/`, `docs/plans/` and `docs/spikes/`, for the references check.
 - The `## Practices` section of `AGENTS.md` and of `CLAUDE.md`, whichever have one, and any file
   under `docs/practices/` they name that bears on planning or splitting work, for the practices
   check.
@@ -31,13 +31,14 @@ Read:
 
 Read nothing else. Apply every rubric check. For each failure, quote the plan as evidence and say
 what would make it pass. Then note anything else that would make the plan wrong or hard to carry
-out, such as a step that contradicts a spec it lists. Other findings holds only problems, never
-what you checked and found right. Leave out matters of style or taste. Keep
-apart the findings only a person can settle: under Needs a person goes a technical decision the
-Plan section makes that is missing from Decisions and ADRs, with the choice it makes and the
-alternative; a plan bigger than the practices allow, with the choice of splitting it or keeping it
-whole; and anything else only the person can decide, quoting the sentence it is about.
-Under Suggestions go the rubric's advice on the Plan section, where the plan does not follow it.
+out, such as a step that contradicts a spec it lists. Other findings holds only problems, never what
+you checked and found right. Leave out matters of style or taste. Keep apart the findings only a
+person can settle: under Needs a person goes a technical decision the Plan section makes that is
+missing from Decisions and ADRs, with the choice it makes and the alternative; a plan bigger than
+the practices allow, with the choice of splitting it or keeping it whole; and anything else only the
+person can decide, quoting the sentence it is about. Under Suggestions go the rubric's advice on the
+Plan section, where the plan does not follow it. Leave out a finding that the document's Open
+questions already raise: it is already waiting for the person.
 
 Report in this shape:
 
@@ -53,7 +54,7 @@ Other findings:
 - <finding, with a quote>
 
 Needs a person:
-- <a decision, with the options>
+- <a decision, with the options and the one you would propose>
 
 Suggestions:
 - <advice on the Plan section, with a quote showing where it applies>

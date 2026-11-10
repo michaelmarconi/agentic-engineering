@@ -76,8 +76,8 @@ class AllowedReferences(Workspace):
         self.assertIsNone(self.write(text))
 
     def test_other_files_are_left_alone(self):
-        self.assertIsNone(self.write("[prd](/Users/me/prd.pdf)\n", self.at("docs/plans/2026-11-05-x.md")))
         self.assertIsNone(self.write("[prd](/Users/me/prd.pdf)\n", self.at("README.md")))
+        self.assertIsNone(self.write("[prd](/Users/me/prd.pdf)\n", self.at("docs/plans/old/x.md")))
         self.assertIsNone(self.write("[prd](/Users/me/prd.pdf)\n", self.at("docs/specs/notes.md")))
 
 
@@ -119,6 +119,20 @@ class RefusedReferences(Workspace):
         self.assertRefused(self.write("[prd](/tmp/prd.md)\n", self.spec), "/tmp/prd.md")
         self.assertRefused(self.write("[prd](/tmp/prd.md)\n", self.adr), "/tmp/prd.md")
         self.assertRefused(self.write("[prd](/tmp/prd.md)\n", self.at("docs/specs/a/b.spec.md")), "/tmp/prd.md")
+
+    def test_plans_and_spike_records_are_checked(self):
+        plan = self.at("docs/plans/2026-11-05-x.md")
+        spike = self.at("docs/spikes/2026-11-05-y.md")
+        self.assertRefused(self.write("[prd](/tmp/prd.md)\n", plan), "/tmp/prd.md")
+        self.assertRefused(self.write("[prd](/tmp/prd.md)\n", spike), "/tmp/prd.md")
+        self.assertIn("The plan stands", self.write("[prd](/tmp/prd.md)\n", plan))
+        self.assertIn("The spike record stands", self.write("[prd](/tmp/prd.md)\n", spike))
+
+    def test_a_plan_may_refer_to_specs_adrs_and_code(self):
+        plan = self.at("docs/plans/2026-11-05-x.md")
+        self.assertIsNone(self.write(
+            "[Login](../specs/login.spec.md) [ADR 1](../adrs/0001-database.md) [code](../../src/app.py)\n",
+            plan))
 
     def test_the_brief_is_checked_whatever_the_folders_case(self):
         self.assertRefused(self.write("[prd](/tmp/prd.md)\n", self.at("Docs/Brief.md")), "/tmp/prd.md")

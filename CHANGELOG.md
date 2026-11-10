@@ -6,6 +6,33 @@ What changed in each version of the plugin, newest first. Versions follow
 past a major version: it says what you need to change in your documents. Until 1.0.0, any
 minor version may need such a change, and its entry says so.
 
+## [0.33.0] - 2026-11-10
+
+### Changed
+
+- No open question is ever left bare. In a brief, ADR, plan or spike record, as already in a spec,
+  each open question ends with "Proposed:" and the answer the skill would choose, so you can accept
+  it in a word, or, where only you can know, what would settle it. In a brief, a proposal rests
+  only on what you said. Each rubric gains a check for it.
+- `/sdlc:build` and its reviewer read your practices where `/sdlc:plan` does: the Practices section
+  of both `AGENTS.md` and `CLAUDE.md`, and the topic files they name, even when `CLAUDE.md` does not
+  import `AGENTS.md`.
+- A plan is temporary: once `✅ Built` it is frozen, and you may delete it whenever nobody needs it.
+- Every skill whose document has a status signs it off on the same terms, and `/sdlc:spec` now asks
+  whether to accept a spec once nothing is left to settle. Every document reviewer reports in the
+  same shape, with Suggestions kept apart.
+- Plans, like briefs, specs and ADRs, state handed-over material in their own words rather than
+  referring to it. The hook that refuses a hyperlink or path to such material now checks plans and
+  spike records too, as well as the brief, specs and ADRs (ADR 0026, which supersedes ADR 0023).
+- The spike reviewer and plan reviewer read every title their references check needs.
+- `/sdlc:adr` says how a draft written in the old layout is brought to the current one.
+
+### Upgrading
+
+- A brief, ADR, plan or spike record whose open questions have no "Proposed:" now fails its review
+  the next time it is reviewed. Nothing else changes until then: the skill adds the proposals in
+  its next edit.
+
 ## [0.32.0] - 2026-11-10
 
 ### Changed

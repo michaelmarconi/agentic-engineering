@@ -95,11 +95,11 @@ RUNS = "background-runs.json"  # beside the reviews; their names are hashes, so 
 REVIEWERS = {
     "spec-reviewer": ("spec", ["docs/brief.md", "docs/specs/", "docs/adrs/", "docs/plans/", "docs/spikes/"]),
     "brief-reviewer": ("brief", ["docs/specs/", "docs/adrs/", "docs/plans/", "docs/spikes/"]),
-    "adr-reviewer": ("adr", ["docs/adrs/", "docs/spikes/"]),
+    "adr-reviewer": ("adr", ["docs/brief.md", "docs/specs/", "docs/adrs/", "docs/plans/", "docs/spikes/"]),
     "feedback-reviewer": ("feedback", []),
-    "plan-reviewer": ("plan", ["docs/specs/", "docs/adrs/", "docs/plans/", "docs/spikes/",
+    "plan-reviewer": ("plan", ["docs/brief.md", "docs/specs/", "docs/adrs/", "docs/plans/", "docs/spikes/",
                               "AGENTS.md", "CLAUDE.md", "docs/practices/"]),
-    "spike-reviewer": ("spike", ["docs/specs/", "docs/adrs/"]),
+    "spike-reviewer": ("spike", ["docs/brief.md", "docs/specs/", "docs/adrs/", "docs/plans/", "docs/spikes/"]),
     "practices-reviewer": ("practices", ["docs/practices/", "docs/adrs/", "CLAUDE.md",
                                          "the repository's build, dependency, CI and setup files"]),
 }

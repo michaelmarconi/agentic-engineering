@@ -78,6 +78,11 @@ reviewer needs to build and check it. Footnotes explaining terms come last, afte
 16. **Accepted means settled.** A `👍 Accepted` or `↪️ Superseded` ADR has no open questions: its
     Open questions section is empty or says only "None." A `📝 Draft` or `❌ Rejected` ADR may
     have some.
+17. **Proposed answers.** Each open question ends with "Proposed:" and the answer the writer
+    would choose, such as the option they would recommend, so the person can accept it in a word or
+    give another. A question only the person can answer, such as why they rejected an option,
+    proposes no guess: its "Proposed:" says what would settle it, such as "tell me what ruled
+    Postgres out".
 
 The plain part's size, at most 500 words, tables included, is checked by the skill's `words`
 command and by the status hook, not by the reviewer. So is a `👍 Accepted` ADR whose Decision does

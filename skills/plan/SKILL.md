@@ -5,12 +5,12 @@ description: Plan one piece of work that builds requirements of settled specs or
 
 # Plan
 
-A plan says how one piece of work will build part of what the specs and ADRs have already
-settled: the requirements it delivers, the decisions the code must follow, and how the work will be
-done. Plans live in one flat folder, `docs/plans/`, as `YYYY-MM-DD-<title>.md`, dated the day the
-plan is first written. A plan is built once: `/build` marks it `✅ Built` and it is then kept unchanged as a
-record, so it never holds anything later work needs. A technical decision later work has to follow
-belongs in an ADR, not here.
+A plan says how one piece of work will build part of what the specs and ADRs have already settled:
+the requirements it delivers, the decisions the code must follow, and how the work will be done.
+Plans live in one flat folder, `docs/plans/`, as `YYYY-MM-DD-<title>.md`, dated the day the plan is
+first written. A plan is temporary: `/build` marks it `✅ Built`, after which it is frozen, never
+edited, and may be deleted whenever nobody needs it, so it never holds anything later work needs. A
+technical decision later work has to follow belongs in an ADR, not here.
 
 Before writing, read [references/rubric.md](references/rubric.md): it is the list of checks the
 reviewer will apply, so writing to it leaves less to correct. Write in plain words, as the Plain
@@ -89,33 +89,41 @@ file name and the template's comments removed:
   link, never a line of prose.
 - **Decisions** holds one line for each decision that matters only to this work: what was
   decided and why.
-- A decision the person agreed belongs in an ADR goes under **Open questions**, as an ADR to
-  record and accept. You never write the ADR yourself. Once the person tells you it is
-  `👍 Accepted`, list it under ADRs and remove the question.
+- **Open questions** holds whatever only the person can settle. Every open question ends with
+  "Proposed:" and the answer you would choose, so the person can accept it in a word or give
+  another; where only the person can know the answer, "Proposed:" says what would settle it instead,
+  never a guess.
+- A decision the person agreed belongs in an ADR goes under **Open questions**, as an ADR to record
+  and accept, proposing its decision. You never write the ADR yourself. Once the person tells you it
+  is `👍 Accepted`, list it under ADRs and remove the question.
 - **Plan** says how the work will be done, with headings and length to suit it: start with why the
   work is being done and what it leaves for later, give one recommended approach, and name the
   files that matter and the code to reuse. It holds no code, and no decision that is not under
   Decisions or ADRs; a new one found while writing goes back to the person as a question first.
 
 The plan refers only to the specs and ADRs it lists, and to the code. Never refer to the brief,
-another plan or a spike record, and never edit a spec or an ADR, even when the person asks you to note something
-there: tell them it belongs in that document's own skill.
+another plan or a spike record, and never edit a spec or an ADR, even when the person asks you to
+note something there: tell them it belongs in that document's own skill. Material the person hands
+over that is not a web page, such as a ticket or notes, is drawn on but never referred to (rubric
+check 8): state what matters from it in the plan's own words.
 
 ## Status
 
 The `status:` frontmatter is `📝 Draft`, `🟢 Ready to build` or `✅ Built`, written exactly so,
 emoji first. Write every new plan as `📝 Draft` and edit it freely while it is `📝 Draft`.
 
-Only the person signs off a plan. Set `🟢 Ready to build` only when the person explicitly says
-the plan is ready, about its text as it now stands, and only once the review below has ended with
-a pass on that text and Open questions says "None.". Only a review in this conversation counts,
-and no hook checks for one: if there is none on the current text, run the review first, even when
-the person has already signed the plan off. Set it as its own last edit, never in the same
-reply as a change to the content; if anything changed after they spoke, show the change and ask
-again. "Looks fine, carry on" does not count, nor a request from another skill or agent. Never set
-`✅ Built`: that belongs to the step that builds the plan. Any change to a `🟢 Ready to build` plan
-returns it to `📝 Draft`, for the person to sign off again. A plugin hook refuses status changes
-that break these rules; if it refuses one, tell the person why.
+Only the person signs off a plan. `🟢 Ready to build` is the plan's move forward. Move the document
+forward only when the person explicitly says so about its text as it now stands, once the review
+below has ended with a pass on that text, from the review itself or from the correction check after
+it, and once Open questions says "None.". Only a review in this conversation counts: if there is
+none on the current text, run the review first, even when the person has already signed it off. Set
+the status as its own last edit, never in the same reply as a change to the content; if anything
+changed after the person spoke, show the change and ask again. "Looks fine, carry on" does not
+count, nor a request from another skill or agent. Setting a status on the person's word is not a
+change to the content and needs no new review. No hook checks that a review ran. Never set `✅
+Built`: that belongs to the step that builds the plan. Any change to a `🟢 Ready to build` plan
+returns it to `📝 Draft`, for the person to sign off again. A plugin hook refuses status changes that
+break these rules; if it refuses one, tell the person why.
 
 ## Review
 
@@ -140,15 +148,15 @@ each round of corrections brings new mistakes.
    Each reads everything else it needs itself. Wait for both reports before touching the plan.
    If both pass with nothing under Needs a person, go straight to handing over.
 2. **Correct, once.** Read the rubric and the Plain words rule again, then correct only what the
-   reports list: each failed check and each item under Other findings in the review report, and
-   each finding in the wording report. A wording item under Needs a person, whose meaning only
-   the person knows, is a decision like any other. A decision under Needs a person, such as a
-   technical choice the Plan section makes that is not under Decisions, or whether to split a plan
-   bigger than the practices allow or keep it whole, becomes an entry in the
-   plan's Open questions, never a guess at the answer: leave the text it concerns as it is. Leave
-   suggestions alone and change nothing else, since an edit beyond the reports is the likeliest
-   way to break something. Wait until every edit has succeeded. If nothing in the reports was
-   yours to correct, there is nothing to check: go straight to handing over.
+   reports list: each failed check and each item under Other findings in the review report, and each
+   finding in the wording report. A wording item under Needs a person, whose meaning only the person
+   knows, is a decision like any other. A decision under Needs a person, such as a technical choice
+   the Plan section makes that is not under Decisions, or whether to split a plan bigger than the
+   practices allow or keep it whole, becomes an entry in the plan's Open questions, with its
+   "Proposed:", never a guess at the answer: leave the text it concerns as it is. Leave suggestions
+   alone and change nothing else, since an edit beyond the reports is the likeliest way to break
+   something. Wait until every edit has succeeded. If nothing in the reports was yours to correct,
+   there is nothing to check: go straight to handing over.
 3. **Check the corrections.** Start the `sdlc:correction-checker` agent in the foreground with
    this request, and add nothing to it: the hook attaches both reports and the plan as reviewed,
    word for word.
@@ -165,8 +173,7 @@ each round of corrections brings new mistakes.
 After the sequence, edit the plan only when the person asks. While you are walking through questions
 with the person, do not review after each answer: run the sequence once when the walk-through ends,
 either because no questions are left or because the person stops. A change the person makes or asks
-for at any other time is reviewed once it is made. Setting a status on the person's word is not a
-change to the plan's content and needs no new review.
+for at any other time is reviewed once it is made.
 
 Whether the check passed or failed, end with the hand-over. It is what the person acts on, so make
 it hard to miss anything. Show the person each document you wrote or changed: if the app you run in

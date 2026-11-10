@@ -28,7 +28,7 @@ kept true.
 | Goals | What changes for the product as a whole, by how much, and how we will see it |
 | Out of scope | What the product will not be or do[^shapeup] |
 | Constraints | Hard limits on the whole product, such as a law, a deadline or a system it must work with |
-| Open questions | What is not known yet |
+| Open questions | What is not known yet, each with a proposed answer or what would settle it |
 
 These sections are the minimum. A brief for a larger or riskier product can have more, such as
 "Safety and security" or "Risks", when you ask `/brief` for them; they go before Open questions,
@@ -61,7 +61,9 @@ Run `/brief` and say what you want: a new brief, or a change to the one you have
   deadline, stays in the brief as a constraint.
 - **One question at a time.** When the brief has open questions, `/brief` tells you how many
   there are and asks them one at a time, playing back what it has understood.[^superpowers] The
-  rest wait in Open questions. If you would rather not answer now, it leaves them there.
+  rest wait in Open questions, each ending with "Proposed:": an answer your own words point to,
+  or, where nothing does, what would settle it. If you would rather not answer now, it leaves them
+  there.
 
 ## Review
 

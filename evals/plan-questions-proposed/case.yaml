@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: plan-questions-proposed
+expected_outcome: |
+  Asked to write the plan without stopping, the skill leaves the two unsettled choices (how the email is sent, and where the coordinator's address comes from) as open questions, each ending with a proposed answer.
+context:
+  scaffold_script: place-files.sh

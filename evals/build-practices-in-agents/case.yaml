@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: build-practices-in-agents
+expected_outcome: |
+  The practices are recorded in AGENTS.md, and CLAUDE.md exists but does not import it. The build still reads them, as /plan does, so it names its branch the way the practices say.
+context:
+  scaffold_script: place-files.sh

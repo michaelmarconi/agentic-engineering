@@ -1,7 +1,7 @@
 # Practices rubric
 
 Each check passes or fails. `/practices` reads this while writing; the practices reviewer reads it
-while checking, and quotes the practices as evidence for every failure. A hook (ADR 0019) already
+while checking, and quotes the practices as evidence for every failure. A plugin hook already
 refuses an edit that takes the section past 50 lines or a topic file past 200, or that adds an `@`
 import, so the reviewer does not count lines or look for imports in the section or topic files.
 
