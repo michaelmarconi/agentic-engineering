@@ -6,8 +6,9 @@
 1. refuses to run without a remote named `origin` whose default branch is known (`origin/HEAD`),
    on that default branch, or with no branch checked out;
 2. commits everything not yet committed, with the message given;
-3. with --reviews-passed, sets the plan's status from `🟢 Ready to build` to `✅ Built`, changing
-   nothing else in the file, and commits that on its own. It writes the file itself, so the
+3. with --reviews-passed, sets the plan's status from `🟢 Ready to build` to `✅ Built` and its
+   `date:`, the day its status last changed, to today's date on this machine, adding the line under
+   the status if the plan has none, changing nothing else in the file, and commits that on its own. It writes the file itself, so the
    status hook, which refuses `✅ Built` from Claude, never sees it;
 4. pushes the branch to `origin`.
 
@@ -19,6 +20,7 @@ is, and the rest still runs); 2 when it refused to start, changing nothing.
 """
 
 import argparse
+import datetime
 import os
 import re
 import subprocess
@@ -26,6 +28,28 @@ import sys
 
 READY, BUILT = "🟢 Ready to build", "✅ Built"
 STATUS_LINE = re.compile(r"^status:[ \t]*(?P<value>[^\n#]*?)[ \t]*$", re.M)
+# The key in any case and with a space before its colon, as the status hook reads it.
+DATE_LINE = re.compile(r"^date[ \t]*:[ \t]*(?P<value>[^\n#]*?)[ \t]*(?:#[^\n]*)?$", re.M | re.I)
+
+
+def today():
+    """Today's date on this machine, as YYYY-MM-DD: the day the plan becomes Built."""
+    return datetime.date.today().isoformat()
+
+
+def built(text, match):
+    """The plan's text with the status in `match` set to Built and its `date:` to today, adding the
+    date line under the status line if the frontmatter has none."""
+    end = text.find("\n---", 3)
+    date = DATE_LINE.search(text, 4, end + 1)
+    if date:
+        dated = (date.start("value"), date.end("value"), today())
+    else:
+        line_end = text.index("\n", match.end("value")) + 1
+        dated = (line_end, line_end, f"date: {today()}\n")
+    for start, stop, value in sorted([(match.start("value"), match.end("value"), BUILT), dated], reverse=True):
+        text = text[:start] + value + text[stop:]
+    return text
 
 
 def git(repo, *args):
@@ -111,7 +135,7 @@ def hand_over(repo, plan, message, reviews_passed):
     if reviews_passed and code == 0:
         if match and is_ready(status):
             with open(plan_path, "w", encoding="utf-8") as f:
-                f.write(text[:match.start("value")] + BUILT + text[match.end("value"):])
+                f.write(built(text, match))
             if commit(repo, f"Mark the plan {os.path.basename(plan)} as built", lines):
                 lines.append(f"Plan: {plan} is now `{BUILT}`.")
             else:

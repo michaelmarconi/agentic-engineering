@@ -12,7 +12,8 @@ The lifecycle keeps its thinking in five kinds of document, each a Markdown file
 repository. Each says what kind of document it is in the `type:` field of its frontmatter, the
 block of settings at the top of the file: `Brief`, `Spec`, `ADR`, `Plan` or `Spike`, so its title
 never needs to. Every document except the brief also has a status, the `status:` field, which says
-how far along it is.
+how far along it is. Beside it, the `date:` field gives the day that status was set, written
+YYYY-MM-DD; a plugin hook refuses a status change that does not set it to that day.
 
 - **Brief**, `docs/brief.md`: what the product is, who it is for and why. One per product,
   holding only what is true of the whole product. No status; it is never built, only kept true,

@@ -24,6 +24,7 @@ status; the hook would see a spec written in a new place as a new spec and requi
 
 | Section | Holds |
 |---|---|
+| `status:` and `date:` | `📝 Draft` or `👍 Accepted`, and the day the status last changed |
 | Story | One sentence: when the capability is needed, who wants it, what they want to do and the outcome they want[^story] |
 | In scope | What the capability covers |
 | Out of scope | What it explicitly does not do[^shapeup] |

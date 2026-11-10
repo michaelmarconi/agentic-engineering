@@ -112,6 +112,11 @@ check 8): state what matters from it in the plan's own words.
 The `status:` frontmatter is `📝 Draft`, `🟢 Ready to build` or `✅ Built`, written exactly so,
 emoji first. Write every new plan as `📝 Draft` and edit it freely while it is `📝 Draft`.
 
+The frontmatter's `date:` is the day the status last changed, written YYYY-MM-DD: give a new
+document today's date, set it to today's date in the same edit as every status change, and never
+change it otherwise. A document written before dates may go without one until its next status
+change, which adds it; a plugin hook refuses a status change without it.
+
 Only the person signs off a plan. `🟢 Ready to build` is the plan's move forward. Move the document
 forward only when the person explicitly says so about its text as it now stands, once the review
 below has ended with a pass on that text, from the review itself or from the correction check after

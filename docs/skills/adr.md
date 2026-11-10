@@ -53,7 +53,7 @@ core parts kept, reordered and tightened.[^madr]
 
 | Part | Holds | In MADR |
 |---|---|---|
-| `status:` and `date:` | `📝 Draft`, `👍 Accepted`, `❌ Rejected` or `↪️ Superseded`, and when it was written; `supersedes:` or `superseded-by:` name another ADR by number | Status and date |
+| `status:` and `date:` | `📝 Draft`, `👍 Accepted`, `❌ Rejected` or `↪️ Superseded`, and the day the status last changed; `supersedes:` or `superseded-by:` name another ADR by number | Status and date |
 | Title | The decision in plain words, such as "Keep session data in Redis" | Title |
 | Question | The one choice to make, in at most three sentences, written first | Part of Context and Problem Statement |
 | Decision | "Not chosen yet" until you pick; then "Chosen:" and the option in full, with the reason | Decision Outcome, moved up |

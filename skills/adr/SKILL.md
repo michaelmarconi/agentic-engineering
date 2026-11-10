@@ -114,6 +114,11 @@ A `📝 Draft` ADR written for an earlier version of the plugin, with Context an
 Considered Options and Decision Outcome sections, is brought to the template's layout in your next
 edit, keeping what it says; a plugin hook refuses to accept it until then.
 
+The frontmatter's `date:` is the day the status last changed, written YYYY-MM-DD: give a new
+document today's date, set it to today's date in the same edit as every status change, and never
+change it otherwise. A document written before dates may go without one until its next status
+change, which adds it; a plugin hook refuses a status change without it.
+
 Only a person accepts or rejects a decision. `👍 Accepted` is the ADR's move forward. Move the
 document forward only when the person explicitly says so about its text as it now stands, once the
 review below has ended with a pass on that text, from the review itself or from the correction check
@@ -134,8 +139,8 @@ a draft the person abandons can be deleted.
 To supersede, the new ADR carries `supersedes: <NNNN>`, the old one's four-digit number, in its
 frontmatter. The old one stays `👍 Accepted` until the person accepts the new one; then, in the
 same step, first set the new one to `👍 Accepted`, and only once that edit is done, set the old one
-to `↪️ Superseded` and add `superseded-by: <NNNN>` beside it, naming the new one, and `type: ADR` if
-it has none; a plugin hook checks the new one is `👍 Accepted` on disk before it allows the second
+to `↪️ Superseded`, set its `date:` to today's date and add `superseded-by: <NNNN>` beside it,
+naming the new one, and `type: ADR` if it has none; a plugin hook checks the new one is `👍 Accepted` on disk before it allows the second
 edit. That is the only edit an accepted ADR ever gets, apart from gaining its `type:`. If the new
 one is rejected, the old one stands.
 
