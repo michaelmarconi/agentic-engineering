@@ -14,17 +14,26 @@ sys.path.insert(0, HERE)
 import status_check  # noqa: E402
 
 
+TODAY = "2026-11-10"  # the hook's "today" in these tests; never read from the clock
+
+
+def dated(date):
+    """The frontmatter's `date:` line, or nothing when date is None (a document from before dates)."""
+    return f"date: {date}\n" if date else ""
+
+
 def head(kind):
     """The frontmatter's `type:` line, or nothing when kind is None (a document from before types)."""
     return f"type: {kind}\n" if kind else ""
 
 
-def spec(status="📝 Draft", questions="None.", rule="The system SHALL do X.", kind="Spec"):
+def spec(status="📝 Draft", questions="None.", rule="The system SHALL do X.", kind="Spec", date=TODAY):
     return (
         "---\n"
         "# Change status only through /sdlc:spec and /sdlc:build.\n"
         f"{head(kind)}"
         f"status: {status}\n"
+        f"{dated(date)}"
         "---\n\n# Thing\n\n## Story\n\nWhen a, someone wants to b, so they can c.\n\n"
         "## In scope\n\n- a\n\n## Out of scope\n\n- b\n\n"
         f"## Requirements\n\n### 1. X\n\n{rule}\n\n#### How we'll check\n\nTest.\n\n"
@@ -50,6 +59,9 @@ class Workspace(unittest.TestCase):
         patcher = mock.patch.dict(os.environ, {"CLAUDE_PROJECT_DIR": self.tmp.name})
         patcher.start()
         self.addCleanup(patcher.stop)
+        today = mock.patch.object(status_check, "today", return_value=TODAY)
+        today.start()
+        self.addCleanup(today.stop)
         self.path = os.path.join(self.tmp.name, "docs", "specs", "thing.spec.md")
 
     def put(self, text):
@@ -273,12 +285,12 @@ class Transitions(Workspace):
 
 
 def adr(status="📝 Draft", extra="", body="Chosen: keep sessions in Redis, because it is fast enough.",
-        questions="None.", background="B", detail="None.", kind="ADR"):
+        questions="None.", background="B", detail="None.", kind="ADR", date=TODAY):
     return (
         "---\n"
         f"{head(kind)}"
         f"status: {status}\n"
-        "date: 2026-10-27\n"
+        f"{dated(date)}"
         f"{extra}"
         "---\n\n# Store sessions in Redis\n\n## Question\n\nWhere do sessions live?\n\n"
         f"## Decision\n\n{body}\n\n"
@@ -668,7 +680,8 @@ class AdrEmoji(AdrWorkspace):
     put_replacement = Adr.put_replacement
 
 
-def plan(status="📝 Draft", specs=None, adrs="None.", questions="None.", decisions="None.", kind="Plan"):
+def plan(status="📝 Draft", specs=None, adrs="None.", questions="None.", decisions="None.", kind="Plan",
+         date=TODAY):
     if specs is None:
         specs = "- [Thing](../specs/thing.spec.md)\n  - Requirement: X"
     return (
@@ -676,6 +689,7 @@ def plan(status="📝 Draft", specs=None, adrs="None.", questions="None.", decis
         "# Change status only through the sdlc plugin's skills, which check each change; a change made by hand is not checked.\n"
         f"{head(kind)}"
         f"status: {status}\n"
+        f"{dated(date)}"
         "---\n\n# Thing release\n\n"
         f"## Specs\n\n{specs}\n\n## ADRs\n\n{adrs}\n\n## Decisions\n\n{decisions}\n\n"
         f"## Plan\n\nDo the thing.\n\n## Open questions\n\n{questions}\n"
@@ -923,11 +937,12 @@ class Plan(PlanWorkspace):
 def record(status="📝 Draft", hypothesis="The library reads our TIFF files.", answer_if="All 20 open.",
            scope="None.", steps="Opens each file once.", risks="None.",
            experiment="Opens each file. Runs: 1.\nCommand: `python3 check.py`", answer="", questions="None.",
-           code="```python\n# file: check.py\nprint('ok')\n```", runs="", kind="Spike"):
+           code="```python\n# file: check.py\nprint('ok')\n```", runs="", kind="Spike", date=TODAY):
     return (
         "---\n"
         f"{head(kind)}"
         f"status: {status}\n"
+        f"{dated(date)}"
         "---\n\n# The library reads our TIFF files\n\n"
         f"## Hypothesis\n\n{hypothesis}\n\n## Finding\n\n{answer}\n\n## Next steps\n\n\n\n"
         f"## How we'll know\n\n{answer_if}\n\n## Out of scope\n\n{scope}\n\n"
@@ -1303,6 +1318,159 @@ class DocumentType(Workspace):
         self.assertIsNone(self.write(spec(kind='"Spec"  # the document type')))
 
 
+class DateField(Workspace):
+    """Every document with a status records in `date:` the day its status last changed."""
+
+    KINDS = {
+        "spec": (("docs", "specs", "thing.spec.md"), spec),
+        "ADR": (("docs", "adrs", "0001-session-data-storage.md"), adr),
+        "plan": (("docs", "plans", "2026-10-29-thing-release.md"), lambda **kw: plan(specs="None.", **kw)),
+        "spike record": (("docs", "spikes", "2026-11-04-tiff-files-open.md"), record),
+    }
+
+    def at(self, kind):
+        parts, make = self.KINDS[kind]
+        self.path = os.path.join(self.tmp.name, *parts)
+        return make
+
+    def test_new_document_dated_today_allowed(self):
+        for kind in self.KINDS:
+            make = self.at(kind)
+            self.assertIsNone(self.write(make()), kind)
+
+    def test_new_document_without_date_refused(self):
+        for kind in self.KINDS:
+            make = self.at(kind)
+            reason = self.write(make(date=None))
+            self.assertIsNotNone(reason, kind)
+            self.assertIn(f"date: {TODAY}", reason, kind)
+
+    def test_new_document_dated_another_day_refused(self):
+        for kind in self.KINDS:
+            make = self.at(kind)
+            reason = self.write(make(date="2026-11-09"))
+            self.assertIsNotNone(reason, kind)
+            self.assertIn(f"date: {TODAY}", reason, kind)
+
+    def test_template_placeholder_refused(self):
+        self.assertIn("YYYY-MM-DD", self.write(spec(date="<YYYY-MM-DD>")))
+
+    def test_impossible_date_refused(self):
+        self.put(spec(date=None))
+        self.assertIn("YYYY-MM-DD", self.edit("status: 📝 Draft", "status: 📝 Draft\ndate: 2026-02-30"))
+
+    def test_two_date_lines_refused(self):
+        self.assertIn("more than one `date:`", self.write(spec().replace(f"date: {TODAY}\n", f"date: {TODAY}\ndate: {TODAY}\n")))
+
+    def test_status_change_with_an_old_date_refused(self):
+        self.put(spec(date="2026-11-01"))
+        reason = self.edit("status: 📝 Draft", "status: 👍 Accepted")
+        self.assertIsNotNone(reason)
+        self.assertIn(f"date: {TODAY}", reason)
+
+    def test_status_change_setting_todays_date_allowed(self):
+        # Setting a status on its own may still change the date line with it.
+        self.put(spec(date="2026-11-01"))
+        self.assertIsNone(self.edit("status: 📝 Draft\ndate: 2026-11-01", f"status: 👍 Accepted\ndate: {TODAY}"))
+
+    def test_status_change_on_a_document_dated_today_allowed(self):
+        self.put(spec())
+        self.assertIsNone(self.edit("status: 📝 Draft", "status: 👍 Accepted"))
+
+    def test_accepted_spec_back_to_draft_needs_todays_date(self):
+        self.put(spec("👍 Accepted", date="2026-11-01"))
+        self.assertIn(f"date: {TODAY}", self.edit("status: 👍 Accepted", "status: 📝 Draft"))
+        self.assertIsNone(self.edit("status: 👍 Accepted\ndate: 2026-11-01", f"status: 📝 Draft\ndate: {TODAY}"))
+
+    def test_adr_accept_and_reject_set_todays_date(self):
+        self.at("ADR")
+        for status in ("👍 Accepted", "❌ Rejected"):
+            self.put(adr(date="2026-11-01"))
+            self.assertIn(f"date: {TODAY}", self.edit("status: 📝 Draft", f"status: {status}"), status)
+            self.assertIsNone(
+                self.edit("status: 📝 Draft\ndate: 2026-11-01", f"status: {status}\ndate: {TODAY}"), status)
+
+    def test_superseding_sets_todays_date(self):
+        self.at("ADR")
+        self.put(adr("👍 Accepted", date="2026-10-01"))
+        replacement = os.path.join(self.tmp.name, "docs", "adrs", "0002-sessions-in-postgres.md")
+        with open(replacement, "w") as f:
+            f.write(adr("👍 Accepted", extra="supersedes: 0001\n"))
+        self.assertIn(f"date: {TODAY}", self.edit(
+            "status: 👍 Accepted\n", "status: ↪️ Superseded\nsuperseded-by: 0002\n"))
+        self.assertIsNone(self.edit(
+            "status: 👍 Accepted\ndate: 2026-10-01\n",
+            f"status: ↪️ Superseded\ndate: {TODAY}\nsuperseded-by: 0002\n"))
+
+    def test_plan_sign_off_sets_todays_date(self):
+        self.at("plan")
+        self.put(plan(specs="- [Thing](../specs/thing.spec.md)\n  - Requirement: X", date="2026-11-01"))
+        spec_path = os.path.join(self.tmp.name, "docs", "specs", "thing.spec.md")
+        os.makedirs(os.path.dirname(spec_path), exist_ok=True)
+        with open(spec_path, "w") as f:
+            f.write(spec("👍 Accepted"))
+        self.assertIn(f"date: {TODAY}", self.edit("status: 📝 Draft", "status: 🟢 Ready to build"))
+        self.assertIsNone(self.edit("status: 📝 Draft\ndate: 2026-11-01", f"status: 🟢 Ready to build\ndate: {TODAY}"))
+
+    def test_spike_move_sets_todays_date(self):
+        self.at("spike record")
+        self.put(record(date="2026-11-01"))
+        self.assertIn(f"date: {TODAY}", self.edit("status: 📝 Draft", "status: 🟢 Ready to run"))
+        self.assertIsNone(self.edit("status: 📝 Draft\ndate: 2026-11-01", f"status: 🟢 Ready to run\ndate: {TODAY}"))
+
+    def test_date_change_without_status_change_refused(self):
+        self.put(spec(date="2026-11-01"))
+        self.assertIn("only with a status change", self.edit("date: 2026-11-01", f"date: {TODAY}"))
+
+    def test_removing_the_date_refused(self):
+        self.put(spec(date="2026-11-01"))
+        self.assertIn("keep", self.edit("date: 2026-11-01\n", ""))
+
+    def test_content_edit_keeps_an_old_date(self):
+        self.put(spec(date="2026-11-01"))
+        self.assertIsNone(self.edit("do X.", "do Y."))
+
+    def test_document_from_before_dates_may_be_edited(self):
+        self.put(spec(date=None))
+        self.assertIsNone(self.edit("do X.", "do Y."))
+
+    def test_status_change_on_a_document_from_before_dates_must_add_today(self):
+        self.put(spec(date=None))
+        self.assertIn(f"date: {TODAY}", self.edit("status: 📝 Draft", "status: 👍 Accepted"))
+        self.assertIsNone(self.edit("status: 📝 Draft", f"status: 👍 Accepted\ndate: {TODAY}"))
+
+    def test_any_real_date_may_be_added_to_a_document_from_before_dates(self):
+        # A back-fill may use the day of the last status change, as git records it.
+        self.put(spec("👍 Accepted", date=None))
+        self.assertIsNone(self.edit("status: 👍 Accepted", "status: 👍 Accepted\ndate: 2026-09-14"))
+
+    def test_date_added_to_decided_and_frozen_documents_allowed(self):
+        for kind, status, extra in [
+            ("ADR", "👍 Accepted", {}), ("ADR", "❌ Rejected", {}), ("ADR", "↪️ Superseded", {}),
+            ("plan", "✅ Built", {}),
+            ("spike record", "💡 Confirmed", {"answer": "Confirmed: all 20 open.", "runs": RUN}),
+        ]:
+            make = self.at(kind)
+            self.put(make(status=status, date=None, **extra))
+            self.assertIsNone(self.edit(f"status: {status}", f"status: {status}\ndate: 2026-09-14"), status)
+
+    def test_date_on_a_decided_adr_never_changed(self):
+        self.at("ADR")
+        self.put(adr("👍 Accepted", date="2026-10-01"))
+        self.assertIsNotNone(self.edit("date: 2026-10-01", f"date: {TODAY}"))
+
+    def test_date_with_quotes_or_comment_read(self):
+        self.assertIsNone(self.write(spec(date=f'"{TODAY}"  # the day the status last changed')))
+
+    def test_other_files_without_status_ignored(self):
+        self.path = os.path.join(self.tmp.name, "docs", "plans", "notes.md")
+        self.assertIsNone(self.write("---\ndate: someday\n---\n# Notes\n"))
+
+    def test_brief_needs_no_date(self):
+        self.path = os.path.join(self.tmp.name, "docs", "brief.md")
+        self.assertIsNone(self.write(BRIEF))
+
+
 class Command(Workspace):
     def run_hook(self, payload):
         return subprocess.run(
@@ -1315,7 +1483,10 @@ class Command(Workspace):
         self.assertIn("Draft", done.stderr)
 
     def test_allowed_exits_0_silently(self):
-        done = self.run_hook({"tool_name": "Write", "tool_input": {"file_path": self.path, "content": spec()}})
+        # An edit that changes no status, so the date is never compared with the real day.
+        self.put(spec(date="2026-01-05"))
+        content = spec(rule="The system SHALL do Y.", date="2026-01-05")
+        done = self.run_hook({"tool_name": "Write", "tool_input": {"file_path": self.path, "content": content}})
         self.assertEqual((done.returncode, done.stdout, done.stderr), (0, "", ""))
 
     def test_bad_input_does_not_block(self):

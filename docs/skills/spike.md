@@ -71,7 +71,7 @@ stated once, under Out of scope.
 
 | Part | Holds |
 |---|---|
-| `status:` | `📝 Draft`, `🟢 Ready to run`, `💡 Confirmed`, `🚫 Refuted` or `❔ Not settled` |
+| `status:` and `date:` | `📝 Draft`, `🟢 Ready to run`, `💡 Confirmed`, `🚫 Refuted` or `❔ Not settled`, and the day the status last changed |
 | Title | The hypothesis, in plain words |
 | Hypothesis | The one claim the experiment tests, in one to three sentences, and the spec or ADR waiting on it, if any |
 | Finding | Empty until the verdict. Confirmed, Refuted or Not settled, followed by what was found, so it reads on its own, such as "Confirmed: all 20 sample files opened"; then the evidence, by run number |

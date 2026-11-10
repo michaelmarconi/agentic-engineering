@@ -34,6 +34,8 @@ repository. It always checks every document, whatever window the run was given (
 - every status is one the lifecycle allows, with its emoji;
 - every `type:` names the document's kind, as its folder does; a document without one is not a
   problem, since documents written before types gain one only when next edited;
+- every spec, ADR, plan and spike record has a `date:`, the day its status last changed, written
+  YYYY-MM-DD; one written before dates is listed, so it can be given one by hand;
 - no accepted spec or ADR, no `🟢 Ready to build` plan and no `🟢 Ready to run` spike record has
   open questions;
 - no document links to another, or names its path, where

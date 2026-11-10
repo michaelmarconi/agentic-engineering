@@ -44,7 +44,7 @@ its references show how those documents stood and cannot go stale. Nothing refer
 
 | Part | Holds |
 |---|---|
-| `status:` | `📝 Draft`, `🟢 Ready to build` or `✅ Built` |
+| `status:` and `date:` | `📝 Draft`, `🟢 Ready to build` or `✅ Built`, and the day the status last changed |
 | Title | The piece of work, in plain words |
 | Specs | Each spec the work builds, as a link, with the requirements it delivers listed by name beneath it, as `Requirement: <name>` |
 | ADRs | Each decision the code must follow, as a link, or "None." |
@@ -69,6 +69,7 @@ An example, for one requirement of a customs-holds spec:
 ---
 type: Plan
 status: 🟢 Ready to build
+date: 2026-11-10
 ---
 
 # Customs hold release

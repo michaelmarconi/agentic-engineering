@@ -27,7 +27,8 @@ For each skills/<folder>/SKILL.md under the given plugin root (default: this plu
   none puts the document's type in its title, and PROPOSED_RULE, so no open question is ever left
   without a proposed answer or what would settle it.
 - the skills whose document has a status (STATUS_SKILLS) hold SIGNOFF_RULE word for word, so every
-  document moves forward on the same terms.
+  document moves forward on the same terms, and DATE_RULE, so every one keeps its `date:` the same
+  way (docs/adrs/0027).
 
 For each agents/<name>.md, an agent told of a `Repository: <folder>` line holds AGENT_RULE word for
 word, so every such agent reads and searches only in that folder and reports an unreadable
@@ -78,6 +79,12 @@ SIGNOFF_RULE = (
     "change and ask again. \"Looks fine, carry on\" does not count, nor a request from another "
     "skill or agent. Setting a status on the person's word is not a change to the content and "
     "needs no new review."
+)
+DATE_RULE = (
+    "The frontmatter's `date:` is the day the status last changed, written YYYY-MM-DD: give a new "
+    "document today's date, set it to today's date in the same edit as every status change, and "
+    "never change it otherwise. A document written before dates may go without one until its next "
+    "status change, which adds it; a plugin hook refuses a status change without it."
 )
 PROPOSED_RULE = (
     "Every open question ends with \"Proposed:\" and the answer you would choose, so the person can "
@@ -206,6 +213,9 @@ def problems(folder, text):
     if folder in STATUS_SKILLS and not holds(body, SIGNOFF_RULE):
         found.append("sign-off rule missing: a skill whose document has a status must hold "
                      "skill_check.SIGNOFF_RULE word for word")
+    if folder in STATUS_SKILLS and not holds(body, DATE_RULE):
+        found.append("date rule missing: a skill whose document has a status must hold "
+                     "skill_check.DATE_RULE word for word")
     reviews_a_file = REVIEWS in body and "Document: <" in body
     if reviews_a_file and not holds(body, PATH_RULE):
         found.append("path rule missing: a skill that reviews a document by its path must hold "

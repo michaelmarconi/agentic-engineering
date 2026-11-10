@@ -7,19 +7,22 @@ import sys
 import tempfile
 import unittest
 from contextlib import redirect_stdout
+from unittest import mock
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import hand_over  # noqa: E402
 
 PLAN = "docs/plans/2026-11-03-thing.md"
+TODAY = "2026-11-10"  # the script's "today" in these tests; never read from the clock
 
 ENV = dict(os.environ, GIT_AUTHOR_NAME="Test", GIT_AUTHOR_EMAIL="test@example.com",
            GIT_COMMITTER_NAME="Test", GIT_COMMITTER_EMAIL="test@example.com",
            GIT_CONFIG_GLOBAL=os.devnull, GIT_CONFIG_NOSYSTEM="1")
 
 
-def plan(status="🟢 Ready to build"):
-    return f"---\nstatus: {status}\n---\n\n# Thing\n\n## Plan\n\nDo the thing.\n"
+def plan(status="🟢 Ready to build", date="2026-11-04"):
+    dated = f"date: {date}\n" if date else ""
+    return f"---\nstatus: {status}\n{dated}---\n\n# Thing\n\n## Plan\n\nDo the thing.\n"
 
 
 class Repo(unittest.TestCase):
@@ -40,6 +43,9 @@ class Repo(unittest.TestCase):
         os.environ.update(ENV)
         self.addCleanup(os.environ.clear)
         self.addCleanup(os.environ.update, self.old_env)
+        today = mock.patch.object(hand_over, "today", return_value=TODAY)
+        today.start()
+        self.addCleanup(today.stop)
 
     def git(self, *args, cwd=None):
         return subprocess.run(["git", *args], cwd=cwd or self.dir, env=ENV, check=True,
@@ -137,10 +143,37 @@ class Built(Repo):
         self.assertEqual(code, 0)
         self.assertIn("status: ✅ Built\n", self.read(PLAN))
 
-    def test_only_the_status_line_changes(self):
+    def test_only_the_status_and_date_lines_change(self):
         before = self.read(PLAN)
         self.run_it("--reviews-passed")
-        self.assertEqual(self.read(PLAN), before.replace("🟢 Ready to build", "✅ Built"))
+        self.assertEqual(self.read(PLAN), before.replace("🟢 Ready to build", "✅ Built").replace(
+            "date: 2026-11-04", f"date: {TODAY}"))
+
+    def test_built_plan_dated_today(self):
+        self.run_it("--reviews-passed")
+        self.assertIn(f"status: ✅ Built\ndate: {TODAY}\n", self.read(PLAN))
+
+    def test_plan_from_before_dates_gains_todays_date_under_its_status(self):
+        self.put(PLAN, plan(date=None))
+        code, _ = self.run_it("--reviews-passed")
+        self.assertEqual(code, 0)
+        self.assertEqual(self.read(PLAN), plan("✅ Built", date=TODAY))
+
+    def test_date_with_a_comment_keeps_it(self):
+        self.put(PLAN, plan(date="2026-11-04  # status day"))
+        self.run_it("--reviews-passed")
+        self.assertIn(f"date: {TODAY}  # status day\n", self.read(PLAN))
+
+    def test_date_left_alone_when_not_built(self):
+        self.run_it()
+        self.assertIn("date: 2026-11-04\n", self.read(PLAN))
+
+    def test_date_outside_the_frontmatter_left_alone(self):
+        self.put(PLAN, plan(date=None) + "\ndate: 2026-01-01\n")
+        self.run_it("--reviews-passed")
+        text = self.read(PLAN)
+        self.assertIn(f"status: ✅ Built\ndate: {TODAY}\n", text)
+        self.assertTrue(text.endswith("\ndate: 2026-01-01\n"))
 
     def test_missing_plan_refused(self):
         os.remove(os.path.join(self.dir, PLAN))

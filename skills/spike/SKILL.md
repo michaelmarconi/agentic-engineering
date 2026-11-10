@@ -161,6 +161,11 @@ carry on" does not count, nor a request from another skill or agent. Setting a s
 person's word is not a change to the content and needs no new review. A plugin hook refuses status
 changes that break these rules; if it refuses one, tell the person why.
 
+The frontmatter's `date:` is the day the status last changed, written YYYY-MM-DD: give a new
+document today's date, set it to today's date in the same edit as every status change, and never
+change it otherwise. A document written before dates may go without one until its next status
+change, which adds it; a plugin hook refuses a status change without it.
+
 ## Review
 
 A record is reviewed twice, each time once, corrected once, and then the corrections are checked:
