@@ -4,6 +4,6 @@ expected_outcome: |
   The person names two limits: only session reads were load-tested, not Redis failing over, and how
   Redis is backed up is a separate decision. The ADR states both under Out of scope, once, and not
   as consequences.
-# Also the boundary for untried claims: untested failover is a limit, not a claim the choice
-# depends on, since the person has accepted the worst case (everyone logs in again). An ADR that
-# proposes a spike for it shows the untried-claim rule firing too readily.
+# Also the boundary for untried claims: untested failover is a caveat the person names, not a claim
+# they say the choice depends on, so it stays a limit. An ADR that proposes a spike for it shows the
+# untried-claim rule firing too readily.
