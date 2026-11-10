@@ -17,6 +17,10 @@ checker holds every document to it. New specs start from
 [assets/template.md](assets/template.md). Read these with the Read tool, not the shell, so the
 person is not asked to approve a command.
 
+The template's frontmatter holds `type: Spec`, which says what the document is. A spec written
+before it has no `type:`, so add it with your next edit. The title never names the document's type,
+as "Spec:" or "ADR:" in front of it would: the frontmatter's `type:` already says what it is.
+
 ## Find the spec
 
 Specs live at `docs/specs/<capability>.spec.md`, named for the capability in lowercase with

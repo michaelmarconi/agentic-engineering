@@ -1,0 +1,7 @@
+schema_version: "1.1"
+name: spec-type-added-on-edit
+expected_outcome: |
+  An Accepted spec written before documents named their type is changed as asked, and gains
+  `type: Spec` in its frontmatter with that edit.
+context:
+  scaffold_script: place-files.sh

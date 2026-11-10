@@ -9,7 +9,7 @@ A record reads from plain to technical. Its plain part, for people, runs from th
 Experiment; its technical part, for agents and reviewers, is Experiment, Code and Runs.
 
 1. **Shape** (design). The file is `docs/spikes/YYYY-MM-DD-<a-few-words-naming-the-hypothesis>.md`, in lowercase with hyphens,
-   directly in that folder. Its frontmatter has `status:` set to `📝 Draft`, `🟢 Ready to run`,
+   directly in that folder. Its frontmatter has `type: Spike` and `status:` set to `📝 Draft`, `🟢 Ready to run`,
    `💡 Confirmed`, `🚫 Refuted` or `❔ Not settled`, emoji included. Under a `# ` title that is
    the hypothesis in plain words, the sections are Hypothesis, Finding, Next steps, How we'll know,
    Out of scope, How the test works, Risks and safeguards, Results, Surprises, Open questions,

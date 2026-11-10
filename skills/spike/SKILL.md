@@ -18,6 +18,11 @@ checker holds every document to it. New records start from
 [assets/template.md](assets/template.md), whose Experiment lines the run script reads exactly.
 Read these with the Read tool, not the shell, so the person is not asked to approve a command.
 
+The template's frontmatter holds `type: Spike`, which says what the document is. A spike record
+written before it has no `type:`, so add it with your next edit. The title never names the
+document's type, as "Spec:" or "ADR:" in front of it would: the frontmatter's `type:` already says
+what it is.
+
 A record is written for a person first. It reads from plain to technical: the plain part, from the
 title down to Experiment, says what we expected, what we found and what happens next, in at most
 600 words, tables included; Experiment, Code and Runs below it hold everything an agent or

@@ -3,7 +3,7 @@
 Each check passes or fails. `/spec` reads this while writing; the spec reviewer reads it while
 checking, and quotes the spec as evidence for every failure.
 
-1. **Shape.** The spec has `status:` frontmatter set to `📝 Draft` or `👍 Accepted`,
+1. **Shape.** The spec's frontmatter has `type: Spec` and `status:` set to `📝 Draft` or `👍 Accepted`,
    emoji included, and at least the sections Problem, Goal, Scope, Requirements, Constraints and
    Open questions, in that order relative to each other. Further sections, such as "Security" or
    "Privacy", may go wherever they fit before Open questions, which comes last, and every other

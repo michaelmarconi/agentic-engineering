@@ -1,4 +1,5 @@
 ---
+type: Spec
 status: 👍 Accepted
 ---
 

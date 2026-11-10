@@ -1,3 +1,7 @@
+---
+type: Brief
+---
+
 # Filekeeper
 
 Filekeeper lets an AI assistant tidy and back up a person's files on their behalf, so they no

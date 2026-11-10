@@ -10,7 +10,7 @@ reviewer needs to build and check it. Footnotes explaining terms come last, afte
 1. **Shape.** The file is `docs/adrs/NNNN-<subject>.md`, with a four-digit number no other ADR in
    the folder uses. The subject is three to five lowercase words joined by hyphens, naming what
    the decision is about, such as `0004-session-data-storage.md`, not the decision itself. Its
-   frontmatter has `status:` set to `📝 Draft`, `👍 Accepted`, `❌ Rejected` or `↪️ Superseded`,
+   frontmatter has `type: ADR` and `status:` set to `📝 Draft`, `👍 Accepted`, `❌ Rejected` or `↪️ Superseded`,
    emoji included, and `date:` as YYYY-MM-DD. The sections are Question, Decision, Background,
    Options, Consequences, Out of scope, How we'll check, Open questions and Technical detail, in
    that order, and no `<!-- -->` comment from the template is left in; the frontmatter's `#` line

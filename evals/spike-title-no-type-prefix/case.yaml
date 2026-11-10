@@ -1,0 +1,7 @@
+schema_version: "1.1"
+name: spike-title-no-type-prefix
+expected_outcome: |
+  Asked for a spike in words that start with "Spike:", the skill writes a spike record whose
+  frontmatter says `type: Spike` and whose title is the hypothesis alone, without "Spike:" in front.
+context:
+  scaffold_script: place-files.sh

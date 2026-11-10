@@ -49,9 +49,7 @@ MISSING_ADR = "is an ADR that does not exist in docs/adrs/"
 HTML = re.compile(r"""\b(?:href|src)\s*=\s*(?:"([^"]*)"|'([^']*)')""", re.IGNORECASE)
 
 
-def is_brief(path):
-    """True for docs/brief.md in the project, whatever the case."""
-    return [part.lower() for part in status_check.project_parts(path)] == ["docs", "brief.md"]
+is_brief = status_check.is_brief
 
 
 def is_lifecycle_document(path):

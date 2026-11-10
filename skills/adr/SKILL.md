@@ -18,6 +18,10 @@ checker holds every document to it. New ADRs start from
 [assets/template.md](assets/template.md). Read these with the Read tool, not the shell, so the
 person is not asked to approve a command.
 
+The template's frontmatter holds `type: ADR`, which says what the document is. An ADR written
+before it has no `type:`, so add it with your next edit. The title never names the document's type,
+as "Spec:" or "ADR:" in front of it would: the frontmatter's `type:` already says what it is.
+
 An ADR is written for a person first. It reads from plain to technical: the plain part, from the
 title down to Technical detail, says what had to be chosen, what was chosen, why, and what it costs,
 in at most 500 words, tables included; Technical detail below it holds the exact mechanism, rules,
@@ -110,9 +114,10 @@ abandons can be deleted.
 To supersede, the new ADR carries `supersedes: <NNNN>`, the old one's four-digit number, in its
 frontmatter. The old one stays `👍 Accepted` until the person accepts the new one; then, in the
 same step, first set the new one to `👍 Accepted`, and only once that edit is done, set the old one
-to `↪️ Superseded` and add `superseded-by: <NNNN>` beside it, naming the new one; a plugin hook
-checks the new one is `👍 Accepted` on disk before it allows the second edit. That is the only edit an accepted ADR
-ever gets. If the new one is rejected, the old one stands.
+to `↪️ Superseded` and add `superseded-by: <NNNN>` beside it, naming the new one, and `type: ADR` if
+it has none; a plugin hook checks the new one is `👍 Accepted` on disk before it allows the second
+edit. That is the only edit an accepted ADR ever gets, apart from gaining its `type:`. If the new
+one is rejected, the old one stands.
 
 ## Review
 

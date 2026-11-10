@@ -1,0 +1,7 @@
+schema_version: "1.1"
+name: adr-supersede-without-type
+expected_outcome: |
+  The person accepts a new ADR that supersedes one written before documents named their type. The
+  new ADR is accepted and the old one is marked Superseded, gaining `type: ADR` as it goes.
+context:
+  scaffold_script: place-files.sh

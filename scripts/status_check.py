@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-"""Refuse spec, ADR, plan and spike record status changes the lifecycle does not allow.
+"""Refuse spec, ADR, plan and spike record status changes the lifecycle does not allow, and a
+lifecycle document whose `type:` is wrong.
 
 Claude Code runs this as a PreToolUse hook on Write, Edit and MultiEdit. It reads the hook's
-JSON from stdin and, for a *.spec.md under the project's docs/specs/ or a *.md under its
-docs/adrs/ or a *.md directly in its docs/plans/ or docs/spikes/ (the project being
+JSON from stdin and, for the project's docs/brief.md, a *.spec.md under its docs/specs/, a *.md
+under its docs/adrs/ or a *.md directly in its docs/plans/ or docs/spikes/ (the project being
 $CLAUDE_PROJECT_DIR, or the current directory if unset),
 works out what the file would contain after the edit and compares it with what is on disk now.
 Every status carries its emoji, emoji first: a spec is `📝 Draft` or `👍 Accepted`, describing the
@@ -76,15 +77,24 @@ For a spike record it refuses:
 - a change to the Hypothesis, How we'll know, Out of scope, How the test works, Risks and
   safeguards or Experiment section of a `🟢 Ready to run` record that does not return it to
   `📝 Draft`;
-- any change to a `💡 Confirmed`, `🚫 Refuted` or `❔ Not settled` record, which is final.
+- any change to a `💡 Confirmed`, `🚫 Refuted` or `❔ Not settled` record, which is final, apart
+  from adding its `type:`.
   Deleting it is not an edit, so it is never refused.
 
 HTML comments in the Runs section outside its code fences do not count as runs.
 
+Every lifecycle document names its kind in its frontmatter's `type:`: `Brief` for docs/brief.md,
+`Spec`, `ADR`, `Plan` or `Spike`. For the brief and for any document above with a lifecycle status
+before or after the edit, it refuses a `type:` that is not the one for the document's folder, more
+than one `type:` line, a new document without `type:`, and taking a document's `type:` away. A
+document written before types may be edited without one, and adding one never counts as a change,
+so it may come with any edit the rules above allow, even to a decided ADR, a `✅ Built` plan or a
+finished spike record, whose only allowed change it is.
+
 Whether a person really accepted an ADR or signed off a plan is beyond a hook; the skill asks them.
 
-A file that has no lifecycle status before or after the edit, nor one named by its word, is left
-alone, so a project that keeps other files under docs/specs/, docs/adrs/ or docs/plans/ is not affected; only a
+Apart from the brief, a file that has no lifecycle status before or after the edit, nor one named
+by its word, is left alone, so a project that keeps other files under docs/specs/, docs/adrs/ or docs/plans/ is not affected; only a
 new ADR with a status the lifecycle does not know is refused. Edits made any other way, by hand or through
 a shell command, are not seen.
 """
@@ -127,6 +137,8 @@ FOOTNOTE = re.compile(r"^\[[^\]]+\]:")
 LINK = re.compile(r"^- \[[^\]]*\]\(<?([^)>\s]+)>?\)")
 REQUIREMENT_LINE = re.compile(r"^\s+- Requirement:\s*(.+?)\s*$")
 REQUIREMENT_HEADING = re.compile(r"^###\s+Requirement:\s*(.+?)\s*$")
+# Each kind of document by the value its frontmatter's `type:` holds.
+TYPES = {"brief": "Brief", "spec": "Spec", "ADR": "ADR", "plan": "Plan", "spike record": "Spike"}
 
 
 def project_parts(path):
@@ -153,6 +165,11 @@ def is_plan(path):
     parts = project_parts(path)
     return (len(parts) == 3 and [part.lower() for part in parts[:2]] == ["docs", "plans"]
             and parts[-1].lower().endswith(".md"))
+
+
+def is_brief(path):
+    """True for the project's docs/brief.md, whatever the case."""
+    return [part.lower() for part in project_parts(path)] == ["docs", "brief.md"]
 
 
 def is_spike(path):
@@ -234,10 +251,11 @@ def listed(values):
 
 
 def without_status(text, also=()):
-    """The text's lines without its frontmatter status line, nor any line setting a key in `also`."""
+    """The text's lines without its frontmatter status and type lines, nor any line setting a key
+    in `also`. Leaving out `type:` lets a document from before types gain one with any edit."""
     lines = text.lstrip("\ufeff").splitlines()
     end = len(frontmatter(text) or []) + 1
-    return [line for i, line in enumerate(lines) if i > end or not is_key(line, "status", *also)]
+    return [line for i, line in enumerate(lines) if i > end or not is_key(line, "status", "type", *also)]
 
 
 def has_open_questions_section(text):
@@ -300,12 +318,53 @@ def after_edit(tool, tool_input, before):
     return text
 
 
+def count_key(text, key):
+    """How many frontmatter lines set `key`."""
+    return sum(is_key(line, key) for line in frontmatter(text) or [])
+
+
+def article(kind):
+    """The article that goes before a kind's name, as "an ADR" but "a spec"."""
+    return "an" if kind == "ADR" else "a"
+
+
+def type_problem(name, kind, before, after):
+    """Why the document's `type:` is wrong, or None. A new document must have one, and one it has
+    is never taken away; a document from before types may go without until its skill adds it."""
+    expected = TYPES[kind]
+    if count_key(after, "type") > 1:
+        return f"{name}: the frontmatter has more than one `type:` line; keep one, `type: {expected}`."
+    value = field(after, "type")
+    if value is None:
+        if before and field(before, "type") is None:
+            return None
+        if before:
+            return f"{name}: keep `type: {expected}` in the frontmatter; it says what the document is."
+        return f"{name}: a new {kind} starts its frontmatter with `type: {expected}`; add it."
+    if value != expected:
+        return f"{name}: {article(kind)} {kind} in this folder has `type: {expected}` (found '{value}')."
+    return None
+
+
+def brief_problem(payload, path):
+    """Why an edit to the brief is refused: only for its `type:`, as the brief has no status."""
+    before = None
+    if os.path.exists(path):
+        before = read(path)
+        if before is None:
+            return f"{os.path.basename(path)}: could not read the brief to check its type."
+    after = after_edit(payload.get("tool_name"), payload.get("tool_input") or {}, before)
+    return None if after is None else type_problem(os.path.basename(path), "brief", before, after)
+
+
 def check(payload):
     """Return the reason to refuse the tool call, or None to allow it."""
     tool_input = payload.get("tool_input") or {}
     path = tool_input.get("file_path", "")
     if not path:
         return None
+    if is_brief(path):
+        return brief_problem(payload, path)
     if is_spec(path):
         kind, statuses, rules = "spec", SPEC_STATUSES, spec_rules
     elif is_adr(path):
@@ -339,6 +398,8 @@ def check(payload):
     # A status missing its emoji is judged as the one it names first, so a move the lifecycle
     # refuses anyway is refused for that, not with advice that only leads to that refusal.
     reason = lifecycle_problem(path, kind, statuses, rules, before, after, old, new, written)
+    if not reason and (old in statuses or new in statuses):
+        reason = type_problem(name, kind, before, after)
     if reason or new == written:
         return reason
     return (
@@ -355,7 +416,7 @@ def lifecycle_problem(path, kind, statuses, rules, before, after, old, new, writ
         if not before and new is not None and (kind == "ADR" or meant(new, WORDS.values())):
             return f"{name}: a new {kind} must be written as `{DRAFT}`, not '{new}'."
         return None
-    if sum(is_key(line, "status") for line in frontmatter(after) or []) > 1:
+    if count_key(after, "status") > 1:
         return f"{name}: the frontmatter has more than one `status:` line; keep one."
     if new not in statuses:
         found = f"'{new}'" if new else "none"
@@ -793,7 +854,9 @@ def spike_rules(path, before, after, old, new):
             return f"{name}: a new spike record starts with Runs empty; only the run script adds runs."
         return None
     if old in FINISHED:
-        if after == before:
+        # Only a `type:` line may be added, which without_status() leaves out, and the status
+        # written with its emoji if it lacked one, as an old record's may.
+        if new == old and restyled(before, after):
             return None
         return (
             f"{name}: this spike record is `{old}`, which is final, so it is never changed. "

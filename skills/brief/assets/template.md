@@ -1,3 +1,7 @@
+---
+type: Brief
+---
+
 # <Product>
 
 <One sentence: what the product is and why it exists.>

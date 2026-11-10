@@ -1,3 +1,7 @@
+---
+type: Brief
+---
+
 # Invoice tool
 
 The invoice tool lets the accounts clerk at a small joinery firm work out invoice totals,
