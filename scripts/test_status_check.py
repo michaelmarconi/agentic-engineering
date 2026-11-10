@@ -25,9 +25,21 @@ def spec(status="📝 Draft", questions="None.", rule="The system SHALL do X.", 
         "# Change status only through /sdlc:spec and /sdlc:build.\n"
         f"{head(kind)}"
         f"status: {status}\n"
-        "---\n\n# Thing\n\n## Problem\n\nP\n\n## Goal\n\nG\n\n## Scope\n\nIn:\n- a\n\n"
-        f"## Requirements\n\n### Requirement: X\n\n{rule}\n\n"
+        "---\n\n# Thing\n\n## Story\n\nWhen a, someone wants to b, so they can c.\n\n"
+        "## In scope\n\n- a\n\n## Out of scope\n\n- b\n\n"
+        f"## Requirements\n\n### 1. X\n\n{rule}\n\n#### How we'll check\n\nTest.\n\n"
         f"## Constraints\n\n- None.\n\n## Open questions\n\n{questions}\n"
+    )
+
+
+def old_spec(status="👍 Accepted"):
+    """A spec in the layout from before numbered requirements."""
+    return (
+        "---\n"
+        f"status: {status}\n"
+        "---\n\n# Thing\n\n## Problem\n\nP\n\n## Goal\n\nG\n\n## Scope\n\nIn:\n- a\n\n"
+        "## Requirements\n\n### Requirement: X\n\nThe system SHALL do X.\n\n"
+        "## Constraints\n\n- None.\n\n## Open questions\n\nNone.\n"
     )
 
 
@@ -731,7 +743,38 @@ class Plan(PlanWorkspace):
 
     def test_ready_needs_each_requirement_in_its_spec(self):
         reason = self.ready(specs="- [Thing](../specs/thing.spec.md)\n  - Requirement: Y")
-        self.assertIn("Requirement: Y", reason)
+        self.assertIn("no requirement named 'Y'", reason)
+
+    def test_ready_refused_when_the_plan_gives_the_requirement_number(self):
+        for line in ("1. X", "1 X", "1) X"):
+            reason = self.ready(specs=f"- [Thing](../specs/thing.spec.md)\n  - Requirement: {line}")
+            self.assertIn("name alone", reason, line)
+
+    def test_ready_refused_on_an_old_layout_spec(self):
+        self.put_at(self.spec_path, old_spec())
+        reason = self.ready()
+        self.assertIn("was written for an earlier version of the sdlc plugin", reason)
+        self.assertIn("rework it with /spec, accept it again, then sign the plan off again", reason)
+
+    def test_a_requirement_heading_outside_requirements_does_not_count(self):
+        text = spec("👍 Accepted").replace("## Constraints\n\n- None.", "## Constraints\n\n### 2. Y\n\n- None.")
+        self.put_at(self.spec_path, text)
+        self.assertIn("no requirement named 'Y'",
+                      self.ready(specs="- [Thing](../specs/thing.spec.md)\n  - Requirement: Y"))
+
+    def test_a_requirement_heading_without_a_number_does_not_count(self):
+        self.put_at(self.spec_path, spec("👍 Accepted", rule="The system SHALL do X.\n\n### Y\n\nThe system SHALL do Y."))
+        self.assertIn("no requirement named 'Y'",
+                      self.ready(specs="- [Thing](../specs/thing.spec.md)\n  - Requirement: Y"))
+
+    def test_a_requirement_heading_in_a_code_block_does_not_count(self):
+        self.put_at(self.spec_path, spec("👍 Accepted", rule="The system SHALL do X.\n\n```\n### 2. Y\n```"))
+        self.assertIn("no requirement named 'Y'",
+                      self.ready(specs="- [Thing](../specs/thing.spec.md)\n  - Requirement: Y"))
+
+    def test_requirement_heading_spacing_is_ignored(self):
+        self.put_at(self.spec_path, spec("👍 Accepted").replace("### 1. X", "###  12.  X  "))
+        self.assertIsNone(self.ready())
 
     def test_ready_needs_a_requirement_under_each_spec(self):
         self.assertIn("requirement", self.ready(specs="- [Thing](../specs/thing.spec.md)"))
@@ -762,7 +805,7 @@ class Plan(PlanWorkspace):
         self.assertIsNone(self.ready())
 
     def test_another_plan_for_another_requirement_allowed(self):
-        self.put_at(self.spec_path, spec("👍 Accepted", rule="The system SHALL do X.\n\n### Requirement: Y\n\nThe system SHALL do Y."))
+        self.put_at(self.spec_path, spec("👍 Accepted", rule="The system SHALL do X.\n\n### 2. Y\n\nThe system SHALL do Y."))
         other = os.path.join(self.tmp.name, "docs", "plans", "2026-10-01-earlier.md")
         self.put_at(other, plan(specs="- [Thing](../specs/thing.spec.md)\n  - Requirement: Y"))
         self.assertIsNone(self.ready())

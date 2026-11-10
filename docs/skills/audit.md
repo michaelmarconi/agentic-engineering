@@ -40,6 +40,10 @@ repository. It always checks every document, whatever window the run was given (
   [the references rule](../lifecycle.md#principles) does not allow it;
 - each ADR named in a `supersedes:` field names it back in `superseded-by:`, and the other way
   round;
+- no spec still heads its requirements `### Requirement: <name>`, as specs written for an earlier
+  version of the plugin did; such a spec breaks nothing while left alone, but no plan naming it
+  can be signed off until it is reworked with [`/spec`](spec.md) and accepted again, so the list
+  shows how much rework there is before it is in the way;
 - each `🟢 Ready to build` plan still names only accepted specs and ADRs, and only requirements
   that still exist, which catches a spec changed by hand after the plan was signed off;
 - no two plans that are not `✅ Built` name the same requirement, including plans on other
