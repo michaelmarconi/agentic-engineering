@@ -65,18 +65,18 @@ conversation holds several decisions, say how many and write one ADR for each, e
 were made together or the person asks for one record. Split them yourself: never leave an open
 question asking whether part of an ADR should be an ADR of its own.
 
-A choice can rest on an untried claim: something about how a system behaves that nobody has
-tried, and that would make another option win were it false, such as "the provider sends a
-payment's events in order". It is not a limit, something the decision does not cover that would
-not change the choice whichever way it turned out, such as an untested case whose worst outcome the
-person has already accepted. Tell the two apart yourself, from what the conversation says, and
-never ask the person which one something is, nor add limits nobody raised. Put each such claim first in Open questions,
+A choice can rest on an untried claim: something about how a system behaves that nobody has tried,
+and that would make another option win were it false, such as "the provider sends a payment's events
+in order". It is not a limit, something the decision does not cover that would not change the choice
+whichever way it turned out, such as an untested case whose worst outcome the person has already
+accepted. Tell the two apart yourself, from what the conversation says, and never ask the person
+which one something is, nor add limits nobody raised. Put each such claim first in Open questions,
 ahead of the choice that waits on it, proposing a spike (`/sdlc:spike`) that tests it, and never
 leave it to be proven later, such as in the build. It stays open until the spike's finding comes
 back. If the finding refutes the claim, remove its question and open the choice again: Decision
-returns to "Not chosen yet" and every row in Options to Open. Only if the person explicitly chooses to go ahead without a
-spike, which a request not to be asked anything is not, write the claim as a `Bad:` line under
-Consequences, saying it is untested at their word, and remove the question.
+returns to "Not chosen yet" and every row in Options to Open. Only if the person explicitly chooses
+to go ahead without a spike, which a request not to be asked anything is not, write the claim as a
+`Bad:` line under Consequences, saying it is untested at their word, and remove the question.
 
 Never fill a gap with a guess. An option nobody named, a reason nobody gave, or a choice not yet
 made goes into Open questions as a question the person can answer, never as an invented answer.
