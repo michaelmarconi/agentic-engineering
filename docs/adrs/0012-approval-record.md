@@ -1,7 +1,8 @@
 ---
 type: ADR
-status: 👍 Accepted
-date: 2026-10-28
+status: ↪️ Superseded
+date: 2026-11-10
+superseded-by: 0027
 ---
 
 # Rely on pull requests to record who approved a status change
