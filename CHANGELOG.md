@@ -22,7 +22,8 @@ minor version may need such a change, and its entry says so.
   whether to accept a spec once nothing is left to settle. Every document reviewer reports in the
   same shape, with Suggestions kept apart.
 - Plans, like briefs, specs and ADRs, state handed-over material in their own words rather than
-  referring to it.
+  referring to it. The hook that refuses a hyperlink or path to such material now checks plans and
+  spike records too, as well as the brief, specs and ADRs (ADR 0026, which supersedes ADR 0023).
 - The spike reviewer and plan reviewer read every title their references check needs.
 - `/sdlc:adr` says how a draft written in the old layout is brought to the current one.
 

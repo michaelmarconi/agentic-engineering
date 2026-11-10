@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""Refuse a brief, spec or ADR that refers to material outside the lifecycle's own documents.
+"""Refuse a lifecycle document that refers to material outside the lifecycle's own documents.
 
 Claude Code runs this as a PreToolUse hook on Write, Edit and MultiEdit, from status_check.sh.
 It reads the hook's JSON from stdin and, for the project's docs/brief.md, a *.spec.md under its
-docs/specs/ or a *.md under its docs/adrs/ (the project being $CLAUDE_PROJECT_DIR, or the
-current directory if unset), works out what the file would contain after the edit. It reads every
+docs/specs/, or a *.md directly in its docs/adrs/, docs/plans/ or docs/spikes/ (the project
+being $CLAUDE_PROJECT_DIR, or the current directory if unset), works out what the file would contain after the edit. It reads every
 inline link and image, `[text](target)` or `[text](<target>)`, every reference definition,
 `[name]: target`, every autolink, `<scheme:target>`, and every HTML `href` and `src` value,
 outside code spans and fenced code blocks, and refuses the edit if it adds a target that is:
@@ -126,6 +126,10 @@ def check(payload):
         kind = "spec"
     elif status_check.is_adr(path):
         kind = "ADR"
+    elif status_check.is_plan(path):
+        kind = "plan"
+    elif status_check.is_spike(path):
+        kind = "spike record"
     else:
         return None
     before = None
