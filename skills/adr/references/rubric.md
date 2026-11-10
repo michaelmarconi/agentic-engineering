@@ -42,7 +42,8 @@ reviewer needs to build and check it. Footnotes explaining terms come last, afte
    line each. A limit or a decision left for later is not a consequence: it goes under Out of
    scope.
 9. **Limits stated once.** Out of scope names every limit the decision relies on, something it
-   does not cover that would not change the choice whichever way it turned out, and each decision
+   does not cover that would not change the choice whichever way it turned out, such as an
+   untested case whose worst outcome the person has already accepted, and each decision
    left to another ADR, or says only "None.". No other section states a limit again. An untried
    claim the choice depends on, one that would make another option win were it false, is not a
    limit: it comes first in Open questions, proposing a spike, unless a `Bad:` line under

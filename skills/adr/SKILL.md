@@ -68,7 +68,8 @@ question asking whether part of an ADR should be an ADR of its own.
 A choice can rest on an untried claim: something about how a system behaves that nobody has
 tried, and that would make another option win were it false, such as "the provider sends a
 payment's events in order". It is not a limit, something the decision does not cover that would
-not change the choice whichever way it turned out. Put each such claim first in Open questions,
+not change the choice whichever way it turned out, such as an untested case whose worst outcome the
+person has already accepted. Put each such claim first in Open questions,
 ahead of the choice that waits on it, proposing a spike (`/sdlc:spike`) that tests it, and never
 leave it to be proven later, such as in the build. It stays open until the spike's finding comes
 back. If the finding refutes the claim, remove its question and open the choice again: Decision
