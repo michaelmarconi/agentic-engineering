@@ -1,7 +1,7 @@
 ---
 type: tool_used
 tool: Skill
-input_match: "sdlc:spec"
+input_match: "agentic:spec"
 min: 1
 weight: 1
 ---

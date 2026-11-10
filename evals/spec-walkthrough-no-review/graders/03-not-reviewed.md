@@ -1,7 +1,7 @@
 ---
 type: tool_used
 tool: Agent
-input_match: "sdlc:spec-reviewer"
+input_match: "agentic:spec-reviewer"
 min: 0
 max: 0
 weight: 1

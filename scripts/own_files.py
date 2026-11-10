@@ -36,7 +36,7 @@ def handle(event):
     return {"hookSpecificOutput": {
         "hookEventName": "PreToolUse",
         "permissionDecision": "allow",
-        "permissionDecisionReason": "Reads the sdlc plugin's own files.",
+        "permissionDecisionReason": "Reads the agentic plugin's own files.",
     }}
 
 

@@ -13,7 +13,7 @@ if command -v python3 >/dev/null 2>&1; then
 fi
 
 if printf '%s\n' "$input" | grep -Eiq '"file_path" *: *"[^"]*docs/((specs|adrs|plans|spikes)/|brief\.md")'; then
-    echo "The sdlc plugin needs Python 3 to check the lifecycle's documents. Install Python 3 and try again." >&2
+    echo "The agentic plugin needs Python 3 to check the lifecycle's documents. Install Python 3 and try again." >&2
     exit 2
 fi
 exit 0

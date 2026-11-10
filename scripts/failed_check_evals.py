@@ -42,7 +42,7 @@ def main(argv=None):
         formatter_class=argparse.RawDescriptionHelpFormatter)
     _, rest = parser.parse_known_args(argv)
     with tempfile.TemporaryDirectory() as tmp:
-        copy = os.path.join(tmp, "sdlc")
+        copy = os.path.join(tmp, "agentic")
         build_copy(ROOT, copy)
         code = subprocess.call(["claude", "plugin", "eval", copy, "--trust-plugin", *rest])
         results = os.path.join(copy, "evals", "results")

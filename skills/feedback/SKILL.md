@@ -1,6 +1,6 @@
 ---
 name: feedback
-description: Report a bug or suggest an improvement in the sdlc plugin itself (its skills, agents, hooks or lifecycle) by drafting a redacted GitHub issue on the plugin's own repository, with enough context for a maintainer to reproduce it. Use whenever someone says an sdlc skill such as /spec got something wrong, the lifecycle got in their way, or they want to give the plugin's maintainers feedback, even if they don't say "feedback". Not for issues about the person's own project, or feedback about Claude Code itself.
+description: Report a bug or suggest an improvement in the agentic plugin (formerly sdlc) itself (its skills, agents, hooks or lifecycle) by drafting a redacted GitHub issue on the plugin's own repository, with enough context for a maintainer to reproduce it. Use whenever someone says an agentic or sdlc skill such as /spec got something wrong, the lifecycle got in their way, or they want to give the plugin's maintainers feedback, even if they don't say "feedback". Not for issues about the person's own project, or feedback about Claude Code itself.
 ---
 
 # Feedback
@@ -58,7 +58,7 @@ goes in the requests whole, title and body, word for word, between marker lines;
 reads them to keep a copy of the draft as reviewed, outside the person's repository.
 
 1. **Review.** Start two agents in the foreground, not in the background, both in one message
-   so they run side by side: the `sdlc:feedback-reviewer` agent and the `sdlc:language-checker`
+   so they run side by side: the `agentic:feedback-reviewer` agent and the `agentic:language-checker`
    agent, which checks the wording. Give each this request, laid out exactly as shown:
 
    ```
@@ -81,7 +81,7 @@ reads them to keep a copy of the draft as reviewed, outside the person's reposit
    guess. Leave suggestions alone and change nothing else, since an edit beyond the reports is
    the likeliest way to break something. If nothing in the reports was yours to correct, there
    is nothing to check: go straight to showing the person.
-3. **Check the corrections.** Start the `sdlc:correction-checker` agent in the foreground with
+3. **Check the corrections.** Start the `agentic:correction-checker` agent in the foreground with
    the same layout, holding the corrected draft, and nothing more: the hook attaches both reports
    and the draft as reviewed, word for word.
 
@@ -137,11 +137,11 @@ anything in the draft. Use `--as <login>` with the account they agreed to, or `-
 a link:
 
 ```
-python3 "${CLAUDE_SKILL_DIR}/scripts/feedback.py" file --kind <bug|improvement> --as <login> <<'SDLC_FEEDBACK_DRAFT'
+python3 "${CLAUDE_SKILL_DIR}/scripts/feedback.py" file --kind <bug|improvement> --as <login> <<'AGENTIC_FEEDBACK_DRAFT'
 <title>
 
 <body>
-SDLC_FEEDBACK_DRAFT
+AGENTIC_FEEDBACK_DRAFT
 ```
 
 It prints `filed <issue URL>`, or with `--link-only`, `link <URL>`: give the person that link,

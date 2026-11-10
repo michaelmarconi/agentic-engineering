@@ -33,7 +33,7 @@ the person says and from `docs/specs/` and `docs/adrs/`. Each requirement is a
 numbered heading under Requirements in its spec, as `### 2. Reply to all`; name it by the words
 after the number, word for word, and never by its number, which changes when requirements are
 added or removed. A spec that heads its requirements `### Requirement: <name>` was written for an
-earlier version of the sdlc plugin: no plan can be signed off on it until it is reworked with
+earlier version of the agentic plugin: no plan can be signed off on it until it is reworked with
 /spec and accepted again, so tell the person so before planning against it.
 
 - If the work builds no requirement and follows no ADR, such as tidying code, a routine upgrade or
@@ -137,8 +137,8 @@ is fixed so it always ends with a clear result: further rounds of review find li
 each round of corrections brings new mistakes.
 
 1. **Review.** When the plan is written, start two agents in the foreground, not in the
-   background, both in one message so they run side by side: the `sdlc:plan-reviewer` agent and
-   the `sdlc:language-checker` agent, which checks the wording. Give each this request, its first
+   background, both in one message so they run side by side: the `agentic:plan-reviewer` agent and
+   the `agentic:language-checker` agent, which checks the wording. Give each this request, its first
    line exactly as shown, since a plugin hook reads that line to keep a copy of the plan as
    reviewed:
 
@@ -162,7 +162,7 @@ each round of corrections brings new mistakes.
    alone and change nothing else, since an edit beyond the reports is the likeliest way to break
    something. Wait until every edit has succeeded. If nothing in the reports was yours to correct,
    there is nothing to check: go straight to handing over.
-3. **Check the corrections.** Start the `sdlc:correction-checker` agent in the foreground with
+3. **Check the corrections.** Start the `agentic:correction-checker` agent in the foreground with
    this request, and add nothing to it: the hook attaches both reports and the plan as reviewed,
    word for word.
 

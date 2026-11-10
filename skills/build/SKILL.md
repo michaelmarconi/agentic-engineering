@@ -62,8 +62,8 @@ Check each of these before changing anything, and stop with the reason if one fa
 3. **Nothing it relies on has changed.** Every spec it lists is `👍 Accepted` and still has a
    numbered requirement heading, as `### 2. <name>`, for each requirement it names, and every
    ADR it lists is `👍 Accepted`. If not, name which. A spec that heads its requirements
-   `### Requirement: <name>` instead was written for an earlier version of the sdlc plugin: say
-   "<spec> was written for an earlier version of the sdlc plugin; rework it with /spec, accept it
+   `### Requirement: <name>` instead was written for an earlier version of the agentic plugin: say
+   "<spec> was written for an earlier version of the agentic plugin; rework it with /spec, accept it
    again, then sign the plan off again", rather than naming each requirement as missing.
 4. **Find the practices.** Read the `## Practices` section of `AGENTS.md` and of `CLAUDE.md`,
    whichever have one, and any file under `docs/practices/` they name that bears on building,
@@ -123,7 +123,7 @@ side, each in the foreground:
   Run /security-review on the current branch, then reply with its report word for word.
   ```
 
-- the `sdlc:build-reviewer` agent with this request:
+- the `agentic:build-reviewer` agent with this request:
 
   ```
   Document: <the plan's path>
@@ -139,7 +139,7 @@ in the summary.
    bugs, the security holes, and each failed check and item under Other findings in the build
    review. A choice under Needs a person is the person's: leave it unsettled in the code and
    raise it. Run the tests and linters, and commit the corrections.
-2. **Check the corrections.** Start the `sdlc:build-correction-checker` agent in the foreground
+2. **Check the corrections.** Start the `agentic:build-correction-checker` agent in the foreground
    with this request, and add nothing to it: a hook attaches the reports and the commit they
    reviewed, word for word.
 

@@ -1,6 +1,6 @@
 ---
 type: tool_used
 tool: Skill
-input_match: "sdlc:feedback"
+input_match: "agentic:feedback"
 weight: 1
 ---

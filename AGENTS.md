@@ -63,7 +63,7 @@ everything else is judgement.
      steps are `CORRECT_RULES` in `scripts/skill_check.py`, held word for word.
    - When the sequence runs again is the same for every such skill: each holds `REVIEW_RULE`
      from `scripts/skill_check.py` word for word, and the script fails a skill that names
-     `sdlc:correction-checker` without it.
+     `agentic:correction-checker` without it.
    - The hand-over shows the person the document in the app's file viewer where there is one,
      always names its path and never sends them to a code-hosting site
      ([ADR 0025](docs/adrs/0025-document-review-display.md)): the skill holds `SHOW_RULE` from

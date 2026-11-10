@@ -1,7 +1,7 @@
 ---
 type: tool_used
 tool: Skill
-input_match: "sdlc:build"
+input_match: "agentic:build"
 min: 0
 max: 0
 weight: 1
