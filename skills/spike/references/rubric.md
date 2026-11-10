@@ -10,7 +10,8 @@ Experiment; its technical part, for agents and reviewers, is Experiment, Code an
 
 1. **Shape** (design). The file is `docs/spikes/YYYY-MM-DD-<a-few-words-naming-the-hypothesis>.md`, in lowercase with hyphens,
    directly in that folder. Its frontmatter has `type: Spike` and `status:` set to `📝 Draft`, `🟢 Ready to run`,
-   `💡 Confirmed`, `🚫 Refuted` or `❔ Not settled`, emoji included, and `date:` as YYYY-MM-DD (a document written before dates may have none until its status next changes). Under a `# ` title that is
+   `💡 Confirmed`, `🚫 Refuted` or `❔ Not settled`, emoji included, and `date:` as YYYY-MM-DD if it has one (a missing date passes: a plugin hook requires it with the next
+   status change). Under a `# ` title that is
    the hypothesis in plain words, the sections are Hypothesis, Finding, Next steps, How we'll know,
    Out of scope, How the test works, Risks and safeguards, Results, Surprises, Open questions,
    Experiment, Code and Runs, in that order, and no `<!-- -->` comment from the template is left
