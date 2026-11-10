@@ -6,6 +6,25 @@ What changed in each version of the plugin, newest first. Versions follow
 past a major version: it says what you need to change in your documents. Until 1.0.0, any
 minor version may need such a change, and its entry says so.
 
+## [0.31.0] - 2026-11-09
+
+### Added
+
+- Every lifecycle document says what kind of document it is in a `type:` field, the first in its
+  frontmatter: `Brief`, `Spec`, `ADR`, `Plan` or `Spike`. The brief gains frontmatter holding
+  only `type: Brief`. Titles no longer name the type, as "Spec:" or "ADR:" in front of them
+  would; each document skill says so in the same sentence.
+- The status hook refuses an edit that gives a document the wrong `type:` for its folder, a new
+  document without one, or that takes an existing one away. `/sdlc:audit` reports a wrong
+  `type:`.
+
+### Changed
+
+- Documents written before this version need no change by hand: each gains `type:` on its next
+  edit through its skill. A decided document, such as an accepted ADR, a built plan or a
+  finished spike record, may keep lacking it for good; adding it is always allowed and counts
+  as no other change, so an old accepted ADR can still be superseded.
+
 ## [0.29.0] - 2026-11-09
 
 ### Changed

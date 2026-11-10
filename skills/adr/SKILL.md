@@ -116,7 +116,8 @@ frontmatter. The old one stays `👍 Accepted` until the person accepts the new 
 same step, first set the new one to `👍 Accepted`, and only once that edit is done, set the old one
 to `↪️ Superseded` and add `superseded-by: <NNNN>` beside it, naming the new one, and `type: ADR` if
 it has none; a plugin hook checks the new one is `👍 Accepted` on disk before it allows the second
-edit. That is the only edit an accepted ADR ever gets, apart from gaining its `type:`. If the new one is rejected, the old one stands.
+edit. That is the only edit an accepted ADR ever gets, apart from gaining its `type:`. If the new
+one is rejected, the old one stands.
 
 ## Review
 
