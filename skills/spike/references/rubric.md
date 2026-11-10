@@ -58,8 +58,9 @@ Experiment; its technical part, for agents and reviewers, is Experiment, Code an
     real says only "None.".
 13. **Readable** (design). In the plain part, each section opens with its point; sentences are
     under 25 words and paragraphs at most three sentences; versions, flags, settings, file names
-    and code names appear only when the hypothesis is about one of them; a term is explained once,
-    where it first appears; steps and runs are lists or tables, not sentences.
+    and code names appear only when the hypothesis is about one of them; each domain term the Plain
+    words rule footnotes is explained once, in a footnote at its first use, while computing terms
+    need none; steps and runs are lists or tables, not sentences.
 14. **Every run recorded** (verdict). Each result the Finding uses is in Runs, as a `### Run N`
     entry the run script wrote. The runs of the latest code, those whose code hash matches the
     last run's, number at least `- Runs:`, or the last of them shows the result named under
@@ -82,6 +83,10 @@ Experiment; its technical part, for agents and reviewers, is Experiment, Code an
     `docs/specs/` or `docs/adrs/`. It never asks a document to refer to this record.
 19. **Ready means ready** (design). A record that is `🟢 Ready to run`, `💡 Confirmed`,
     `🚫 Refuted` or `❔ Not settled` has an Open questions section that says only "None."
+20. **Proposed answers** (design). Each open question ends with "Proposed:" and the answer the
+    writer would choose, such as a threshold for How we'll know, so the person can accept it in a
+    word or give another. A question only the person can answer, such as whether a sample input
+    stands for the real thing, proposes no guess: its "Proposed:" says what would settle it.
 
 The plain part's size, at most 600 words, tables included, is checked by the run script's `words`
 command and by the status hook, not by the reviewer. So is a finishing status that the Finding

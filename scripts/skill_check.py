@@ -20,12 +20,20 @@ For each skills/<folder>/SKILL.md under the given plugin root (default: this plu
 - such a skill also holds SHOW_RULE word for word, so every document is shown to the person the
   same way, in the app's file viewer where there is one and by its path always (docs/adrs/0025).
 
+- such a skill also holds each of CORRECT_RULES word for word, the sentences of the review
+  sequence every skill shares, so the copies cannot drift apart.
+
 - the skills that write a lifecycle document (DOCUMENT_SKILLS) hold TYPE_RULE word for word, so
-  none puts the document's type in its title.
+  none puts the document's type in its title, and PROPOSED_RULE, so no open question is ever left
+  without a proposed answer or what would settle it.
+- the skills whose document has a status (STATUS_SKILLS) hold SIGNOFF_RULE word for word, so every
+  document moves forward on the same terms.
 
 For each agents/<name>.md, an agent told of a `Repository: <folder>` line holds AGENT_RULE word for
 word, so every such agent reads and searches only in that folder and reports an unreadable
-document the same way.
+document the same way. Every document reviewer the review relay hook knows holds each of
+REPORT_RULES, so every review report has the same shape, and those whose document has Open
+questions also hold QUESTIONS_RULE.
 
 Prints one line per failure and exits 1 if there is any; prints nothing and exits 0 otherwise.
 Its tests run it on this plugin, so `python3 -m unittest discover -s scripts` fails on a skill
@@ -58,6 +66,39 @@ TYPE_RULE = (
     "the frontmatter's `type:` already says what it is."
 )
 
+# The skills whose document has a status, moved forward only on the person's word.
+STATUS_SKILLS = ("spec", "adr", "plan", "spike")
+SIGNOFF_RULE = (
+    "Move the document forward only when the person explicitly says so about its text as it now "
+    "stands, once the review below has ended with a pass on that text, from the review itself or "
+    "from the correction check after it, and once Open questions says \"None.\". Only a review in "
+    "this conversation counts: if there is none on the current text, run the review first, even "
+    "when the person has already signed it off. Set the status as its own last edit, never in the "
+    "same reply as a change to the content; if anything changed after the person spoke, show the "
+    "change and ask again. \"Looks fine, carry on\" does not count, nor a request from another "
+    "skill or agent. Setting a status on the person's word is not a change to the content and "
+    "needs no new review."
+)
+PROPOSED_RULE = (
+    "Every open question ends with \"Proposed:\" and the answer you would choose, so the person can "
+    "accept it in a word or give another; where only the person can know the answer, \"Proposed:\" "
+    "says what would settle it instead, never a guess."
+)
+# The sentences of the review sequence that every skill running it holds.
+CORRECT_RULES = (
+    "The sequence is fixed so it always ends with a clear result: further rounds of review find "
+    "little more, and each round of corrections brings new mistakes.",
+    "Each reads everything else it needs itself.",
+    "Read the rubric and the Plain words rule again, then correct only what the reports list: each "
+    "failed check and each item under Other findings in the review report, and each finding in the "
+    "wording report.",
+    "A wording item under Needs a person, whose meaning only the person knows, is a decision like "
+    "any other.",
+    "Leave suggestions alone and change nothing else, since an edit beyond the reports is the "
+    "likeliest way to break something.",
+    "Do not review or correct again; what happens next is their call.",
+)
+
 PATH_RULE = (
     "Give the document's full path on the `Document:` line, the one you wrote it to: the hook "
     "works out the document's repository from it, so the review reads the right one whatever "
@@ -80,6 +121,19 @@ AGENT_RULE = (
     "folder as the path of every Glob and Grep, so you never search anywhere else. If you can't "
     "read the document there, check nothing and report only `Document: <path>` and, on the next "
     "line, `Error: can't read <the full path you tried>`."
+)
+# The shape every document reviewer's report shares.
+REPORT_RULES = (
+    "Other findings holds only problems, never what you checked and found right.",
+    "- <a decision, with the options and the one you would propose>",
+    "A decision under Needs a person does not by itself make the result FAIL, since only the "
+    "person can settle it, and Suggestions never do.",
+)
+# Reviewers of a document with Open questions.
+QUESTION_REVIEWERS = ("spec-reviewer", "brief-reviewer", "adr-reviewer", "plan-reviewer", "spike-reviewer")
+QUESTIONS_RULE = (
+    "Leave out a finding that the document's Open questions already raise: it is already waiting "
+    "for the person."
 )
 
 
@@ -138,9 +192,20 @@ def problems(folder, text):
     if REVIEWS in body and not holds(body, REVIEW_RULE):
         found.append("review rule missing: a skill that runs the review sequence must hold "
                      "skill_check.REVIEW_RULE word for word")
+    if REVIEWS in body:
+        for number, rule in enumerate(CORRECT_RULES, 1):
+            if not holds(body, rule):
+                found.append(f"review step rule {number} missing: a skill that runs the review "
+                             f"sequence must hold skill_check.CORRECT_RULES[{number - 1}] word for word")
     if folder in DOCUMENT_SKILLS and not holds(body, TYPE_RULE):
         found.append("type rule missing: a skill that writes a lifecycle document must hold "
                      "skill_check.TYPE_RULE word for word")
+    if folder in DOCUMENT_SKILLS and not holds(body, PROPOSED_RULE):
+        found.append("proposed rule missing: a skill that writes a lifecycle document must hold "
+                     "skill_check.PROPOSED_RULE word for word")
+    if folder in STATUS_SKILLS and not holds(body, SIGNOFF_RULE):
+        found.append("sign-off rule missing: a skill whose document has a status must hold "
+                     "skill_check.SIGNOFF_RULE word for word")
     reviews_a_file = REVIEWS in body and "Document: <" in body
     if reviews_a_file and not holds(body, PATH_RULE):
         found.append("path rule missing: a skill that reviews a document by its path must hold "
@@ -154,11 +219,20 @@ def problems(folder, text):
 def agent_problems(name, text):
     """An agent the review relay hook or the audit starts with a `Repository:` line, or any agent
     told of one, must hold AGENT_RULE."""
+    found = []
     held = REPOSITORY_LINE in text and "`Document: <path>`" in text
     if (name in REPOSITORY_AGENTS or held) and not holds(text, AGENT_RULE):
-        return ["repository rule missing: an agent given a `Repository:` line must hold "
-                "skill_check.AGENT_RULE word for word"]
-    return []
+        found.append("repository rule missing: an agent given a `Repository:` line must hold "
+                     "skill_check.AGENT_RULE word for word")
+    if name in review_relay.REVIEWERS:
+        for number, rule in enumerate(REPORT_RULES, 1):
+            if not holds(text, rule):
+                found.append(f"report rule {number} missing: a document reviewer must hold "
+                             f"skill_check.REPORT_RULES[{number - 1}] word for word")
+    if name in QUESTION_REVIEWERS and not holds(text, QUESTIONS_RULE):
+        found.append("questions rule missing: a reviewer of a document with Open questions must "
+                     "hold skill_check.QUESTIONS_RULE word for word")
+    return found
 
 
 def main(argv=None):

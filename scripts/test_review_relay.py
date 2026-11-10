@@ -9,6 +9,8 @@ import unittest
 HERE = os.path.dirname(os.path.abspath(__file__))
 SCRIPT = os.path.join(HERE, "review_relay.py")
 ROOT = os.path.normpath(os.path.join(HERE, ".."))
+sys.path.insert(0, HERE)
+import review_relay  # noqa: E402
 
 SPEC = "docs/specs/booking.spec.md"
 REPORT = "Result: FAIL\n\n| Check | Result | Evidence |\n|---|---|---|\n| 2. Story | fail | \"x\" |\n"
@@ -152,7 +154,14 @@ class Relay(unittest.TestCase):
         self.put(adr, "v2\n")
         prompt = self.assertAllowed(self.check(prompt=f"Document: {adr}\nCheck."))["prompt"]
         self.assertIn(os.path.join(ROOT, "skills", "adr", "references", "rubric.md"), prompt)
-        self.assertNotIn("spec", prompt.split("=== REVIEW REPORT ===")[1].split("=== END DOCUMENT ===")[1])
+        files = prompt.split("=== REVIEW REPORT ===")[1].split("=== END DOCUMENT ===")[1]
+        self.assertNotIn(os.path.join(ROOT, "skills", "spec"), files)
+
+    def test_each_checker_may_read_what_its_reviewer_read_for_the_references_check(self):
+        lifecycle = {"docs/brief.md", "docs/specs/", "docs/adrs/", "docs/plans/", "docs/spikes/"}
+        for reviewer in ("spec-reviewer", "adr-reviewer", "plan-reviewer", "spike-reviewer"):
+            self.assertLessEqual(lifecycle, set(review_relay.REVIEWERS[reviewer][1]), reviewer)
+        self.assertLessEqual(lifecycle - {"docs/brief.md"}, set(review_relay.REVIEWERS["brief-reviewer"][1]))
 
     def test_checker_of_a_plan_is_told_the_plan_rubric_and_the_documents_it_names(self):
         plan = "docs/plans/2026-10-29-x.md"

@@ -26,7 +26,10 @@ checking, and quotes the plan as evidence for every failure.
    may name files, functions and commands.
 8. **References.** The plan refers only to the specs and ADRs it lists, and to files in the code.
    It does not refer to the brief, to another plan or to a spike record in any way: no
-   hyperlink, path or title.
+   hyperlink, path or title. It refers to outside material only by a web link, never to material
+   handed over in the conversation, to anything outside the repository, or to a file under
+   `docs/` that is not a brief, spec, ADR, plan or spike record: what matters from such material
+   is stated in the plan's own words.
 9. **Ready means ready.** A plan with status `🟢 Ready to build` or `✅ Built` has an Open
    questions section that is empty or says only "None."
 10. **No overlap.** No other plan under `docs/plans/` that is `📝 Draft` or `🟢 Ready to build`
@@ -35,6 +38,10 @@ checking, and quotes the plan as evidence for every failure.
     plan may be, the plan keeps to them, or Decisions has a line saying the work was kept whole
     and why. With no such practice, this passes. Only the person can choose between splitting a
     plan that fails and keeping it whole, so that choice also goes under Needs a person.
+12. **Proposed answers.** Each open question ends with "Proposed:" and the answer the writer
+    would choose, such as the decision an ADR to record should make, so the person can accept it
+    in a word or give another. A question only the person can answer proposes no guess: its
+    "Proposed:" says what would settle it.
 
 The reviewer also passes on this advice for the Plan section as suggestions, never as
 failures: start with why the work is being done and what it leaves for later; give one

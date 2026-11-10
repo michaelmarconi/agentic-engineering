@@ -28,4 +28,4 @@ type: Brief
 
 ## Open questions
 
-- <Unknowns still to answer, or "None.">
+- <A question still to answer, ending "Proposed:" and the answer the person's own words point to (or, if nothing does, what would settle it), or "None.">

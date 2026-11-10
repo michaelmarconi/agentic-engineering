@@ -43,7 +43,7 @@ Applies to: <the concern, such as "any code that stores or reads session data">.
 
 ## Open questions
 
-- <What only the person can settle, or "None.">
+- <What only the person can settle, ending "Proposed:" and the answer you would choose (or, if only the person can know, what would settle it), or "None.">
 
 ## Technical detail
 

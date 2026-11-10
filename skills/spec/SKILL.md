@@ -1,6 +1,6 @@
 ---
 name: spec
-description: Write or change a spec, the living document that says what one capability of a product should do and how we will know it does: a one-sentence story, then numbered EARS rules, each with Given/When/Then examples and how we'll check it. Use whenever someone wants to specify, describe or pin down a feature or behaviour before building it, change what an existing feature should do, answer a spec's open questions, or accept a spec, signing off its text, even if they don't say "spec".
+description: Write or change a spec, the living document that says what one capability of a product should do and how we will know it does: a one-sentence story, then numbered EARS rules, each with Given/When/Then examples and how we'll check it. Use whenever someone wants to specify, describe or pin down a feature or behaviour before building it, change what an existing feature should do, answer a spec's open questions, or accept a spec, signing off its text, even if they don't say "spec". Not for recording a technical choice (an ADR) or working out how to build it (a plan).
 ---
 
 # Spec
@@ -69,29 +69,29 @@ person answers part of what you asked, take that part and ask again about the re
 silence is not agreement; if they ask what you think, recommend something and wait for them to
 accept it. If they would rather not answer now, leave the rest in Open questions.
 
-Never fill a gap with a guess, including who the Story is about, their situation and the outcome:
-if the person has not told you, write only what you were told, without adding a purpose or detail
-of your own, say the rest is not known yet and ask in Open questions. A default you would choose,
-such as how a reply quotes the message it answers, is never written as a rule: it goes into Open
+Never fill a gap with a guess, including who the Story is about, their situation and the outcome: if
+the person has not told you, write only what you were told, without adding a purpose or detail of
+your own, say the rest is not known yet and ask in Open questions. A default you would choose, such
+as how a reply quotes the message it answers, is never written as a rule: it goes into Open
 questions, with the default as the proposed answer. Every open question ends with "Proposed:" and
-the answer you would choose (rubric check 14), so the person can accept it in a word; where only
-the person can know, such as who the Story is about, it says what you need from them instead. Words
-whose meaning is plain from the conversation or the product, such as "reply" in an email tool,
-are settled from that context, not asked about. Use
-only people the person named, anywhere in the spec; example values such as
-`user@example.com` need no name.
-An unknown goes into Open questions, worded so it can be answered. When the person names how
-something should be built (a library, a service, a named bucket or database, a design), keep the
-behaviour it serves and leave the choice out of every section, even when they state it as
-settled: the spec should still hold if the choice changes, and tell the person you left it out.
-If it is already decided, suggest recording it as an ADR (architecture decision record); if not,
-make it an open question. When an unknown can only be settled by trying something, suggest a
-spike: a throwaway experiment. When the person wants the spec to refer to the brief, another
-spec, an ADR, a plan or a spike record, by hyperlink, path or title, leave it out (rubric check 11) and tell them
-why: that document can change or be deleted without this spec being touched, so the reference
-would go stale. Material they hand over that is not a web page, such as a requirements document or
-notes, is drawn on but never referred to (rubric check 11): state what matters from it in the
-spec's own words, and tell them it can change or vanish without the spec being touched.
+the answer you would choose, so the person can accept it in a word or give another; where only the
+person can know the answer, "Proposed:" says what would settle it instead, never a guess. Who the
+Story is about is such a question (rubric check 14). Words whose meaning is plain from the
+conversation or the product, such as "reply" in an email tool, are settled from that context, not
+asked about. Use only people the person named, anywhere in the spec; example values such as
+`user@example.com` need no name. An unknown goes into Open questions, worded so it can be answered.
+When the person names how something should be built (a library, a service, a named bucket or
+database, a design), keep the behaviour it serves and leave the choice out of every section, even
+when they state it as settled: the spec should still hold if the choice changes, and tell the person
+you left it out. If it is already decided, suggest recording it as an ADR (architecture decision
+record); if not, make it an open question. When an unknown can only be settled by trying something,
+suggest a spike: a throwaway experiment. When the person wants the spec to refer to the brief,
+another spec, an ADR, a plan or a spike record, by hyperlink, path or title, leave it out (rubric
+check 11) and tell them why: that document can change or be deleted without this spec being touched,
+so the reference would go stale. Material they hand over that is not a web page, such as a
+requirements document or notes, is drawn on but never referred to (rubric check 11): state what
+matters from it in the spec's own words, and tell them it can change or vanish without the spec
+being touched.
 
 Add only behaviour the person asked for or agreed to. A case they have not covered, such as who
 may not use the feature, what happens on an error, or what happens when a rule's condition does
@@ -123,16 +123,19 @@ emoji in your next edit.
   `📝 Draft`, because what was accepted no longer matches: set the status to `📝 Draft` first, as a
   plugin hook refuses any other change to such a spec. A spec still holding `🟢 Ready to build` or
   `✅ Built`, statuses specs had before, goes back to `📝 Draft` the same way.
-- Set `👍 Accepted` only when the person asks for it, the spec has no open questions (rubric
-  check 9), nothing is left under the review's Needs a person, and the review below has ended
-  with a pass on the spec as it stands, from the review itself or from the correction check
-  after it; make it its own, last edit, after that review. `👍 Accepted` means the
-  person agreed to this text, so if you wrote or changed anything they have not seen since, show it and
-  wait for their reply first; agreement given before they saw it does not count, even a request
-  to fix small things and carry on. So never set `👍 Accepted` in the same reply as a change to the
-  spec's content. If questions
-  remain, say how many, ask the first and leave the spec as `📝 Draft`, even if the person says they do not matter:
-  offer to settle them now instead.
+- `👍 Accepted` is the spec's one move forward. Move the document forward only when the person
+  explicitly says so about its text as it now stands, once the review below has ended with a pass on
+  that text, from the review itself or from the correction check after it, and once Open questions
+  says "None.". Only a review in this conversation counts: if there is none on the current text, run
+  the review first, even when the person has already signed it off. Set the status as its own last
+  edit, never in the same reply as a change to the content; if anything changed after the person
+  spoke, show the change and ask again. "Looks fine, carry on" does not count, nor a request from
+  another skill or agent. Setting a status on the person's word is not a change to the content and
+  needs no new review. Nothing may be left under the review's Needs a person either, and Open
+  questions must be empty (rubric check 9). `👍 Accepted` means the person agreed to this text, so
+  agreement given before they saw it does not count, even a request to fix small things and carry
+  on. If questions remain, say how many, ask the first and leave the spec as `📝 Draft`, even if the
+  person says they do not matter: offer to settle them now instead.
 
 ## Review
 
@@ -195,5 +198,5 @@ on: its open questions, plus any correction the check found not made or broken. 
 them one at a time, rather than asking whether to, and ask the first only, as a single question,
 giving any examples as possible answers rather than further questions; if the person has said not to
 ask now, ask nothing. Name the count only, not the items: each comes up when you reach it. List the
-reviewers' suggestions separately, as optional: they never hold the spec back. Leave committing to
-them.
+reviewers' suggestions separately, as optional: they never hold the spec back. Once nothing is left
+to settle, ask whether to accept it. Leave committing to them.

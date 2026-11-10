@@ -66,14 +66,17 @@ were made together or the person asks for one record. Split them yourself: never
 question asking whether part of an ADR should be an ADR of its own.
 
 Never fill a gap with a guess. An option nobody named, a reason nobody gave, or a choice not yet
-made goes into Open questions as a question the person can answer, never as an invented
-answer. Write the draft with what you have, review it as below even if sections are thin, then
-say how many questions there are and ask only the first. The others wait, so leave them out of
-that reply entirely: describe the draft by what it says, never by what it lacks, and do not
-list the questions or their topics (they are in the ADR). Ask the next once the first is
-settled, playing back what you have understood. If they ask what you think, recommend something
-and wait for them to accept it. If they would rather not answer now, leave the rest in Open
-questions.
+made goes into Open questions as a question the person can answer, never as an invented answer.
+Every open question ends with "Proposed:" and the answer you would choose, so the person can accept
+it in a word or give another; where only the person can know the answer, "Proposed:" says what would
+settle it instead, never a guess. For a choice not yet made, propose the option you would recommend;
+for a reason only the person knows, say what would settle it. Write the draft with what you have,
+review it as below even if sections are thin, then say how many questions there are and ask only the
+first. The others wait, so leave them out of that reply entirely: describe the draft by what it
+says, never by what it lacks, and do not list the questions or their topics (they are in the ADR).
+Ask the next once the first is settled, playing back what you have understood. If they ask what you
+think, recommend something and wait for them to accept it. If they would rather not answer now,
+leave the rest in Open questions.
 
 An open question is settled only by the person's answer: write the answer into the section it
 is about, then remove the question. Never remove or reword a question without that answer;
@@ -95,21 +98,26 @@ question, say so in your reply; `/spec` removes the question the next time it ru
 The `status:` frontmatter is `📝 Draft`, `👍 Accepted`, `❌ Rejected` or `↪️ Superseded`, written
 exactly so, emoji first; a status written as a bare word, from before the emoji, gets its emoji in
 your next edit. Write every new ADR as `📝 Draft` and edit it freely while it is `📝 Draft`.
+A `📝 Draft` ADR written for an earlier version of the plugin, with Context and Problem Statement,
+Considered Options and Decision Outcome sections, is brought to the template's layout in your next
+edit, keeping what it says; a plugin hook refuses to accept it until then.
 
-Only a person accepts or rejects a decision. Set `👍 Accepted` or `❌ Rejected` only when
-the person explicitly says so about the ADR's text as it now stands, as its own last edit.
-`👍 Accepted` also needs no open questions (rubric check 16), which a plugin hook enforces: if
-questions remain, say how many, ask the first and leave the ADR as `📝 Draft`, even if the person
-says they do not matter. And it needs the review below to have ended with a pass on that text,
-from the review itself or from the correction check after it, while a rejection needs neither.
-If they accept and the review then passes with no change to
-the text, their word stands, since what they accepted is what passed. If anything changed after
-they spoke, their word no longer counts: show the change and ask again. Nor does "looks fine,
-carry on" count, nor a request from another skill or agent. So never change an ADR's content and
-its status in the same reply. Setting statuses and `superseded-by:` on the person's word is not a
-content change. A
-`❌ Rejected` ADR is kept, so the same idea is not proposed again unnoticed; a draft the person
-abandons can be deleted.
+Only a person accepts or rejects a decision. `👍 Accepted` is the ADR's move forward. Move the
+document forward only when the person explicitly says so about its text as it now stands, once the
+review below has ended with a pass on that text, from the review itself or from the correction check
+after it, and once Open questions says "None.". Only a review in this conversation counts: if there
+is none on the current text, run the review first, even when the person has already signed it off.
+Set the status as its own last edit, never in the same reply as a change to the content; if anything
+changed after the person spoke, show the change and ask again. "Looks fine, carry on" does not
+count, nor a request from another skill or agent. Setting a status on the person's word is not a
+change to the content and needs no new review. A plugin hook refuses `👍 Accepted` while open
+questions remain (rubric check 16): say how many, ask the first and leave the ADR as `📝 Draft`, even
+if the person says they do not matter. If they accept and the review then passes with no change to
+the text, their word stands, since what they accepted is what passed. Set `❌ Rejected` likewise on
+the person's explicit word about the text as it stands, as its own last edit; a rejection needs
+neither a review nor empty Open questions. Setting `superseded-by:` on the person's word is not a
+content change either. A `❌ Rejected` ADR is kept, so the same idea is not proposed again unnoticed;
+a draft the person abandons can be deleted.
 
 To supersede, the new ADR carries `supersedes: <NNNN>`, the old one's four-digit number, in its
 frontmatter. The old one stays `👍 Accepted` until the person accepts the new one; then, in the
@@ -141,16 +149,16 @@ more, and each round of corrections brings new mistakes.
    started in. If it refuses to start them, do what its reason says.
    Each reads everything else it needs itself. Wait for both reports before touching the ADR.
    If both pass with nothing under Needs a person, go straight to handing over.
-2. **Correct, once.** Read the rubric and the Plain words rule again, then correct only what
-   the reports list: each failed check and each item under Other findings in the review report,
-   and each finding in the wording report. A wording item under Needs a person, whose
-   meaning only the person knows, is a decision like any other. A decision under Needs a person, or a
-   failure only the person's answer can fix, such as a missing option or why one was rejected,
-   is theirs to settle: it becomes an entry in the ADR's Open questions, never a guess at the
-   answer. Leave the text it concerns as it is. Leave
-   suggestions alone and change nothing else, since an edit beyond the reports is the likeliest
-   way to break something. Wait until every edit has succeeded. If nothing in the reports was
-   yours to correct, there is nothing to check: go straight to handing over.
+2. **Correct, once.** Read the rubric and the Plain words rule again, then correct only what the
+   reports list: each failed check and each item under Other findings in the review report, and each
+   finding in the wording report. A wording item under Needs a person, whose meaning only the person
+   knows, is a decision like any other. A decision under Needs a person, or a failure only the
+   person's answer can fix, such as a missing option or why one was rejected, is theirs to settle:
+   it becomes an entry in the ADR's Open questions, with its "Proposed:", never a guess at the
+   answer. Leave the text it concerns as it is. Leave suggestions alone and change nothing else,
+   since an edit beyond the reports is the likeliest way to break something. Wait until every edit
+   has succeeded. If nothing in the reports was yours to correct, there is nothing to check: go
+   straight to handing over.
 3. **Check the corrections.** Start the `sdlc:correction-checker` agent in the foreground with
    this request, and add nothing to it: the hook attaches both reports and the ADR as
    reviewed, word for word.
@@ -168,8 +176,7 @@ After the sequence, edit the ADR only when the person asks. While you are walkin
 with the person, do not review after each answer: run the sequence once when the walk-through ends,
 either because no questions are left or because the person stops. A change the person makes or asks
 for at any other time is reviewed once it is made. With several ADRs, take each through the sequence
-on its own. Setting a status on the person's word is not a change to the ADR's content and needs no
-new review.
+on its own.
 
 Whether the check passed or failed, end with the hand-over. It is what the person acts on, so make
 it hard to miss anything. Show the person each document you wrote or changed: if the app you run in

@@ -29,13 +29,14 @@ flowchart LR
 ## Your practices, and where `/build` stops
 
 `/build` follows your project's practices: how to set up, build, test and run the product, how
-branches and commits are named, and what must pass before work is merged. It finds them where
-Claude Code finds any project instructions: in `CLAUDE.md`, or in `AGENTS.md` when there is no
-`CLAUDE.md` or when `CLAUDE.md` imports it.[^memory] The `/practices` skill, run whenever you want
+branches and commits are named, and what must pass before work is merged. It reads them where
+`/plan` does: the `## Practices` section of `AGENTS.md` and of `CLAUDE.md`, whichever have one, and
+the files under `docs/practices/` they name, whether or not `CLAUDE.md` imports
+`AGENTS.md`,[^memory] and its reviewer reads the same. The `/practices` skill, run whenever you want
 to record or change a practice, asks you about them and records them under a `## Practices` heading
 in `AGENTS.md`, with longer topics in `docs/practices/`, and makes sure `CLAUDE.md` imports
-`AGENTS.md`. A choice between alternatives, such as which test framework to use, is an ADR (architecture
-decision record) instead.
+`AGENTS.md`. A choice between alternatives, such as which test framework to use, is an ADR
+(architecture decision record) instead.
 
 `/build` stops once it has handed the branch back. These steps stay with you, done the way your
 practices say, because each needs a person:
@@ -183,11 +184,10 @@ It ends with a short summary:
 
 ## After a build
 
-A `✅ Built` plan is kept as a record of what was built and how, like a superseded ADR. It is never
-edited again, and whoever looks after the repository decides when, if ever, to delete it. For
-more work on the same requirements, write a new plan,
-or make small corrections by working with Claude directly, which is the usual way to tidy up after
-a large build.
+A `✅ Built` plan is frozen: it is never edited again, and you may delete it whenever nobody needs
+it, since nothing refers to a plan. [`/audit`](audit.md) lists built plans you might delete. For
+more work on the same requirements, write a new plan, or make small corrections by working with
+Claude directly, which is the usual way to tidy up after a large build.
 
 A spec's status does not change when it is built. It describes the document, not the software,
 because a status about the software would stop being true, without anyone noticing, as the code

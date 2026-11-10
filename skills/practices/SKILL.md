@@ -128,8 +128,9 @@ since the core and a topic file must agree.
    If both pass with nothing under Needs a person, go straight to handing over.
 2. **Correct, once.** Read the rubric and the Plain words rule again, then correct only what the
    reports list: each failed check and each item under Other findings in the review report, and
-   each finding in the wording report, except any outside the Practices section of `AGENTS.md`,
-   which is the person's. Correct by making the practices accurate, never by
+   each finding in the wording report. Skip any finding outside the Practices section of
+   `AGENTS.md`, which is the person's. A wording item under Needs a person, whose meaning only the
+   person knows, is a decision like any other. Correct by making the practices accurate, never by
    dropping or hedging what the person said. A finding only the person can settle, such as a rule
    they asked for word for word, or anything under Needs a person, stays as written for them to
    decide. Leave suggestions alone and change nothing else, since an edit beyond the reports is

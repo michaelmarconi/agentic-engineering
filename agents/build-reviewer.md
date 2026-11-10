@@ -18,6 +18,9 @@ Read:
 - The rubric at `${CLAUDE_PLUGIN_ROOT}/skills/build/references/rubric.md`.
 - Each spec and ADR the plan lists, and the How we'll check section (Confirmation in an
   older ADR) of every other ADR under `docs/adrs/` whose status is `👍 Accepted`, for rubric check 6.
+- The `## Practices` section of `AGENTS.md` and of `CLAUDE.md`, whichever have one, and any file
+  under `docs/practices/` they name that bears on building, testing or committing, for rubric
+  check 8.
 - The build, with these git commands only, run with Bash: `git log --reverse --stat <base>..HEAD`,
   `git diff <base>...HEAD`, and `git show <commit>` for a commit you need to see whole.
 - Any file the build changed, and the code around it, as far as you need to judge a check.

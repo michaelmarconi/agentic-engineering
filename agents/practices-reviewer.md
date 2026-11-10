@@ -49,7 +49,7 @@ Other findings:
 - <finding, with its file and a quote>
 
 Needs a person:
-- <a decision, with the options>
+- <a decision, with the options and the one you would propose>
 
 Suggestions:
 - <optional advice, with a quote showing where it applies>

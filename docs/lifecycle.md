@@ -28,8 +28,8 @@ how far along it is.
   `👍 Accepted` → `↪️ Superseded`.
 - **Plan**, `docs/plans/YYYY-MM-DD-<title>.md`, in one flat folder: a piece of work that builds
   part of a spec or an ADR. Statuses: `📝 Draft` → `🟢 Ready to build` → `✅ Built`; any change
-  returns it to `📝 Draft`. A `✅ Built` plan is kept as the record of what was built, and never
-  changed again.
+  returns it to `📝 Draft`. A plan is temporary: once `✅ Built` it is frozen, never
+  changed again, and may be deleted whenever nobody needs it.
 - **Spike record**, `docs/spikes/YYYY-MM-DD-<hypothesis>.md`, in one flat folder: one hypothesis
   tested by a throwaway experiment, with the finding, the experiment's code and what each run
   produced. It reads from plain to technical: a part for people, of at most 600 words, then the
@@ -61,6 +61,9 @@ the `sdlc:` prefix.
   whenever you need it. Practices are not a lifecycle document and have no status: their essentials
   live in `AGENTS.md`, which Claude Code loads, and longer topics in `docs/practices/`. They are
   written for agents, so every skill sees them, and `/plan` and `/build` follow them.
+- `/feedback` drafts a GitHub issue about the plugin itself, when one of its skills gets something
+  wrong or could work better. It is not a step in the sequence either, and writes nothing in your
+  repository.
 
 The steps fall into two phases, and the other skills belong to neither.
 
@@ -123,15 +126,16 @@ flowchart LR
   by hyperlink, path or title, because either end can change or be deleted without the other being
   touched, and the reference would quietly go stale. A spec or ADR that
   uses a spike's finding states its evidence in its own words.
-- **Documents stand on their own.** The brief, specs and ADRs refer to outside material only by a
-  web link. Material they were drafted from, such as a requirements document, notes or a ticket,
-  is stated in their own words, never referred to by hyperlink, path or title, when it was handed
-  over in a conversation, lives outside the repository or sits under `docs/` beside the
-  lifecycle's documents: it can change or vanish without them being touched, and `docs/` holds
-  only the lifecycle's documents. A plugin hook refuses such a hyperlink or path.
+- **Documents stand on their own.** The brief, specs, ADRs and plans refer to outside material only
+  by a web link. Material they were drafted from, such as a requirements document, notes or a
+  ticket, is stated in their own words, never referred to by hyperlink, path or title, when it was
+  handed over in a conversation, lives outside the repository or sits under `docs/` beside the
+  lifecycle's documents: it can change or vanish without them being touched, and `docs/` holds only
+  the lifecycle's documents. In a brief, spec or ADR, a plugin hook also refuses such a hyperlink or
+  path.
 - **No separate design document.** `👍 Accepted` ADRs and the code are the design.
-- **Every document carries its own status.** A plan holds nothing later work needs: a decision
-  later work must follow is an ADR.
+- **Every document but the brief carries its own status.** A plan holds nothing later work needs: a
+  decision later work must follow is an ADR.
 - **No document moves forward with open questions.** Anything only a person can settle is
   written into the document's Open questions, not left in the conversation. A spec or an ADR becomes
   `👍 Accepted`, a plan `🟢 Ready to build`, and a spike record `🟢 Ready to run`, `💡 Confirmed`,

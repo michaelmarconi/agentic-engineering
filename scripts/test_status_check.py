@@ -886,11 +886,11 @@ class Plan(PlanWorkspace):
 
     def test_built_plan_never_changed(self):
         self.put(plan("✅ Built"))
-        self.assertIn("record", self.edit("Do the thing.", "Do it."))
+        self.assertIn("frozen", self.edit("Do the thing.", "Do it."))
 
     def test_built_plan_never_set_back_to_draft(self):
         self.put(plan("✅ Built"))
-        self.assertIn("record", self.edit("status: ✅ Built", "status: 📝 Draft"))
+        self.assertIn("frozen", self.edit("status: ✅ Built", "status: 📝 Draft"))
 
     def test_built_plan_from_before_the_emoji_gets_it(self):
         self.put(plan("Built"))
@@ -898,7 +898,7 @@ class Plan(PlanWorkspace):
 
     def test_built_plan_never_rewritten(self):
         self.put(plan("✅ Built"))
-        self.assertIn("record", self.write(plan("📝 Draft")))
+        self.assertIn("frozen", self.write(plan("📝 Draft")))
 
     def test_changing_ready_plan_without_draft_refused(self):
         self.put(plan("🟢 Ready to build"))

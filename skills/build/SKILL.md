@@ -65,9 +65,9 @@ Check each of these before changing anything, and stop with the reason if one fa
    `### Requirement: <name>` instead was written for an earlier version of the sdlc plugin: say
    "<spec> was written for an earlier version of the sdlc plugin; rework it with /spec, accept it
    again, then sign the plan off again", rather than naming each requirement as missing.
-4. **Find the practices.** Look for a `## Practices` heading in `CLAUDE.md`, or in `AGENTS.md`
-   when there is no `CLAUDE.md` or `CLAUDE.md` imports it, and read any file it says to read
-   before a task like this one. No practice is required: where one you
+4. **Find the practices.** Read the `## Practices` section of `AGENTS.md` and of `CLAUDE.md`,
+   whichever have one, and any file under `docs/practices/` they name that bears on building,
+   testing or committing, whatever task its line names. No practice is required: where one you
    need is not recorded, such as how to run the tests or the linters, work it out from the
    repository, from its README, build files and existing tests, and carry on. Never stop for
    this. Note each assumption for the summary, and suggest `/practices` there to record them.

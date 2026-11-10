@@ -12,9 +12,9 @@ decisions the code must follow, and how the work will be done. It is the bridge 
 documents that say what and why and the code that carries them out.
 
 A plan is built once: when [`/build`](build.md) has built it and every review has passed, it is
-marked `✅ Built` and kept, unchanged, as the record of what was built and how. Later work gets a
-new plan. So a plan must never hold anything later work has to follow, such as a technical
-decision. That belongs in an ADR.
+marked `✅ Built` and frozen: it is never changed again, and you may delete it whenever nobody needs
+it. A plan is temporary. Later work gets a new plan. So a plan must never hold anything later work
+has to follow, such as a technical decision. That belongs in an ADR.
 
 Not every change needs a plan. Tidying code, a routine upgrade or a quick fix that builds no
 requirement and follows no ADR is done straight from a conversation, with Claude's ordinary
@@ -37,8 +37,8 @@ Several plans can be open at once, for work going on in parallel, but no two pla
 `✅ Built` may name the same requirement: if a plan already covers it, `/plan` offers to change that
 plan instead.
 
-A plan is the one document that refers to specs and ADRs, because once built it is a fixed
-record of how they stood, so its references cannot go stale. Nothing refers to a plan.
+A plan is the one document that refers to specs and ADRs, because once built it is frozen, so
+its references show how those documents stood and cannot go stale. Nothing refers to a plan.
 
 ## Anatomy
 
@@ -50,7 +50,7 @@ record of how they stood, so its references cannot go stale. Nothing refers to a
 | ADRs | Each decision the code must follow, as a link, or "None." |
 | Decisions | Each technical decision agreed with you that matters only to this work: what was decided and why, or "None." |
 | Plan | How the work will be done, with headings and length to suit it |
-| Open questions | What is still unsettled; "None." before `🟢 Ready to build` |
+| Open questions | What is still unsettled, each with a proposed answer; "None." before `🟢 Ready to build` |
 
 Everything except the Plan section has a fixed form, because it is checked: the Specs and ADRs
 against the documents they name, and Decisions by you at sign-off. The Plan section is free in
