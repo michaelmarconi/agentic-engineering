@@ -175,7 +175,7 @@ always ends with a clear result: further rounds of review find little more, and 
 corrections brings new mistakes.
 
 1. **Review.** Start two agents in the foreground, not in the background, both in one message so
-   they run side by side: the `sdlc:spike-reviewer` agent and the `sdlc:language-checker` agent.
+   they run side by side: the `agentic:spike-reviewer` agent and the `agentic:language-checker` agent.
    Give each this request, its first line exactly as shown, since a plugin hook reads that line to
    keep a copy of the record as reviewed, and its second naming the review:
 
@@ -199,7 +199,7 @@ corrections brings new mistakes.
    the text it concerns as it is. Leave suggestions alone and change nothing else, since an edit
    beyond the reports is the likeliest way to break something. Wait until every edit has succeeded.
    If nothing was yours to correct, go straight to handing over.
-3. **Check the corrections.** Start the `sdlc:correction-checker` agent in the foreground with
+3. **Check the corrections.** Start the `agentic:correction-checker` agent in the foreground with
    this request, and add nothing to it: the hook attaches both reports and the record as reviewed.
 
    ```

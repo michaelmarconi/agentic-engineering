@@ -1,7 +1,7 @@
 # `/audit`
 
 `/audit` is the skill for finding drift: places where the code and its documents no longer
-agree. It is not a step in the sequence of [the SDLC](../../README.md); run it whenever you want
+agree. It is not a step in the sequence of [the lifecycle](../../README.md); run it whenever you want
 to know, or on a schedule. Read that page first for the documents, skills and agents it mentions.
 
 ## What drift is
@@ -102,10 +102,10 @@ as work touches each part, not all at once.
 The code part can check everything, or only what a window of time changed. The window is always
 read on the branch you have checked out.
 
-- `/sdlc:audit` checks everything.
-- `/sdlc:audit last 7 days` checks the commits whose commit date falls in the last 7 days.
-- `/sdlc:audit since <commit>` checks the commits after that commit, not including it.
-- `/sdlc:audit <document>` checks one accepted spec or ADR.
+- `/agentic:audit` checks everything.
+- `/agentic:audit last 7 days` checks the commits whose commit date falls in the last 7 days.
+- `/agentic:audit since <commit>` checks the commits after that commit, not including it.
+- `/agentic:audit <document>` checks one accepted spec or ADR.
 
 A changed file is any file a window's commits added, changed, renamed or deleted, tests and
 configuration included. For a window, one agent reads the changes beside the text of every
@@ -135,9 +135,9 @@ A full audit takes longer and costs more as the number of documents grows, so it
 schedule rather than every change. For example, set up two Claude Code routines, prompts that
 Claude Code runs on a schedule in your account:
 
-- weekly: `/sdlc:audit last 8 days`, a day longer than the gap between runs, so a late run leaves
+- weekly: `/agentic:audit last 8 days`, a day longer than the gap between runs, so a late run leaves
   no gap;
-- monthly: `/sdlc:audit`, everything, to catch what the weekly runs missed.
+- monthly: `/agentic:audit`, everything, to catch what the weekly runs missed.
 
 The routine needs the plugin installed where it runs, as any session does. `/audit` itself adds
 nothing to your repository.

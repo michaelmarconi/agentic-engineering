@@ -34,7 +34,7 @@ def version_warning():
         return None
     needed = ".".join(str(part) for part in MINIMUM)
     found = ".".join(str(part) for part in sys.version_info[:3])
-    return (f"The sdlc plugin needs Python {needed} or later, but python3 here is {found}, so "
+    return (f"The agentic plugin needs Python {needed} or later, but python3 here is {found}, so "
             f"its checks will fail. Install a newer Python 3 as python3.")
 
 

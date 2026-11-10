@@ -1,7 +1,7 @@
 ---
 type: tool_used
 tool: Agent
-input_match: "sdlc:brief-reviewer"
+input_match: "agentic:brief-reviewer"
 min: 1
 max: 1
 weight: 1

@@ -1,6 +1,6 @@
 # `/build`
 
-`/build` is the skill for building one plan. It is one step of [the SDLC](../../README.md); read
+`/build` is the skill for building one plan. It is one step of [the lifecycle](../../README.md); read
 that page first for the documents, skills and agents it mentions.
 
 ## What `/build` does
@@ -49,7 +49,7 @@ practices say, because each needs a person:
 
 ## Before it starts
 
-Run `/sdlc:build docs/plans/<plan>.md` as the first thing in a new session. Before it changes
+Run `/agentic:build docs/plans/<plan>.md` as the first thing in a new session. Before it changes
 anything, `/build` checks:
 
 - **The session is fresh.** `/build` starts only in answer to the first message you send in a

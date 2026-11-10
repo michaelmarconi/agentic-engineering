@@ -1,7 +1,7 @@
 # `/spec`
 
 `/spec` is the skill for writing and changing specs. It is one step of
-[the SDLC](../../README.md); read that page first for the documents, skills and agents it
+[the lifecycle](../../README.md); read that page first for the documents, skills and agents it
 mentions.
 
 ## What a spec is

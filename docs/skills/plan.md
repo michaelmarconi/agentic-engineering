@@ -1,7 +1,7 @@
 # `/plan`
 
 `/plan` is the skill for planning a piece of work before it is built. It is one step of
-[the SDLC](../../README.md); read that page first for the documents, skills and agents it
+[the lifecycle](../../README.md); read that page first for the documents, skills and agents it
 mentions.
 
 ## What a plan is
@@ -133,8 +133,8 @@ sign it off again.
 
 ## Using `/plan`
 
-Run `/sdlc:plan` and say what you want to build, such as "the release part of the customs hold
-alerts spec". Type the `sdlc:` prefix: in the terminal, a bare `/plan` is Claude Code's own plan
+Run `/agentic:plan` and say what you want to build, such as "the release part of the customs hold
+alerts spec". Type the `agentic:` prefix: in the terminal, a bare `/plan` is Claude Code's own plan
 mode, a different thing.
 
 `/plan` never makes a technical decision for you. Its stages follow the order of Claude Code's

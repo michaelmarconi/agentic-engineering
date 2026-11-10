@@ -56,14 +56,14 @@ class SkillCheck(unittest.TestCase):
         self.assertEqual(done.returncode, 0, done.stdout)
 
     def test_reviewing_skill_without_review_rule_fails(self):
-        body = "# Demo\n\nStart the `sdlc:correction-checker` agent.\n"
+        body = "# Demo\n\nStart the `agentic:correction-checker` agent.\n"
         self.put("demo", skill_md(body=body))
         self.assertFails("demo/SKILL.md: review rule missing")
 
     def test_reviewing_skill_with_review_rule_passes(self):
         rule = REVIEW_RULE.replace(" walk-through ends,", "\nwalk-through ends,")
         self.assertNotEqual(rule, REVIEW_RULE)
-        body = f"# Demo\n\nStart the `sdlc:correction-checker` agent.\n\n{STEPS}\n\n{rule}\n"
+        body = f"# Demo\n\nStart the `agentic:correction-checker` agent.\n\n{STEPS}\n\n{rule}\n"
         self.put("demo", skill_md(body=body))
         done = self.check()
         self.assertEqual(done.returncode, 0, done.stdout)
@@ -71,12 +71,12 @@ class SkillCheck(unittest.TestCase):
     def test_reworded_review_rule_fails(self):
         rule = REVIEW_RULE.replace("run the sequence once", "run the sequence each time")
         self.assertNotEqual(rule, REVIEW_RULE)
-        body = f"# Demo\n\nStart the `sdlc:correction-checker` agent.\n\n{STEPS}\n\n{rule}\n"
+        body = f"# Demo\n\nStart the `agentic:correction-checker` agent.\n\n{STEPS}\n\n{rule}\n"
         self.put("demo", skill_md(body=body))
         self.assertFails("review rule missing")
 
     def test_build_checker_needs_no_review_rule(self):
-        body = "# Demo\n\nStart the `sdlc:build-correction-checker` agent.\n"
+        body = "# Demo\n\nStart the `agentic:build-correction-checker` agent.\n"
         self.put("demo", skill_md(body=body))
         self.assertEqual(self.check().returncode, 0)
 
@@ -87,7 +87,7 @@ class SkillCheck(unittest.TestCase):
     # Reviews find the document's repository (ADR 0022)
 
     def reviewing(self, document_line, extra=""):
-        return (f"# Demo\n\nStart the `sdlc:correction-checker` agent.\n\n{REVIEW_RULE}\n\n{STEPS}\n\n"
+        return (f"# Demo\n\nStart the `agentic:correction-checker` agent.\n\n{REVIEW_RULE}\n\n{STEPS}\n\n"
                 f"```\n{document_line}\n```\n{extra}")
 
     def test_reviewing_skill_without_path_rule_fails(self):
@@ -204,7 +204,7 @@ class SkillCheck(unittest.TestCase):
 
     def test_reviewing_skill_missing_a_shared_step_fails(self):
         steps = "\n\n".join(CORRECT_RULES[:3] + CORRECT_RULES[4:])
-        body = f"# Demo\n\nStart the `sdlc:correction-checker` agent.\n\n{REVIEW_RULE}\n\n{steps}\n"
+        body = f"# Demo\n\nStart the `agentic:correction-checker` agent.\n\n{REVIEW_RULE}\n\n{steps}\n"
         self.put("demo", skill_md(body=body))
         self.assertFails("demo/SKILL.md: review step rule 4 missing")
 

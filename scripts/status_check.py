@@ -156,7 +156,7 @@ REQUIREMENT_HEADING = re.compile(r"^###\s+\d+\.\s+(.+?)\s*$")
 # Specs written before numbered requirements headed each one `### Requirement: <name>`.
 OLD_REQUIREMENT_HEADING = re.compile(r"^###\s+Requirement:")
 LEADING_NUMBER = re.compile(r"^\d+\s*[.)]?\s+")
-OLD_LAYOUT = "was written for an earlier version of the sdlc plugin; rework it with /spec"
+OLD_LAYOUT = "was written for an earlier version of the agentic plugin; rework it with /spec"
 # Each kind of document by the value its frontmatter's `type:` holds.
 TYPES = {"brief": "Brief", "spec": "Spec", "ADR": "ADR", "plan": "Plan", "spike record": "Spike"}
 

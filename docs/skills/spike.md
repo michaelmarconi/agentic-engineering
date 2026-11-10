@@ -1,7 +1,7 @@
 # `/spike`
 
 `/spike` is the skill for settling an unknown by trying something. It is one step of
-[the SDLC](../../README.md); read that page first for the documents, skills and agents it
+[the lifecycle](../../README.md); read that page first for the documents, skills and agents it
 mentions.
 
 ## What a spike is
@@ -138,7 +138,7 @@ run, any change to Runs, and any change to a finished record. A change made by h
 
 ## Using `/spike`
 
-Run `/sdlc:spike` with the question, such as "can the image library read the scanner's TIFF
+Run `/agentic:spike` with the question, such as "can the image library read the scanner's TIFF
 files?", with the document whose open question you want settled, or with a spike record to carry
 on with.
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Gather context for, and file, an issue against the sdlc plugin's own repository.
+"""Gather context for, and file, an issue against the agentic plugin's own repository.
 
 The repository is read from the `repository` field of the plugin's
 `.claude-plugin/plugin.json`, found by walking up from this script, and each kind's label from
@@ -116,7 +116,7 @@ def os_name():
 def context(root):
     manifest = read_manifest(root)
     return "\n".join([
-        "- Plugin: %s %s" % (manifest.get("name", "sdlc"), manifest.get("version", "unknown")),
+        "- Plugin: %s %s" % (manifest.get("name", "agentic"), manifest.get("version", "unknown")),
         "- Claude Code: " + claude_version(),
         "- OS: " + os_name(),
     ]) + "\n"

@@ -51,7 +51,7 @@ class Hooks(unittest.TestCase):
     def say(self, prompt, session="s1"):
         return self.hook({"hook_event_name": "UserPromptSubmit", "prompt": prompt}, session)
 
-    def skill(self, name="sdlc:build", session="s1"):
+    def skill(self, name="agentic:build", session="s1"):
         return self.hook({"hook_event_name": "PreToolUse", "tool_name": "Skill",
                           "tool_input": {"skill": name, "args": "docs/plans/x.md"}}, session)
 
@@ -70,7 +70,7 @@ class Hooks(unittest.TestCase):
 class Typed(Hooks):
     def test_first_message_starts_build(self):
         self.start()
-        self.assertIsNone(self.say("/sdlc:build docs/plans/x.md"))
+        self.assertIsNone(self.say("/agentic:build docs/plans/x.md"))
         self.assertIsNone(self.skill())
 
     def test_short_name_also_checked(self):
@@ -81,12 +81,12 @@ class Typed(Hooks):
     def test_later_message_refused(self):
         self.start()
         self.say("hi")
-        self.assert_refused_prompt(self.say("/sdlc:build docs/plans/x.md"))
+        self.assert_refused_prompt(self.say("/agentic:build docs/plans/x.md"))
 
     def test_other_commands_left_alone(self):
         self.start()
         self.say("hi")
-        self.assertIsNone(self.say("/sdlc:plan docs/specs/x.spec.md"))
+        self.assertIsNone(self.say("/agentic:plan docs/specs/x.spec.md"))
         self.assertIsNone(self.say("/builder"))
 
 
@@ -106,7 +106,7 @@ class Words(Hooks):
         self.start()
         self.say("hi")
         self.say("write a spec")
-        self.assertIsNone(self.skill("sdlc:spec"))
+        self.assertIsNone(self.skill("agentic:spec"))
         self.assertIsNone(self.skill("code-review"))
 
     def test_bare_skill_name_checked(self):
@@ -125,13 +125,13 @@ class Building(Hooks):
 
     def test_build_typed_recorded(self):
         self.start()
-        self.say("/sdlc:build docs/plans/x.md")
+        self.say("/agentic:build docs/plans/x.md")
         self.assertTrue(fresh_session.building("s1"))
 
     def test_no_build_recorded_otherwise(self):
         self.start()
         self.say("hi")
-        self.skill("sdlc:spec")
+        self.skill("agentic:spec")
         self.assertFalse(fresh_session.building("s1"))
 
     def test_refused_build_not_recorded(self):

@@ -1,9 +1,12 @@
-# Software Development Lifecycle (SDLC)
+# Skills for Agentic Engineering
 
-A software development lifecycle for [Claude Code](https://code.claude.com/docs), Anthropic's
-coding assistant. It takes each piece of work from an idea to reviewed, working code along one
-defined path, and keeps what was decided, and why, in a few short Markdown documents in your
-repository.
+Skills for building software with coding agents, with engineering rigour. This is agentic
+engineering in the sense of engineering software with an agent, not of building agent systems.
+
+The skills are a plugin for [Claude Code](https://code.claude.com/docs), Anthropic's coding
+assistant, run as `/agentic:<name>` commands. Together they take each piece of work from an idea
+to reviewed, working code along one defined path, and keep what was decided, and why, in a few
+short Markdown documents in your repository.
 
 Every document Claude writes is checked by an independent reviewer before you see it, and no
 document moves forward until you sign it off. The result is a project whose intent, decisions and
@@ -22,15 +25,15 @@ built work can be read from its documents, not lost in old conversations.
 In Claude Code:
 
 ```
-/plugin marketplace add michaelmarconi/sdlc
-/plugin install sdlc@sdlc
+/plugin marketplace add michaelmarconi/marketplace
+/plugin install agentic@michaelmarconi
 ```
 
 Or from a terminal:
 
 ```bash
-claude plugin marketplace add michaelmarconi/sdlc
-claude plugin install sdlc@sdlc
+claude plugin marketplace add michaelmarconi/marketplace
+claude plugin install agentic@michaelmarconi
 ```
 
 Install the plugin before you start the session you will use it in: a plugin installed partway
@@ -46,14 +49,14 @@ reviewed, corrects it and shows you the result to sign off. Where your Claude ap
 beside the conversation, the document opens there, and you can select lines in it to comment on;
 anywhere else Claude names the file's path.
 
-1. `/sdlc:brief` writes the product brief: what the product is, who it is for and why.
-2. `/sdlc:spec` writes the spec for one capability: what it should do, and how you will know it
+1. `/agentic:brief` writes the product brief: what the product is, who it is for and why.
+2. `/agentic:spec` writes the spec for one capability: what it should do, and how you will know it
    does.
-3. `/sdlc:spike` settles any unknown the spec or a decision can't settle without trying
+3. `/agentic:spike` settles any unknown the spec or a decision can't settle without trying
    something, with a throwaway experiment. Skip it when nothing is unknown.
-4. `/sdlc:adr` records any technical decision the spec needs.
-5. `/sdlc:plan` plans a piece of work against the spec and its decisions.
-6. `/sdlc:build` builds the plan on a branch, tests first, and has the result reviewed. Start it
+4. `/agentic:adr` records any technical decision the spec needs.
+5. `/agentic:plan` plans a piece of work against the spec and its decisions.
+6. `/agentic:build` builds the plan on a branch, tests first, and has the result reviewed. Start it
    in a fresh session, or after `/clear`.
 
 You can also ask in your own words, such as "write a spec for invoice reminders". Claude picks
@@ -77,9 +80,9 @@ project can also record its **practices**, such as how it is built, tested and r
 
 The plugin works through three parts:
 
-- **Skills:** the steps above, each run as a `/sdlc:<name>` command.
+- **Skills:** the steps above, each run as a `/agentic:<name>` command.
 - **Reviewer agents:** separate Claude instances that check each document, each build, or, for
-  `/sdlc:audit`, the code against each document, with no memory of your conversation, so the
+  `/agentic:audit`, the code against each document, with no memory of your conversation, so the
   conversation cannot sway their judgement. They always run on Sonnet, so the same document gets
   the same judgement whatever model you use.
 - **Hooks:** small checks Claude Code runs automatically. They give Claude the lifecycle rules at
@@ -93,15 +96,15 @@ documents by hand.
 
 | Skill | What it does |
 |---|---|
-| [`/sdlc:brief`](docs/skills/brief.md) | Writes or changes the product brief |
-| [`/sdlc:spec`](docs/skills/spec.md) | Writes or changes the spec for one capability |
-| [`/sdlc:spike`](docs/skills/spike.md) | Settles one unknown with a throwaway experiment |
-| [`/sdlc:adr`](docs/skills/adr.md) | Records one technical decision |
-| [`/sdlc:plan`](docs/skills/plan.md) | Plans a piece of work against its specs and ADRs |
-| [`/sdlc:build`](docs/skills/build.md) | Builds a plan on a branch, has it reviewed and hands it back |
-| [`/sdlc:practices`](docs/skills/practices.md) | Records how the project does things, one topic at a time |
-| [`/sdlc:audit`](docs/skills/audit.md) | Finds where the code and its documents no longer agree, and changes nothing |
-| [`/sdlc:feedback`](docs/skills/feedback.md) | Drafts a GitHub issue about the plugin itself |
+| [`/agentic:brief`](docs/skills/brief.md) | Writes or changes the product brief |
+| [`/agentic:spec`](docs/skills/spec.md) | Writes or changes the spec for one capability |
+| [`/agentic:spike`](docs/skills/spike.md) | Settles one unknown with a throwaway experiment |
+| [`/agentic:adr`](docs/skills/adr.md) | Records one technical decision |
+| [`/agentic:plan`](docs/skills/plan.md) | Plans a piece of work against its specs and ADRs |
+| [`/agentic:build`](docs/skills/build.md) | Builds a plan on a branch, has it reviewed and hands it back |
+| [`/agentic:practices`](docs/skills/practices.md) | Records how the project does things, one topic at a time |
+| [`/agentic:audit`](docs/skills/audit.md) | Finds where the code and its documents no longer agree, and changes nothing |
+| [`/agentic:feedback`](docs/skills/feedback.md) | Drafts a GitHub issue about the plugin itself |
 
 ```mermaid
 flowchart LR
@@ -122,7 +125,7 @@ flowchart LR
 
 - It writes only the documents above, and the practices you ask it to record, and only when you
   run a skill or ask for one.
-- `/sdlc:build` commits to a branch of its own and pushes it. It never commits to the main
+- `/agentic:build` commits to a branch of its own and pushes it. It never commits to the main
   branch, never opens a pull request and never merges: those steps stay with you.
 - Review reports are kept in the plugin's own data folder, outside your repository.
 - Nothing else is added, unless you install the plugin with `--scope project`.
@@ -130,25 +133,50 @@ flowchart LR
 ## Update
 
 ```bash
-claude plugin marketplace update sdlc
-claude plugin update sdlc@sdlc
+claude plugin marketplace update michaelmarconi
+claude plugin update agentic@michaelmarconi
 ```
 
-To update automatically, run `/plugin`, open **Marketplaces**, select `sdlc` and choose
+To update automatically, run `/plugin`, open **Marketplaces**, select `michaelmarconi` and choose
 **Enable auto-update**. New versions load in the next session, or after `/reload-plugins`.
 
 Read [CHANGELOG.md](CHANGELOG.md) before you update. If a version needs changes to your
 documents, its entry says what they are.
 
+### If you installed it as `sdlc@sdlc`
+
+The plugin was called `sdlc` and listed in this repository's own catalog. That catalog still
+works, and moves your install to the new name:
+
+1. Finish any review, build or spike in progress first: the plugin's saved records of them are
+   kept under the old name and are not carried over.
+2. Run `claude plugin marketplace update sdlc`. This rewrites `sdlc@sdlc` to `agentic@sdlc` in
+   your settings, including a repository's `.claude/settings.json`, which you then commit.
+3. Run `claude plugin install agentic@sdlc`, adding `--scope project` if you installed it that
+   way, so the install record matches.
+4. Use `/agentic:<name>` from now on, and change any notes or scheduled commands that use the
+   old `sdlc` prefix.
+
+When convenient, move to the new catalog, again with no review, build or spike in progress, since
+the saved records move to a new folder once more:
+
+1. Run `claude plugin marketplace remove sdlc`. This also takes `agentic@sdlc` out of your
+   settings, including a repository's `.claude/settings.json`.
+2. Install as above, adding `--scope project` if you installed it that way, and commit the
+   settings change.
+
+Never enable both `agentic@sdlc` and `agentic@michaelmarconi`: with two plugins of the same name,
+Claude Code drops one copy's hooks. Your documents need no change.
+
 ## Feedback
 
-Run `/sdlc:feedback` to report a bug or suggest an improvement. It drafts a GitHub issue that
+Run `/agentic:feedback` to report a bug or suggest an improvement. It drafts a GitHub issue that
 quotes nothing from your repository, shows it to you, and files it only when you agree. You can
-also [open an issue](https://github.com/michaelmarconi/sdlc/issues) directly.
+also [open an issue](https://github.com/michaelmarconi/agentic-engineering/issues) directly.
 
 ## Contributing
 
-Feedback comes in through `/sdlc:feedback` or an issue; pull requests are not accepted from
+Feedback comes in through `/agentic:feedback` or an issue; pull requests are not accepted from
 outside the project. [CONTRIBUTING.md](CONTRIBUTING.md) says why, and where the rules for
 working on the plugin live.
 

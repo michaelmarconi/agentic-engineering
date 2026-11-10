@@ -8,7 +8,7 @@ which refuses every other change to Runs, never sees it.
 Each call is one run. It refuses unless the record is `🟢 Ready to run`. It builds a fresh working
 folder at <data>/spikes/<hash of the project path>-<record name>/, outside the repository, or, when
 the data folder can't be written, as in a sandbox, in a folder only this user can open in the
-system's temporary folder, sdlc-spikes-<user id>/:
+system's temporary folder, agentic-spikes-<user id>/:
 
 1. When the Experiment names a commit (`- Starts from commit:`), the folder is filled with
    `git archive <commit>`, so neither the working tree nor .git is ever changed, and any ```diff
@@ -161,7 +161,7 @@ def fallback_root():
     """The folder used when the data folder can't be written: one in the system's temporary
     folder that only this user can open, so other users can neither read the experiment nor
     put anything in its place."""
-    return os.path.join(tempfile.gettempdir(), f"sdlc-spikes-{os.getuid()}")
+    return os.path.join(tempfile.gettempdir(), f"agentic-spikes-{os.getuid()}")
 
 
 def writable(folder):

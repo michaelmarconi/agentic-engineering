@@ -42,8 +42,8 @@ YYYY-MM-DD; a plugin hook refuses a status change that does not set it to that d
 ## Steps
 
 Each step has a skill: instructions Claude follows for that step, which you run as a slash
-command. The plugin's skills are named `/sdlc:<name>`, such as `/sdlc:spec`; this page leaves out
-the `sdlc:` prefix.
+command. The plugin's skills are named `/agentic:<name>`, such as `/agentic:spec`; this page leaves out
+the `agentic:` prefix.
 
 - `/brief` writes or changes the brief.
 - `/spec` writes or changes the spec for one capability.

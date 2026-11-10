@@ -2,7 +2,7 @@
 type: Brief
 ---
 
-# Software Development Lifecycle (SDLC) plugin for Claude Code
+# Skills for Agentic Engineering: a plugin for Claude Code
 
 A software development lifecycle that brings engineering rigour to software built with artificial
 intelligence (AI) coding assistants, taking each piece of work from intent to verified code along

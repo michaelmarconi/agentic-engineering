@@ -5,12 +5,12 @@ the maintainer.
 
 ## Report a bug or suggest an improvement
 
-Run `/sdlc:feedback` in Claude Code, in the repository where you met the problem. It drafts an
+Run `/agentic:feedback` in Claude Code, in the repository where you met the problem. It drafts an
 issue from the [bug](.github/ISSUE_TEMPLATE/bug.md) or
 [improvement](.github/ISSUE_TEMPLATE/improvement.md) template, swaps anything from your
 repository for stand-ins, shows you the draft and files it only when you agree.
 
-You can also [open an issue](https://github.com/michaelmarconi/sdlc/issues/new/choose) by hand
+You can also [open an issue](https://github.com/michaelmarconi/agentic-engineering/issues/new/choose) by hand
 from the same templates. Quote nothing from your own project that you would not publish: issues
 are public.
 

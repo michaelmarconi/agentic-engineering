@@ -76,8 +76,8 @@ sequence is fixed so it always ends with a clear result: further rounds of revie
 more, and each round of corrections brings new mistakes.
 
 1. **Review.** When the brief is written, start two agents in the foreground, not in the
-   background, both in one message so they run side by side: the `sdlc:brief-reviewer` agent
-   and the `sdlc:language-checker` agent, which checks the wording. Give each this request, its
+   background, both in one message so they run side by side: the `agentic:brief-reviewer` agent
+   and the `agentic:language-checker` agent, which checks the wording. Give each this request, its
    first line exactly as shown, since a plugin hook reads that line to keep a copy of the brief
    as reviewed:
 
@@ -101,7 +101,7 @@ more, and each round of corrections brings new mistakes.
    suggestions alone and change nothing else, since an edit beyond the reports is the likeliest
    way to break something. Wait until every edit has succeeded. If nothing in the reports was
    yours to correct, there is nothing to check: go straight to handing over.
-3. **Check the corrections.** Start the `sdlc:correction-checker` agent in the foreground with
+3. **Check the corrections.** Start the `agentic:correction-checker` agent in the foreground with
    this request, and add nothing to it: the hook attaches both reports and the brief as
    reviewed, word for word.
 

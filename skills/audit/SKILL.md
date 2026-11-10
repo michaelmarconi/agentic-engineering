@@ -47,7 +47,7 @@ Say so plainly and go straight to the findings when there is nothing for agents 
 no spec or ADR is accepted, or a window holds no commits, the document checks are still the
 findings.
 
-For a window, start the `sdlc:audit-picker` agent with this request, filled from `window`'s
+For a window, start the `agentic:audit-picker` agent with this request, filled from `window`'s
 output and listing every accepted spec and ADR under `Documents:`, one per line:
 
 ```
@@ -70,7 +70,7 @@ the error: the window was not checked, and a full audit is no substitute for it.
 
 ## Check the code
 
-Start one `sdlc:auditor` agent per document to check, all in the foreground and all in one
+Start one `agentic:auditor` agent per document to check, all in the foreground and all in one
 message, so they run side by side. Give each this request, exactly as shown:
 
 ```
@@ -82,7 +82,7 @@ Never start one for any other document. Claude Code limits how many agents run a
 refuses some, start those again the same way once the others have reported, until every
 document has a report.
 
-Then, for each report that has no `Error:` line and whose Drift section is not "None.", start one `sdlc:audit-checker` agent,
+Then, for each report that has no `Error:` line and whose Drift section is not "None.", start one `agentic:audit-checker` agent,
 all in one message, with this request. Copy the auditor's report between the markers exactly as
 it came, since the person judges each finding by its quotes:
 

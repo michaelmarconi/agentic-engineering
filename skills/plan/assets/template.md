@@ -1,5 +1,5 @@
 ---
-# Change status only through the sdlc plugin's skills, which check each change; a change made by hand is not checked.
+# Change status only through the agentic plugin's skills, which check each change; a change made by hand is not checked.
 type: Plan
 status: 📝 Draft
 date: <YYYY-MM-DD>

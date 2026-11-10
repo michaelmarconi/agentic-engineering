@@ -1,11 +1,11 @@
 # `/feedback`
 
 `/feedback` is the skill for telling the plugin's maintainers that something went wrong or could be
-better. It is not a step of [the SDLC](../../README.md) itself; it is how the plugin that
-encodes the SDLC improves. Read that page first for the skills, agents and documents it
+better. It is not a step of [the lifecycle](../../README.md) itself; it is how the plugin that
+encodes the lifecycle improves. Read that page first for the skills, agents and documents it
 mentions.
 
-Run it as `/sdlc:feedback`. Type the `sdlc:` prefix: in the terminal, a bare `/feedback` is
+Run it as `/agentic:feedback`. Type the `agentic:` prefix: in the terminal, a bare `/feedback` is
 Claude Code's own command, which sends feedback to Anthropic, a different thing.
 
 ## The loop
@@ -20,7 +20,7 @@ flowchart LR
 
 1. **Report.** In any repository, you run `/feedback` when a skill, agent or hook does something
    wrong, or the lifecycle gets in your way. It files an issue, a GitHub work item, on
-   [michaelmarconi/sdlc](https://github.com/michaelmarconi/sdlc/issues).
+   [michaelmarconi/agentic-engineering](https://github.com/michaelmarconi/agentic-engineering/issues).
 2. **Reproduce.** A maintainer turns the issue into an eval case: a recorded request with checks
    on what Claude should do, which `claude plugin eval` runs against the plugin. The case fails
    while the problem exists.

@@ -160,14 +160,14 @@ class Documents(Project):
         self.put("docs/specs/refunds.spec.md", spec())
         found = {p["document"]: p["detail"] for p in self.problems("layout")}
         self.assertEqual(sorted(found), ["docs/specs/exports.spec.md", "docs/specs/statement-import.spec.md"])
-        self.assertIn("written for an earlier version of the sdlc plugin; rework it with /spec",
+        self.assertIn("written for an earlier version of the agentic plugin; rework it with /spec",
                       found["docs/specs/statement-import.spec.md"])
 
     def test_a_ready_plan_on_an_old_layout_spec_says_so(self):
         self.put("docs/specs/statement-import.spec.md", spec(old=True))
         self.put("docs/plans/2026-11-01-good.md", plan(status="🟢 Ready to build"))
         found = {p["document"]: p["detail"] for p in self.problems("ready plan")}
-        self.assertIn("written for an earlier version of the sdlc plugin", found["docs/plans/2026-11-01-good.md"])
+        self.assertIn("written for an earlier version of the agentic plugin", found["docs/plans/2026-11-01-good.md"])
 
     def test_a_status_written_without_the_variation_selector_is_fine(self):
         self.put("docs/adrs/0001-cents.md", adr(status="↪ Superseded", superseded_by="0002"))
@@ -435,7 +435,7 @@ class Window(Project):
         out = self.ok("last", "7", "days")
         self.assertEqual(out["commits"], [{"commit": late[:12], "date": "2026-11-01", "subject": "Late"}])
         self.assertEqual(self.git("status", "--porcelain", "--ignored"), "")
-        self.assertFalse(os.path.exists(os.path.join(self.project, ".git", "sdlc-audit")))
+        self.assertFalse(os.path.exists(os.path.join(self.project, ".git", "agentic-audit")))
 
     def test_changes_that_are_not_utf_8_text_are_still_listed(self):
         with open(os.path.join(self.project, "src", "latin.txt"), "wb") as f:

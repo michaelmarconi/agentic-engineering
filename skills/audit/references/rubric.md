@@ -12,16 +12,16 @@ check. "The run" is one `/audit` from the person's request to its findings.
    included. No lifecycle documents, no accepted spec or ADR, or a window with no commits is said
    plainly; the document checks still run in the last two cases.
 3. **One auditor per document in scope.** Each `👍 Accepted` spec and ADR in scope gets exactly
-   one `sdlc:auditor` agent, and no other document gets one: no `📝 Draft` spec or ADR, no
+   one `agentic:auditor` agent, and no other document gets one: no `📝 Draft` spec or ADR, no
    `❌ Rejected` or `↪️ Superseded` ADR, no plan, spike record or brief. In scope is every accepted
-   spec and ADR; for a window, those the `sdlc:audit-picker` agent picks plus those whose own text
+   spec and ADR; for a window, those the `agentic:audit-picker` agent picks plus those whose own text
    changed; for a named document, that one.
 4. **All at once.** Every auditor is started in one message. Any refused for Claude Code's limit
    on agents running at once is started again once the others have reported, and none is left
    unchecked.
 5. **Findings quote both sides.** Each drift finding quotes the requirement or decision and the
    code, with its file and line, as the auditor reported them.
-6. **Drift is checked.** Each document whose auditor reported drift gets one `sdlc:audit-checker`
+6. **Drift is checked.** Each document whose auditor reported drift gets one `agentic:audit-checker`
    agent, after its auditor has reported; a document with no drift gets none. Every auditor,
    checker and picker request carries the `Repository:` line with `root`, and a report with an
    `Error:` line is reported as a document not checked, never as no drift or as rejected findings. Only confirmed

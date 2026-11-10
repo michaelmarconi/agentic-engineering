@@ -1,7 +1,7 @@
 # `/adr`
 
 `/adr` is the skill for recording technical decisions. It is one step of
-[the SDLC](../../README.md); read that page first for the documents, skills and agents it
+[the lifecycle](../../README.md); read that page first for the documents, skills and agents it
 mentions.
 
 ## What an ADR is

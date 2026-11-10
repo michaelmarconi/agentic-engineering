@@ -1,7 +1,7 @@
 ---
 type: tool_used
 tool: Agent
-input_match: "sdlc:language-checker"
+input_match: "agentic:language-checker"
 min: 1
 max: 1
 weight: 1

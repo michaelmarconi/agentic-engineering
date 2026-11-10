@@ -30,7 +30,7 @@ def head(kind):
 def spec(status="📝 Draft", questions="None.", rule="The system SHALL do X.", kind="Spec", date=TODAY):
     return (
         "---\n"
-        "# Change status only through /sdlc:spec and /sdlc:build.\n"
+        "# Change status only through /agentic:spec and /agentic:build.\n"
         f"{head(kind)}"
         f"status: {status}\n"
         f"{dated(date)}"
@@ -200,7 +200,7 @@ class Transitions(Workspace):
     def test_accepting_an_old_layout_spec_refused(self):
         self.put(old_spec("📝 Draft"))
         reason = self.edit("status: 📝 Draft", "status: 👍 Accepted")
-        self.assertIn("written for an earlier version of the sdlc plugin; rework it with /spec", reason)
+        self.assertIn("written for an earlier version of the agentic plugin; rework it with /spec", reason)
 
     def test_accepting_a_spec_without_a_numbered_requirement_refused(self):
         self.put(spec().replace("### 1. X", "### X"))
@@ -776,7 +776,7 @@ class Plan(PlanWorkspace):
     def test_ready_refused_on_an_old_layout_spec(self):
         self.put_at(self.spec_path, old_spec())
         reason = self.ready()
-        self.assertIn("was written for an earlier version of the sdlc plugin", reason)
+        self.assertIn("was written for an earlier version of the agentic plugin", reason)
         self.assertIn("rework it with /spec, accept it again, then sign the plan off again", reason)
 
     def test_a_requirement_heading_outside_requirements_does_not_count(self):

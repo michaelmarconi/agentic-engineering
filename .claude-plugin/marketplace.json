@@ -1,12 +1,13 @@
 {
   "name": "sdlc",
-  "description": "Marketplace for the sdlc plugin.",
+  "description": "Kept so installs made under the old name move to the new one.",
   "owner": { "name": "Michael Marconi" },
   "plugins": [
     {
-      "name": "sdlc",
+      "name": "agentic",
       "source": ".",
-      "description": "Small, independent, evaluated skills for the software development lifecycle."
+      "description": "Skills for Agentic Engineering: building software with coding agents, with engineering rigour."
     }
-  ]
+  ],
+  "renames": { "sdlc": "agentic" }
 }

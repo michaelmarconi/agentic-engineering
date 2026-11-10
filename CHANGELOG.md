@@ -6,6 +6,33 @@ What changed in each version of the plugin, newest first. Versions follow
 past a major version: it says what you need to change in your documents. Until 1.0.0, any
 minor version may need such a change, and its entry says so.
 
+## [0.36.0] - 2026-11-10
+
+### Changed
+
+- The plugin is now called `agentic`, for Skills for Agentic Engineering, and its skills are
+  `/agentic:<name>`, such as `/agentic:spec`. Its repository is now
+  `michaelmarconi/agentic-engineering`, and new installs come from the `michaelmarconi` catalog:
+  `claude plugin marketplace add michaelmarconi/marketplace`, then
+  `claude plugin install agentic@michaelmarconi`.
+- New documents carry "Change status only through the agentic plugin's skills" as their comment
+  line. Documents that say "sdlc" there need no change.
+
+### If you installed `sdlc@sdlc`
+
+1. Finish any review, build or spike in progress first: the plugin's saved records of them are kept
+   under the old name and are not carried over.
+2. Run `claude plugin marketplace update sdlc`. This rewrites `sdlc@sdlc` to `agentic@sdlc` in your
+   settings, including a repository's `.claude/settings.json`, which you then commit.
+3. Run `claude plugin install agentic@sdlc`, adding `--scope project` if you installed it that way.
+4. Use `/agentic:<name>` from now on, and change any notes or scheduled commands that use the old
+   `sdlc` prefix.
+
+If step 2 cannot reach the catalog, run `claude plugin marketplace remove sdlc` and install from
+the new catalog as above instead, adding `--scope project` if you installed it that way, and
+commit the settings change. Moving to the new catalog later is described in the README. Never
+enable both `agentic@sdlc` and `agentic@michaelmarconi`.
+
 ## [0.35.0] - 2026-11-10
 
 ### Changed
