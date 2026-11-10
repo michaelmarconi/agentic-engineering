@@ -59,7 +59,6 @@ Applies to: this repository's own catalog, and any change to the plugin's name.
 
 ## Open questions
 
-- Old installs reach this repository by its old address, and rely on GitHub's redirect once it is renamed. Should a spike prove that first? Proposed: no; GitHub documents the redirect, and the install trial before the rename merges runs through it.
 - Should the Decision claim only project settings, the kind the trial covered? Proposed: no; each other option is worse whatever user and local settings do.
 
 ## Technical detail
