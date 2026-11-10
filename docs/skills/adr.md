@@ -60,7 +60,7 @@ core parts kept, reordered and tightened.[^madr]
 | Background | What forces the choice now, and the earlier ADRs it builds on | Context and Problem Statement |
 | Options | A table: each option, whether it was chosen or rejected, and why, in one line | Considered Options, with pros and cons cut to one line |
 | Consequences | Good and bad results of the choice, one line each | Consequences |
-| Out of scope | Each limit, untested part and decision left to another ADR, stated once | None |
+| Out of scope | Each limit and decision left to another ADR, stated once | None |
 | How we'll check | What the decision applies to, such as "any code that stores or reads session data", and numbered checks by test, demonstration, inspection or analysis | Confirmation |
 | Open questions | What only you can settle, such as which option to choose, each with a proposed answer; empty before the ADR can be `👍 Accepted` | None |
 | Technical detail | The exact mechanism, rules and settings, evidence in the ADR's own words, and each check in full | More Information |
@@ -110,6 +110,10 @@ Run `/adr` and say what you want: record a decision, accept or reject one, or re
   tells you how many there are and asks them one at a time. Each ends with "Proposed:" and the
   answer `/adr` would choose, such as the option it recommends, or, where only you can know, what
   would settle it. Your answer goes into the ADR and the question is removed.
+- **Spikes before untried claims.** If the choice depends on something nobody has tried, such as
+  how an outside service behaves, `/adr` makes that the first open question and proposes a
+  [spike](spike.md) to test it, rather than leaving it to be proven in the build. If you choose to
+  go ahead without one, the ADR says so under Consequences.
 - **One decision per record.** If the conversation holds several decisions, `/adr` says how many
   and writes one ADR for each. It splits them itself, rather than asking you whether to.
 - **Replacing a decision.** A new ADR names the one it replaces. The old one stays `👍 Accepted`

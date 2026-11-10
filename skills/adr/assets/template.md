@@ -33,7 +33,7 @@ Not chosen yet; see Open questions.
 
 ## Out of scope
 
-- <Each limit, untested assumption or decision left to another ADR, stated once; or "None.">
+- <Each limit or decision left to another ADR, stated once; or "None.">
 
 ## How we'll check
 

@@ -65,6 +65,14 @@ conversation holds several decisions, say how many and write one ADR for each, e
 were made together or the person asks for one record. Split them yourself: never leave an open
 question asking whether part of an ADR should be an ADR of its own.
 
+A choice can rest on an untried claim: something about how a system behaves that nobody has
+tried, and that would make another option win were it false, such as "the provider sends a
+payment's events in order". It is not a limit, which the decision holds through whatever the answer
+is. Make it the first open question, proposing a spike (`/sdlc:spike`) that tests it, and never
+leave it to be proven later, such as in the build. It stays open until the spike's finding comes
+back; if the person chooses to go ahead without one, write it as a `Bad:` line under Consequences,
+saying it is untested at their word, and remove the question.
+
 Never fill a gap with a guess. An option nobody named, a reason nobody gave, or a choice not yet
 made goes into Open questions as a question the person can answer, never as an invented answer.
 Every open question ends with "Proposed:" and the answer you would choose, so the person can accept
