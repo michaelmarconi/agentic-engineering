@@ -156,11 +156,13 @@ mode?](#why-not-claude-codes-plan-mode)):
    settle. Following a pattern the code already uses is not a decision.
 3. **Ask.** It tells you how many decisions there are and asks them one at a time, then waits
    for your answer. Each question proposes an answer and where it belongs, with a reason for
-   both: in this plan, if it matters only to this work, or in an ADR, if later work will have to
-   follow it. If an answer adds or removes a decision, it says so and gives the new count.
+   both. A decision stays in the plan only if nobody needs its reason once the work is built, or
+   only someone changing that code later, who gets the reason as a comment beside the code.
+   Otherwise it goes to an ADR if later work must follow it, to the spec if a user or caller
+   relies on it, or to the practices if every piece of work follows it. If an answer adds or removes a decision, it says so and gives the new count.
 4. **Write.** Only when every decision is settled does it write the plan, with your decisions in
-   it. A decision that needs an ADR goes under Open questions until you have recorded it with
-   `/adr` and accepted it; `/plan` never writes ADRs itself.
+   it. A decision that needs an ADR, a spec change or a practice goes under Open questions until
+   you have made it with `/adr`, `/spec` or `/practices`; `/plan` never writes those itself.
 
 When you are happy with the reviewed plan, tell `/plan` it is ready to build, and it sets the
 status.

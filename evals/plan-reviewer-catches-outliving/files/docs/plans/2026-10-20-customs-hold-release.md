@@ -19,8 +19,8 @@ status: 📝 Draft
 
 ## Decisions
 
-- Show "cleared since <time>" on the container's page in place of "held since": the support team
-  asked to see when a hold ended when customers call.
+- When the broker connection drops, it retries after 1 second, doubling up to 60 seconds, with no
+  random part: there is only one client. `/build` leaves this reason as a comment beside the code.
 - Tests feed broker messages from a fake broker server in `tests/fake_broker.py`, which every
   later test of broker messages will use too: it keeps tests off the real broker.
 - The new `/holds/status` endpoint answers with JSON `{"held": <count>, "since": <time>}`: the
@@ -43,6 +43,10 @@ coordinator on a release is the spec's next requirement, left for a later plan.
    2027-02-13 14:30.
 2. Turn the broker's "released" message into a "cleared" event in `src/broker/updates.py`.
 3. Show "cleared since <time>" in `summary()` in `src/page.py`.
+4. Add `/holds/status`, answering with the count of held containers and the time of the oldest
+   hold, and feed its tests from `tests/fake_broker.py`.
+5. Reconnect to the broker with the wait under Decisions.
+6. Check a release by hand against the broker's sandbox account before the pull request.
 
 ## Open questions
 

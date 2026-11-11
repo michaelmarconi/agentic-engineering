@@ -26,9 +26,12 @@ date: <YYYY-MM-DD>
 
 ## Decisions
 
-<!-- One line for each technical decision agreed with the person that matters only to this
-     work: what was decided and why, including keeping the work as one plan when the practices
-     say to split it. A decision later work must follow is an ADR. "None." if there were none. -->
+<!-- One line for each technical decision agreed with the person whose reason nobody needs once
+     the work is built, or only someone changing that code later, in which case the line says
+     /build leaves the reason as a comment beside the code: what was decided and why, including
+     keeping the work as one plan when the practices say to split it. A decision later work must
+     follow is an ADR, one a user or caller relies on is a spec change, one every piece of work
+     follows is a practice: each an open question. "None." if there were none. -->
 - <What was decided>: <why>
 
 ## Plan

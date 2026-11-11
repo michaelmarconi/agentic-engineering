@@ -28,8 +28,8 @@ checking, and quotes the plan as evidence for every failure.
    it. It passes when the answer is nobody, or only someone changing that code later, provided the
    line says `/build` leaves the reason as a comment beside the code.
 6. **No hidden decisions.** The Plan section makes no technical decision missing from Decisions
-   and ADRs: a choice with a reasonable alternative that the specs, the ADRs and the existing
-   code do not already settle. Following a pattern the code already uses is not a decision. A
+   and ADRs: a choice with a reasonable alternative that the specs, the ADRs, the practices and
+   the existing code do not already settle. Following a pattern the code already uses is not a decision. A
    case you cannot judge from the page goes under Needs a person.
 7. **No code.** The Plan section holds no code: no code blocks and no lines of code, though it
    may name files, functions and commands.

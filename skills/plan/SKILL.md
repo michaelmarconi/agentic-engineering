@@ -64,9 +64,9 @@ here: that belongs to `/practices`.
 Read the specs, the ADRs and the code the work touches, changing nothing. Use Claude Code's
 built-in helper agents: the Explore agent to find the code that matters, and the Plan agent to
 think through how to build it. This is where you find the decisions: choices with a reasonable
-alternative that the specs, the ADRs and the existing code don't already settle, such as where a
+alternative that the specs, the ADRs, the practices and the existing code don't already settle, such as where a
 new piece of data is kept or how an outside system's message is mapped. Following a pattern the
-code already uses is not a decision, and nor is anything a spec or an ADR already says.
+code already uses is not a decision, and nor is anything a spec, an ADR or a practice already says.
 
 ## Ask
 
@@ -86,7 +86,9 @@ would need its reason after the build:
 - someone changing this code later, who needs only its reason, such as why a wait has no random
   part: this plan, with the line saying that `/build` leaves the reason as a comment beside the
   code;
-- nobody: this plan. Give any alternatives as possible answers, not as further
+- nobody: this plan.
+
+Give any alternatives as possible answers, not as further
 questions, and end with a single question, such as whether they agree with your proposal. Ask the
 next once the first is settled. If an answer adds or removes a decision, say so and give the new
 count. With no decisions, say so and go straight to writing.
@@ -116,8 +118,10 @@ file name and the template's comments removed:
   and accept, proposing its decision. You never write the ADR yourself. Once the person tells you it
   is `👍 Accepted`, list it under ADRs and remove the question. A decision that belongs in a spec or
   in practices goes under **Open questions** the same way, as a change to make with `/spec` or a
-  practice to record with `/practices`, proposing its wording; remove the question once the person
-  tells you it is made.
+  practice to record with `/practices`, proposing its wording. Name a practice by its topic, such as
+  testing, never by its file, since a plan refers to no file under `docs/` but specs and ADRs (rubric
+  check 8); a spec change is for a spec the plan lists. Remove the question once the person tells
+  you the practice is recorded, or that the spec is `👍 Accepted` again after its change.
 - **Plan** says how the work will be done, with headings and length to suit it: start with why the
   work is being done and what it leaves for later, give one recommended approach, and name the
   files that matter and the code to reuse. It holds no code, and no decision that is not under

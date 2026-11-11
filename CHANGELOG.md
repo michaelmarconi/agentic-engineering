@@ -17,6 +17,9 @@ minor version may need such a change, and its entry says so.
   reason only someone changing the code later needs stays, saying `/build` leaves the reason as a
   comment beside the code, and `/build` and its reviewer now see that the comment is there. Plan
   rubric check 5 goes through Decisions line by line with the same test.
+  **Change needed:** a plan that is not `✅ Built` may now fail its next review on a Decisions
+  line that passed before; move such a line to Open questions as the review says, or add the
+  comment wording to a line whose reason only someone changing the code needs.
 
 ## [0.38.0] - 2026-11-11
 
