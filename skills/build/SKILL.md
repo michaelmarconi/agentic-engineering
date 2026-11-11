@@ -98,7 +98,8 @@ suggests. For each requirement:
 1. Write the tests first, one or more per example, setting up its Given, doing its When and
    checking its Then and And rows with the example's own values. Run them and see them fail, so you know
    they test something. Commit them.
-2. Write the code that makes them pass, following the Plan section, each line under Decisions,
+2. Write the code that makes them pass, following the Plan section, each line under Decisions
+   (where a line says to leave its reason as a comment beside the code, write that comment),
    each ADR the plan lists, and any other `👍 Accepted` ADR whose How we'll check section (Confirmation in
    an older ADR) says it applies to the code you change.
 3. Run the whole test suite and the linters, as the practices say, so you notice at once if the

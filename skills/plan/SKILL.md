@@ -72,10 +72,21 @@ code already uses is not a decision, and nor is anything a spec or an ADR alread
 
 Tell the person how many decisions there are, naming the count only, not the decisions: each comes
 up when you reach it. Then ask the first only, and wait for the answer. Each question gives your
-proposed answer and where it belongs, with a reason for both: in this plan, if it matters only to
-this work, or in an ADR, if later work will have to follow it. Choosing a service, library,
-protocol or way of storing data that the rest of the code would then use the same way is an ADR,
-even if only this work uses it so far. Give any alternatives as possible answers, not as further
+proposed answer and where it belongs, with a reason for both. A plan may be deleted once built, so
+a decision belongs in it only if nobody needs its reason once the work is built. Ask of each who
+would need its reason after the build:
+
+- later work, which must follow it: an ADR. Choosing a service, library, protocol, way of storing
+  data or test set-up that the rest of the code would then use the same way is an ADR, even if
+  only this work uses it so far;
+- a user or caller, who relies on it, such as the name or shape of what a tool or interface
+  returns: a change to the spec, made with `/spec`;
+- the project, because it is how every piece of work is done, such as how a check by hand runs:
+  a practice, recorded with `/practices`;
+- someone changing this code later, who needs only its reason, such as why a wait has no random
+  part: this plan, with the line saying that `/build` leaves the reason as a comment beside the
+  code;
+- nobody: this plan. Give any alternatives as possible answers, not as further
 questions, and end with a single question, such as whether they agree with your proposal. Ask the
 next once the first is settled. If an answer adds or removes a decision, say so and give the new
 count. With no decisions, say so and go straight to writing.
@@ -94,15 +105,19 @@ file name and the template's comments removed:
   is `#2-reply-to-all`), and each ADR as a row `| [<NNNN>](<path>) | <the ADR's title> |` under
   the `| ADR | Decision |` header. If the hook refuses an anchor, its message gives the right
   one. To explain a term there, add a footnote mark after the link, never a line of prose.
-- **Decisions** holds one line for each decision that matters only to this work: what was
-  decided and why.
+- **Decisions** holds one line for each decision whose reason nobody needs once the work is
+  built, or only someone changing that code later: what was decided and why, and for the second
+  kind, that `/build` leaves the reason as a comment beside the code.
 - **Open questions** holds whatever only the person can settle. Every open question ends with
   "Proposed:" and the answer you would choose, so the person can accept it in a word or give
   another; where only the person can know the answer, "Proposed:" says what would settle it instead,
   never a guess.
 - A decision the person agreed belongs in an ADR goes under **Open questions**, as an ADR to record
   and accept, proposing its decision. You never write the ADR yourself. Once the person tells you it
-  is `👍 Accepted`, list it under ADRs and remove the question.
+  is `👍 Accepted`, list it under ADRs and remove the question. A decision that belongs in a spec or
+  in practices goes under **Open questions** the same way, as a change to make with `/spec` or a
+  practice to record with `/practices`, proposing its wording; remove the question once the person
+  tells you it is made.
 - **Plan** says how the work will be done, with headings and length to suit it: start with why the
   work is being done and what it leaves for later, give one recommended approach, and name the
   files that matter and the code to reuse. It holds no code, and no decision that is not under

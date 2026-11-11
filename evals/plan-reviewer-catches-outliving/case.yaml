@@ -1,0 +1,14 @@
+schema_version: "1.1"
+name: plan-reviewer-catches-outliving
+expected_outcome: |
+  A Draft plan holds three Decisions lines whose reasons outlive it: a fake broker later tests
+  reuse (an ADR), the answer shape a dashboard reads (the spec) and a check by hand repeated for
+  all broker work (practices). The review fails rubric check 5 on each, naming where it belongs,
+  and the correction moves each into Open questions with a "Proposed:" answer.
+context:
+  scaffold_script: place-files.sh
+---
+tags: [plan]
+max_turns: 60
+timeout_seconds: 1200
+allowed_tools: [Read, Glob, Grep, Skill, Write, Edit, Agent]

@@ -26,7 +26,8 @@ failure. "The build" is every commit on the branch that the default branch does 
 6. **ADRs followed.** The code follows each ADR the plan lists, and each other `👍 Accepted` ADR
    whose How we'll check section (Confirmation in an older ADR) says it applies to the
    code the build changes.
-7. **Plan followed.** The code follows the Plan section and each line under Decisions. Where it
+7. **Plan followed.** The code follows the Plan section and each line under Decisions, and where
+   a Decisions line says to leave its reason as a comment beside the code, that comment is there. Where it
    departs from them, the departure is a choice rubric check 8 allows `/build` to make itself.
 8. **No choice made quietly.** The build makes no choice that would need an ADR or a change to a
    spec: a lasting choice between real alternatives, such as a library, a data format or the

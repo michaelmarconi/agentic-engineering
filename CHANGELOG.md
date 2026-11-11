@@ -6,6 +6,18 @@ What changed in each version of the plugin, newest first. Versions follow
 past a major version: it says what you need to change in your documents. Until 1.0.0, any
 minor version may need such a change, and its entry says so.
 
+## [0.39.0] - 2026-11-11
+
+### Changed
+
+- `/plan` keeps a decision under Decisions only if nobody needs its reason once the work is
+  built. A decision later work must follow goes to an ADR, one a user or caller relies on, such
+  as what a tool returns, to the spec, and one every piece of work follows, such as how a check by
+  hand runs, to practices: each as an open question naming that document. A decision whose
+  reason only someone changing the code later needs stays, saying `/build` leaves the reason as a
+  comment beside the code, and `/build` and its reviewer now see that the comment is there. Plan
+  rubric check 5 goes through Decisions line by line with the same test.
+
 ## [0.38.0] - 2026-11-11
 
 ### Changed

@@ -48,7 +48,7 @@ its references show how those documents stood and cannot go stale. Nothing refer
 | Title | The piece of work, in plain words |
 | Specs | Each spec the work builds, as a link, with the requirements it delivers nested beneath it, each a link to its heading in the spec |
 | ADRs | A table of each decision the code must follow: its number as a link, and its title; or "None." |
-| Decisions | Each technical decision agreed with you that matters only to this work: what was decided and why, or "None." |
+| Decisions | Each technical decision agreed with you whose reason nobody needs once the work is built, or only someone changing that code later, in which case `/build` leaves the reason as a comment: what was decided and why, or "None." |
 | Plan | How the work will be done, with headings and length to suit it |
 | Open questions | What is still unsettled, each with a proposed answer; "None." before `🟢 Ready to build` |
 

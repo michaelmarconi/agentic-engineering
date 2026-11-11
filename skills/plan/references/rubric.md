@@ -20,8 +20,13 @@ checking, and quotes the plan as evidence for every failure.
    section says only "None."
 4. **Settled.** Each spec and each ADR listed is `👍 Accepted`.
 5. **Decisions.** Decisions holds one line for each decision, saying what was decided and why, or
-   only "None." No line is a decision that later work must follow: that needs an ADR, so it is an
-   open question until the ADR is `👍 Accepted` and listed under ADRs.
+   only "None." Go through the lines one by one and, for each, name who would need its reason
+   once the work is built. It fails, naming where it belongs, when the answer is later work that
+   must follow it (an ADR), a user or caller who relies on it, such as what a tool or interface
+   returns (the spec), or every later piece of work, because it is how the project works, such as
+   how a check by hand runs (practices); it is then an open question until that document holds
+   it. It passes when the answer is nobody, or only someone changing that code later, provided the
+   line says `/build` leaves the reason as a comment beside the code.
 6. **No hidden decisions.** The Plan section makes no technical decision missing from Decisions
    and ADRs: a choice with a reasonable alternative that the specs, the ADRs and the existing
    code do not already settle. Following a pattern the code already uses is not a decision. A
