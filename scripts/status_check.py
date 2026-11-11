@@ -123,6 +123,7 @@ import json
 import os
 import re
 import sys
+import unicodedata
 
 DRAFT, READY, BUILT = "📝 Draft", "🟢 Ready to build", "✅ Built"
 READY_TO_RUN = "🟢 Ready to run"
@@ -156,11 +157,12 @@ FOOTNOTE = re.compile(r"^\[[^\]]+\]:")
 LINK = re.compile(r"^- \[[^\]]*\]\(<?([^)>\s]+)>?\)")
 # A plan names each requirement as a link to its heading, nested beneath its spec:
 # `  - [Reply to all](../specs/mail.spec.md#2-reply-to-all)`.
-REQUIREMENT_LINK = re.compile(r"^\s+- \[([^\]]+)\]\(<?([^)>\s#]*)(?:#([^)>\s]*))?>?\)\s*$")
+REQUIREMENT_LINK = re.compile(r"^\s+- \[([^\]]+)\]\(<?([^)>\s#]*)(?:#([^)>\s]*))?>?\)(?:\[\^[^\]]+\])*\s*$")
 # Plans written before 0.38.0 named each requirement as `  - Requirement: <name>`.
 REQUIREMENT_LINE = re.compile(r"^\s+- Requirement:\s*(.+?)\s*$")
 # A plan lists its ADRs as rows of a `| ADR | Decision |` table: `| [0003](../adrs/0003-x.md) | <title> |`.
-ADR_ROW = re.compile(r"^\|\s*\[([^\]]*)\]\(<?([^)>\s]+)>?\)\s*\|\s*(.*?)\s*\|\s*$")
+ADR_ROW = re.compile(r"^\|\s*\[([^\]]*)\]\(<?([^)>\s]+)>?\)(?:\[\^[^\]]+\])*\s*\|\s*(.*?)\s*\|\s*$")
+FOOTNOTE_MARK = re.compile(r"\[\^[^\]]+\]")
 TABLE_HEADER = re.compile(r"^\|\s*ADR\s*\|\s*Decision\s*\|\s*$", re.I)
 TABLE_RULE = re.compile(r"^\|[\s:|-]+\|\s*$")
 SPEC_FORM = "`- [<spec title>](<path>)` with `  - [<requirement name>](<path>#<heading anchor>)` beneath it"
@@ -654,7 +656,7 @@ def named_specs(plan_path, text):
 
     A link target is resolved from the plan's folder; the anchor is None when the link has none.
     """
-    entries = []
+    entries, problem = [], None
     for line in reference_lines(text, "Specs"):
         link = LINK.match(line)
         requirement = REQUIREMENT_LINK.match(line)
@@ -664,12 +666,14 @@ def named_specs(plan_path, text):
             name, path, anchor = requirement.groups()
             entries[-1][2].append((name.strip(), target(plan_path, path) if path else None, anchor))
         elif REQUIREMENT_LINE.match(line) and entries:
+            # Read on, so another plan's check for a shared requirement still sees this one.
             name = REQUIREMENT_LINE.match(line).group(1)
-            return entries, (f"`- Requirement: {name}` is the layout plans had before; name each requirement as a "
-                             "link to its heading in the spec, as `  - [<requirement name>](<path>#<heading anchor>)`")
+            entries[-1][2].append((name, None, None))
+            problem = problem or (f"`- Requirement: {name}` is the layout plans had before; name each requirement as a "
+                                  "link to its heading in the spec, as `  - [<requirement name>](<path>#<heading anchor>)`")
         elif line.strip().lstrip("-*").strip().lower() not in EMPTY_ANSWERS:
-            return entries, unreadable(line, "Specs")
-    return entries, None
+            return entries, problem or unreadable(line, "Specs")
+    return entries, problem
 
 
 def named_adrs(plan_path, text):
@@ -681,7 +685,7 @@ def named_adrs(plan_path, text):
             continue
         if row:
             number, link, title = row.groups()
-            entries.append((target(plan_path, link), link, number.strip(), title))
+            entries.append((target(plan_path, link), link, number.strip(), FOOTNOTE_MARK.sub("", title).strip()))
         elif LINK.match(line):
             return entries, (f"'{line.strip()}' is the layout plans had before; list the ADRs as {ADR_FORM}")
         elif line.strip().lstrip("-*").strip().lower() not in EMPTY_ANSWERS:
@@ -692,16 +696,17 @@ def named_adrs(plan_path, text):
 def anchor_of(heading):
     """The anchor GitHub gives a heading's text: lowercased, with every character but letters, digits,
     underscores, hyphens and spaces dropped, and each space made a hyphen."""
-    return re.sub(r"[^\w\- ]", "", heading.strip().lower()).replace(" ", "-")
+    kept = (c for c in heading.strip().lower()
+            if c in "_- " or unicodedata.category(c)[0] in "LNM")
+    return "".join(kept).replace(" ", "-")
 
 
 def title_of(text):
     """A document's `# ` title, after its frontmatter and outside code blocks and comments, or None."""
-    body = text
-    if text.startswith("---\n"):
-        end = text.find("\n---", 4)
-        body = text[end + 4:] if end >= 0 else text
-    for line in headings(body):
+    lines = text.lstrip("\ufeff").splitlines()
+    if frontmatter(text) is not None:
+        lines = lines[len(frontmatter(text)) + 2:]
+    for line in headings("\n".join(lines)):
         if line.startswith("# "):
             return line[2:].strip()
     return None
@@ -767,8 +772,8 @@ def reference_problem(path, text):
         if not names:
             return (f"no requirement is named under {link}; list each one beneath it as "
                     "`  - [<requirement name>](<path>#<heading anchor>)`")
-        numbered = set(spec_requirements(spec_text))
         anchors = spec_anchors(spec_text)
+        numbered = set(anchors)
         for name, requirement_path, anchor in names:
             if name not in numbered:
                 if old_layout(spec_text):

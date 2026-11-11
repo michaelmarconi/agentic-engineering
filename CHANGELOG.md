@@ -17,7 +17,8 @@ minor version may need such a change, and its entry says so.
   gives the heading, and each title is the ADR's own, and names the right one when it is not.
   **Change needed:** a plan that is not `✅ Built` and still uses `- Requirement:` lines or ADR
   bullets is refused at sign-off with a message saying how to rewrite it; `/plan` rewrites those
-  sections with its next edit. Built plans are never checked, so they need nothing.
+  sections with its next edit, and `/audit` lists a `🟢 Ready to build` plan in the old layout
+  until it is rewritten. Built plans are never checked, so they need nothing.
 - In practices, the marks `/practices` ends a practice with, "(default)" and "(not set up yet)",
   count as plain words, so the language checker no longer reports them.
 

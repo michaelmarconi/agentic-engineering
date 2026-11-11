@@ -923,6 +923,22 @@ class Plan(PlanWorkspace):
         reason = self.ready(adrs="| ADR | Decision |\n| --- | --- |\n| [0004](../adrs/0003-history.md) | Store sessions in Redis |")
         self.assertIn("[0003]", reason)
 
+    def test_footnote_marks_after_new_layout_links_are_ignored(self):
+        self.put_at(os.path.join(self.tmp.name, "docs", "adrs", "0003-history.md"), adr("👍 Accepted"))
+        self.assertIsNone(self.ready(
+            specs="- [Thing](../specs/thing.spec.md)\n  - [X](../specs/thing.spec.md#1-x)[^1]\n\n[^1]: A thing.",
+            adrs="| ADR | Decision |\n| --- | --- |\n| [0003](../adrs/0003-history.md)[^2] | Store sessions in Redis[^3] |"))
+
+    def test_adr_title_read_past_crlf_frontmatter(self):
+        self.put_at(os.path.join(self.tmp.name, "docs", "adrs", "0003-history.md"),
+                    "\ufeff" + adr("👍 Accepted").replace("\n", "\r\n"))
+        self.assertIsNone(self.ready(adrs="| [0003](../adrs/0003-history.md) | Store sessions in Redis |"))
+
+    def test_an_old_layout_plan_still_blocks_a_shared_requirement(self):
+        other = os.path.join(self.tmp.name, "docs", "plans", "2026-10-01-earlier.md")
+        self.put_at(other, plan(specs="- [Thing](../specs/thing.spec.md)\n  - Requirement: X"))
+        self.assertIn("2026-10-01-earlier.md", self.ready())
+
     def test_adr_table_without_its_header_still_read(self):
         self.put_at(os.path.join(self.tmp.name, "docs", "adrs", "0003-history.md"), adr("👍 Accepted"))
         self.assertIsNone(self.ready(adrs="| [0003](../adrs/0003-history.md) | Store sessions in Redis |"))
@@ -1554,7 +1570,8 @@ class Anchors(unittest.TestCase):
         cases = {"1. Copy matches iCloud": "1-copy-matches-icloud",
                  "2. Folder 🧪 kept": "2-folder--kept",
                  "3. Don't re-send `HELLO`": "3-dont-re-send-hello",
-                 "4. Über-fast_path": "4-über-fast_path"}
+                 "4. Über-fast_path": "4-über-fast_path",
+                 "5. Cafe\u0301 open": "5-cafe\u0301-open"}
         for heading, anchor in cases.items():
             self.assertEqual(status_check.anchor_of(heading), anchor, heading)
 
