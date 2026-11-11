@@ -199,6 +199,20 @@ class Documents(Project):
         self.assertEqual(found, ["docs/adrs/0001-cents.md", "docs/plans/2026-11-01-work.md",
                                  "docs/specs/statement-import.spec.md", "docs/spikes/2026-11-01-can-it.md"])
 
+    def test_open_questions_not_laid_out_are_listed(self):
+        entry = ("### 1. Which format\n\nNobody has said.\n\n> **Proposed:** CSV.\n>\n"
+                 "> **Why:** Every bank exports it.\n")
+        self.put("docs/brief.md", "---\ntype: Brief\n---\n\n# Ledger\n\n## Open questions\n\n- Who pays?\n")
+        self.put("docs/specs/statement-import.spec.md", spec(status="📝 Draft", open_questions="Which format?"))
+        self.put("docs/specs/exports.spec.md", spec(status="📝 Draft").replace("- None.\n", entry))
+        self.put("docs/adrs/0001-cents.md", adr(status="📝 Draft", open_questions="Which currency?"))
+        self.put("docs/plans/2026-11-01-work.md", plan(open_questions="When?"))
+        self.put("docs/spikes/2026-11-01-can-it.md", spike(open_questions="How?"))
+        found = {p["document"]: p["detail"] for p in self.problems("question layout")}
+        self.assertEqual(sorted(found), ["docs/adrs/0001-cents.md", "docs/brief.md", "docs/plans/2026-11-01-work.md",
+                                         "docs/specs/statement-import.spec.md", "docs/spikes/2026-11-01-can-it.md"])
+        self.assertIn("### 1.", found["docs/brief.md"])
+
     def test_references_follow_the_references_rule(self):
         self.put("docs/brief.md", "# Product\n\nSee [import](specs/statement-import.spec.md).\n")
         self.put("docs/specs/statement-import.spec.md",

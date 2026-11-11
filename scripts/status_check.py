@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-"""Refuse spec, ADR, plan and spike record status changes the lifecycle does not allow, and a
-lifecycle document whose `type:` is wrong.
+"""Refuse spec, ADR, plan and spike record status changes the lifecycle does not allow, a
+lifecycle document whose `type:` is wrong, and open questions not laid out as ADR 0030 says.
 
 Claude Code runs this as a PreToolUse hook on Write, Edit and MultiEdit. It reads the hook's
 JSON from stdin and, for the project's docs/brief.md, a *.spec.md under its docs/specs/, a *.md
@@ -108,6 +108,16 @@ taking it away, while the status stays the same. A document written before dates
 without one until its next status change, and adding one, any real date, never counts as a change,
 so it may come with any edit the rules above allow, even to a decided ADR, a `✅ Built` plan or a
 finished spike record. A rule that a status be set on its own lets the `date:` line change with it.
+
+Every open question in the brief, a spec, an ADR, a plan or a spike record is laid out as ADR 0030
+says: a heading `### N. <what is to be settled>`, numbered from 1 in order, then at least one line of
+context, then one block quote, last in the entry, holding exactly one line starting
+`> **Proposed:**` and, after it, exactly one line starting `> **Why:**`; or the section says only
+"None.". HTML comments and footnote definitions in the section are ignored, and a heading inside a
+fenced code block is text. For the brief and for any document above with a lifecycle status before
+or after the edit, it refuses an edit that adds the Open questions section or changes it while any
+entry breaks the layout, naming the entry and what is wrong. A document written before the layout
+may be edited elsewhere as before; the first edit to its Open questions lays them all out again.
 
 Whether a person really accepted an ADR or signed off a plan is beyond a hook; the skill asks them.
 
@@ -327,6 +337,119 @@ def has_open_questions(text):
     return False
 
 
+OPEN_QUESTIONS_LAYOUT = (
+    'Lay out each open question as a heading `### 1. <what is to be settled>`, numbered in order, '
+    "then the context it needs, then one block quote, last in the entry, holding a line starting "
+    "`> **Proposed:**` with the answer you would choose (or what would settle it) and, after it, a "
+    'line starting `> **Why:**` with the reason; or write "None." if nothing is open.'
+)
+QUESTION_HEADING = re.compile(r"^###\s+(.*?)\s*$")
+NUMBERED = re.compile(r"^(\d+)\.(?:\s+(.*))?$")
+QUOTE = re.compile(r"^ {0,3}>")
+
+
+def open_questions_entries(lines):
+    """The Open questions lines as (text before the first heading, [(heading, body lines)]),
+    leaving out HTML comments and footnote definitions. A heading inside a fenced code block is
+    text."""
+    lines = uncommented(lines).splitlines()
+    allowed = headings_allowed(lines)
+    kept, in_footnote = [], False
+    for line, can_head in zip(lines, allowed):
+        # A footnote runs on over lines indented by four spaces or a tab, and blank lines between.
+        if FOOTNOTE.match(line) or (in_footnote and (not line.strip() or line.startswith(("    ", "\t")))):
+            in_footnote = True
+            continue
+        in_footnote = False
+        kept.append((line, can_head))
+    before, entries = [], []
+    for line, can_head in kept:
+        heading = QUESTION_HEADING.match(line) if can_head else None
+        if heading:
+            entries.append((heading.group(1), []))
+        elif entries:
+            entries[-1][1].append(line)
+        else:
+            before.append(line)
+    return before, entries
+
+
+def entry_problem(number, heading, body):
+    """What is wrong with one open question's entry, or None."""
+    numbered = NUMBERED.match(heading)
+    if not numbered:
+        return "its heading does not start with its number, as `### 1. <what is to be settled>`"
+    if int(numbered.group(1)) != number:
+        return f"its heading should have the number {number}, counting the entries in order"
+    if not (numbered.group(2) or "").strip():
+        return "its heading has no title after the number, saying what is to be settled"
+    filled = [line for line in body if line.strip()]
+    quoted = [QUOTE.match(line) is not None for line in filled]
+    if not any(quoted):
+        return "it has no block quote holding `> **Proposed:**` and `> **Why:**` lines"
+    if quoted[0]:
+        return "it has no context before its block quote"
+    # A blank line ends a block quote, so each line starting `>` after a line that does not starts one.
+    blocks = sum(1 for i, line in enumerate(body)
+                 if QUOTE.match(line) and (i == 0 or not QUOTE.match(body[i - 1])))
+    if blocks > 1:
+        return "it holds more than one block quote; keep one block quote holding both lines"
+    if not quoted[-1]:
+        return "its block quote must come last in the entry, with nothing after it"
+    inside = [QUOTE.sub("", line, count=1).strip() for line, q in zip(filled, quoted) if q]
+    proposed = [i for i, line in enumerate(inside) if line.startswith("**Proposed:**")]
+    why = [i for i, line in enumerate(inside) if line.startswith("**Why:**")]
+    if len(proposed) != 1:
+        found = "no" if not proposed else str(len(proposed))
+        return (f"its block quote holds {found} `> **Proposed:**` lines; keep exactly one `> **Proposed:**` "
+                "line, and make a second proposal a question of its own")
+    if len(why) != 1:
+        found = "no" if not why else str(len(why))
+        return f"its block quote holds {found} `> **Why:**` lines; keep exactly one `> **Why:**` line"
+    if why[0] < proposed[0]:
+        return "its `> **Why:**` line must come after its `> **Proposed:**` line"
+    return None
+
+
+def open_questions_problem(text):
+    """Why the text's Open questions section is not in the layout of ADR 0030, or None if it is,
+    holds only "None.", or is missing (which the status rules judge)."""
+    lines = section(text, "Open questions")
+    if lines is None:
+        return None
+    before, entries = open_questions_entries(lines)
+    stray = [line for line in before if line.strip()]
+    if not entries:
+        if all(line.strip().lstrip("-*").strip().strip("_*").strip().lower() in EMPTY_ANSWERS
+               for line in stray):
+            return None
+        return f'Open questions holds text that is not an entry under a heading. {OPEN_QUESTIONS_LAYOUT}'
+    if stray:
+        return (f'Open questions holds text before its first entry\'s heading, such as "{stray[0].strip()}". '
+                f"{OPEN_QUESTIONS_LAYOUT}")
+    for number, (heading, body) in enumerate(entries, 1):
+        problem = entry_problem(number, heading, body)
+        if problem:
+            title = NUMBERED.match(heading)
+            title = (title.group(2) or "").strip() if title else heading
+            named = f' ("{title}")' if title else ""
+            return f"Open questions entry {number}{named}: {problem}. {OPEN_QUESTIONS_LAYOUT}"
+    return None
+
+
+def open_questions_changed(before, after):
+    """True if the edit adds the Open questions section or changes what it says."""
+    return section(after, "Open questions") != (section(before, "Open questions") if before else None)
+
+
+def layout_problem(name, before, after):
+    """Why the edit is refused for its Open questions' layout: only when it adds or changes them."""
+    if not open_questions_changed(before, after):
+        return None
+    problem = open_questions_problem(after)
+    return f"{name}: {problem}" if problem else None
+
+
 def open_questions_refusal(name, text, status, kind):
     if not has_open_questions_section(text):
         return (
@@ -441,7 +564,10 @@ def brief_problem(payload, path):
         if before is None:
             return f"{os.path.basename(path)}: could not read the brief to check its type."
     after = after_edit(payload.get("tool_name"), payload.get("tool_input") or {}, before)
-    return None if after is None else type_problem(os.path.basename(path), "brief", before, after)
+    if after is None:
+        return None
+    name = os.path.basename(path)
+    return type_problem(name, "brief", before, after) or layout_problem(name, before, after)
 
 
 def check(payload):
@@ -486,7 +612,8 @@ def check(payload):
     # refuses anyway is refused for that, not with advice that only leads to that refusal.
     reason = lifecycle_problem(path, kind, statuses, rules, before, after, old, new, written)
     if not reason and (old in statuses or new in statuses):
-        reason = type_problem(name, kind, before, after) or date_problem(name, kind, before, after, old, new)
+        reason = (type_problem(name, kind, before, after) or date_problem(name, kind, before, after, old, new)
+                  or layout_problem(name, before, after))
     if reason or new == written:
         return reason
     return (

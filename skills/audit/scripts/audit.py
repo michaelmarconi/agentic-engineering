@@ -24,6 +24,11 @@ documents
       can be given one, which any edit may add;
     - open questions: a `👍 Accepted` spec or ADR, a `🟢 Ready to build` plan or a `🟢 Ready to run`
       spike record whose Open questions section is missing or holds anything but "None.";
+    - question layout: an open question is not laid out as ADR 0030 says, a heading
+      `### N. <what is to be settled>`, its context, then a block quote holding one
+      `> **Proposed:**` line and one `> **Why:**` line, as documents written before that layout
+      are; they are listed here so they can be laid out again, which their next change to Open
+      questions must do anyway;
     - references: a document links to another lifecycle document, or names its file, where the
       lifecycle's references rule does not allow it. Plans and spike records may name specs and
       ADRs; an ADR may name another ADR; nothing may name a plan or spike record; otherwise the
@@ -74,7 +79,7 @@ import sys
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "..", "scripts"))
 from status_check import (ACCEPTED, ADR_STATUSES, BUILT, DRAFT, FINISHED,  # noqa: E402
                           READY, READY_TO_RUN, SPEC_STATUSES, SPIKE_STATUSES, STATUSES, SUPERSEDED, TYPES, article,
-                          field, frontmatter, has_open_questions, real_date, lifecycle_status, listed,
+                          field, frontmatter, has_open_questions, open_questions_problem, real_date, lifecycle_status, listed,
                           OLD_LAYOUT, old_layout, reference_problem, requirements, status_of)
 from doc_references import targets  # noqa: E402
 
@@ -340,6 +345,9 @@ def check_documents(project):
         written = field(text, "type")
         if written is not None and written != TYPES[kind]:
             add(relative, "type", f"its `type:` is '{written}'; {article(kind)} {kind} has `type: {TYPES[kind]}`")
+        laid_out = open_questions_problem(text)
+        if laid_out:
+            add(relative, "question layout", laid_out)
         if kind != "brief":
             wrong = status_problem(kind, text)
             if wrong:

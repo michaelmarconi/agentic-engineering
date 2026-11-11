@@ -25,7 +25,9 @@ For each skills/<folder>/SKILL.md under the given plugin root (default: this plu
 
 - the skills that write a lifecycle document (DOCUMENT_SKILLS) hold TYPE_RULE word for word, so
   none puts the document's type in its title, and PROPOSED_RULE, so no open question is ever left
-  without a proposed answer or what would settle it.
+  without a proposed answer or what would settle it, laid out as ADR 0030 says.
+- those skills and /practices (ASK_SKILLS), which ask the person to settle questions, hold
+  ASK_RULE word for word, so every question asked in the conversation is laid out the same way.
 - the skills that offer diagrams at hand-over (DIAGRAM_SKILLS) hold each of DIAGRAM_RULES word
   for word, with their document's name filled in, so every skill offers diagrams the same way.
 - the skills whose document has a status (STATUS_SKILLS) hold SIGNOFF_RULE word for word, so every
@@ -94,9 +96,22 @@ DATE_RULE = (
     "status change, which adds it; a plugin hook refuses a status change without it."
 )
 PROPOSED_RULE = (
-    "Every open question ends with \"Proposed:\" and the answer you would choose, so the person can "
-    "accept it in a word or give another; where only the person can know the answer, \"Proposed:\" "
-    "says what would settle it instead, never a guess."
+    "Write each open question as a heading, `### 1. <what is to be settled>`, numbered in order, "
+    "then the context it needs, then a block quote holding a line starting `> **Proposed:**` with "
+    "the answer you would choose and, after it, a line starting `> **Why:**` with the reason, so "
+    "the person can find the proposal at a glance and accept it in a word or give another; where "
+    "only the person can know the answer, \"Proposed:\" says what would settle it instead, never a "
+    "guess. Each question holds one proposal: a question with two answers is two questions. A "
+    "plugin hook refuses Open questions laid out any other way."
+)
+# The skills that ask the person to settle questions in the conversation, each with a proposal.
+ASK_SKILLS = DOCUMENT_SKILLS + ("practices",)
+ASK_RULE = (
+    "When you ask the person to settle a question in the conversation, lay it out the same way: a "
+    "bold line naming it and its place in the count, such as \"**Question 1 of 3: how often a "
+    "failed pull is retried**\", then the context it needs, then a block quote holding a "
+    "\"**Proposed:**\" line with your answer and a \"**Why:**\" line with the reason, and the "
+    "question itself last, in one line."
 )
 # The sentences of the review sequence that every skill running it holds.
 CORRECT_RULES = (
@@ -252,6 +267,9 @@ def problems(folder, text):
     if folder in DOCUMENT_SKILLS and not holds(body, PROPOSED_RULE):
         found.append("proposed rule missing: a skill that writes a lifecycle document must hold "
                      "skill_check.PROPOSED_RULE word for word")
+    if folder in ASK_SKILLS and not holds(body, ASK_RULE):
+        found.append("ask rule missing: a skill that asks the person to settle questions must hold "
+                     "skill_check.ASK_RULE word for word")
     if folder in STATUS_SKILLS and not holds(body, SIGNOFF_RULE):
         found.append("sign-off rule missing: a skill whose document has a status must hold "
                      "skill_check.SIGNOFF_RULE word for word")
