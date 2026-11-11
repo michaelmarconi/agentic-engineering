@@ -5,7 +5,8 @@
 
 1. refuses to run without a remote named `origin` whose default branch is known (`origin/HEAD`),
    on that default branch, or with no branch checked out;
-2. commits everything not yet committed, with the message given;
+2. commits everything not yet committed, with the message given, leaving out the stand-ins for
+   the null device that Claude Code's sandbox puts in place on Linux (see uncommitted.py);
 3. with --reviews-passed, sets the plan's status from `🟢 Ready to build` to `✅ Built` and its
    `date:`, the day its status last changed, to today's date on this machine, adding the line under
    the status if the plan has none, changing nothing else in the file, and commits that on its own. It writes the file itself, so the
@@ -25,6 +26,9 @@ import os
 import re
 import subprocess
 import sys
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import uncommitted  # noqa: E402
 
 READY, BUILT = "🟢 Ready to build", "✅ Built"
 STATUS_LINE = re.compile(r"^status:[ \t]*(?P<value>[^\n#]*?)[ \t]*$", re.M)
@@ -89,7 +93,17 @@ def is_ready(value):
 
 
 def commit(repo, message, lines):
-    git(repo, "add", "-A")
+    # Leave out the stand-ins Claude Code's sandbox puts in place on Linux: git can't add them,
+    # and one it can't add stops `git add -A` from adding anything.
+    try:
+        _, stand_ins = uncommitted.check(repo)
+    except uncommitted.NotARepository as error:
+        lines.append(f"Commit failed: {error}")
+        return False
+    added = git(repo, "add", "-A", "--", ":/", *(f":(top,exclude,literal){path}" for path in stand_ins))
+    if added.returncode != 0:
+        lines.append(f"Commit failed: {(added.stderr or added.stdout).strip()}")
+        return False
     if git(repo, "diff", "--cached", "--quiet").returncode == 0:
         return None
     result = git(repo, "commit", "-q", "-m", message)

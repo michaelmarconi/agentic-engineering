@@ -2,6 +2,7 @@
 
 import io
 import os
+import stat
 import subprocess
 import sys
 import tempfile
@@ -11,6 +12,7 @@ from unittest import mock
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import hand_over  # noqa: E402
+import uncommitted  # noqa: E402
 
 PLAN = "docs/plans/2026-11-03-thing.md"
 TODAY = "2026-11-10"  # the script's "today" in these tests; never read from the clock
@@ -91,6 +93,32 @@ class Commit(Repo):
         self.assertEqual(code, 0)
         self.assertEqual(self.subjects(), ["Start"])
         self.assertIn("nothing new to commit", out)
+
+    def test_sandbox_stand_ins_left_out_of_the_commit(self):
+        # Git can't add the sandbox's stand-ins, and one failing file stops `git add -A` adding
+        # anything. Ordinary files stand in for them here, as in test_uncommitted.py.
+        self.put(".bashrc", "")
+        self.put(".claude/settings.json", "")
+        self.put("src/thing.py", "print('thing')\n")
+        stand_ins = {os.path.join(self.dir, ".bashrc"), os.path.join(self.dir, ".claude/settings.json")}
+        null = os.stat(os.devnull)
+        fake = type("Stat", (), {"st_mode": stat.S_IFCHR | 0o666, "st_rdev": null.st_rdev})
+        real = uncommitted.lstat_of
+        with mock.patch.object(uncommitted, "lstat_of", lambda p: fake if p in stand_ins else real(p)):
+            code, out = self.run_it()
+        self.assertEqual(code, 0)
+        self.assertEqual(self.subjects()[0], "Build the thing")
+        self.assertEqual(self.git("show", "--name-only", "--format=", "HEAD"), "src/thing.py")
+
+    def test_failed_add_reported(self):
+        self.put("src/thing.py", "print('thing')\n")
+        failing = subprocess.CompletedProcess([], 128, "", "fatal: adding files failed")
+        real = hand_over.git
+        with mock.patch.object(hand_over, "git", lambda repo, *a: failing if a[0] == "add" else real(repo, *a)):
+            code, out = self.run_it()
+        self.assertEqual(code, 1)
+        self.assertEqual(self.subjects(), ["Start"])
+        self.assertIn("fatal: adding files failed", out)
 
     def test_refused_on_the_default_branch(self):
         self.git("checkout", "-q", "main")

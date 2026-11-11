@@ -74,7 +74,8 @@ anything, `/build` checks:
   repository's default branch. If you are on it, it makes a branch named as your practices say,
   or else after the plan. If you are already on another branch, it builds there, since some
   places that run Claude Code, such as its cloud sessions, choose the branch name for you. If anything is uncommitted, it stops, so your
-  own work never gets mixed into the build. While it runs, a plugin hook refuses any commit or
+  own work never gets mixed into the build. It ignores the stand-ins for `/dev/null` that Claude
+  Code's sandbox puts in place of files it protects, such as `.bashrc`, on Linux. While it runs, a plugin hook refuses any commit or
   push to the default branch.
 - **It has a remote.** The repository needs a remote named `origin` whose default branch git
   knows, which `git clone` sets up. `/security-review` compares the branch with that default
