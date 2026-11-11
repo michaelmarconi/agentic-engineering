@@ -189,12 +189,14 @@ each round of corrections brings new mistakes.
    that fails rubric check 5 because it belongs in an ADR, the spec or the practices is not reworded
    or deleted: move it from Decisions to Open questions, naming the ADR to record, the spec change
    to make with `/spec` or the practice to record with `/practices` that the report names, with the
-   decision itself as its "Proposed:". A line that fails only because it lacks the comment wording
-   keeps its place and gains the sentence that `/build` leaves the reason as a comment beside the
-   code. Leave suggestions
-   alone and change nothing else, since an edit beyond the reports is the likeliest way to break
-   something. Wait until every edit has succeeded. If nothing in the reports was yours to correct,
-   there is nothing to check: go straight to handing over.
+   decision itself, as it stood under Decisions, as its "Proposed:". The person agreed that
+   decision, so a correction never changes it: if the reports or the code give reason to doubt it,
+   say so in the question's text, before "Proposed:". A line that fails only because it lacks the
+   comment wording keeps its place and gains the sentence that `/build` leaves the reason as a
+   comment beside the code. Leave suggestions alone and change nothing else, since an edit beyond
+   the reports is the likeliest way to break something. Wait until every edit has succeeded. If
+   nothing in the reports was yours to correct, there is nothing to check: go straight to handing
+   over.
 3. **Check the corrections.** Start the `agentic:correction-checker` agent in the foreground with
    this request, and add nothing to it: the hook attaches both reports and the plan as reviewed,
    word for word.

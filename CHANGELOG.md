@@ -6,6 +6,15 @@ What changed in each version of the plugin, newest first. Versions follow
 past a major version: it says what you need to change in your documents. Until 1.0.0, any
 minor version may need such a change, and its entry says so.
 
+## [0.43.1] - 2026-11-11
+
+### Fixed
+
+- When `/plan`'s correction moves a Decisions line to Open questions, its "Proposed:" keeps the
+  decision as the person agreed it. It sometimes proposed a different decision instead, so
+  answering "yes" reversed what had been agreed. Any doubt about the decision now goes in the
+  question's text. Nothing in your documents needs to change.
+
 ## [0.43.0] - 2026-11-11
 
 ### Added
