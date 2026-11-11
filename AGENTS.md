@@ -225,6 +225,11 @@ Nothing else belongs at the root without a reason recorded in the change that ad
   `claude plugin eval . --case '<name>-*' --model <model> --judge-model sonnet --scaffold --allow-tools Write Edit -j 4 --ablation none`;
   without the grant, cases that write documents can't pass. A case whose prompt allows WebSearch
   or WebFetch needs them in the grant too, or the tools are withheld and the case proves nothing.
+  The same goes for Bash, which the audit, build and spike cases that run scripts allow: add it
+  to the grant for them. A Bash case needs `bubblewrap` and `socat` installed on Linux, and fails
+  with "read-only file system" where the temporary folder is `/tmp` itself, as in a cloud
+  session, because the eval's sandbox blocks writes to `/tmp` and puts each run's folder there.
+  Start the command with `TMPDIR=` and a folder outside `/tmp`, such as `TMPDIR=/srv/evaltmp`.
   `--ablation none` turns off the no-plugin comparison runs, which show how much a skill adds
   but don't decide whether a case passes; turn it back on (drop the flag) to measure that, for
   example before 1.0. `-j 4` runs four cases at once.
