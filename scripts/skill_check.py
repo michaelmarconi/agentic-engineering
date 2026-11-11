@@ -26,6 +26,8 @@ For each skills/<folder>/SKILL.md under the given plugin root (default: this plu
 - the skills that write a lifecycle document (DOCUMENT_SKILLS) hold TYPE_RULE word for word, so
   none puts the document's type in its title, and PROPOSED_RULE, so no open question is ever left
   without a proposed answer or what would settle it.
+- the skills that offer diagrams at hand-over (DIAGRAM_SKILLS) hold each of DIAGRAM_RULES word
+  for word, with their document's name filled in, so every skill offers diagrams the same way.
 - the skills whose document has a status (STATUS_SKILLS) hold SIGNOFF_RULE word for word, so every
   document moves forward on the same terms, and DATE_RULE, so every one keeps its `date:` the same
   way (docs/adrs/0027).
@@ -110,6 +112,34 @@ CORRECT_RULES = (
     "likeliest way to break something.",
     "Do not review or correct again; what happens next is their call.",
 )
+
+# The skills that offer diagrams at hand-over, each with the name its sentences give its document.
+DIAGRAM_SKILLS = {"adr": "ADR"}
+# The sentences every such skill holds, with its document's name filled in, so the offers cannot
+# drift apart.
+DIAGRAM_RULES = (
+    "Offer a diagram only of a shape the text holds: parts that call each other, drawn as a "
+    "flowchart; events passing between actors, drawn as a sequence diagram; the states one thing "
+    "moves through, drawn as a state diagram; or records and how they relate, drawn as an "
+    "entity-relationship diagram.",
+    "Offer a shape only when the text names at least three of its things and at least two "
+    "connections between them, such as three parts and two calls; otherwise say nothing about "
+    "diagrams.",
+    "Name each offer in one line, saying what it would show; the offer's question is \"Would you "
+    "like to add any of these diagrams to the {document}, or propose another?\"",
+    "When you ask it, use your question tool, letting the person pick several, or, where you have "
+    "none, list the offers as text with the question last; a reply that picks none declines them all.",
+    "Nothing is drawn unless the person picks it, and an offer never holds the {document} back "
+    "from its next status.",
+    "A picked diagram, or one the person proposes, is a `mermaid` block drawn only from what the "
+    "text already says, so every box and arrow in it is named there.",
+)
+
+
+def diagram_rules(document):
+    """The diagram sentences as a skill whose document is called `document` holds them."""
+    return [rule.format(document=document) for rule in DIAGRAM_RULES]
+
 
 PATH_RULE = (
     "Give the document's full path on the `Document:` line, the one you wrote it to: the hook "
@@ -221,6 +251,12 @@ def problems(folder, text):
     if folder in STATUS_SKILLS and not holds(body, DATE_RULE):
         found.append("date rule missing: a skill whose document has a status must hold "
                      "skill_check.DATE_RULE word for word")
+    if folder in DIAGRAM_SKILLS:
+        for number, rule in enumerate(diagram_rules(DIAGRAM_SKILLS[folder]), 1):
+            if not holds(body, rule):
+                found.append(f"diagram rule {number} missing: a skill that offers diagrams must hold "
+                             f"skill_check.DIAGRAM_RULES[{number - 1}] word for word, naming its "
+                             f"document \"{DIAGRAM_SKILLS[folder]}\"")
     reviews_a_file = REVIEWS in body and "Document: <" in body
     if reviews_a_file and not holds(body, PATH_RULE):
         found.append("path rule missing: a skill that reviews a document by its path must hold "

@@ -24,10 +24,11 @@ as "Spec:" or "ADR:" in front of it would: the frontmatter's `type:` already say
 
 An ADR is written for a person first. It reads from plain to technical: the plain part, from the
 title down to Technical detail, says what had to be chosen, what was chosen, why, and what it costs,
-in at most 500 words, tables included; Technical detail below it holds the exact mechanism, rules,
-settings and evidence an agent or reviewer needs. Versions, flags, settings and command names go in
-Technical detail unless the decision is about one of them, and each limit is stated once, under Out
-of scope. Check the plain part's size before each review, and fix it until it fits:
+in at most 500 words, tables included and diagrams in Decision left out; Technical detail below it
+holds the exact mechanism, rules, settings and evidence an agent or reviewer needs. Versions, flags,
+settings and command names go in Technical detail unless the decision is about one of them, and each
+limit is stated once, under Out of scope. Check the plain part's size before each review, and fix it
+until it fits:
 
 ```
 python3 "${CLAUDE_SKILL_DIR}/scripts/adr.py" words <the ADR's path>
@@ -212,5 +213,28 @@ any correction the check found not made or broken. Say you will take them one at
 asking whether to, and ask the first only, as a single question, giving any examples as possible
 answers rather than further questions; if the person has said not to ask now, ask nothing. Name the
 count only, not the items: each comes up when you reach it. List the reviewers' suggestions
-separately, as optional: they never hold the ADR back. Once nothing is left to settle, ask whether
-to accept or reject it. Leave committing to them.
+separately, as optional: they never hold the ADR back.
+
+Once Decision says "Chosen:", offer diagrams of the chosen option at each hand-over, so a person can
+see how it works at a glance; an ADR not chosen yet gets no offer, and no other option is drawn.
+Offer a diagram only of a shape the text holds: parts that call each other, drawn as a flowchart;
+events passing between actors, drawn as a sequence diagram; the states one thing moves through,
+drawn as a state diagram; or records and how they relate, drawn as an entity-relationship diagram.
+Offer a shape only when the text names at least three of its things and at least two connections
+between them, such as three parts and two calls; otherwise say nothing about diagrams. Name each
+offer in one line, saying what it would show; the offer's question is "Would you like to add any of
+these diagrams to the ADR, or propose another?" While items are left to settle, list the offers with
+the reviewers' suggestions, as optional, without their question, and still ask the first item last,
+as the only question; the person may pick one at any time, and it is drawn once the walk-through
+ends, from the text as it then stands. Once nothing is left, ask the offer's question as the only
+question, unless the person has already said to accept or reject the ADR: then list the offers as
+optional and ask about that, as the Status section says. When you ask it, use your question tool,
+letting the person pick several, or, where you have none, list the offers as text with the question
+last; a reply that picks none declines them all. Nothing is drawn unless the person picks it, and an
+offer never holds the ADR back from its next status. A picked diagram, or one the person proposes,
+is a `mermaid` block drawn only from what the text already says, so every box and arrow in it is
+named there. Offer each ADR's diagrams until the person picks or declines them, then not again for
+that ADR. A picked diagram goes in Decision, after the reason, which still reads on its own without
+it, and is reviewed with the rest of the ADR, or on its own if the walk-through has ended. Once the
+offer is settled and nothing else is, ask whether to accept or reject the ADR. Leave committing to
+them.

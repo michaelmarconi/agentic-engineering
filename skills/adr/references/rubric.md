@@ -30,7 +30,9 @@ reviewer needs to build and check it. Footnotes explaining terms come last, afte
 5. **Decision stands alone.** While the person has not chosen, Decision says only "Not chosen yet;
    see Open questions.", Open questions asks for the choice, and the ADR stays `📝 Draft`. Once they
    have, its first sentence opens "Chosen:" and names the option in full, so that it makes sense
-   with the rest of the ADR hidden, and the reason follows briefly. A bare option name fails.
+   with the rest of the ADR hidden, and the reason follows briefly. A bare option name fails. One
+   or more `mermaid` diagrams may follow the reason, as check 18 says; Decision still makes sense
+   with them hidden.
 6. **Background states the need.** Background says what forces the choice now, in one paragraph
    a newcomer can follow, and does not argue for an option. Each earlier ADR it builds on is named
    by number, linked to its file as check 14 says, with what it decided in a few words, not retold.
@@ -89,9 +91,14 @@ reviewer needs to build and check it. Footnotes explaining terms come last, afte
     proposes no guess: its "Proposed:" says what would settle it, such as "tell me what ruled
     Postgres out".
 
-The plain part's size, at most 500 words, tables included, is checked by the skill's `words`
-command and by the status hook, not by the reviewer. So is a `👍 Accepted` ADR whose Decision does
-not open with "Chosen:".
+18. **Diagrams match the text.** A diagram is a `mermaid` block in Decision, after the reason, of
+    the chosen option only, and appears only once Decision opens with "Chosen:". Every box, arrow and
+    label in it names something the ADR's text already says, so the diagram makes no choice and
+    states no fact of its own; quote each one the text does not hold. An ADR with no diagram passes.
+
+The plain part's size, at most 500 words, tables included and the diagrams in Decision left out,
+is checked by the skill's `words` command and by the status hook, not by the reviewer. So is a
+`👍 Accepted` ADR whose Decision does not open with "Chosen:".
 
 Sentence and paragraph lengths are guidance in the skill, not checks: a reviewer may list a long
 one under Suggestions, which never fail the review, but never as a failed check.

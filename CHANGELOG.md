@@ -6,19 +6,35 @@ What changed in each version of the plugin, newest first. Versions follow
 past a major version: it says what you need to change in your documents. Until 1.0.0, any
 minor version may need such a change, and its entry says so.
 
-## [0.41.1] - 2026-11-11
+## [0.42.1] - 2026-11-11
 
 ### Fixed
 
 - The plan reviewer no longer fails a plan's Decisions lines whose reason nobody needs once the
   work is built, such as a test's data or the order of the steps, by asking for the comment
-  wording. Rubric check 5 now asks five questions of each line in order, stopping at the first
-  yes: must later work follow it (an ADR), does a user or caller rely on it (the spec), does every
+  wording. Rubric check 5 now passes a line that only follows a spec, an ADR, the practices or
+  existing code, and asks five questions of every other line in order, stopping at the first yes:
+  must later work follow it (an ADR), does a user or caller rely on it (the spec), does every
   piece of work do it this way (the practices), would someone changing the code need the reason
   (a comment beside the code), or otherwise nobody. In a trial on seeded plans, false alarms fell
   from 22 of 39 to 1, with the same catches. A line that fails only for lacking the comment wording
   now gains that wording in the correction instead of moving to Open questions. Nothing in your
   documents needs to change.
+
+## [0.42.0] - 2026-11-11
+
+### Added
+
+- `/adr` offers diagrams of the chosen option. Once Decision says "Chosen:", each hand-over
+  offers one line per diagram the text has enough for (at least three parts, actors,
+  states or records and two connections between them), drawn as a flowchart, sequence diagram,
+  state diagram or entity-relationship diagram. While questions are open the offers sit with the
+  optional suggestions; once none are left, it asks "Would you like to add any of these diagrams to
+  the ADR, or propose another?". Nothing is drawn unless picked. A picked diagram is a
+  `mermaid` block in Decision, after the reason, drawn only from what the text says; rubric check
+  18 has the reviewer check every box and arrow against the text.
+- A `mermaid` diagram in an ADR's Decision does not count towards the 500 words of the plain part.
+- The offer's sentences are shared in `scripts/skill_check.py`, so `/plan` can hold the same ones.
 
 ## [0.41.0] - 2026-11-11
 
