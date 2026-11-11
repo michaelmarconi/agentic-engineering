@@ -221,12 +221,14 @@ these diagrams to the ADR, or propose another?" While items are left to settle, 
 the reviewers' suggestions, as optional, without their question, and still ask the first item last,
 as the only question; the person may pick one at any time, and it is drawn once the walk-through
 ends, from the text as it then stands. Once nothing is left, ask the offer's question as the only
-question. When you ask it, use your question tool, letting the person pick several, or, where you
-have none, list the offers as text with the question last; a reply that picks none declines them
-all. Nothing is drawn unless the person picks it, and an offer never holds the ADR back from its
-next status. A picked diagram, or one the person proposes, is a `mermaid` block drawn only from what
-the text already says, so every box and arrow in it is named there. Offer each ADR's diagrams until
-the person picks or declines them, then not again for that ADR. A picked diagram goes in Decision,
-after the reason, which still reads on its own without it, and is reviewed with the rest of the ADR,
-or on its own if the walk-through has ended. Once the offer is settled and nothing else is, ask
-whether to accept or reject the ADR. Leave committing to them.
+question, unless the person has already said to accept or reject the ADR: then list the offers as
+optional and ask about that, as the Status section says. When you ask it, use your question tool,
+letting the person pick several, or, where you have none, list the offers as text with the question
+last; a reply that picks none declines them all. Nothing is drawn unless the person picks it, and an
+offer never holds the ADR back from its next status. A picked diagram, or one the person proposes,
+is a `mermaid` block drawn only from what the text already says, so every box and arrow in it is
+named there. Offer each ADR's diagrams until the person picks or declines them, then not again for
+that ADR. A picked diagram goes in Decision, after the reason, which still reads on its own without
+it, and is reviewed with the rest of the ADR, or on its own if the walk-through has ended. Once the
+offer is settled and nothing else is, ask whether to accept or reject the ADR. Leave committing to
+them.
