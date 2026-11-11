@@ -1687,6 +1687,12 @@ class OpenQuestionsShape(unittest.TestCase):
                                 "> **Proposed:** Object storage, one file per day, kept for as long\nas the tariff rules say.\n")
         self.assertIsNone(layout(wrapped))
 
+    def test_list_item_straight_after_the_quote_refused(self):
+        self.assertIn("last", layout(ENTRY + "- Should tabs count? Proposed: yes.\n"))
+
+    def test_rule_straight_after_the_quote_passes(self):
+        self.assertIsNone(layout(ENTRY + "---\n"))
+
     def test_quote_like_line_in_a_code_block_is_context(self):
         fenced = ENTRY.replace("The tariff is copied daily, but where is not yet chosen.",
                                "The import prints:\n\n```\n> done\n```")

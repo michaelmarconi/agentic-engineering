@@ -354,6 +354,9 @@ QUESTION_HEADING = re.compile(r"^ {0,3}###\s+(.*?)\s*$")
 NUMBERED = re.compile(r"^(\d+)\.(?:\s+(.*))?$")
 QUOTE = re.compile(r"^ {0,3}>")
 THEMATIC_BREAK = re.compile(r"^ {0,3}([-*_])(?:\s*\1){2,}\s*$")
+# A line that starts a new block, so it never continues a block quote lazily: a list item, a
+# heading, a code fence or a horizontal rule.
+STARTS_BLOCK = re.compile(r"^ {0,3}(?:[-*+](?:\s|$)|\d{1,9}[.)](?:\s|$)|#{1,6}(?:\s|$)|`{3,}|~{3,})")
 
 
 def open_questions_entries(lines):
@@ -379,7 +382,8 @@ def open_questions_entries(lines):
 def quote_blocks(body):
     """The block quotes in an entry's body, each as its first and last index into the body's
     non-blank lines. A quote runs on over lines without `>` until a blank line, as Markdown's lazy
-    continuation lines do; a line in a fenced code block is never part of one."""
+    continuation lines do, unless the line starts a block of its own, such as a list item; a line in
+    a fenced code block is never part of one."""
     blocks, open_block, index = [], False, -1
     for line, in_fence in body:
         if not line.strip():
@@ -392,7 +396,7 @@ def quote_blocks(body):
             else:
                 blocks.append([index, index])
                 open_block = True
-        elif open_block and not in_fence:
+        elif open_block and not in_fence and not STARTS_BLOCK.match(line) and not THEMATIC_BREAK.match(line):
             blocks[-1][1] = index
         else:
             open_block = False
