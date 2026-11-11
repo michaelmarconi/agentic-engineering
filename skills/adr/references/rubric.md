@@ -85,11 +85,14 @@ reviewer needs to build and check it. Footnotes explaining terms come last, afte
 16. **Accepted means settled.** A `👍 Accepted` or `↪️ Superseded` ADR has no open questions: its
     Open questions section is empty or says only "None." A `📝 Draft` or `❌ Rejected` ADR may
     have some.
-17. **Proposed answers.** Each open question ends with "Proposed:" and the answer the writer
-    would choose, such as the option they would recommend, so the person can accept it in a word or
-    give another. A question only the person can answer, such as why they rejected an option,
-    proposes no guess: its "Proposed:" says what would settle it, such as "tell me what ruled
-    Postgres out".
+17. **Proposed answers.** Each open question's "**Proposed:**" line makes one proposal, a single
+    decision the person can accept in a word or replace, and its "**Why:**" line gives the reason,
+    which the proposal does not repeat; a second proposal hidden in either line fails, since it
+    belongs in a question of its own. The layout itself, a numbered heading, the context and a block
+    quote holding both lines, is checked by the status hook, not here. The proposal is the answer
+    the writer would choose, such as the option they would recommend. A question only the person can
+    answer, such as why they rejected an option, proposes no guess: its "Proposed:" says what would
+    settle it, such as "tell me what ruled Postgres out".
 
 18. **Diagrams match the text.** A diagram is a `mermaid` block in Decision, after the reason, of
     the chosen option only, and appears only once Decision opens with "Chosen:". Every box, arrow and

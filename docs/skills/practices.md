@@ -124,8 +124,9 @@ will use.
   finds, so you confirm rather than dictate. Anything it cannot find, or is not sure of, it asks.
 - **One question at a time, each with a proposal.** It tells you how many questions it has, then
   asks them one at a time. Each question starts with a short summary of what it is about and what
-  the repository shows, so you can answer without knowing the repository, and ends with a
-  proposal you can accept, change or reject. Anything you already said, such as answers given
+  the repository shows, so you can answer without knowing the repository, then sets its proposal
+  apart in a quote, with the reason, for you to accept, change or reject, and asks the question
+  last. Anything you already said, such as answers given
   with the request, is used rather than asked again.
 - **Bases its proposals on current advice.** The answers are yours, but when you have no view on a
   question, it asks whether to look up current advice on the web for your language and tools,

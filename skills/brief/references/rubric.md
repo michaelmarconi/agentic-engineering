@@ -41,8 +41,11 @@ checking, and quotes the brief as evidence for every failure.
    outside the repository, or to a file under `docs/` that is not a brief, spec, ADR, plan or spike
    record: such material can change or vanish without the brief being touched, so what matters from
    it is stated in the brief's own words. References to code are not part of this check.
-10. **Proposed answers.** Each open question ends with "Proposed:". Where something the person
-    said or showed points to an answer, it is that answer, so the person can accept it in a word
-    or give another. Where nothing does, such as who the users are when the person has not said,
-    it proposes no guess: it says what would settle it, such as "tell me who handles these
-    requests today".
+10. **Proposed answers.** Each open question's "**Proposed:**" line makes one proposal, a single
+    decision the person can accept in a word or replace, and its "**Why:**" line gives the reason,
+    which the proposal does not repeat; a second proposal hidden in either line fails, since it
+    belongs in a question of its own. The layout itself, a numbered heading, the context and a block
+    quote holding both lines, is checked by the status hook, not here. Where something the person
+    said or showed points to an answer, the proposal is that answer. Where nothing does, such as who
+    the users are when the person has not said, it proposes no guess: it says what would settle it,
+    such as "tell me who handles these requests today".

@@ -65,17 +65,21 @@ approved, works the same way: decide what to ask from what they want recorded, a
 file and a line in the core. When the topic is already recorded, start from what is there and
 propose changes rather than starting again.
 
-Use every answer the person has already given, and ask only what remains. When you have
-questions, say how many, then ask only the first. Start it with a short summary of what it is
-about and what the repository shows, so someone who does not know the repository can answer, and
-end it with a proposal they can accept, change or reject; give any examples as possible answers,
-not further questions. Ask the next once the first is settled, saying the answer is noted, not
-recorded: nothing is recorded until the files are written. If the person has said not to ask,
-write what is settled and ask nothing. Otherwise, even when their answers covered everything,
+Use every answer the person has already given, and ask only what remains. When you have questions,
+say how many, then ask only the first. Its context is a short summary of what it is about and what
+the repository shows, so someone who does not know the repository can answer, and its proposal is
+one they can accept, change or reject; give any examples as possible answers, not further questions.
+When you ask the person to settle a question in the conversation, lay it out in four parts, so they
+can find your proposal at a glance: a bold line naming it and its place in the count, such as
+"**Question 1 of 3: how often a failed pull is retried**"; the context it needs; a block quote
+holding a "**Proposed:**" line with your answer and a "**Why:**" line with the reason; and the
+question itself, last, in one line. Ask the next once the first is settled, saying the answer is
+noted, not recorded: nothing is recorded until the files are written. If the person has said not to
+ask, write what is settled and ask nothing. Otherwise, even when their answers covered everything,
 finish the topic by asking whether there is anything else about it they want recorded, in the
 hand-over if you have written the files: the topics file is only a starting point, and they know
-what it misses. Being asked to ask only what you must does not waive this question; only being
-told not to ask anything does.
+what it misses. Being asked to ask only what you must does not waive this question; only being told
+not to ask anything does.
 
 - **No view.** When the person has no view on a question, ask whether to look up current advice
   on the web for their language and tools, rather than searching unasked. If they agree, name

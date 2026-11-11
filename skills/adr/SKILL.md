@@ -86,16 +86,24 @@ under Consequences, saying it is untested at their word, and remove the question
 
 Never fill a gap with a guess. An option nobody named, a reason nobody gave, or a choice not yet
 made goes into Open questions as a question the person can answer, never as an invented answer.
-Every open question ends with "Proposed:" and the answer you would choose, so the person can accept
-it in a word or give another; where only the person can know the answer, "Proposed:" says what would
-settle it instead, never a guess. For a choice not yet made, propose the option you would recommend;
-for a reason only the person knows, say what would settle it. Write the draft with what you have,
-review it as below even if sections are thin, then say how many questions there are and ask only the
-first. The others wait, so leave them out of that reply entirely: describe the draft by what it
-says, never by what it lacks, and do not list the questions or their topics (they are in the ADR).
-Ask the next once the first is settled, playing back what you have understood. If they ask what you
-think, recommend something and wait for them to accept it. If they would rather not answer now,
-leave the rest in Open questions.
+Write each open question as a heading, `### 1. <what is to be settled>`, numbered in order, then the
+context it needs, then a block quote holding a line starting `> **Proposed:**` with the answer you
+would choose and, after it, a line starting `> **Why:**` with the reason, so the person can find the
+proposal at a glance and accept it in a word or give another. Each question holds one proposal, so a
+question with two answers is two questions, and a plugin hook refuses Open questions laid out any
+other way. Where only the person can know the answer, "Proposed:" says what would settle it instead,
+never a guess. For a choice not yet made, propose the option you would recommend; for a reason only
+the person knows, say what would settle it. Write the draft with what you have, review it as below
+even if sections are thin, then say how many questions there are and ask only the first. The others
+wait, so leave them out of that reply entirely: describe the draft by what it says, never by what it
+lacks, and do not list the questions or their topics (they are in the ADR). Ask the next once the
+first is settled, playing back what you have understood. When you ask the person to settle a
+question in the conversation, lay it out in four parts, so they can find your proposal at a glance:
+a bold line naming it and its place in the count, such as "**Question 1 of 3: how often a failed
+pull is retried**"; the context it needs; a block quote holding a "**Proposed:**" line with your
+answer and a "**Why:**" line with the reason; and the question itself, last, in one line. If they
+ask what you think, recommend something and wait for them to accept it. If they would rather not
+answer now, leave the rest in Open questions.
 
 An open question is settled only by the person's answer: write the answer into the section it
 is about, then remove the question. Never remove or reword a question without that answer;

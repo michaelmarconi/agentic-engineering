@@ -40,34 +40,42 @@ what they are building and for whom first.
 
 Write only what they said or showed you, as rubric check 8 describes. What they haven't said becomes
 an open question, each asking one thing: "What do they do today, and how long does it take?" is two
-questions. Every open question ends with "Proposed:" and the answer you would choose, so the person
-can accept it in a word or give another; where only the person can know the answer, "Proposed:" says
-what would settle it instead, never a guess. In a brief, an answer you would choose rests on
-something the person said or showed, since the brief holds only what they intend (rubric checks 8
-and 10); where nothing does, say what would settle it, such as "tell me what support staff do
-today". When they want the brief to refer to a spec, an ADR (architecture decision record), a plan
-or a spike record, by hyperlink, path or title, leave it out (check 9) and tell them why: that
-document can change or be deleted without the brief being touched, so the reference would go stale.
-Material they hand over that is not a web page, such as a requirements document or notes, is drawn
-on but never referred to (check 9): state what matters from it in the brief's own words, and tell
-them it can change or vanish without the brief being touched. When they mention something that
-belongs to a later stage (rubric checks 2 and 7), leave it out and tell them where it goes: how one
-capability behaves goes in its spec, so suggest `/spec`; a technology or design they have decided
-goes in an ADR, and one they have not becomes an open question.
+questions. Write each open question as a heading, `### 1. <what is to be settled>`, numbered in
+order, then the context it needs, then a block quote holding a line starting `> **Proposed:**` with
+the answer you would choose and, after it, a line starting `> **Why:**` with the reason, so the
+person can find the proposal at a glance and accept it in a word or give another. Each question
+holds one proposal, so a question with two answers is two questions, and a plugin hook refuses Open
+questions laid out any other way. Where only the person can know the answer, "Proposed:" says what
+would settle it instead, never a guess. In a brief, an answer you would choose rests on something
+the person said or showed, since the brief holds only what they intend (rubric checks 8 and 10);
+where nothing does, say what would settle it, such as "tell me what support staff do today". When
+they want the brief to refer to a spec, an ADR (architecture decision record), a plan or a spike
+record, by hyperlink, path or title, leave it out (check 9) and tell them why: that document can
+change or be deleted without the brief being touched, so the reference would go stale. Material they
+hand over that is not a web page, such as a requirements document or notes, is drawn on but never
+referred to (check 9): state what matters from it in the brief's own words, and tell them it can
+change or vanish without the brief being touched. When they mention something that belongs to a
+later stage (rubric checks 2 and 7), leave it out and tell them where it goes: how one capability
+behaves goes in its spec, so suggest `/spec`; a technology or design they have decided goes in an
+ADR, and one they have not becomes an open question.
 
 Add a section beyond the template's, such as "Safety and security", only when the person asks
 for one, and place it as rubric check 1 says.
 
 Then ask about what the draft or the review leaves open: say how many questions there are and ask
 only the first, as one question rather than two joined together, with any examples given as possible
-answers rather than further questions. The others wait in the brief, so leave them out of that reply
-entirely: describe the draft by what it says, never by what it lacks ("nothing yet on who else is
-involved" names a question), and report what you or the review changed without naming the gaps that
-remain. Ask the next once the first is settled, playing back what you have understood. Settle each
-answer before moving on: take the part they answered and ask again about the rest, because silence
-is not agreement. If the person has said not to ask now, or would rather not answer, give only the
-count: no question and no list of what the questions cover. An open question goes only when their
-answer is written into the brief.
+answers rather than further questions. When you ask the person to settle a question in the
+conversation, lay it out in four parts, so they can find your proposal at a glance: a bold line
+naming it and its place in the count, such as "**Question 1 of 3: how often a failed pull is
+retried**"; the context it needs; a block quote holding a "**Proposed:**" line with your answer and
+a "**Why:**" line with the reason; and the question itself, last, in one line. The others wait in
+the brief, so leave them out of that reply entirely: describe the draft by what it says, never by
+what it lacks ("nothing yet on who else is involved" names a question), and report what you or the
+review changed without naming the gaps that remain. Ask the next once the first is settled, playing
+back what you have understood. Settle each answer before moving on: take the part they answered and
+ask again about the rest, because silence is not agreement. If the person has said not to ask now,
+or would rather not answer, give only the count: no question and no list of what the questions
+cover. An open question goes only when their answer is written into the brief.
 
 ## Review
 

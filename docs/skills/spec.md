@@ -137,7 +137,9 @@ Run `/spec` and tell it what you want to do:
 - **Accept:** mark a spec `👍 Accepted`.
 
 When the spec has open questions, `/spec` tells you how many there are and asks them one at a
-time; the rest wait in the spec's Open questions section. If you say you would rather not
+time, each with its proposal and the reason set apart in a quote, as
+[the lifecycle page](../lifecycle.md#documents) shows; the rest wait in the spec's Open questions
+section. If you say you would rather not
 answer now, it leaves them there.
 
 ## Review

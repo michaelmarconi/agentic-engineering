@@ -99,19 +99,19 @@ PROPOSED_RULE = (
     "Write each open question as a heading, `### 1. <what is to be settled>`, numbered in order, "
     "then the context it needs, then a block quote holding a line starting `> **Proposed:**` with "
     "the answer you would choose and, after it, a line starting `> **Why:**` with the reason, so "
-    "the person can find the proposal at a glance and accept it in a word or give another; where "
-    "only the person can know the answer, \"Proposed:\" says what would settle it instead, never a "
-    "guess. Each question holds one proposal: a question with two answers is two questions. A "
-    "plugin hook refuses Open questions laid out any other way."
+    "the person can find the proposal at a glance and accept it in a word or give another. Each "
+    "question holds one proposal, so a question with two answers is two questions, and a plugin "
+    "hook refuses Open questions laid out any other way. Where only the person can know the "
+    "answer, \"Proposed:\" says what would settle it instead, never a guess."
 )
 # The skills that ask the person to settle questions in the conversation, each with a proposal.
 ASK_SKILLS = DOCUMENT_SKILLS + ("practices",)
 ASK_RULE = (
-    "When you ask the person to settle a question in the conversation, lay it out the same way: a "
-    "bold line naming it and its place in the count, such as \"**Question 1 of 3: how often a "
-    "failed pull is retried**\", then the context it needs, then a block quote holding a "
-    "\"**Proposed:**\" line with your answer and a \"**Why:**\" line with the reason, and the "
-    "question itself last, in one line."
+    "When you ask the person to settle a question in the conversation, lay it out in four parts, "
+    "so they can find your proposal at a glance: a bold line naming it and its place in the count, "
+    "such as \"**Question 1 of 3: how often a failed pull is retried**\"; the context it needs; a "
+    "block quote holding a \"**Proposed:**\" line with your answer and a \"**Why:**\" line with "
+    "the reason; and the question itself, last, in one line."
 )
 # The sentences of the review sequence that every skill running it holds.
 CORRECT_RULES = (

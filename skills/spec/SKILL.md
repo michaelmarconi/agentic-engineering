@@ -59,39 +59,46 @@ the person, like any other gap. Keep each requirement's name, so plans that name
 old spec cannot be signed off, nor built, until the spec has been reworked and accepted again, so
 say so when you hand the spec over.
 
-Then ask about what the draft or the review leaves open: say how many questions there are, ask
-only the first (a conflict with another spec, or a decision the review says needs the person,
-comes first), and do not mention any of the others anywhere in that reply, not even in passing
-or in a report of what you or the review changed (they are in the spec); ask the next once it is
-settled, playing back what you have understood. If the person has said not to ask now, give the
-count and leave the questions in Open questions. Settle each answer before moving on: if the
-person answers part of what you asked, take that part and ask again about the rest, because
-silence is not agreement; if they ask what you think, recommend something and wait for them to
-accept it. If they would rather not answer now, leave the rest in Open questions.
+Then ask about what the draft or the review leaves open: say how many questions there are, ask only
+the first (a conflict with another spec, or a decision the review says needs the person, comes
+first), and do not mention any of the others anywhere in that reply, not even in passing or in a
+report of what you or the review changed (they are in the spec); ask the next once it is settled,
+playing back what you have understood. When you ask the person to settle a question in the
+conversation, lay it out in four parts, so they can find your proposal at a glance: a bold line
+naming it and its place in the count, such as "**Question 1 of 3: how often a failed pull is
+retried**"; the context it needs; a block quote holding a "**Proposed:**" line with your answer and
+a "**Why:**" line with the reason; and the question itself, last, in one line. If the person has
+said not to ask now, give the count and leave the questions in Open questions. Settle each answer
+before moving on: if the person answers part of what you asked, take that part and ask again about
+the rest, because silence is not agreement; if they ask what you think, recommend something and wait
+for them to accept it. If they would rather not answer now, leave the rest in Open questions.
 
 Never fill a gap with a guess, including who the Story is about, their situation and the outcome: if
 the person has not told you, write only what you were told, without adding a purpose or detail of
 your own, say the rest is not known yet and ask in Open questions. A default you would choose, such
 as how a reply quotes the message it answers, is never written as a rule: it goes into Open
-questions, with the default as the proposed answer. Every open question ends with "Proposed:" and
-the answer you would choose, so the person can accept it in a word or give another; where only the
-person can know the answer, "Proposed:" says what would settle it instead, never a guess. Who the
-Story is about is such a question (rubric check 14). Words whose meaning is plain from the
-conversation or the product, such as "reply" in an email tool, are settled from that context, not
-asked about. Use only people the person named, anywhere in the spec; example values such as
-`user@example.com` need no name. An unknown goes into Open questions, worded so it can be answered.
-When the person names how something should be built (a library, a service, a named bucket or
-database, a design), keep the behaviour it serves and leave the choice out of every section, even
-when they state it as settled: the spec should still hold if the choice changes, and tell the person
-you left it out. If it is already decided, suggest recording it as an ADR (architecture decision
-record); if not, make it an open question. When an unknown can only be settled by trying something,
-suggest a spike: a throwaway experiment. When the person wants the spec to refer to the brief,
-another spec, an ADR, a plan or a spike record, by hyperlink, path or title, leave it out (rubric
-check 11) and tell them why: that document can change or be deleted without this spec being touched,
-so the reference would go stale. Material they hand over that is not a web page, such as a
-requirements document or notes, is drawn on but never referred to (rubric check 11): state what
-matters from it in the spec's own words, and tell them it can change or vanish without the spec
-being touched.
+questions, with the default as the proposed answer. Write each open question as a heading, `### 1.
+<what is to be settled>`, numbered in order, then the context it needs, then a block quote holding a
+line starting `> **Proposed:**` with the answer you would choose and, after it, a line starting `>
+**Why:**` with the reason, so the person can find the proposal at a glance and accept it in a word
+or give another. Each question holds one proposal, so a question with two answers is two questions,
+and a plugin hook refuses Open questions laid out any other way. Where only the person can know the
+answer, "Proposed:" says what would settle it instead, never a guess. Who the Story is about is such
+a question (rubric check 14). Words whose meaning is plain from the conversation or the product,
+such as "reply" in an email tool, are settled from that context, not asked about. Use only people
+the person named, anywhere in the spec; example values such as `user@example.com` need no name. An
+unknown goes into Open questions, worded so it can be answered. When the person names how something
+should be built (a library, a service, a named bucket or database, a design), keep the behaviour it
+serves and leave the choice out of every section, even when they state it as settled: the spec
+should still hold if the choice changes, and tell the person you left it out. If it is already
+decided, suggest recording it as an ADR (architecture decision record); if not, make it an open
+question. When an unknown can only be settled by trying something, suggest a spike: a throwaway
+experiment. When the person wants the spec to refer to the brief, another spec, an ADR, a plan or a
+spike record, by hyperlink, path or title, leave it out (rubric check 11) and tell them why: that
+document can change or be deleted without this spec being touched, so the reference would go stale.
+Material they hand over that is not a web page, such as a requirements document or notes, is drawn
+on but never referred to (rubric check 11): state what matters from it in the spec's own words, and
+tell them it can change or vanish without the spec being touched.
 
 Add only behaviour the person asked for or agreed to. A case they have not covered, such as who
 may not use the feature, what happens on an error, or what happens when a rule's condition does

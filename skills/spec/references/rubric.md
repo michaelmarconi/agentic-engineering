@@ -67,9 +67,12 @@ checking, and quotes the spec as evidence for every failure.
 13. **One capability.** The spec covers one capability: every requirement serves the Story's one
     outcome. A requirement that serves an outcome someone could ask for on its own, such as
     exporting what another requirement imports, fails: it belongs in a spec of its own.
-14. **Proposed answers.** Each open question ends with "Proposed:" and the answer the writer
-    would choose, so the person can accept it in a word or give another. A question only the
-    person can answer, such as who the Story is about, proposes no guess: its "Proposed:" says what
-    would settle it, such as "tell me who asked for this and what happens to them today". A default
-    the person did not give is never stated as a rule: it is an open question with that default
-    proposed.
+14. **Proposed answers.** Each open question's "**Proposed:**" line makes one proposal, a single
+    decision the person can accept in a word or replace, and its "**Why:**" line gives the reason,
+    which the proposal does not repeat; a second proposal hidden in either line fails, since it
+    belongs in a question of its own. The layout itself, a numbered heading, the context and a block
+    quote holding both lines, is checked by the status hook, not here. The proposal is the answer
+    the writer would choose. A question only the person can answer, such as who the Story is about,
+    proposes no guess: its "Proposed:" says what would settle it, such as "tell me who asked for
+    this and what happens to them today". A default the person did not give is never stated as a
+    rule: it is an open question with that default proposed.
