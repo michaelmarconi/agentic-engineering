@@ -94,7 +94,9 @@ reviewer needs to build and check it. Footnotes explaining terms come last, afte
 18. **Diagrams match the text.** A diagram is a `mermaid` block in Decision, after the reason, of
     the chosen option only, and appears only once Decision opens with "Chosen:". Every box, arrow and
     label in it names something the ADR's text already says, so the diagram makes no choice and
-    states no fact of its own; quote each one the text does not hold. An ADR with no diagram passes.
+    states no fact of its own: an arrow needs the text to say that one thing calls, sends to or is
+    read by the other, not only to name both. Quote each box, arrow or label the text does not
+    hold. An ADR with no diagram passes.
 
 The plain part's size, at most 500 words, tables included and the diagrams in Decision left out,
 is checked by the skill's `words` command and by the status hook, not by the reviewer. So is a

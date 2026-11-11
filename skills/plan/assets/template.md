@@ -39,7 +39,8 @@ date: <YYYY-MM-DD>
 <!-- How the work will be done, with subheadings and length to suit it. Start with why the work
      is being done and what it leaves for later. Give one recommended approach. Name the files
      that matter and the existing code to reuse; describe a repeated pattern once. No code, and
-     no decision that is not under Decisions or ADRs. -->
+     no decision that is not under Decisions or ADRs. A diagram the person picks at the hand-over
+     goes after this opening paragraph, as a mermaid block. -->
 
 ## Open questions
 

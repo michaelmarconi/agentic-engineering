@@ -1,0 +1,9 @@
+schema_version: "1.1"
+name: plan-no-diagram-offer
+expected_outcome: |
+  The plan's text names only one module with a `main` that prints a count, fewer than three
+  connected parts, events, states or records, so the hand-over says nothing about diagrams at all.
+  A guard case: Claude offers no diagrams unaided, so it passes without the plugin too; it is here
+  to catch the plugin's offer firing below its threshold.
+context:
+  scaffold_script: place-files.sh

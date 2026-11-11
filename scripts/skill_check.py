@@ -114,7 +114,7 @@ CORRECT_RULES = (
 )
 
 # The skills that offer diagrams at hand-over, each with the name its sentences give its document.
-DIAGRAM_SKILLS = {"adr": "ADR"}
+DIAGRAM_SKILLS = {"adr": "ADR", "plan": "plan"}
 # The sentences every such skill holds, with its document's name filled in, so the offers cannot
 # drift apart.
 DIAGRAM_RULES = (
@@ -125,14 +125,21 @@ DIAGRAM_RULES = (
     "Offer a shape only when the text names at least three of its things and at least two "
     "connections between them, such as three parts and two calls; otherwise say nothing about "
     "diagrams.",
-    "Name each offer in one line, saying what it would show; the offer's question is \"Would you "
-    "like to add any of these diagrams to the {document}, or propose another?\"",
+    "Name each offer in one line, saying what it would show; the offer's question, asked word for "
+    "word even for a single offer, is \"Would you like to add any of these diagrams to the "
+    "{document}, or propose another?\"",
+    "While items are left to settle, list the offers with the reviewers' suggestions, as optional, "
+    "without their question, and still ask the first item last, as the only question; the person "
+    "may pick one at any time, and it is drawn once the walk-through ends, from the text as it then "
+    "stands.",
     "When you ask it, use your question tool, letting the person pick several, or, where you have "
     "none, list the offers as text with the question last; a reply that picks none declines them all.",
     "Nothing is drawn unless the person picks it, and an offer never holds the {document} back "
     "from its next status.",
     "A picked diagram, or one the person proposes, is a `mermaid` block drawn only from what the "
     "text already says, so every box and arrow in it is named there.",
+    "Offer each {document}'s diagrams until the person picks or declines them, then not again for "
+    "that {document}.",
 )
 
 

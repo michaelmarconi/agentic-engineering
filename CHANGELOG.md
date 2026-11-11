@@ -6,6 +6,27 @@ What changed in each version of the plugin, newest first. Versions follow
 past a major version: it says what you need to change in your documents. Until 1.0.0, any
 minor version may need such a change, and its entry says so.
 
+## [0.43.0] - 2026-11-11
+
+### Added
+
+- `/plan` offers diagrams at the hand-over, the same way `/adr` does: a flowchart of parts that
+  call each other, a sequence diagram of events between actors, a state diagram or an
+  entity-relationship diagram, each only when the plan's text names at least three of its things
+  and two connections between them. It asks "Would you like to add any of these diagrams to the
+  plan, or propose another?", draws nothing you don't pick, and never holds a plan back from
+  `🟢 Ready to build`. A picked diagram is a `mermaid` block after the Plan section's opening
+  paragraph; the plan rubric's new check 13 fails any box or arrow its text does not hold, and
+  check 7 (no code) allows it. Only a `📝 Draft` plan gets the offer.
+
+### Changed
+
+- `/adr` and `/plan` ask the diagram offer's question word for word even when they offer a single
+  diagram, and share more of the offer's wording, checked by the plugin's skill check.
+- The ADR and plan reviewers fail a diagram's arrow unless the text says that one thing calls,
+  sends to or is read by the other; naming both is not enough. Nothing in your documents needs to
+  change.
+
 ## [0.42.2] - 2026-11-11
 
 ### Fixed
