@@ -142,8 +142,10 @@ with the reports.
 
 ## Diagrams
 
-Once a decision is chosen, each hand-over offers to draw the chosen option, beside the
-reviewers' suggestions, until you answer. It offers only what the text already describes
+Once a decision is chosen, each hand-over offers to draw the chosen option, until you pick or
+decline, for each ADR. While questions are open, the offers sit with the reviewers' optional
+suggestions and a picked diagram is drawn once the questions are settled; after that, the offer is
+the one question asked. It offers only what the text already describes
 in enough detail to be worth a picture: at least three things and two connections between them.
 There are four kinds:
 
