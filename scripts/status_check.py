@@ -110,16 +110,18 @@ so it may come with any edit the rules above allow, even to a decided ADR, a `âœ
 finished spike record. A rule that a status be set on its own lets the `date:` line change with it.
 
 Every open question in the brief, a spec, an ADR, a plan or a spike record is laid out as ADR 0030
-says: a heading `### N. <what is to be settled>`, numbered from 1 in order, then at least one line of
-context, then one block quote, last in the entry, holding exactly one line starting
-`> **Proposed:**` and, after it, exactly one line starting `> **Why:**`; or the section says only
+says: a heading `### N. <what is to be settled>`, numbered from 1 in order, then at least one line
+of context, then one block quote, last in the entry, holding exactly one line starting `>
+**Proposed:**` and, after it, exactly one line starting `> **Why:**`; or the section says only
 "None.". HTML comments, footnote definitions and a closing horizontal rule in the section are
 ignored, and a heading or `>` inside a fenced code block is text. A block quote earlier in the entry
 counts as context; a quote runs on over its lines without `>`, as Markdown's lazy continuation lines
-do, until a blank line. For the brief and for any document above with a lifecycle status before
-or after the edit, it refuses an edit that adds the Open questions section or changes what it says,
-apart from comments, footnotes and blank lines, while any entry breaks the layout, naming the entry and what is wrong. A document written before the layout
-may be edited elsewhere as before; the first edit to its Open questions lays them all out again.
+do, until a blank line or a line starting a block of its own, such as a list item. For the brief and
+for any document above with a lifecycle status before or after the edit, it refuses an edit that
+adds the Open questions section or changes what it says, apart from comments, footnotes and blank
+lines, while any entry breaks the layout, naming the entry and what is wrong. A document written
+before the layout may be edited elsewhere as before; the first edit to its Open questions lays them
+all out again.
 
 Whether a person really accepted an ADR or signed off a plan is beyond a hook; the skill asks them.
 
