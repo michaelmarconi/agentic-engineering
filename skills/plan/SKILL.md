@@ -74,7 +74,7 @@ Tell the person how many decisions there are, naming the count only, not the dec
 up when you reach it. Then ask the first only, and wait for the answer. Each question gives your
 proposed answer and where it belongs, with a reason for both. A plan may be deleted once built, so
 a decision belongs in it only if nobody needs its reason once the work is built. Ask of each who
-would need its reason after the build:
+would need its reason after the build, in this order, taking the first answer that fits:
 
 - later work, which must follow it: an ADR. Choosing a service, library, protocol, way of storing
   data or test set-up that the rest of the code would then use the same way is an ADR, even if
@@ -86,7 +86,9 @@ would need its reason after the build:
 - someone changing this code later, who needs only its reason, such as why a wait has no random
   part: this plan, with the line saying that `/build` leaves the reason as a comment beside the
   code;
-- nobody: this plan.
+- nobody, such as for the order of the steps or which file a helper goes in: this plan. A
+  decision that only follows a spec, an ADR, the practices or a pattern the code already uses is
+  one of these.
 
 Give any alternatives as possible answers, not as further
 questions, and end with a single question, such as whether they agree with your proposal. Ask the
@@ -185,9 +187,12 @@ each round of corrections brings new mistakes.
    the Plan section makes that is not under Decisions, or whether to split a plan bigger than the
    practices allow or keep it whole, becomes an entry in the plan's Open questions, with its
    "Proposed:", never a guess at the answer: leave the text it concerns as it is. A Decisions line
-   that fails rubric check 5 is not reworded or deleted: move it from Decisions to Open questions,
-   naming the ADR to record, the spec change to make with `/spec` or the practice to record with
-   `/practices` that the report names, with the decision itself as its "Proposed:". Leave suggestions
+   that fails rubric check 5 because it belongs in an ADR, the spec or the practices is not reworded
+   or deleted: move it from Decisions to Open questions, naming the ADR to record, the spec change
+   to make with `/spec` or the practice to record with `/practices` that the report names, with the
+   decision itself as its "Proposed:". A line that fails only because it lacks the comment wording
+   keeps its place and gains the sentence that `/build` leaves the reason as a comment beside the
+   code. Leave suggestions
    alone and change nothing else, since an edit beyond the reports is the likeliest way to break
    something. Wait until every edit has succeeded. If nothing in the reports was yours to correct,
    there is nothing to check: go straight to handing over.
