@@ -75,8 +75,10 @@ Check each of these before changing anything, and stop with the reason if one fa
    branch is known: `git symbolic-ref refs/remotes/origin/HEAD` names it. If there is no
    `origin`, ask the person to add one. If `origin/HEAD` is not set, ask them to run
    `git remote set-head origin -a`; never run it yourself, since it changes their repository.
-   The security review and the hand-over both need it. If anything is uncommitted, stop, so the
-   person's own work is never mixed into the build. If you are on the default branch, create and
+   The security review and the hand-over both need it. Run
+   `python3 "${CLAUDE_SKILL_DIR}/scripts/uncommitted.py"`; if it lists anything, stop, so the
+   person's own work is never mixed into the build. It leaves out the stand-ins Claude Code's
+   sandbox puts in place, so don't stop for those. If you are on the default branch, create and
    switch to a branch named as the practices say, or else `build/<plan file name without its
    date and .md>`; on any other branch, build there, since
    some places that run Claude Code choose the branch name for you.

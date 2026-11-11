@@ -27,6 +27,19 @@ minor version may need such a change, and its entry says so.
   sends to or is read by the other; naming both is not enough. Nothing in your documents needs to
   change.
 
+## [0.42.2] - 2026-11-11
+
+### Fixed
+
+- `/build` no longer refuses to start on Linux with Claude Code's sandbox on. The sandbox puts
+  stand-ins for `/dev/null` in place of files it protects, such as `.bashrc` and
+  `.claude/settings.json`, and git lists them as untracked, so `/build` took them for
+  uncommitted work. A new script, `uncommitted.py`, lists what is uncommitted and leaves those
+  stand-ins out.
+- The hand-over no longer drops the build's last work there. Git can't add the stand-ins, and one
+  it can't add stopped the hand-over from adding anything, so the branch was pushed without the
+  work and no error was shown. It now leaves the stand-ins out, and reports a failed add.
+
 ## [0.42.1] - 2026-11-11
 
 ### Fixed
