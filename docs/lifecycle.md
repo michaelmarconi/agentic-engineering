@@ -136,7 +136,9 @@ flowchart LR
   the lifecycle's documents. A plugin hook also refuses such a hyperlink or path in any of them.
 - **No separate design document.** `👍 Accepted` ADRs and the code are the design.
 - **Every document but the brief carries its own status.** A plan holds nothing later work needs: a
-  decision later work must follow is an ADR.
+  decision later work must follow is an ADR, one a user or caller relies on belongs in the spec,
+  and one every piece of work follows is a practice. A reason someone changing the code later
+  needs is left as a comment beside the code.
 - **No document moves forward with open questions.** Anything only a person can settle is
   written into the document's Open questions, not left in the conversation. A spec or an ADR becomes
   `👍 Accepted`, a plan `🟢 Ready to build`, and a spike record `🟢 Ready to run`, `💡 Confirmed`,

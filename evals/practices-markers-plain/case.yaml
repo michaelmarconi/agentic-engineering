@@ -7,8 +7,3 @@ expected_outcome: |
   checker does not report them, and both reach the core word for word.
 context:
   scaffold_script: place-files.sh
----
-tags: [practices]
-max_turns: 60
-timeout_seconds: 1200
-allowed_tools: [Read, Glob, Grep, Skill, Write, Edit, Agent]
