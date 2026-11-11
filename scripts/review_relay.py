@@ -6,7 +6,8 @@ After a review, the drafting agent corrects the document once and starts the cor
 and the document as it stood when reviewed. A model copying them can reword them, so this hook
 saves them and adds them to the checker's request itself.
 
-Claude Code runs it on PreToolUse and PostToolUse for the Agent tool, and on SubagentStop. It reads
+Claude Code runs it on PreToolUse and PostToolUse for the Agent tool, on PostToolUse for a
+subagent's SubagentHandback tool, and on SubagentStop. It reads
 the hook's JSON from stdin. A reviewer's or checker's request must start with the line
 `Document: <path>`. Skills give the document's full path; a relative path is read from a
 `Repository: <folder>` second line if the request has one, or else from the project
@@ -42,10 +43,12 @@ feedback, practices or spike) and the shared language checker, which checks the 
   stands in for it.
 - Either part may run in the background, which Claude Code can choose even when the skill asks for
   the foreground. The Agent tool's PostToolUse event then only says the agent was launched, with
-  its id, so the hook notes which review that id's run started in. When the agent finishes,
-  Claude Code's SubagentStop event carries the same id and the report (see subagent_report.py),
-  and the hook saves it as above. If the agent finishes before its launch is seen, the report is
-  held under its id until it is. These notes live in the session's background-runs.json.
+  its id, so the hook notes which review that id's run started in. When the agent finishes, an
+  event with the same id carries the report (see subagent_report.py): in auto mode, the
+  PostToolUse event of the agent's own SubagentHandback call, and otherwise SubagentStop. The
+  hook saves it as above, and a hand-back's report is final. If the agent finishes before its
+  launch is seen, the report is held under its id until it is. These notes live in the session's
+  background-runs.json.
 - Before the correction checker starts, it takes the latest review the reviewer ran in, appends
   both its reports, the document as reviewed, and the files that skill's checker should read,
   between fixed `=== ... ===` lines, and approves the start. It refuses the start, with a reason
@@ -372,26 +375,35 @@ def keep_report(session, name, call, agent, report):
 
 
 def agent_stopped(session, event):
-    """A background agent finished: save its report in the review its run started in, or hold it
-    until its launch is seen, when the agent is a reviewer or the language checker. The launch's
-    note is kept, so if the agent stops again, as when another hook kept it going, its last
-    report is the one saved."""
+    """A reviewer or the language checker finished, by handing its report back or by stopping:
+    save its report in the review its run started in, or hold it until its launch is seen. The
+    launch's note is kept, so if the agent stops again, as when another hook kept it going, its
+    last report is the one saved. A hand-back ends the agent's run, so once its report is in, a
+    later stop, whose last message is then at most a line written beside the hand-back, is left
+    alone."""
     agent_id = event.get("agent_id")
     agent = str(event.get("agent_type") or "").split(":")[-1]
     if not isinstance(agent_id, str) or not agent_id or not folder(session):
         return None
     if agent not in REVIEWERS and agent != LANGUAGE:
         return None
-    report = subagent_report.report(event)
+    handed = subagent_report.handed_back_report(event) is not None
     with locked(session, create=False):
         if not os.path.isdir(folder(session)):
             return None
         runs = load_runs(session)
         run = runs["launched"].get(agent_id)
         if run is None:
-            subagent_report.hold(runs["stopped"], agent_id, {"agent": agent, "report": report})
+            if runs["stopped"].get(agent_id, {}).get("handed_back") and not handed:
+                return None
+            subagent_report.hold(runs["stopped"], agent_id, {
+                "agent": agent, "report": subagent_report.report(event), "handed_back": handed})
+        elif run.get("handed_back") and not handed:
+            return None
         elif isinstance(run.get("name"), str) and isinstance(run.get("call"), str):
-            keep_report(session, run["name"], run["call"], str(run.get("agent")), report)
+            keep_report(session, run["name"], run["call"], str(run.get("agent")),
+                        subagent_report.report(event))
+            run["handed_back"] = run.get("handed_back") or handed
         save_runs(session, runs)
     return None
 
@@ -458,9 +470,14 @@ def start_checker(session, tool_input):
     with locked(session, create=False):
         reviews = [r for r in load(session, name) if reviewed(r)][-1:]
     if not reviews or not complete(reviews[0]):
+        missing = [] if not reviews else [
+            who for who, part in (("the reviewer's", "reviewer"), ("the language checker's", "language"))
+            if not has_report(reviews[0], part)]
+        lacking = f": {' and '.join(missing)} report{'s are' if len(missing) > 1 else ' is'} missing" \
+            if missing else ""
         return refuse(f"No review of {name} with both the reviewer's and the language checker's "
-                      "reports is on record in this session, so the corrections cannot be "
-                      "checked. Do not review again: stop and show the person the reports you "
+                      f"reports is on record in this session{lacking}, so the corrections cannot "
+                      "be checked. Do not review again: stop and show the person the reports you "
                       "have and this reason.")
     record = reviews[-1]
     text = current_text(repository, paths, prompt)
@@ -478,7 +495,7 @@ def handle(event):
         return None
     session = str(event.get("session_id") or "unknown")
     when = event.get("hook_event_name")
-    if when == "SubagentStop":
+    if subagent_report.finished(event):
         return agent_stopped(session, event)
     tool_input = event.get("tool_input")
     if event.get("tool_name") not in ("Agent", "Task") or not isinstance(tool_input, dict):
@@ -538,9 +555,11 @@ def handle(event):
                     save_runs(session, runs)
                 return None
             stopped = runs["stopped"].pop(agent_id, None)
-            if stopped is None:
-                runs["launched"][agent_id] = {"name": name, "call": call, "agent": agent}
-            elif isinstance(stopped.get("report"), str):
+            # The note stays after a held report is saved, so a later report of the agent is
+            # saved too, unless the held one was handed back, which is final.
+            runs["launched"][agent_id] = {"name": name, "call": call, "agent": agent,
+                                          "handed_back": bool(stopped and stopped.get("handed_back"))}
+            if stopped is not None and isinstance(stopped.get("report"), str):
                 keep_report(session, name, call, agent, stopped["report"])
             save_runs(session, runs)
     return None

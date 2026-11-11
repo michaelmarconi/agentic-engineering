@@ -562,6 +562,121 @@ class Relay(unittest.TestCase):
         self.assertIn(REPORT, prompt)
         self.assertNotIn("an early line", prompt)
 
+    # In auto mode, as in the Claude desktop app and Claude project threads, an agent ends by
+    # calling SubagentHandback. Its SubagentStop then has no last message, and the hand-back may
+    # not be in its transcript yet, so the report is taken from the hand-back call's PostToolUse.
+
+    def hand_back(self, agent, agent_id, report, session=None, success=True):
+        return self.run_hook({"hook_event_name": "PostToolUse", "session_id": session or self.session,
+                              "agent_id": agent_id, "agent_type": agent, "tool_name": "SubagentHandback",
+                              "tool_use_id": f"handback-{agent_id}", "tool_input": {"message": report},
+                              "tool_response": {"success": success,
+                                                "message": "Report delivered to your caller."}})
+
+    def stopped_after_hand_back(self, agent, agent_id, session=None):
+        """SubagentStop after a hand-back: no last message, and no transcript to read."""
+        return self.run_hook({"hook_event_name": "SubagentStop", "session_id": session or self.session,
+                              "agent_id": agent_id, "agent_type": agent, "stop_hook_active": False,
+                              "agent_transcript_path": os.path.join(self.tmp.name, "not-yet.jsonl")})
+
+    def test_reports_handed_back_by_background_runs_reach_the_checker(self):
+        self.put(SPEC, "v1\n")
+        review, check = f"Document: {SPEC}\nReview this spec.", f"Document: {SPEC}\nCheck the wording."
+        self.launch("agentic:spec-reviewer", review, "a1")
+        self.launch(LANGUAGE, check, "a2")
+        self.assertIsNone(self.hand_back(LANGUAGE, "a2", WORDING))
+        self.assertIsNone(self.stopped_after_hand_back(LANGUAGE, "a2"))
+        self.assertIsNone(self.hand_back("agentic:spec-reviewer", "a1", REPORT))
+        self.assertIsNone(self.stopped_after_hand_back("agentic:spec-reviewer", "a1"))
+        self.put(SPEC, "v2\n")
+        prompt = self.assertAllowed(self.check())["prompt"]
+        self.assertIn("=== REVIEW REPORT ===\n" + REPORT + "\n=== END REVIEW REPORT ===", prompt)
+        self.assertIn("=== WORDING REPORT ===\n" + WORDING + "\n=== END WORDING REPORT ===", prompt)
+
+    def test_a_report_handed_back_before_its_launch_is_seen_counts(self):
+        self.put(SPEC, "v1\n")
+        review = f"Document: {SPEC}\nReview this spec."
+        self.agent("PreToolUse", "agentic:spec-reviewer", review)
+        self.hand_back("agentic:spec-reviewer", "a1", REPORT)
+        self.stopped_after_hand_back("agentic:spec-reviewer", "a1")
+        self.post("agentic:spec-reviewer", review, {"status": "async_launched", "agentId": "a1"})
+        self.language()
+        self.put(SPEC, "v2\n")
+        self.assertIn(REPORT, self.assertAllowed(self.check())["prompt"])
+
+    def test_a_line_left_after_a_hand_back_does_not_replace_the_report(self):
+        self.put(SPEC, "v1\n")
+        self.launch("agentic:spec-reviewer", f"Document: {SPEC}\nReview this spec.", "a1")
+        self.hand_back("agentic:spec-reviewer", "a1", REPORT)
+        self.stopped("agentic:spec-reviewer", "a1", "Handing back my report.")
+        self.language()
+        self.put(SPEC, "v2\n")
+        prompt = self.assertAllowed(self.check())["prompt"]
+        self.assertIn(REPORT, prompt)
+        self.assertNotIn("Handing back", prompt)
+
+    def test_a_line_left_after_a_hand_back_held_does_not_replace_it(self):
+        self.put(SPEC, "v1\n")
+        review = f"Document: {SPEC}\nReview this spec."
+        self.agent("PreToolUse", "agentic:spec-reviewer", review)
+        self.hand_back("agentic:spec-reviewer", "a1", REPORT)
+        self.stopped("agentic:spec-reviewer", "a1", "Handing back my report.")
+        self.post("agentic:spec-reviewer", review, {"status": "async_launched", "agentId": "a1"})
+        self.language()
+        self.put(SPEC, "v2\n")
+        self.assertIn(REPORT, self.assertAllowed(self.check())["prompt"])
+
+    def test_a_report_after_an_early_stop_held_before_the_launch_counts(self):
+        self.put(SPEC, "v1\n")
+        review = f"Document: {SPEC}\nReview this spec."
+        self.agent("PreToolUse", "agentic:spec-reviewer", review)
+        self.stopped("agentic:spec-reviewer", "a1", "an early line")
+        self.post("agentic:spec-reviewer", review, {"status": "async_launched", "agentId": "a1"})
+        self.hand_back("agentic:spec-reviewer", "a1", REPORT)
+        self.language()
+        self.put(SPEC, "v2\n")
+        prompt = self.assertAllowed(self.check())["prompt"]
+        self.assertIn(REPORT, prompt)
+        self.assertNotIn("an early line", prompt)
+
+    def test_a_foreground_run_in_auto_mode_counts_and_leaves_nothing_held(self):
+        # The order Claude Code gives a foreground run that hands back: the hand-back's PostToolUse,
+        # SubagentStop, then the Agent tool's PostToolUse carrying the report.
+        self.put(SPEC, "v1\n")
+        review = f"Document: {SPEC}\nReview this spec."
+        self.agent("PreToolUse", "agentic:spec-reviewer", review)
+        self.hand_back("agentic:spec-reviewer", "a1b2c3", REPORT)
+        self.stopped_after_hand_back("agentic:spec-reviewer", "a1b2c3")
+        self.post("agentic:spec-reviewer", review, handed_back(REPORT))
+        self.assertEqual(self.held(), {})
+        self.language()
+        self.put(SPEC, "v2\n")
+        self.assertIn(REPORT, self.assertAllowed(self.check())["prompt"])
+
+    def test_a_hand_back_that_was_not_sent_is_no_report(self):
+        self.put(SPEC, "v1\n")
+        self.launch("agentic:spec-reviewer", f"Document: {SPEC}\nReview this spec.", "a1")
+        self.hand_back("agentic:spec-reviewer", "a1", REPORT, success=False)
+        self.language()
+        self.put(SPEC, "v2\n")
+        self.assertRefused(self.check(), "stop and show the person")
+
+    def test_a_hand_back_of_another_agent_changes_nothing(self):
+        self.put(SPEC, "v1\n")
+        self.launch("agentic:spec-reviewer", f"Document: {SPEC}\nReview this spec.", "a1")
+        self.hand_back("Explore", "a1", "an explorer's summary")
+        self.language()
+        self.put(SPEC, "v2\n")
+        self.assertRefused(self.check(), "stop and show the person")
+
+    def test_the_refusal_names_the_missing_report(self):
+        self.put(SPEC, "v1\n")
+        self.launch("agentic:spec-reviewer", f"Document: {SPEC}\nReview this spec.", "a1")
+        self.language()
+        self.put(SPEC, "v2\n")
+        self.assertRefused(self.check(), "the reviewer's report is missing")
+        self.assertRefused(self.check(), "stop and show the person")
+
     def held(self):
         path = [p for p in self.saved() if p.endswith("background-runs.json")]
         if not path:

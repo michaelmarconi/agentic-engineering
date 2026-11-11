@@ -267,6 +267,83 @@ class Corrections(Relay):
         self.assertIn("security finding", prompt)
         self.assertNotIn("an early line", prompt)
 
+    # In auto mode an agent ends by calling SubagentHandback: its SubagentStop then has no last
+    # message, and the hand-back may not be in its transcript yet.
+
+    def hand_back(self, agent, agent_id, report, session="s1"):
+        return self.hook({"hook_event_name": "PostToolUse", "agent_id": agent_id, "agent_type": agent,
+                          "tool_name": "SubagentHandback", "tool_use_id": f"handback-{agent_id}",
+                          "tool_input": {"message": report},
+                          "tool_response": {"success": True, "message": "Report delivered to your caller."}},
+                         session)
+
+    def stopped_after_hand_back(self, agent, agent_id, session="s1"):
+        return self.hook({"hook_event_name": "SubagentStop", "agent_id": agent_id, "agent_type": agent,
+                          "stop_hook_active": False,
+                          "agent_transcript_path": os.path.join(self.tmp.name, "not-yet.jsonl")}, session)
+
+    def test_reports_handed_back_by_background_reviews_are_attached(self):
+        self.code_review()
+        self.launch(*self.SECURITY, "a1")
+        self.launch(*self.REVIEW, "a2")
+        for agent, agent_id, report in (("general-purpose", "a1", "security finding"),
+                                        ("agentic:build-reviewer", "a2", "plan finding")):
+            self.assertIsNone(self.hand_back(agent, agent_id, report))
+            self.assertIsNone(self.stopped_after_hand_back(agent, agent_id))
+        self.commit("Correct")
+        prompt = self.check()["updatedInput"]["prompt"]
+        self.assertIn("=== SECURITY REVIEW REPORT ===\nsecurity finding\n", prompt)
+        self.assertIn("=== BUILD REVIEW REPORT ===\nplan finding\n", prompt)
+
+    def test_a_line_left_after_a_hand_back_does_not_replace_the_report(self):
+        self.code_review()
+        self.launch(*self.SECURITY, "a1")
+        self.launch(*self.REVIEW, "a2")
+        self.hand_back("general-purpose", "a1", "security finding")
+        self.stopped("general-purpose", "a1", "Handing back my report.")
+        self.hand_back("agentic:build-reviewer", "a2", "plan finding")
+        self.commit("Correct")
+        prompt = self.check()["updatedInput"]["prompt"]
+        self.assertIn("security finding", prompt)
+        self.assertNotIn("Handing back", prompt)
+
+    def test_a_report_handed_back_before_its_launch_is_seen_counts(self):
+        self.code_review()
+        calls = []
+        for (agent, prompt), agent_id, report in ((self.SECURITY, "a1", "security finding"),
+                                                  (self.REVIEW, "a2", "plan finding")):
+            self.calls += 1
+            call = f"call{self.calls}"
+            tool_input = {"subagent_type": agent, "prompt": prompt}
+            self.hook({"hook_event_name": "PreToolUse", "tool_name": "Agent", "tool_use_id": call,
+                       "tool_input": tool_input})
+            self.hand_back(agent, agent_id, report)
+            self.stopped(agent, agent_id, "Handing back my report.")
+            calls.append((call, tool_input, agent_id))
+        for call, tool_input, agent_id in calls:
+            self.hook({"hook_event_name": "PostToolUse", "tool_name": "Agent", "tool_use_id": call,
+                       "tool_input": tool_input,
+                       "tool_response": {"status": "async_launched", "agentId": agent_id}})
+        self.commit("Correct")
+        prompt = self.check()["updatedInput"]["prompt"]
+        self.assertIn("security finding", prompt)
+        self.assertIn("plan finding", prompt)
+        self.assertNotIn("Handing back", prompt)
+
+    def test_a_hand_back_stays_final_after_other_agents_hand_back(self):
+        self.code_review()
+        self.launch(*self.SECURITY, "a1")
+        self.launch(*self.REVIEW, "a2")
+        self.hand_back("general-purpose", "a1", "security finding")
+        for n in range(8):  # implementers and other helpers that run as general-purpose
+            self.hand_back("general-purpose", f"x{n}", "an implementer's summary")
+        self.stopped("general-purpose", "a1", "Handing back my report.")
+        self.hand_back("agentic:build-reviewer", "a2", "plan finding")
+        self.commit("Correct")
+        prompt = self.check()["updatedInput"]["prompt"]
+        self.assertIn("security finding", prompt)
+        self.assertNotIn("Handing back", prompt)
+
     def test_agents_no_review_waits_for_are_not_held(self):
         self.all_reviews()
         self.stopped("general-purpose", "a9", "an implementer's summary")

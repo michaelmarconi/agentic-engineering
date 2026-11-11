@@ -8,7 +8,7 @@ could reword them, so this hook keeps them and adds them to the checker's reques
 review_relay.py does for documents.
 
 Claude Code runs it on PreToolUse for the Agent tool, on PostToolUse for the Agent and Skill
-tools, and on SubagentStop. It acts only in a session where /build was allowed to start (recorded by
+tools and a subagent's SubagentHandback tool, and on SubagentStop. It acts only in a session where /build was allowed to start (recorded by
 fresh_session.py), and keeps:
 
 - the report of Claude Code's `/code-review`, from the Skill tool's result;
@@ -27,8 +27,9 @@ reports of the reviewed commit is missing, or when nothing
 has been committed since the reviews, and deletes the record once the checker has run, so the
 corrections are checked only once. A review agent may run in the background, which Claude Code
 can choose even when the skill asks for the foreground: its PostToolUse event then only says it
-was launched, with its id, so the hook keeps the report from the SubagentStop event with that id
-(see subagent_report.py), and holds a report that arrives first until the launch is seen. Records live in
+was launched, with its id, so the hook keeps the report from the event with that id that says
+the agent finished: in auto mode its SubagentHandback call's PostToolUse, whose report is final,
+and otherwise SubagentStop (see subagent_report.py). It holds a report that arrives first until the launch is seen. Records live in
 $CLAUDE_PLUGIN_DATA/builds/<session>.json and are deleted once unchanged for 30 days (see
 saved_records.py), not when the session ends, since a resumed session carries on. Anything else,
 and any input it cannot read, is left alone.
@@ -198,19 +199,25 @@ def keep(record, call, part, report):
 
 
 def agent_stopped(session, event):
-    """A background review agent finished: keep its report, or hold it until its launch is seen
-    while a review of its kind has no report yet. The launch's note is kept, so if the agent stops
-    again, as when another hook kept it going, its last report is the one kept."""
+    """A background review agent finished, by handing its report back or by stopping: keep its
+    report, or hold it until its launch is seen while a review of its kind has no report yet. The
+    launch's note is kept, so if the agent stops again, as when another hook kept it going, its
+    last report is the one kept. A hand-back ends the agent's run, so once its report is in, a later
+    stop, whose last message is then at most a line written beside the hand-back, is left alone."""
     agent_id = event.get("agent_id")
     part = STOPPING.get(str(event.get("agent_type") or "").split(":")[-1])
     if (not isinstance(agent_id, str) or not agent_id or not part
             or not fresh_session.building(session) or not record_path(session)):
         return None
+    handed = subagent_report.handed_back_report(event) is not None
     with locked(session):
         record = load(session)
         if not record or not isinstance(record.get("started"), dict):
             return None
         launched, stopped = runs(record, "launched"), runs(record, "stopped")
+        final = runs(record, "handed_back")
+        if final.get(agent_id) and not handed:
+            return None
         call = launched.get(agent_id)
         if isinstance(call, str):
             keep(record, call, record["started"].get(call), subagent_report.report(event))
@@ -218,6 +225,11 @@ def agent_stopped(session, event):
             subagent_report.hold(stopped, agent_id, subagent_report.report(event))
         else:
             return None
+        if handed:
+            final[agent_id] = True
+        # Marks matter only while the agent's launch or held report is on record.
+        for old in [k for k in final if k not in launched and k not in stopped]:
+            del final[old]
         save(session, record)
     return None
 
@@ -225,7 +237,7 @@ def agent_stopped(session, event):
 def handle(event):
     session = str(event.get("session_id") or "unknown")
     when = event.get("hook_event_name")
-    if when == "SubagentStop":
+    if subagent_report.finished(event):
         return agent_stopped(session, event)
     tool_input = event.get("tool_input")
     if not isinstance(tool_input, dict):
@@ -276,8 +288,8 @@ def handle(event):
             else:
                 launched, stopped = runs(record, "launched"), runs(record, "stopped")
                 report = stopped.pop(agent_id, None)
+                launched[agent_id] = call  # so a later report of the agent is kept too
                 if not isinstance(report, str):
-                    launched[agent_id] = call
                     report = ""
             keep(record, call, part, report)
             save(session, record)

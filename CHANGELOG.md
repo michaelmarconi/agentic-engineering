@@ -6,6 +6,17 @@ What changed in each version of the plugin, newest first. Versions follow
 past a major version: it says what you need to change in your documents. Until 1.0.0, any
 minor version may need such a change, and its entry says so.
 
+## [0.37.1] - 2026-11-11
+
+### Fixed
+
+- In auto mode, as in the Claude desktop app, a review agent that Claude Code ran in the
+  background could lose its report, so the correction checker was refused with "No review ...
+  is on record". The agent hands its report back as it finishes, and the plugin read it from the
+  agent's transcript, which may not hold it yet. The plugin now takes the report from the
+  hand-back itself, for document reviews and for /build's reviews. When the correction checker is
+  refused for a missing report, the reason now names which report is missing.
+
 ## [0.37.0] - 2026-11-11
 
 ### Changed
