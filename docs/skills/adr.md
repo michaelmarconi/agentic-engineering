@@ -46,7 +46,7 @@ what matters in its own words, and a plugin hook refuses any other hyperlink or 
 ## Anatomy
 
 An ADR is written for a person first. It reads from plain to technical: the top part says what
-had to be chosen, what was chosen, why and what it costs, in at most 500 words; the exact
+had to be chosen, what was chosen, why and what it costs, in at most 500 words of prose; the exact
 mechanism and evidence sit at the foot, for whoever builds and checks it. The layout is based on
 MADR (Markdown Architectural Decision Records), a widely used template, with every one of its
 core parts kept, reordered and tightened.[^madr]
@@ -56,7 +56,7 @@ core parts kept, reordered and tightened.[^madr]
 | `status:` and `date:` | `📝 Draft`, `👍 Accepted`, `❌ Rejected` or `↪️ Superseded`, and the day the status last changed; `supersedes:` or `superseded-by:` name another ADR by number | Status and date |
 | Title | The decision in plain words, such as "Keep session data in Redis" | Title |
 | Question | The one choice to make, in at most three sentences, written first | Part of Context and Problem Statement |
-| Decision | "Not chosen yet" until you pick; then "Chosen:" and the option in full, with the reason | Decision Outcome, moved up |
+| Decision | "Not chosen yet" until you pick; then "Chosen:" and the option in full, with the reason, and any diagram of it you asked for | Decision Outcome, moved up |
 | Background | What forces the choice now, and the earlier ADRs it builds on | Context and Problem Statement |
 | Options | A table: each option, whether it was chosen or rejected, and why, in one line | Considered Options, with pros and cons cut to one line |
 | Consequences | Good and bad results of the choice, one line each | Consequences |
@@ -139,6 +139,35 @@ could not follow, by the [Plain words](../lifecycle.md#plain-words) rule: a term
 gets a footnote, and team shorthand is rewritten. `/adr` corrects what both find, once, and
 has the corrections checked (see [Review process](../lifecycle.md#review-process)); then you get the ADR
 with the reports.
+
+## Diagrams
+
+Once a decision is chosen and nothing is left to settle, `/adr` offers to draw the chosen option,
+before asking whether to accept it. It offers only what the text already describes in enough
+detail to be worth a picture: at least three things and two connections between them. There are
+four kinds:
+
+| What the text describes | Diagram |
+|---|---|
+| Parts that call each other | Flowchart |
+| Events passing between actors | Sequence diagram |
+| The states one thing moves through | State diagram |
+| Records and how they relate | Entity-relationship diagram |
+
+It asks "Would you like to add any of these diagrams to the ADR, or propose another?" and draws
+nothing you don't pick. A decision with nothing to draw, such as storing money as whole numbers of
+the smallest unit, gets no offer at all. A picked diagram is a [Mermaid](https://mermaid.js.org/)
+block, which GitHub shows as a picture, placed in Decision after the reason. It may show only what
+the text says, so it can never slip in a choice of its own; the reviewer checks every box and
+arrow against the text. Diagrams don't count towards the 500 words. For an ADR choosing to receive
+customs updates by webhook, the flowchart might be:
+
+```mermaid
+flowchart LR
+  Sender[Customs service] -->|posts update| Endpoint[Webhook endpoint]
+  Endpoint -->|queues| Queue[Message queue]
+  Queue -->|delivers| Worker[Status worker]
+```
 
 [^nygard]: Michael Nygard, [Documenting Architecture Decisions](https://cognitect.com/blog/2011/11/15/documenting-architecture-decisions),
     2011. We take one decision per record, and keeping a reversed decision marked as superseded.

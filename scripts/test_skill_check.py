@@ -10,7 +10,8 @@ ROOT = os.path.join(HERE, "..")
 sys.path.insert(0, HERE)
 from skill_check import (AGENT_RULE, CORRECT_RULES, DOCUMENT_SKILLS, PATH_RULE, PROPOSED_RULE,  # noqa: E402
                          QUESTIONS_RULE, REPORT_RULES, REVIEW_RULE, SHOW_RULE,
-                         SIGNOFF_RULE, STATUS_SKILLS, TYPE_RULE, DATE_RULE, holds)
+                         SIGNOFF_RULE, STATUS_SKILLS, TYPE_RULE, DATE_RULE, DIAGRAM_SKILLS,
+                         diagram_rules, holds)
 
 DESCRIPTION = "Write a thing. Use whenever someone wants a thing."
 STEPS = "\n\n".join(CORRECT_RULES)
@@ -258,6 +259,38 @@ class SkillCheck(unittest.TestCase):
 
     def test_the_status_skills_are_the_four_with_a_status(self):
         self.assertEqual(sorted(STATUS_SKILLS), ["adr", "plan", "spec", "spike"])
+
+    # Every skill that offers diagrams offers them the same way
+
+    def adr_body(self, rules):
+        return "# ADR\n\n" + "\n\n".join([TYPE_RULE, PROPOSED_RULE, SIGNOFF_RULE, DATE_RULE, *rules]) + "\n"
+
+    def test_diagram_skill_with_every_diagram_rule_passes(self):
+        self.put("adr", skill_md(name="adr", body=self.adr_body(diagram_rules("ADR"))))
+        done = self.check()
+        self.assertEqual((done.returncode, done.stdout), (0, ""))
+
+    def test_diagram_skill_missing_a_diagram_rule_fails(self):
+        for missing in range(len(diagram_rules("ADR"))):
+            rules = [rule for i, rule in enumerate(diagram_rules("ADR")) if i != missing]
+            self.put("adr", skill_md(name="adr", body=self.adr_body(rules)))
+            self.assertFails(f"adr/SKILL.md: diagram rule {missing + 1} missing")
+
+    def test_diagram_rules_name_the_skills_own_document(self):
+        self.put("adr", skill_md(name="adr", body=self.adr_body(diagram_rules("plan"))))
+        self.assertFails("adr/SKILL.md: diagram rule")
+
+    def test_the_question_is_asked_word_for_word(self):
+        self.assertIn("\"Would you like to add any of these diagrams to the ADR, or propose another?\"",
+                      " ".join(diagram_rules("ADR")))
+
+    def test_skills_that_offer_no_diagrams_need_no_diagram_rules(self):
+        self.put("brief", skill_md(name="brief", body=f"# Brief\n\n{TYPE_RULE}\n\n{PROPOSED_RULE}\n"))
+        done = self.check()
+        self.assertEqual((done.returncode, done.stdout), (0, ""))
+
+    def test_every_diagram_skill_names_a_document_skill(self):
+        self.assertTrue(set(DIAGRAM_SKILLS) <= set(DOCUMENT_SKILLS))
 
     # Every reviewer reports in the same shape
 
