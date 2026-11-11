@@ -225,11 +225,14 @@ Nothing else belongs at the root without a reason recorded in the change that ad
   `claude plugin eval . --case '<name>-*' --model <model> --judge-model sonnet --scaffold --allow-tools Write Edit -j 4 --ablation none`;
   without the grant, cases that write documents can't pass. A case whose prompt allows WebSearch
   or WebFetch needs them in the grant too, or the tools are withheld and the case proves nothing.
-  The same goes for Bash, which the audit, build and spike cases that run scripts allow: add it
-  to the grant for them. A Bash case needs `bubblewrap` and `socat` installed on Linux, and fails
-  with "read-only file system" where the temporary folder is `/tmp` itself, as in a cloud
-  session, because the eval's sandbox blocks writes to `/tmp` and puts each run's folder there.
-  Start the command with `TMPDIR=` and a folder outside `/tmp`, such as `TMPDIR=/srv/evaltmp`.
+  The same goes for Bash: a case whose `allowed_tools` include Bash (every audit and build case,
+  some spike cases) needs `Bash` in the grant, here and in the failed-check command below. On
+  Linux, Bash cases also need `bubblewrap` and `socat` installed. Where the temporary folder
+  (`TMPDIR`) is `/tmp` or a folder under it, as in a cloud session, they fail with "read-only
+  file system": the eval puts each run's folder there, and its sandbox blocks writes to `/tmp`.
+  Run them with a temporary folder outside `/tmp` that exists and anyone can write to:
+  `mkdir -p /srv/evaltmp && chmod 1777 /srv/evaltmp`, then
+  `TMPDIR=/srv/evaltmp claude plugin eval . --case '<name>-*' --model <model> --judge-model sonnet --scaffold --allow-tools Write Edit Bash -j 4 --ablation none`.
   `--ablation none` turns off the no-plugin comparison runs, which show how much a skill adds
   but don't decide whether a case passes; turn it back on (drop the flag) to measure that, for
   example before 1.0. `-j 4` runs four cases at once.
