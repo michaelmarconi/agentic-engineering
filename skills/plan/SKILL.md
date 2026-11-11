@@ -71,15 +71,15 @@ code already uses is not a decision, and nor is anything a spec, an ADR or a pra
 ## Ask
 
 Tell the person how many decisions there are, naming the count only, not the decisions: each comes
-up when you reach it. Then ask the first only, and wait for the answer. Each question gives your
-proposed answer and where it belongs, with a reason for both. When you ask the person to settle a
-question in the conversation, lay it out in four parts, so they can find your proposal at a glance:
-a bold line naming it and its place in the count, such as "**Question 1 of 3: how often a failed
-pull is retried**"; the context it needs; a block quote holding a "**Proposed:**" line with your
-answer and a "**Why:**" line with the reason; and the question itself, last, in one line. A plan may
-be deleted once built, so a decision belongs in it only if nobody needs its reason once the work is
-built. Ask of each who would need its reason after the build, in this order, taking the first answer
-that fits:
+up when you reach it. Then ask the first only, and wait for the answer. Each question's proposal is
+one answer that also says where it belongs, such as "Record an ADR choosing the Redis the app
+already uses", and its reason covers both. When you ask the person to settle a question in the
+conversation, lay it out in four parts, so they can find your proposal at a glance: a bold line
+naming it and its place in the count, such as "**Question 1 of 3: how often a failed pull is
+retried**"; the context it needs; a block quote holding a "**Proposed:**" line with your answer and
+a "**Why:**" line with the reason; and the question itself, last, in one line. A plan may be deleted
+once built, so a decision belongs in it only if nobody needs its reason once the work is built. Ask
+of each who would need its reason after the build, in this order, taking the first answer that fits:
 
 - later work, which must follow it: an ADR. Choosing a service, library, protocol, way of storing
   data or test set-up that the rest of the code would then use the same way is an ADR, even if

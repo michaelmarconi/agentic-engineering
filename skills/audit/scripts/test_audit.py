@@ -213,6 +213,12 @@ class Documents(Project):
                                          "docs/specs/statement-import.spec.md", "docs/spikes/2026-11-01-can-it.md"])
         self.assertIn("### 1.", found["docs/brief.md"])
 
+    def test_question_layout_is_not_listed_where_it_cannot_or_need_not_change(self):
+        self.put("docs/adrs/0001-cents.md", adr(status="❌ Rejected", open_questions="Which currency?"))
+        self.put("docs/specs/statement-import.spec.md", spec(open_questions="What about refunds?"))
+        self.assertEqual(self.problems("question layout"), [])
+        self.assertEqual(len(self.problems("open questions")), 1)
+
     def test_references_follow_the_references_rule(self):
         self.put("docs/brief.md", "# Product\n\nSee [import](specs/statement-import.spec.md).\n")
         self.put("docs/specs/statement-import.spec.md",

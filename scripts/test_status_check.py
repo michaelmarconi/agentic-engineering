@@ -1682,6 +1682,32 @@ class OpenQuestionsShape(unittest.TestCase):
         self.assertIn("Where the daily tariff copy is kept", problem)
         self.assertIn(status_check.OPEN_QUESTIONS_LAYOUT, problem)
 
+    def test_wrapped_proposal_without_its_marker_passes(self):
+        wrapped = ENTRY.replace("> **Proposed:** Object storage, one file per day.\n",
+                                "> **Proposed:** Object storage, one file per day, kept for as long\nas the tariff rules say.\n")
+        self.assertIsNone(layout(wrapped))
+
+    def test_quote_like_line_in_a_code_block_is_context(self):
+        fenced = ENTRY.replace("The tariff is copied daily, but where is not yet chosen.",
+                               "The import prints:\n\n```\n> done\n```")
+        self.assertIsNone(layout(fenced))
+
+    def test_quote_in_the_context_passes_when_the_proposal_quote_is_last(self):
+        quoted = ENTRY.replace("The tariff is copied daily, but where is not yet chosen.",
+                               "> Keep a copy every day.\n\nThe owner asked for this, but not where.")
+        self.assertIsNone(layout(quoted))
+
+    def test_proposed_in_an_earlier_quote_refused(self):
+        early = ENTRY.replace("The tariff is copied daily, but where is not yet chosen.",
+                              "> **Proposed:** A table.\n\nNot chosen.")
+        self.assertIn("Proposed:", layout(early))
+
+    def test_rule_after_the_last_entry_passes(self):
+        self.assertIsNone(layout(ENTRY + "\n---\n"))
+
+    def test_heading_indented_up_to_three_spaces_passes(self):
+        self.assertIsNone(layout(" " + ENTRY))
+
     def test_heading_inside_a_code_block_is_text(self):
         fenced = ENTRY.replace("The tariff is copied daily, but where is not yet chosen.",
                                "The tariff is copied daily:\n\n```\n### 2. not a heading\n```")
@@ -1743,6 +1769,16 @@ class OpenQuestionsLayout(Workspace):
             make = self.at(kind)
             self.put(make(questions=ENTRY))
             self.assertIsNone(self.edit(ENTRY, "None.\n"), kind)
+
+    def test_old_layout_document_gaining_a_footnote_allowed(self):
+        self.at("spec")
+        self.put(spec(questions=OLD_ENTRY))
+        self.assertIsNone(self.write(spec(questions=OLD_ENTRY) + "\n[^u]: A term used above.\n"))
+
+    def test_old_layout_document_changing_only_space_or_comments_allowed(self):
+        self.at("spec")
+        self.put(spec(questions=OLD_ENTRY))
+        self.assertIsNone(self.edit(OLD_ENTRY, "<!-- note -->\n" + OLD_ENTRY + "\n"))
 
     def test_file_without_a_lifecycle_status_left_alone(self):
         self.path = os.path.join(self.tmp.name, "docs", "specs", "notes.spec.md")

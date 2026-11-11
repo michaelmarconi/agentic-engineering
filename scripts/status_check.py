@@ -113,10 +113,12 @@ Every open question in the brief, a spec, an ADR, a plan or a spike record is la
 says: a heading `### N. <what is to be settled>`, numbered from 1 in order, then at least one line of
 context, then one block quote, last in the entry, holding exactly one line starting
 `> **Proposed:**` and, after it, exactly one line starting `> **Why:**`; or the section says only
-"None.". HTML comments and footnote definitions in the section are ignored, and a heading inside a
-fenced code block is text. For the brief and for any document above with a lifecycle status before
-or after the edit, it refuses an edit that adds the Open questions section or changes it while any
-entry breaks the layout, naming the entry and what is wrong. A document written before the layout
+"None.". HTML comments, footnote definitions and a closing horizontal rule in the section are
+ignored, and a heading or `>` inside a fenced code block is text. A block quote earlier in the entry
+counts as context; a quote runs on over its lines without `>`, as Markdown's lazy continuation lines
+do, until a blank line. For the brief and for any document above with a lifecycle status before
+or after the edit, it refuses an edit that adds the Open questions section or changes what it says,
+apart from comments, footnotes and blank lines, while any entry breaks the layout, naming the entry and what is wrong. A document written before the layout
 may be edited elsewhere as before; the first edit to its Open questions lays them all out again.
 
 Whether a person really accepted an ADR or signed off a plan is beyond a hook; the skill asks them.
@@ -316,6 +318,21 @@ def has_open_questions_section(text):
     return any(line.strip().lower() == "## open questions" for line in text.splitlines())
 
 
+def in_footnotes(lines):
+    """For each line, True if it is part of a footnote definition. A footnote runs on over lines
+    indented by four spaces or a tab, and blank lines between."""
+    flags, in_footnote = [], False
+    for line in lines:
+        in_footnote = bool(FOOTNOTE.match(line)) or (in_footnote and (not line.strip() or line.startswith(("    ", "\t"))))
+        flags.append(in_footnote)
+    return flags
+
+
+def says_none(line):
+    """True if the line says only that nothing is open, such as "None." or "- None."."""
+    return line.strip().lstrip("-*").strip().strip("_*").strip().lower() in EMPTY_ANSWERS
+
+
 def has_open_questions(text):
     """True if the Open questions section is missing or holds anything but "None.".
 
@@ -324,17 +341,7 @@ def has_open_questions(text):
     lines = section(text, "Open questions")
     if lines is None:
         return True
-    in_footnote = False
-    for line in lines:
-        # A footnote runs on over lines indented by four spaces or a tab, and blank lines between.
-        if FOOTNOTE.match(line) or (in_footnote and (not line.strip() or line.startswith(("    ", "\t")))):
-            in_footnote = True
-            continue
-        in_footnote = False
-        answer = line.strip().lstrip("-*").strip().strip("_*").strip().lower()
-        if answer not in EMPTY_ANSWERS:
-            return True
-    return False
+    return any(not footnote and not says_none(line) for line, footnote in zip(lines, in_footnotes(lines)))
 
 
 OPEN_QUESTIONS_LAYOUT = (
@@ -343,35 +350,53 @@ OPEN_QUESTIONS_LAYOUT = (
     "`> **Proposed:**` with the answer you would choose (or what would settle it) and, after it, a "
     'line starting `> **Why:**` with the reason; or write "None." if nothing is open.'
 )
-QUESTION_HEADING = re.compile(r"^###\s+(.*?)\s*$")
+QUESTION_HEADING = re.compile(r"^ {0,3}###\s+(.*?)\s*$")
 NUMBERED = re.compile(r"^(\d+)\.(?:\s+(.*))?$")
 QUOTE = re.compile(r"^ {0,3}>")
+THEMATIC_BREAK = re.compile(r"^ {0,3}([-*_])(?:\s*\1){2,}\s*$")
 
 
 def open_questions_entries(lines):
-    """The Open questions lines as (text before the first heading, [(heading, body lines)]),
-    leaving out HTML comments and footnote definitions. A heading inside a fenced code block is
-    text."""
+    """The Open questions lines, without HTML comments and footnote definitions, as (the text
+    before the first heading, [(heading, [(line, fenced)])]); `fenced` marks a line in a fenced
+    code block, where neither a heading nor a quote counts."""
     lines = uncommented(lines).splitlines()
-    allowed = headings_allowed(lines)
-    kept, in_footnote = [], False
-    for line, can_head in zip(lines, allowed):
-        # A footnote runs on over lines indented by four spaces or a tab, and blank lines between.
-        if FOOTNOTE.match(line) or (in_footnote and (not line.strip() or line.startswith(("    ", "\t")))):
-            in_footnote = True
-            continue
-        in_footnote = False
-        kept.append((line, can_head))
+    fenced, _ = scan(lines)
     before, entries = [], []
-    for line, can_head in kept:
-        heading = QUESTION_HEADING.match(line) if can_head else None
+    for line, in_fence, footnote in zip(lines, fenced, in_footnotes(lines)):
+        if footnote:
+            continue
+        heading = None if in_fence else QUESTION_HEADING.match(line)
         if heading:
             entries.append((heading.group(1), []))
         elif entries:
-            entries[-1][1].append(line)
+            entries[-1][1].append((line, in_fence))
         else:
             before.append(line)
     return before, entries
+
+
+def quote_blocks(body):
+    """The block quotes in an entry's body, each as its first and last index into the body's
+    non-blank lines. A quote runs on over lines without `>` until a blank line, as Markdown's lazy
+    continuation lines do; a line in a fenced code block is never part of one."""
+    blocks, open_block, index = [], False, -1
+    for line, in_fence in body:
+        if not line.strip():
+            open_block = False
+            continue
+        index += 1
+        if not in_fence and QUOTE.match(line):
+            if open_block:
+                blocks[-1][1] = index
+            else:
+                blocks.append([index, index])
+                open_block = True
+        elif open_block and not in_fence:
+            blocks[-1][1] = index
+        else:
+            open_block = False
+    return blocks
 
 
 def entry_problem(number, heading, body):
@@ -383,20 +408,22 @@ def entry_problem(number, heading, body):
         return f"its heading should have the number {number}, counting the entries in order"
     if not (numbered.group(2) or "").strip():
         return "its heading has no title after the number, saying what is to be settled"
-    filled = [line for line in body if line.strip()]
-    quoted = [QUOTE.match(line) is not None for line in filled]
-    if not any(quoted):
+    filled = [line for line, _ in body if line.strip()]
+    while filled and THEMATIC_BREAK.match(filled[-1]):
+        filled.pop()
+    blocks = [block for block in quote_blocks(body) if block[0] < len(filled)]
+    if not blocks:
         return "it has no block quote holding `> **Proposed:**` and `> **Why:**` lines"
-    if quoted[0]:
-        return "it has no context before its block quote"
-    # A blank line ends a block quote, so each line starting `>` after a line that does not starts one.
-    blocks = sum(1 for i, line in enumerate(body)
-                 if QUOTE.match(line) and (i == 0 or not QUOTE.match(body[i - 1])))
-    if blocks > 1:
-        return "it holds more than one block quote; keep one block quote holding both lines"
-    if not quoted[-1]:
+    first, last = blocks[-1]
+    if last != len(filled) - 1:
         return "its block quote must come last in the entry, with nothing after it"
-    inside = [QUOTE.sub("", line, count=1).strip() for line, q in zip(filled, quoted) if q]
+    if first == 0:
+        return "it has no context before its block quote"
+    stripped = [QUOTE.sub("", line, count=1).strip() for line in filled]
+    inside, outside = stripped[first:last + 1], stripped[:first]
+    if any(line.startswith(("**Proposed:**", "**Why:**")) for line in outside):
+        return ("its `> **Proposed:**` and `> **Why:**` lines must both be in its last block quote, "
+                "after the context")
     proposed = [i for i, line in enumerate(inside) if line.startswith("**Proposed:**")]
     why = [i for i, line in enumerate(inside) if line.startswith("**Why:**")]
     if len(proposed) != 1:
@@ -411,17 +438,17 @@ def entry_problem(number, heading, body):
     return None
 
 
-def open_questions_problem(text):
-    """Why the text's Open questions section is not in the layout of ADR 0030, or None if it is,
-    holds only "None.", or is missing (which the status rules judge)."""
-    lines = section(text, "Open questions")
+def open_questions_problem(text, lines=None):
+    """Why the text's Open questions section, or `lines` when given, is not in the layout of ADR
+    0030, or None if it is, holds only "None.", or is missing (which the status rules judge)."""
+    if lines is None:
+        lines = section(text, "Open questions")
     if lines is None:
         return None
     before, entries = open_questions_entries(lines)
     stray = [line for line in before if line.strip()]
     if not entries:
-        if all(line.strip().lstrip("-*").strip().strip("_*").strip().lower() in EMPTY_ANSWERS
-               for line in stray):
+        if all(says_none(line) for line in stray):
             return None
         return f'Open questions holds text that is not an entry under a heading. {OPEN_QUESTIONS_LAYOUT}'
     if stray:
@@ -437,16 +464,22 @@ def open_questions_problem(text):
     return None
 
 
-def open_questions_changed(before, after):
-    """True if the edit adds the Open questions section or changes what it says."""
-    return section(after, "Open questions") != (section(before, "Open questions") if before else None)
+def questions_said(lines):
+    """What the Open questions lines say, leaving out HTML comments, footnote definitions and
+    blank lines, so an edit to those alone does not count as a change to the questions."""
+    if lines is None:
+        return None
+    kept = uncommented(lines).splitlines()
+    return [line.rstrip() for line, footnote in zip(kept, in_footnotes(kept)) if line.strip() and not footnote]
 
 
 def layout_problem(name, before, after):
-    """Why the edit is refused for its Open questions' layout: only when it adds or changes them."""
-    if not open_questions_changed(before, after):
+    """Why the edit is refused for its Open questions' layout: only when it adds them or changes
+    what they say."""
+    lines = section(after, "Open questions")
+    if lines is None or questions_said(lines) == questions_said(section(before, "Open questions") if before else None):
         return None
-    problem = open_questions_problem(after)
+    problem = open_questions_problem(after, lines)
     return f"{name}: {problem}" if problem else None
 
 
@@ -764,14 +797,8 @@ def target(plan_path, link):
 def reference_lines(text, heading):
     """The non-blank lines of a plan's references section, without template comments or footnotes."""
     body = re.sub(r"<!--.*?-->", "", "\n".join(section(text, heading) or []), flags=re.S)
-    lines, in_footnote = [], False
-    for line in body.splitlines():
-        if FOOTNOTE.match(line) or (in_footnote and (not line.strip() or line.startswith(("    ", "\t")))):
-            in_footnote = True
-        elif line.strip():
-            in_footnote = False
-            lines.append(line)
-    return lines
+    lines = body.splitlines()
+    return [line for line, footnote in zip(lines, in_footnotes(lines)) if line.strip() and not footnote]
 
 
 def unreadable(line, heading):
