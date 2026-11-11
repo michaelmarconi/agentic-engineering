@@ -86,7 +86,7 @@
     ],
     "PostToolUse": [
       {
-        "matcher": "Agent|Task",
+        "matcher": "Agent|Task|SubagentHandback",
         "hooks": [
           {
             "type": "command",
@@ -95,7 +95,7 @@
         ]
       },
       {
-        "matcher": "Agent|Task|Skill",
+        "matcher": "Agent|Task|Skill|SubagentHandback",
         "hooks": [
           {
             "type": "command",

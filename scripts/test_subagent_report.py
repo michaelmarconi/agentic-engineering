@@ -23,6 +23,37 @@ def handback(message):
     return {"type": "tool_use", "id": "toolu_1", "name": "SubagentHandback", "input": {"message": message}}
 
 
+def handed(message="Result: PASS\n", success=True, **fields):
+    """The PostToolUse event of an agent's own SubagentHandback call, as Claude Code 2.1.322 sends it."""
+    return dict({"hook_event_name": "PostToolUse", "session_id": "s1", "agent_id": "a1",
+                 "agent_type": "agentic:spec-reviewer", "tool_name": "SubagentHandback",
+                 "tool_use_id": "toolu_9", "tool_input": {"message": message},
+                 "tool_response": {"success": success, "message": "Report delivered to your caller."}},
+                **fields)
+
+
+class HandBack(unittest.TestCase):
+    def test_the_report_is_the_hand_back_calls_message(self):
+        self.assertEqual(subagent_report.handed_back_report(handed()), "Result: PASS\n")
+        self.assertEqual(subagent_report.report(handed()), "Result: PASS\n")
+
+    def test_a_hand_back_that_was_not_sent_is_no_report(self):
+        self.assertIsNone(subagent_report.handed_back_report(handed(success=False)))
+
+    def test_other_events_are_not_hand_backs(self):
+        for event in (stop(last_assistant_message="x"), handed(tool_name="Agent"),
+                      handed(hook_event_name="PreToolUse"), handed(agent_id=None), handed(agent_id=""),
+                      handed(tool_input={"message": 5}), handed(tool_input="x"), handed(message="  ")):
+            with self.subTest(event=event):
+                self.assertIsNone(subagent_report.handed_back_report(event))
+
+    def test_an_agent_finishes_on_a_stop_or_a_hand_back(self):
+        self.assertTrue(subagent_report.finished(stop()))
+        self.assertTrue(subagent_report.finished(handed()))
+        self.assertFalse(subagent_report.finished(handed(success=False)))
+        self.assertFalse(subagent_report.finished({"hook_event_name": "PostToolUse", "tool_name": "Agent"}))
+
+
 class Report(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
