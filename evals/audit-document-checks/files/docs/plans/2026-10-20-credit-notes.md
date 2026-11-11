@@ -9,11 +9,13 @@ status: 🟢 Ready to build
 ## Specs
 
 - [Credit notes](../specs/credit-notes.spec.md)
-  - Requirement: Issue a credit note
+  - [Issue a credit note](../specs/credit-notes.spec.md#1-issue-a-credit-note)
 
 ## ADRs
 
-- [0002 Keep amounts as whole numbers of cents](../adrs/0002-amounts-in-whole-cents.md)
+| ADR | Decision |
+| --- | --- |
+| [0002](../adrs/0002-amounts-in-whole-cents.md) | Keep amounts as whole numbers of cents |
 
 ## Decisions
 

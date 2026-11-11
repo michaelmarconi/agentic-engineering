@@ -6,6 +6,21 @@ What changed in each version of the plugin, newest first. Versions follow
 past a major version: it says what you need to change in your documents. Until 1.0.0, any
 minor version may need such a change, and its entry says so.
 
+## [0.38.0] - 2026-11-11
+
+### Changed
+
+- A plan lists each requirement as a link to its heading in the spec, nested beneath the spec,
+  as `  - [Reply to all](../specs/mail.spec.md#2-reply-to-all)`, in place of
+  `  - Requirement: Reply to all`, and lists its ADRs as a `| ADR | Decision |` table, with the
+  ADR's number as the link and its title beside it. The hook checks each anchor is the one GitHub
+  gives the heading, and each title is the ADR's own, and names the right one when it is not.
+  **Change needed:** a plan that is not `✅ Built` and still uses `- Requirement:` lines or ADR
+  bullets is refused at sign-off with a message saying how to rewrite it; `/plan` rewrites those
+  sections with its next edit. Built plans are never checked, so they need nothing.
+- In practices, the marks `/practices` ends a practice with, "(default)" and "(not set up yet)",
+  count as plain words, so the language checker no longer reports them.
+
 ## [0.37.1] - 2026-11-11
 
 ### Fixed

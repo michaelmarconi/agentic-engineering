@@ -683,7 +683,7 @@ class AdrEmoji(AdrWorkspace):
 def plan(status="📝 Draft", specs=None, adrs="None.", questions="None.", decisions="None.", kind="Plan",
          date=TODAY):
     if specs is None:
-        specs = "- [Thing](../specs/thing.spec.md)\n  - Requirement: X"
+        specs = "- [Thing](../specs/thing.spec.md)\n  - [X](../specs/thing.spec.md#1-x)"
     return (
         "---\n"
         "# Change status only through the sdlc plugin's skills, which check each change; a change made by hand is not checked.\n"
@@ -752,7 +752,7 @@ class Plan(PlanWorkspace):
         self.assertIn("open questions", self.edit("status: 📝 Draft", "status: 🟢 Ready to build"))
 
     def test_ready_needs_the_spec_to_exist(self):
-        reason = self.ready(specs="- [Gone](../specs/gone.spec.md)\n  - Requirement: X")
+        reason = self.ready(specs="- [Gone](../specs/gone.spec.md)\n  - [X](../specs/thing.spec.md#1-x)")
         self.assertIn("gone.spec.md", reason)
 
     def test_ready_needs_the_spec_settled(self):
@@ -765,12 +765,12 @@ class Plan(PlanWorkspace):
             self.assertIn("`👍 Accepted`", self.ready())
 
     def test_ready_needs_each_requirement_in_its_spec(self):
-        reason = self.ready(specs="- [Thing](../specs/thing.spec.md)\n  - Requirement: Y")
+        reason = self.ready(specs="- [Thing](../specs/thing.spec.md)\n  - [Y](../specs/thing.spec.md#2-y)")
         self.assertIn("no requirement named 'Y'", reason)
 
     def test_ready_refused_when_the_plan_gives_the_requirement_number(self):
         for line in ("1. X", "1 X", "1) X"):
-            reason = self.ready(specs=f"- [Thing](../specs/thing.spec.md)\n  - Requirement: {line}")
+            reason = self.ready(specs=f"- [Thing](../specs/thing.spec.md)\n  - [{line}](../specs/thing.spec.md#1-x)")
             self.assertIn("name alone", reason, line)
 
     def test_ready_refused_on_an_old_layout_spec(self):
@@ -783,42 +783,42 @@ class Plan(PlanWorkspace):
         text = spec("👍 Accepted").replace("## Constraints\n\n- None.", "## Constraints\n\n### 2. Y\n\n- None.")
         self.put_at(self.spec_path, text)
         self.assertIn("no requirement named 'Y'",
-                      self.ready(specs="- [Thing](../specs/thing.spec.md)\n  - Requirement: Y"))
+                      self.ready(specs="- [Thing](../specs/thing.spec.md)\n  - [Y](../specs/thing.spec.md#2-y)"))
 
     def test_a_requirement_heading_without_a_number_does_not_count(self):
         self.put_at(self.spec_path, spec("👍 Accepted", rule="The system SHALL do X.\n\n### Y\n\nThe system SHALL do Y."))
         self.assertIn("no requirement named 'Y'",
-                      self.ready(specs="- [Thing](../specs/thing.spec.md)\n  - Requirement: Y"))
+                      self.ready(specs="- [Thing](../specs/thing.spec.md)\n  - [Y](../specs/thing.spec.md#2-y)"))
 
     def test_a_requirement_heading_in_a_code_block_does_not_count(self):
         self.put_at(self.spec_path, spec("👍 Accepted", rule="The system SHALL do X.\n\n```\n### 2. Y\n```"))
         self.assertIn("no requirement named 'Y'",
-                      self.ready(specs="- [Thing](../specs/thing.spec.md)\n  - Requirement: Y"))
+                      self.ready(specs="- [Thing](../specs/thing.spec.md)\n  - [Y](../specs/thing.spec.md#2-y)"))
 
     def test_a_requirement_heading_in_a_nested_code_block_does_not_count(self):
         rule = "The system SHALL do X.\n\n~~~markdown\n```\n### 9. Fake\n```\n~~~\n\n### 2. Y\n\nThe system SHALL do Y."
         self.put_at(self.spec_path, spec("👍 Accepted", rule=rule))
-        self.assertIsNone(self.ready(specs="- [Thing](../specs/thing.spec.md)\n  - Requirement: Y"))
+        self.assertIsNone(self.ready(specs="- [Thing](../specs/thing.spec.md)\n  - [Y](../specs/thing.spec.md#2-y)"))
         self.assertIn("no requirement named 'Fake'",
-                      self.ready(specs="- [Thing](../specs/thing.spec.md)\n  - Requirement: Fake"))
+                      self.ready(specs="- [Thing](../specs/thing.spec.md)\n  - [Fake](../specs/thing.spec.md#9-fake)"))
 
     def test_a_requirement_heading_in_a_comment_does_not_count(self):
         rule = "The system SHALL do X.\n\n<!--\n### 2. Dropped\n### Requirement: Older\n-->"
         self.put_at(self.spec_path, spec("👍 Accepted", rule=rule))
         self.assertIsNone(self.ready())
         self.assertIn("no requirement named 'Dropped'",
-                      self.ready(specs="- [Thing](../specs/thing.spec.md)\n  - Requirement: Dropped"))
+                      self.ready(specs="- [Thing](../specs/thing.spec.md)\n  - [Dropped](../specs/thing.spec.md#2-dropped)"))
 
     def test_a_leftover_old_heading_blocks_only_a_requirement_it_hides(self):
         text = spec("👍 Accepted").replace("## Constraints", "### Requirement: Y\n\nThe system SHALL do Y.\n\n## Constraints")
         self.put_at(self.spec_path, text)
         self.assertIsNone(self.ready())
         self.assertIn("written for an earlier version",
-                      self.ready(specs="- [Thing](../specs/thing.spec.md)\n  - Requirement: Y"))
+                      self.ready(specs="- [Thing](../specs/thing.spec.md)\n  - [Y](../specs/thing.spec.md#2-y)"))
 
     def test_requirement_heading_spacing_is_ignored(self):
         self.put_at(self.spec_path, spec("👍 Accepted").replace("### 1. X", "###  12.  X  "))
-        self.assertIsNone(self.ready())
+        self.assertIsNone(self.ready(specs="- [Thing](../specs/thing.spec.md)\n  - [X](../specs/thing.spec.md#12--x)"))
 
     def test_ready_needs_a_requirement_under_each_spec(self):
         self.assertIn("requirement", self.ready(specs="- [Thing](../specs/thing.spec.md)"))
@@ -828,15 +828,15 @@ class Plan(PlanWorkspace):
 
     def test_ready_on_an_accepted_adr_alone_allowed(self):
         self.put_at(os.path.join(self.tmp.name, "docs", "adrs", "0003-history.md"), adr("👍 Accepted"))
-        self.assertIsNone(self.ready(specs="None.", adrs="- [0003 History](../adrs/0003-history.md)"))
+        self.assertIsNone(self.ready(specs="None.", adrs="| ADR | Decision |\n| --- | --- |\n| [0003](../adrs/0003-history.md) | Store sessions in Redis |"))
 
     def test_ready_needs_each_adr_accepted(self):
         self.put_at(os.path.join(self.tmp.name, "docs", "adrs", "0003-history.md"), adr())
-        reason = self.ready(adrs="- [0003 History](../adrs/0003-history.md)")
+        reason = self.ready(adrs="| ADR | Decision |\n| --- | --- |\n| [0003](../adrs/0003-history.md) | Store sessions in Redis |")
         self.assertIn("0003-history.md", reason)
 
     def test_ready_needs_each_adr_to_exist(self):
-        self.assertIn("0009-gone.md", self.ready(adrs="- [0009 Gone](../adrs/0009-gone.md)"))
+        self.assertIn("0009-gone.md", self.ready(adrs="| ADR | Decision |\n| --- | --- |\n| [0009](../adrs/0009-gone.md) | Gone |"))
 
     def test_ready_refused_when_another_plan_names_the_requirement(self):
         other = os.path.join(self.tmp.name, "docs", "plans", "2026-10-01-earlier.md")
@@ -851,7 +851,7 @@ class Plan(PlanWorkspace):
     def test_another_plan_for_another_requirement_allowed(self):
         self.put_at(self.spec_path, spec("👍 Accepted", rule="The system SHALL do X.\n\n### 2. Y\n\nThe system SHALL do Y."))
         other = os.path.join(self.tmp.name, "docs", "plans", "2026-10-01-earlier.md")
-        self.put_at(other, plan(specs="- [Thing](../specs/thing.spec.md)\n  - Requirement: Y"))
+        self.put_at(other, plan(specs="- [Thing](../specs/thing.spec.md)\n  - [Y](../specs/thing.spec.md#2-y)"))
         self.assertIsNone(self.ready())
 
     def test_ready_refused_when_an_adr_line_cannot_be_read(self):
@@ -860,35 +860,80 @@ class Plan(PlanWorkspace):
         self.assertIn("cannot read", reason)
 
     def test_ready_refused_when_a_spec_line_cannot_be_read(self):
-        specs = "- [Thing](../specs/thing.spec.md)\n  - Requirement: X\n- Spec B: [B](../specs/b.spec.md)\n  - Requirement: B1"
+        specs = "- [Thing](../specs/thing.spec.md)\n  - [X](../specs/thing.spec.md#1-x)\n- Spec B: [B](../specs/b.spec.md)\n  - [B1](../specs/b.spec.md#1-b1)"
         self.assertIn("cannot read", self.ready(specs=specs))
 
     def test_ready_refused_when_specs_holds_prose_beside_a_good_adr(self):
         self.put_at(os.path.join(self.tmp.name, "docs", "adrs", "0003-history.md"), adr("👍 Accepted"))
-        reason = self.ready(specs="The thing spec, its X part.", adrs="- [0003 History](../adrs/0003-history.md)")
+        reason = self.ready(specs="The thing spec, its X part.", adrs="| ADR | Decision |\n| --- | --- |\n| [0003](../adrs/0003-history.md) | Store sessions in Redis |")
         self.assertIn("cannot read", reason)
 
     def test_ready_refused_for_a_requirement_before_any_spec(self):
-        self.assertIn("cannot read", self.ready(specs="  - Requirement: X"))
+        self.assertIn("cannot read", self.ready(specs="  - [X](../specs/thing.spec.md#1-x)"))
 
     def test_footnote_marks_and_definitions_in_references_are_ignored(self):
-        specs = ("- [Thing](../specs/thing.spec.md)[^1]\n  - Requirement: X\n\n"
+        specs = ("- [Thing](../specs/thing.spec.md)[^1]\n  - [X](../specs/thing.spec.md#1-x)\n\n"
                  "[^1]: A thing is what the\n    product makes.")
         self.assertIsNone(self.ready(specs=specs))
 
     def test_template_comments_in_references_are_ignored(self):
-        specs = "<!-- Each spec this work builds,\n     over two lines. -->\n- [Thing](../specs/thing.spec.md)\n  - Requirement: X"
+        specs = "<!-- Each spec this work builds,\n     over two lines. -->\n- [Thing](../specs/thing.spec.md)\n  - [X](../specs/thing.spec.md#1-x)"
         self.assertIsNone(self.ready(specs=specs))
 
     def test_ready_refused_when_a_spec_link_is_not_a_spec(self):
         other = os.path.join(self.tmp.name, "docs", "plans", "2026-10-01-earlier.md")
         self.put_at(other, plan("🟢 Ready to build", specs="None.", adrs="None."))
-        reason = self.ready(specs="- [Earlier](2026-10-01-earlier.md)\n  - Requirement: X")
+        reason = self.ready(specs="- [Earlier](2026-10-01-earlier.md)\n  - [X](../specs/thing.spec.md#1-x)")
         self.assertIn("not a spec", reason)
 
     def test_ready_refused_when_an_adr_link_is_not_an_adr(self):
-        reason = self.ready(adrs="- [Thing](../specs/thing.spec.md)")
+        reason = self.ready(adrs="| ADR | Decision |\n| --- | --- |\n| [Thing](../specs/thing.spec.md) | Thing |")
         self.assertIn("not an ADR", reason)
+
+    def test_ready_refused_on_the_old_requirement_lines(self):
+        reason = self.ready(specs="- [Thing](../specs/thing.spec.md)\n  - Requirement: X")
+        self.assertIn("layout plans had before", reason)
+        self.assertIn("  - [<requirement name>](<path>#<heading anchor>)", reason)
+
+    def test_ready_refused_on_the_old_adr_bullets(self):
+        self.put_at(os.path.join(self.tmp.name, "docs", "adrs", "0003-history.md"), adr("👍 Accepted"))
+        reason = self.ready(adrs="- [0003 Store sessions in Redis](../adrs/0003-history.md)")
+        self.assertIn("layout plans had before", reason)
+        self.assertIn("| ADR | Decision |", reason)
+
+    def test_ready_refused_on_a_wrong_anchor_naming_the_right_one(self):
+        reason = self.ready(specs="- [Thing](../specs/thing.spec.md)\n  - [X](../specs/thing.spec.md#2-x)")
+        self.assertIn("[X](../specs/thing.spec.md#1-x)", reason)
+
+    def test_ready_refused_on_a_requirement_link_without_an_anchor(self):
+        reason = self.ready(specs="- [Thing](../specs/thing.spec.md)\n  - [X](../specs/thing.spec.md)")
+        self.assertIn("#1-x", reason)
+
+    def test_ready_refused_on_a_requirement_link_to_another_file(self):
+        reason = self.ready(specs="- [Thing](../specs/thing.spec.md)\n  - [X](../specs/other.spec.md#1-x)")
+        self.assertIn("[X](../specs/thing.spec.md#1-x)", reason)
+
+    def test_ready_refused_when_the_decision_is_not_the_adr_title(self):
+        self.put_at(os.path.join(self.tmp.name, "docs", "adrs", "0003-history.md"), adr("👍 Accepted"))
+        reason = self.ready(adrs="| ADR | Decision |\n| --- | --- |\n| [0003](../adrs/0003-history.md) | Use Redis |")
+        self.assertIn("'Store sessions in Redis'", reason)
+
+    def test_ready_refused_when_the_adr_link_shows_another_number(self):
+        self.put_at(os.path.join(self.tmp.name, "docs", "adrs", "0003-history.md"), adr("👍 Accepted"))
+        reason = self.ready(adrs="| ADR | Decision |\n| --- | --- |\n| [0004](../adrs/0003-history.md) | Store sessions in Redis |")
+        self.assertIn("[0003]", reason)
+
+    def test_adr_table_without_its_header_still_read(self):
+        self.put_at(os.path.join(self.tmp.name, "docs", "adrs", "0003-history.md"), adr("👍 Accepted"))
+        self.assertIsNone(self.ready(adrs="| [0003](../adrs/0003-history.md) | Store sessions in Redis |"))
+
+    def test_two_specs_each_with_their_requirements(self):
+        other = os.path.join(self.tmp.name, "docs", "specs", "b.spec.md")
+        self.put_at(other, spec("👍 Accepted").replace("### 1. X", "### 1. B one"))
+        specs = ("- [Thing](../specs/thing.spec.md)\n  - [X](../specs/thing.spec.md#1-x)\n"
+                 "- [B](../specs/b.spec.md)\n  - [B one](../specs/b.spec.md#1-b-one)")
+        self.assertIsNone(self.ready(specs=specs))
+
 
     def test_spec_without_status_named_plainly(self):
         self.put_at(self.spec_path, "# Thing\n")
@@ -1404,7 +1449,7 @@ class DateField(Workspace):
 
     def test_plan_sign_off_sets_todays_date(self):
         self.at("plan")
-        self.put(plan(specs="- [Thing](../specs/thing.spec.md)\n  - Requirement: X", date="2026-11-01"))
+        self.put(plan(specs="- [Thing](../specs/thing.spec.md)\n  - [X](../specs/thing.spec.md#1-x)", date="2026-11-01"))
         spec_path = os.path.join(self.tmp.name, "docs", "specs", "thing.spec.md")
         os.makedirs(os.path.dirname(spec_path), exist_ok=True)
         with open(spec_path, "w") as f:
@@ -1501,6 +1546,17 @@ class Command(Workspace):
         done = subprocess.run([sys.executable, SCRIPT, "--help"], capture_output=True, text=True)
         self.assertEqual(done.returncode, 0)
         self.assertIn("exit", done.stdout.lower())
+
+
+
+class Anchors(unittest.TestCase):
+    def test_github_anchor_rules(self):
+        cases = {"1. Copy matches iCloud": "1-copy-matches-icloud",
+                 "2. Folder 🧪 kept": "2-folder--kept",
+                 "3. Don't re-send `HELLO`": "3-dont-re-send-hello",
+                 "4. Über-fast_path": "4-über-fast_path"}
+        for heading, anchor in cases.items():
+            self.assertEqual(status_check.anchor_of(heading), anchor, heading)
 
 
 if __name__ == "__main__":

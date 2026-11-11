@@ -10,12 +10,14 @@ checking, and quotes the plan as evidence for every failure.
    and Open questions, in that order, and no `<!-- -->` comment from the template is left in; the
    frontmatter's `#` line stays.
 2. **Specs.** Each entry under Specs is a reference to a spec under `docs/specs/`, by its title
-   and path, with at least one `- Requirement: <name>` line beneath it, and each name is the
-   name of a numbered requirement heading in that spec, as `### 2. <name>`, word for word and
-   without its number. Specs says "None." only when ADRs
-   lists at least one ADR, so the plan always builds something.
-3. **ADRs.** Each entry under ADRs is a reference to an ADR under `docs/adrs/` that exists, by its
-   number, title and path, or the section says only "None."
+   and path, with at least one requirement nested beneath it as `  - [<name>](<path>#<anchor>)`:
+   a link to the same spec whose text is the name of a numbered requirement heading in that
+   spec, as `### 2. <name>`, word for word and without its number, and whose anchor is the one
+   GitHub gives that heading, as `#2-<name-in-lowercase-with-hyphens>`. Specs says "None." only
+   when ADRs lists at least one ADR, so the plan always builds something.
+3. **ADRs.** ADRs is a `| ADR | Decision |` table with one row per ADR, its number linking to an
+   ADR under `docs/adrs/` that exists and its title, word for word, as the decision; or the
+   section says only "None."
 4. **Settled.** Each spec and each ADR listed is `👍 Accepted`.
 5. **Decisions.** Decisions holds one line for each decision, saying what was decided and why, or
    only "None." No line is a decision that later work must follow: that needs an ADR, so it is an

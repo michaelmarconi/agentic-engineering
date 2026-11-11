@@ -46,8 +46,8 @@ its references show how those documents stood and cannot go stale. Nothing refer
 |---|---|
 | `status:` and `date:` | `📝 Draft`, `🟢 Ready to build` or `✅ Built`, and the day the status last changed |
 | Title | The piece of work, in plain words |
-| Specs | Each spec the work builds, as a link, with the requirements it delivers listed by name beneath it, as `Requirement: <name>` |
-| ADRs | Each decision the code must follow, as a link, or "None." |
+| Specs | Each spec the work builds, as a link, with the requirements it delivers nested beneath it, each a link to its heading in the spec |
+| ADRs | A table of each decision the code must follow: its number as a link, and its title; or "None." |
 | Decisions | Each technical decision agreed with you that matters only to this work: what was decided and why, or "None." |
 | Plan | How the work will be done, with headings and length to suit it |
 | Open questions | What is still unsettled, each with a proposed answer; "None." before `🟢 Ready to build` |
@@ -77,11 +77,13 @@ date: 2026-11-10
 ## Specs
 
 - [Customs hold alerts](../specs/customs-hold-alerts.spec.md)
-  - Requirement: Release recorded
+  - [Release recorded](../specs/customs-hold-alerts.spec.md#3-release-recorded)
 
 ## ADRs
 
-- [0003 Keep each shipment's status as a history of events](../adrs/0003-shipment-status-history.md)
+| ADR | Decision |
+| --- | --- |
+| [0003](../adrs/0003-shipment-status-history.md) | Keep each shipment's status as a history of events |
 
 ## Decisions
 

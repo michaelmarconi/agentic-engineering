@@ -10,11 +10,13 @@ date: 2026-10-28
 ## Specs
 
 - [Customs hold alerts](../specs/customs-hold-alerts.spec.md)[^hold]
-  - Requirement: Release recorded
+  - [Release recorded](../specs/customs-hold-alerts.spec.md#2-release-recorded)
 
 ## ADRs
 
-- [ADR 0003, an architecture decision record: Keep each shipment's status as a history of events](../adrs/0003-shipment-status-history.md)
+| ADR | Decision |
+| --- | --- |
+| [0003](../adrs/0003-shipment-status-history.md) | Keep each shipment's status as a history of events |
 
 ## Decisions
 

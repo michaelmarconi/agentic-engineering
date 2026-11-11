@@ -32,7 +32,9 @@ Work out which specs, which requirements within them, and which ADRs the work bu
 the person says and from `docs/specs/` and `docs/adrs/`. Each requirement is a
 numbered heading under Requirements in its spec, as `### 2. Reply to all`; name it by the words
 after the number, word for word, and never by its number, which changes when requirements are
-added or removed. A spec that heads its requirements `### Requirement: <name>` was written for an
+added or removed. A plan written for an earlier version of the agentic plugin names requirements
+as `  - Requirement: <name>` lines and ADRs as bullets; rewrite those sections in the template's
+form with your next edit, since the hook refuses that layout at sign-off. A spec that heads its requirements `### Requirement: <name>` was written for an
 earlier version of the agentic plugin: no plan can be signed off on it until it is reworked with
 /spec and accepted again, so tell the person so before planning against it.
 
@@ -83,10 +85,15 @@ count. With no decisions, say so and go straight to writing.
 Only when every decision is settled, write the plan from the template, with today's date in its
 file name and the template's comments removed:
 
-- **Specs** lists each spec with the requirements this work delivers beneath it, and **ADRs**
-  each ADR the code must follow; either says "None." when there are none, but not both. Keep each line in the template's form,
-  `- [<title>](<path>)` with `  - Requirement: <name>` beneath a spec: the hook reads only that. To explain a term there, add a footnote mark after the
-  link, never a line of prose.
+- **Specs** lists each spec with the requirements this work delivers nested beneath it, and
+  **ADRs** each ADR the code must follow, as a table; either says "None." when there are none,
+  but not both. Keep each line in the template's form, since the hook reads only that: a spec as
+  `- [<title>](<path>)`, each requirement beneath it as `  - [<name>](<path>#<anchor>)`, a link
+  to its heading whose anchor is the one GitHub gives the heading (lowercased, every character
+  but letters, digits, `_`, `-` and spaces dropped, each space made `-`, so `### 2. Reply to all`
+  is `#2-reply-to-all`), and each ADR as a row `| [<NNNN>](<path>) | <the ADR's title> |` under
+  the `| ADR | Decision |` header. If the hook refuses an anchor, its message gives the right
+  one. To explain a term there, add a footnote mark after the link, never a line of prose.
 - **Decisions** holds one line for each decision that matters only to this work: what was
   decided and why.
 - **Open questions** holds whatever only the person can settle. Every open question ends with
