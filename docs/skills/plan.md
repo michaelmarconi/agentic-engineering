@@ -159,7 +159,8 @@ mode?](#why-not-claude-codes-plan-mode)):
    both. A decision stays in the plan only if nobody needs its reason once the work is built, or
    only someone changing that code later, who gets the reason as a comment beside the code.
    Otherwise it goes to an ADR if later work must follow it, to the spec if a user or caller
-   relies on it, or to the practices if every piece of work follows it. If an answer adds or removes a decision, it says so and gives the new count.
+   relies on it, or to the practices if every piece of work follows it, taking the first of
+   these that fits; a step order or a test's data needs no reason recorded at all. If an answer adds or removes a decision, it says so and gives the new count.
 4. **Write.** Only when every decision is settled does it write the plan, with your decisions in
    it. A decision that needs an ADR, a spec change or a practice goes under Open questions until
    you have made it with `/adr`, `/spec` or `/practices`; `/plan` never writes those itself.

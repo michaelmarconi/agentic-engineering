@@ -20,13 +20,30 @@ checking, and quotes the plan as evidence for every failure.
    section says only "None."
 4. **Settled.** Each spec and each ADR listed is `👍 Accepted`.
 5. **Decisions.** Decisions holds one line for each decision, saying what was decided and why, or
-   only "None." Go through the lines one by one and, for each, name who would need its reason
-   once the work is built. It fails, naming where it belongs, when the answer is later work that
-   must follow it (an ADR), a user or caller who relies on it, such as what a tool or interface
-   returns (the spec), or every later piece of work, because it is how the project works, such as
-   how a check by hand runs (practices); it is then an open question until that document holds
-   it. It passes when the answer is nobody, or only someone changing that code later, provided the
-   line says `/build` leaves the reason as a comment beside the code.
+   only "None." Take the lines one at a time. A line that only follows what a listed spec, ADR or
+   the practices already say, or a pattern the code already uses, needs nothing recorded and
+   passes. Ask of every other line these questions in order, stopping at the first yes. A yes to
+   1, 2 or 3 fails the line, naming where it belongs, and it is an open question until that
+   document holds it. A yes to 4 passes if the line says `/build` leaves the reason as a comment
+   beside the code, and otherwise fails, asking for that sentence. A yes to 5 passes.
+
+   1. **Must later work follow it?** Other code, written by later plans, has to do the same thing
+      or use the same thing: a library every module calls, the format of a stored field, a test
+      set-up later tests reuse. It belongs in an **ADR**.
+   2. **Does a user or caller rely on it?** Someone outside the code sees or depends on it: the
+      columns of an export file, the wording of an error a user reads, what an interface accepts
+      and returns, what happens to bad input from outside. It belongs in **the spec**.
+   3. **Does every later piece of work do it this way?** It is how people and agents work on the
+      project rather than what the code does: a branch naming rule, a command run before every
+      commit, who signs off a release. It belongs in **the practices**.
+   4. **Would someone changing this code later need the reason?** Without it, they might undo the
+      choice and break something: a cache kept small to fit a device's memory, a sort kept stable
+      on purpose. It belongs in **a comment beside the code**.
+   5. **Otherwise nobody needs the reason once the work is built**: the order of the steps, the
+      names of local variables, which file a helper goes in.
+
+   Judge what the decision does, not how important it sounds, and not whether its wording says
+   "from now on". A line about this work alone can still answer yes to question 1 or 2.
 6. **No hidden decisions.** The Plan section makes no technical decision missing from Decisions
    and ADRs: a choice with a reasonable alternative that the specs, the ADRs, the practices and
    the existing code do not already settle. Following a pattern the code already uses is not a decision. A

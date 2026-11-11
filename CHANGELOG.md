@@ -6,7 +6,7 @@ What changed in each version of the plugin, newest first. Versions follow
 past a major version: it says what you need to change in your documents. Until 1.0.0, any
 minor version may need such a change, and its entry says so.
 
-## [0.42.1] - 2026-11-11
+## [0.42.2] - 2026-11-11
 
 ### Fixed
 
@@ -18,6 +18,21 @@ minor version may need such a change, and its entry says so.
 - The hand-over no longer drops the build's last work there. Git can't add the stand-ins, and one
   it can't add stopped the hand-over from adding anything, so the branch was pushed without the
   work and no error was shown. It now leaves the stand-ins out, and reports a failed add.
+
+## [0.42.1] - 2026-11-11
+
+### Fixed
+
+- The plan reviewer no longer fails a plan's Decisions lines whose reason nobody needs once the
+  work is built, such as a test's data or the order of the steps, by asking for the comment
+  wording. Rubric check 5 now passes a line that only follows a spec, an ADR, the practices or
+  existing code, and asks five questions of every other line in order, stopping at the first yes:
+  must later work follow it (an ADR), does a user or caller rely on it (the spec), does every
+  piece of work do it this way (the practices), would someone changing the code need the reason
+  (a comment beside the code), or otherwise nobody. In a trial on seeded plans, false alarms fell
+  from 22 of 39 to 1, with the same catches. A line that fails only for lacking the comment wording
+  now gains that wording in the correction instead of moving to Open questions. Nothing in your
+  documents needs to change.
 
 ## [0.42.0] - 2026-11-11
 
