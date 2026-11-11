@@ -17,7 +17,13 @@ minor version may need such a change, and its entry says so.
   plan, or propose another?", draws nothing you don't pick, and never holds a plan back from
   `🟢 Ready to build`. A picked diagram is a `mermaid` block after the Plan section's opening
   paragraph; the plan rubric's new check 13 fails any box or arrow its text does not hold, and
-  check 7 (no code) allows it. Nothing in your documents needs to change.
+  check 7 (no code) allows it. Only a `📝 Draft` plan gets the offer.
+
+### Changed
+
+- `/adr` and `/plan` ask the diagram offer's question word for word even when they offer a single
+  diagram, and share more of the offer's wording, checked by the plugin's skill check. Nothing in
+  your documents needs to change.
 
 ## [0.42.1] - 2026-11-11
 

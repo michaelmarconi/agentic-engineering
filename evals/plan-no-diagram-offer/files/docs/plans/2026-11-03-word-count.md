@@ -27,9 +27,8 @@ status: 📝 Draft
 
 Writers need a word count without a word processor; this builds the whole spec.
 
-Add `src/__init__.py` and `src/wordcount.py`, with a function that counts the words in a text and
-a `main` that reads the file named on the command line, prints the count, and handles a missing
-file. Tests go in `tests/test_wordcount.py`, using temporary files and running `main` directly.
+Add `src/wordcount.py`, whose `main` prints the number of words in the file named on the command
+line, or the missing-file message. Tests for both requirements go in `tests/test_wordcount.py`.
 Build "Count words" first, then "Missing file".
 
 ## Open questions

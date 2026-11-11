@@ -49,7 +49,7 @@ its references show how those documents stood and cannot go stale. Nothing refer
 | Specs | Each spec the work builds, as a link, with the requirements it delivers nested beneath it, each a link to its heading in the spec |
 | ADRs | A table of each decision the code must follow: its number as a link, and its title; or "None." |
 | Decisions | Each technical decision agreed with you whose reason nobody needs once the work is built, or only someone changing that code later, in which case `/build` leaves the reason as a comment: what was decided and why, or "None." |
-| Plan | How the work will be done, with headings and length to suit it |
+| Plan | How the work will be done, with headings and length to suit it, and any diagram of it you asked for |
 | Open questions | What is still unsettled, each with a proposed answer; "None." before `🟢 Ready to build` |
 
 Everything except the Plan section has a fixed form, because it is checked: the Specs and ADRs
@@ -58,7 +58,7 @@ shape: a small change to one requirement might be a single paragraph, a large fe
 approach, risks and steps. It follows this advice: start with why the work is being done and what
 it leaves for later; give one recommended approach, not the alternatives; name the files that
 matter and the existing code to reuse; and keep it short enough to scan but detailed enough to
-carry out. It holds no code.
+carry out. It holds no code, only a diagram if you pick one (see [Diagrams](#diagrams)).
 
 There is no section on testing. Each requirement in a spec already has a How we'll check heading,
 and each ADR a How we'll check section, saying how to prove it, so the plan does not repeat them.
@@ -170,7 +170,7 @@ status.
 
 ## Diagrams
 
-Each hand-over offers to draw the work, until you pick or decline, for each plan. While questions
+Each hand-over of a `📝 Draft` plan offers to draw the work, until you pick or decline, for each plan. While questions
 are open, the offers sit with the reviewers' optional suggestions and a picked diagram is drawn once
 the questions are settled; after that, the offer is the one question asked before "ready to build?".
 It offers only what the text already describes in enough detail to be worth a picture: at least
@@ -195,7 +195,6 @@ flowchart LR
   Broker[Customs broker] -->|reports release| Updates[src/broker/updates.py]
   Updates -->|records cleared event| History[Status history]
   History -->|latest event| List[List of holds]
-  History -->|cleared since| Page[Container's page]
 ```
 
 ## Review
