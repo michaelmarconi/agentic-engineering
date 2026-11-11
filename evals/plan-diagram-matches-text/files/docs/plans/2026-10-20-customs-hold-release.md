@@ -35,7 +35,8 @@ coordinator on a release is the spec's next requirement, left for a later plan.
 1. Write the failing test from the spec's scenario: hold at 2027-02-12 09:12, release at
    2027-02-13 14:30.
 2. Turn the broker's "released" message into a "cleared" event in `src/broker/updates.py`.
-3. Show "cleared since <time>" in `summary()` in `src/page.py`.
+3. Show "cleared since <time>" in `summary()` in `src/page.py`, which reads the container's latest
+   event.
 
 ## Open questions
 

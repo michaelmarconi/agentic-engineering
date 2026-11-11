@@ -22,8 +22,10 @@ minor version may need such a change, and its entry says so.
 ### Changed
 
 - `/adr` and `/plan` ask the diagram offer's question word for word even when they offer a single
-  diagram, and share more of the offer's wording, checked by the plugin's skill check. Nothing in
-  your documents needs to change.
+  diagram, and share more of the offer's wording, checked by the plugin's skill check.
+- The ADR and plan reviewers fail a diagram's arrow unless the text says that one thing calls,
+  sends to or is read by the other; naming both is not enough. Nothing in your documents needs to
+  change.
 
 ## [0.42.1] - 2026-11-11
 

@@ -71,8 +71,9 @@ checking, and quotes the plan as evidence for every failure.
 
 13. **Diagrams match the text.** A diagram is a `mermaid` block in the Plan section, after its
     opening paragraph; one anywhere else fails. Every box, arrow and label in it names something
-    the plan's text already says, so the diagram makes no decision and states no fact of its own;
-    quote each one the text does not hold. A plan with no diagram passes.
+    the plan's text already says, so the diagram makes no decision and states no fact of its own:
+    an arrow needs the text to say that one thing calls, sends to or is read by the other, not
+    only to name both. Quote each box, arrow or label the text does not hold. A plan with no diagram passes.
 
 The reviewer also passes on this advice for the Plan section as suggestions, never as
 failures: start with why the work is being done and what it leaves for later; give one
