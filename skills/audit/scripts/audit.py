@@ -321,8 +321,8 @@ def overlap_problems(project, documents):
             for key in sorted(set(unbuilt[first]) & set(unbuilt[second])):
                 spec_path, requirement = key
                 found.append((f"docs/plans/{first}",
-                              f"it and docs/plans/{second} ({unbuilt[second][key]}) both name Requirement: "
-                              f"{requirement} of {spec_path}, and neither is `{BUILT}`"))
+                              f"it and docs/plans/{second} ({unbuilt[second][key]}) both name the requirement "
+                              f"'{requirement}' of {spec_path}, and neither is `{BUILT}`"))
     return found
 
 

@@ -9,15 +9,20 @@ date: <YYYY-MM-DD>
 
 ## Specs
 
-<!-- Each spec this work builds, with the requirements it delivers, named exactly as in the
-     spec. Only these. "None." if the work only follows ADRs. -->
+<!-- Each spec this work builds, with the requirements it delivers nested beneath it, each a
+     link to its heading in the spec: its name exactly as in the spec, without the number, and
+     the anchor GitHub gives the heading, as #2-reply-to-all for "### 2. Reply to all". Only
+     these. "None." if the work only follows ADRs. -->
 - [<Spec title>](../specs/<capability>.spec.md)
-  - Requirement: <name, as in the spec>
+  - [<Requirement name, as in the spec>](../specs/<capability>.spec.md#<heading-anchor>)
 
 ## ADRs
 
-<!-- Each decision the code must follow, or "None." -->
-- [<NNNN> <ADR title>](../adrs/<NNNN-subject>.md)
+<!-- Each decision the code must follow, as a row: its number as the link, and its title,
+     word for word, as the decision. "None." instead of the table if there are none. -->
+| ADR | Decision |
+| --- | --- |
+| [<NNNN>](../adrs/<NNNN-subject>.md) | <The ADR's title> |
 
 ## Decisions
 

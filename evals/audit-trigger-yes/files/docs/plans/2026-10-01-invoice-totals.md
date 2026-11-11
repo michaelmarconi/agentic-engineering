@@ -9,12 +9,14 @@ status: ✅ Built
 ## Specs
 
 - [Invoice totals](../specs/invoice-totals.spec.md)
-  - Requirement: Line amount
-  - Requirement: Invoice total
+  - [Line amount](../specs/invoice-totals.spec.md#1-line-amount)
+  - [Invoice total](../specs/invoice-totals.spec.md#2-invoice-total)
 
 ## ADRs
 
-- [0002 Keep amounts as whole numbers of cents](../adrs/0002-amounts-in-whole-cents.md)
+| ADR | Decision |
+| --- | --- |
+| [0002](../adrs/0002-amounts-in-whole-cents.md) | Keep amounts as whole numbers of cents |
 
 ## Decisions
 

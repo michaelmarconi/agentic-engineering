@@ -16,6 +16,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 SCRIPT = os.path.join(HERE, "audit.py")
 sys.path.insert(0, HERE)
 import audit  # noqa: E402
+import status_check  # noqa: E402
 
 GIT_ENV = dict(GIT_AUTHOR_NAME="Test", GIT_AUTHOR_EMAIL="test@example.com", GIT_COMMITTER_NAME="Test",
                GIT_COMMITTER_EMAIL="test@example.com", GIT_CONFIG_GLOBAL=os.devnull, GIT_CONFIG_NOSYSTEM="1")
@@ -41,9 +42,11 @@ def adr(status="👍 Accepted", supersedes=None, superseded_by=None, open_questi
 
 
 def plan(status="📝 Draft", specs=(("statement-import.spec.md", ("Import a statement",)),), adrs=(), open_questions="None."):
-    spec_lines = "".join(f"- [Spec](../specs/{name})\n" + "".join(f"  - Requirement: {r}\n" for r in reqs)
+    spec_lines = "".join(f"- [Spec](../specs/{name})\n" + "".join(
+        f"  - [{r}](../specs/{name}#{i}-{status_check.anchor_of(r)})\n" for i, r in enumerate(reqs, 1))
                          for name, reqs in specs) or "None.\n"
-    adr_lines = "".join(f"- [{name[:4]} ADR](../adrs/{name})\n" for name in adrs) or "None.\n"
+    adr_lines = ("| ADR | Decision |\n| --- | --- |\n" + "".join(
+        f"| [{name[:4]}](../adrs/{name}) | Keep amounts in cents |\n" for name in adrs)) if adrs else "None.\n"
     return (f"---\nstatus: {status}\ndate: 2026-11-01\n---\n\n# Work\n\n## Specs\n\n{spec_lines}\n## ADRs\n\n{adr_lines}\n"
             f"## Decisions\n\nNone.\n\n## Plan\n\nDo it.\n\n## Open questions\n\n- {open_questions}\n")
 

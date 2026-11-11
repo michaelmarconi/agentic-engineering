@@ -9,13 +9,15 @@ status: 📝 Draft
 ## Specs
 
 - [Customs hold alerts](../specs/customs-hold-alerts.spec.md)[^hold]
-  - Requirement: Release recorded
-  - Requirement: Coordinator emailed on release
+  - [Release recorded](../specs/customs-hold-alerts.spec.md#2-release-recorded)
+  - [Coordinator emailed on release](../specs/customs-hold-alerts.spec.md#3-coordinator-emailed-on-release)
 
 ## ADRs
 
-- [ADR 0003, an architecture decision record: Keep each shipment's status as a history of events](../adrs/0003-shipment-status-history.md)
-- [ADR 0004, an architecture decision record: Send emails with Python's standard smtplib](../adrs/0004-coordinator-email-sending.md)
+| ADR | Decision |
+| --- | --- |
+| [0003](../adrs/0003-shipment-status-history.md) | Keep each shipment's status as a history of events |
+| [0004](../adrs/0004-coordinator-email-sending.md) | Send emails with Python's standard smtplib |
 
 ## Decisions
 

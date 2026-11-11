@@ -9,12 +9,14 @@ status: 🟢 Ready to build
 ## Specs
 
 - [Word count](../specs/word-count.spec.md)
-  - Requirement: Count words
-  - Requirement: Missing file
+  - [Count words](../specs/word-count.spec.md#requirement-count-words)
+  - [Missing file](../specs/word-count.spec.md#requirement-missing-file)
 
 ## ADRs
 
-- [0001 Use only Python's standard library](../adrs/0001-standard-library-only.md)
+| ADR | Decision |
+| --- | --- |
+| [0001](../adrs/0001-standard-library-only.md) | Use only Python's standard library |
 
 ## Decisions
 

@@ -180,7 +180,8 @@ An issue the plugin files is read by the plugin's maintainers, who know the life
 the people building it, who use the lifecycle; and practices, in the Practices section of
 `AGENTS.md` and in `docs/practices/`, by agents that follow the lifecycle. So in an issue, a plan
 or practices, the lifecycle's own terms, such as "spec", "ADR", "requirement", `🟢 Ready to build`
-and the plugin's commands such as `/agentic:build`, count as plain too.
+and the plugin's commands such as `/agentic:build`, count as plain too, and so do the marks
+`/practices` ends a practice with, "(default)" and "(not set up yet)".
 
 The rule covers only what the plugin writes. Your own documents, code and messages follow your
 project's rules.

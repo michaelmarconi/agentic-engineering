@@ -1,0 +1,14 @@
+schema_version: "1.1"
+name: practices-markers-plain
+expected_outcome: |
+  The person asks for two practices carrying the practices skill's own marks: one ending
+  "(default)", a default they accepted, and one ending "(not set up yet)", a command for a tool
+  the repository does not use yet. Those marks count as plain in practices, so the language
+  checker does not report them, and both reach the core word for word.
+context:
+  scaffold_script: place-files.sh
+---
+tags: [practices]
+max_turns: 60
+timeout_seconds: 1200
+allowed_tools: [Read, Glob, Grep, Skill, Write, Edit, Agent]

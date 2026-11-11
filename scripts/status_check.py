@@ -57,7 +57,12 @@ For a plan it refuses:
   missing or not empty or "None.";
 - `🟢 Ready to build` unless the plan names something to build, each spec listed under Specs
   exists, is `👍 Accepted` and has a numbered heading under `## Requirements`, as
-  `### 2. <name>`, for each `- Requirement: <name>` line beneath it, which gives the name alone, each ADR listed under ADRs exists and is `👍 Accepted`, and no
+  `### 2. <name>`, for each requirement link beneath it, `  - [<name>](<path>#<anchor>)`, whose text
+  gives the name alone and whose anchor is the one GitHub gives that heading; each ADR listed in
+  the ADRs table, `| [<NNNN>](<path>) | <title> |`, exists, is `👍 Accepted`, shows its own number
+  and is given by its title, word for word; a plan in the layout from before 0.38.0, with
+  `- Requirement: <name>` lines or ADRs as bullets, is refused with a message saying how to
+  rewrite it; and no
   other plan in the folder that is not `✅ Built` names the same requirement of the same spec. A
   spec still heading its requirements `### Requirement: <name>` is refused with a message saying it
   was written for an earlier version of the plugin and needs reworking with /spec. References are
@@ -118,6 +123,7 @@ import json
 import os
 import re
 import sys
+import unicodedata
 
 DRAFT, READY, BUILT = "📝 Draft", "🟢 Ready to build", "✅ Built"
 READY_TO_RUN = "🟢 Ready to run"
@@ -149,7 +155,18 @@ NEW_HINT = {
 EMPTY_ANSWERS = {"", "none", "none."}
 FOOTNOTE = re.compile(r"^\[[^\]]+\]:")
 LINK = re.compile(r"^- \[[^\]]*\]\(<?([^)>\s]+)>?\)")
+# A plan names each requirement as a link to its heading, nested beneath its spec:
+# `  - [Reply to all](../specs/mail.spec.md#2-reply-to-all)`.
+REQUIREMENT_LINK = re.compile(r"^\s+- \[([^\]]+)\]\(<?([^)>\s#]*)(?:#([^)>\s]*))?>?\)(?:\[\^[^\]]+\])*\s*$")
+# Plans written before 0.38.0 named each requirement as `  - Requirement: <name>`.
 REQUIREMENT_LINE = re.compile(r"^\s+- Requirement:\s*(.+?)\s*$")
+# A plan lists its ADRs as rows of a `| ADR | Decision |` table: `| [0003](../adrs/0003-x.md) | <title> |`.
+ADR_ROW = re.compile(r"^\|\s*\[([^\]]*)\]\(<?([^)>\s]+)>?\)(?:\[\^[^\]]+\])*\s*\|\s*(.*?)\s*\|\s*$")
+FOOTNOTE_MARK = re.compile(r"\[\^[^\]]+\]")
+TABLE_HEADER = re.compile(r"^\|\s*ADR\s*\|\s*Decision\s*\|\s*$", re.I)
+TABLE_RULE = re.compile(r"^\|[\s:|-]+\|\s*$")
+SPEC_FORM = "`- [<spec title>](<path>)` with `  - [<requirement name>](<path>#<heading anchor>)` beneath it"
+ADR_FORM = "rows of a `| ADR | Decision |` table, as `| [<NNNN>](<path>) | <the ADR's title> |`"
 # A requirement is a numbered `###` heading inside `## Requirements`, as `### 2. Reply to all`;
 # the number is for reading only, and a plan names the requirement by the rest.
 REQUIREMENT_HEADING = re.compile(r"^###\s+\d+\.\s+(.+?)\s*$")
@@ -630,40 +647,73 @@ def reference_lines(text, heading):
 
 
 def unreadable(line, heading):
-    return (f"it cannot read the line '{line.strip()}' under {heading}; list each as "
-            "`- [<title>](<path>)`" + (", with `  - Requirement: <name>` beneath it" if heading == "Specs" else "")
-            + ', or write "None."')
+    form = SPEC_FORM if heading == "Specs" else ADR_FORM
+    return f"it cannot read the line '{line.strip()}' under {heading}; list them as {form}, or write \"None.\""
 
 
 def named_specs(plan_path, text):
-    """The plan's Specs section as ([(spec path, link as written, [requirement names])], problem)."""
-    entries = []
+    """The plan's Specs section as ([(spec path, link as written, [(name, link target, anchor)])], problem).
+
+    A link target is resolved from the plan's folder; the anchor is None when the link has none.
+    """
+    entries, problem = [], None
     for line in reference_lines(text, "Specs"):
         link = LINK.match(line)
-        requirement = REQUIREMENT_LINE.match(line)
-        if link:
+        requirement = REQUIREMENT_LINK.match(line)
+        if link and not line[:1].isspace():
             entries.append((target(plan_path, link.group(1)), link.group(1), []))
         elif requirement and entries:
-            entries[-1][2].append(requirement.group(1))
+            name, path, anchor = requirement.groups()
+            entries[-1][2].append((name.strip(), target(plan_path, path) if path else None, anchor))
+        elif REQUIREMENT_LINE.match(line) and entries:
+            # Read on, so another plan's check for a shared requirement still sees this one.
+            name = REQUIREMENT_LINE.match(line).group(1)
+            entries[-1][2].append((name, None, None))
+            problem = problem or (f"`- Requirement: {name}` is the layout plans had before; name each requirement as a "
+                                  "link to its heading in the spec, as `  - [<requirement name>](<path>#<heading anchor>)`")
         elif line.strip().lstrip("-*").strip().lower() not in EMPTY_ANSWERS:
-            return entries, unreadable(line, "Specs")
-    return entries, None
+            return entries, problem or unreadable(line, "Specs")
+    return entries, problem
 
 
 def named_adrs(plan_path, text):
-    """The plan's ADRs section as ([(ADR path, link as written)], problem)."""
+    """The plan's ADRs section as ([(ADR path, link as written, number as written, title as written)], problem)."""
     entries = []
     for line in reference_lines(text, "ADRs"):
-        link = LINK.match(line)
-        if link:
-            entries.append((target(plan_path, link.group(1)), link.group(1)))
+        row = ADR_ROW.match(line)
+        if TABLE_HEADER.match(line) or TABLE_RULE.match(line):
+            continue
+        if row:
+            number, link, title = row.groups()
+            entries.append((target(plan_path, link), link, number.strip(), FOOTNOTE_MARK.sub("", title).strip()))
+        elif LINK.match(line):
+            return entries, (f"'{line.strip()}' is the layout plans had before; list the ADRs as {ADR_FORM}")
         elif line.strip().lstrip("-*").strip().lower() not in EMPTY_ANSWERS:
             return entries, unreadable(line, "ADRs")
     return entries, None
 
 
+def anchor_of(heading):
+    """The anchor GitHub gives a heading's text: lowercased, with every character but letters, digits,
+    underscores, hyphens and spaces dropped, and each space made a hyphen."""
+    kept = (c for c in heading.strip().lower()
+            if c in "_- " or unicodedata.category(c)[0] in "LNM")
+    return "".join(kept).replace(" ", "-")
+
+
+def title_of(text):
+    """A document's `# ` title, after its frontmatter and outside code blocks and comments, or None."""
+    lines = text.lstrip("\ufeff").splitlines()
+    if frontmatter(text) is not None:
+        lines = lines[len(frontmatter(text)) + 2:]
+    for line in headings("\n".join(lines)):
+        if line.startswith("# "):
+            return line[2:].strip()
+    return None
+
+
 def requirements(plan_path, text):
-    return {(spec, name) for spec, _, names in named_specs(plan_path, text)[0] for name in names}
+    return {(spec, name) for spec, _, names in named_specs(plan_path, text)[0] for name, _, _ in names}
 
 
 def headings(text):
@@ -676,6 +726,17 @@ def spec_requirements(text):
     """The names of a spec's requirements, in order: its numbered headings under Requirements."""
     body = section(text, "Requirements") or []
     return [m.group(1) for m in map(REQUIREMENT_HEADING.match, headings("\n".join(body))) if m]
+
+
+def spec_anchors(text):
+    """{requirement name: the anchor GitHub gives its heading}, for a spec's numbered requirements."""
+    body = section(text, "Requirements") or []
+    found = {}
+    for line in headings("\n".join(body)):
+        m = REQUIREMENT_HEADING.match(line)
+        if m:
+            found[m.group(1)] = anchor_of(line.lstrip("#"))
+    return found
 
 
 def old_layout(text):
@@ -709,19 +770,24 @@ def reference_problem(path, text):
         if status != ACCEPTED:
             return f"the spec {link} {described(status)}, not `{ACCEPTED}`"
         if not names:
-            return f"no requirement is named under {link}; list each one as `- Requirement: <name>`"
-        numbered = set(spec_requirements(spec_text))
-        for name in names:
-            if name in numbered:
-                continue
-            if old_layout(spec_text):
-                return old_layout_problem(link)
-            if LEADING_NUMBER.sub("", name) in numbered:
-                return (f"`- Requirement: {name}` gives the requirement's number; give the name "
-                        f"alone, as `- Requirement: {LEADING_NUMBER.sub('', name)}`, since numbers "
-                        "change when requirements are added or removed")
-            return f"the spec {link} has no requirement named '{name}'"
-    for adr_path, link in adrs:
+            return (f"no requirement is named under {link}; list each one beneath it as "
+                    "`  - [<requirement name>](<path>#<heading anchor>)`")
+        anchors = spec_anchors(spec_text)
+        numbered = set(anchors)
+        for name, requirement_path, anchor in names:
+            if name not in numbered:
+                if old_layout(spec_text):
+                    return old_layout_problem(link)
+                if LEADING_NUMBER.sub("", name) in numbered:
+                    return (f"the requirement link '{name}' gives the requirement's number; give the name "
+                            f"alone as its text, as [{LEADING_NUMBER.sub('', name)}], since numbers "
+                            "change when requirements are added or removed")
+                return f"the spec {link} has no requirement named '{name}'"
+            wanted = f"{link.split('#', 1)[0]}#{anchors[name]}"
+            if requirement_path != spec_path or anchor != anchors[name]:
+                return (f"the requirement link '{name}' must point to its heading in the spec it is "
+                        f"listed under, as `[{name}]({wanted})`")
+    for adr_path, link, number, title in adrs:
         if not is_adr(adr_path):
             return f"{link} is not an ADR: an ADR is a file in docs/adrs/"
         adr_text = read(adr_path)
@@ -730,6 +796,12 @@ def reference_problem(path, text):
         status = lifecycle_status(adr_text, ADR_STATUSES)
         if status != ACCEPTED:
             return f"the ADR {link} {described(status)}, not `{ACCEPTED}`"
+        own = re.match(r"\d{4}(?=-)", os.path.basename(adr_path))
+        if own and number != own.group():
+            return f"the link to {link} must show the ADR's number, as [{own.group()}]"
+        actual = title_of(adr_text)
+        if actual and title != actual:
+            return f"the Decision beside {link} must be the ADR's title, word for word: '{actual}'"
     return None
 
 
@@ -746,7 +818,7 @@ def overlap_problem(path, text):
             continue
         shared = sorted(requirement for _, requirement in wanted & requirements(other, other_text))
         if shared:
-            return f"the plan {name} already names Requirement: {shared[0]}; change that plan instead"
+            return f"the plan {name} already names the requirement '{shared[0]}'; change that plan instead"
     return None
 
 
