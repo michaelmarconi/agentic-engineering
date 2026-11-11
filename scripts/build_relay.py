@@ -226,7 +226,10 @@ def agent_stopped(session, event):
         else:
             return None
         if handed:
-            subagent_report.hold(final, agent_id, True)
+            final[agent_id] = True
+        # Marks matter only while the agent's launch or held report is on record.
+        for old in [k for k in final if k not in launched and k not in stopped]:
+            del final[old]
         save(session, record)
     return None
 
@@ -285,8 +288,8 @@ def handle(event):
             else:
                 launched, stopped = runs(record, "launched"), runs(record, "stopped")
                 report = stopped.pop(agent_id, None)
+                launched[agent_id] = call  # so a later report of the agent is kept too
                 if not isinstance(report, str):
-                    launched[agent_id] = call
                     report = ""
             keep(record, call, part, report)
             save(session, record)

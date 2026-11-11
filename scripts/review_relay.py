@@ -388,7 +388,6 @@ def agent_stopped(session, event):
     if agent not in REVIEWERS and agent != LANGUAGE:
         return None
     handed = subagent_report.handed_back_report(event) is not None
-    report = subagent_report.report(event)
     with locked(session, create=False):
         if not os.path.isdir(folder(session)):
             return None
@@ -397,12 +396,13 @@ def agent_stopped(session, event):
         if run is None:
             if runs["stopped"].get(agent_id, {}).get("handed_back") and not handed:
                 return None
-            subagent_report.hold(runs["stopped"], agent_id,
-                                 {"agent": agent, "report": report, "handed_back": handed})
+            subagent_report.hold(runs["stopped"], agent_id, {
+                "agent": agent, "report": subagent_report.report(event), "handed_back": handed})
         elif run.get("handed_back") and not handed:
             return None
         elif isinstance(run.get("name"), str) and isinstance(run.get("call"), str):
-            keep_report(session, run["name"], run["call"], str(run.get("agent")), report)
+            keep_report(session, run["name"], run["call"], str(run.get("agent")),
+                        subagent_report.report(event))
             run["handed_back"] = run.get("handed_back") or handed
         save_runs(session, runs)
     return None
@@ -555,10 +555,10 @@ def handle(event):
                     save_runs(session, runs)
                 return None
             stopped = runs["stopped"].pop(agent_id, None)
-            if stopped is None or stopped.get("handed_back"):
-                # A held hand-back is final: the note keeps a later stop from replacing it.
-                runs["launched"][agent_id] = {"name": name, "call": call, "agent": agent,
-                                              "handed_back": stopped is not None}
+            # The note stays after a held report is saved, so a later report of the agent is
+            # saved too, unless the held one was handed back, which is final.
+            runs["launched"][agent_id] = {"name": name, "call": call, "agent": agent,
+                                          "handed_back": bool(stopped and stopped.get("handed_back"))}
             if stopped is not None and isinstance(stopped.get("report"), str):
                 keep_report(session, name, call, agent, stopped["report"])
             save_runs(session, runs)

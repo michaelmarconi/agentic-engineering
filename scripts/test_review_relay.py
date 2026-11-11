@@ -626,6 +626,19 @@ class Relay(unittest.TestCase):
         self.put(SPEC, "v2\n")
         self.assertIn(REPORT, self.assertAllowed(self.check())["prompt"])
 
+    def test_a_report_after_an_early_stop_held_before_the_launch_counts(self):
+        self.put(SPEC, "v1\n")
+        review = f"Document: {SPEC}\nReview this spec."
+        self.agent("PreToolUse", "agentic:spec-reviewer", review)
+        self.stopped("agentic:spec-reviewer", "a1", "an early line")
+        self.post("agentic:spec-reviewer", review, {"status": "async_launched", "agentId": "a1"})
+        self.hand_back("agentic:spec-reviewer", "a1", REPORT)
+        self.language()
+        self.put(SPEC, "v2\n")
+        prompt = self.assertAllowed(self.check())["prompt"]
+        self.assertIn(REPORT, prompt)
+        self.assertNotIn("an early line", prompt)
+
     def test_a_foreground_run_in_auto_mode_counts_and_leaves_nothing_held(self):
         # The order Claude Code gives a foreground run that hands back: the hand-back's PostToolUse,
         # SubagentStop, then the Agent tool's PostToolUse carrying the report.

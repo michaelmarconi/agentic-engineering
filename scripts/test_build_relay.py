@@ -330,6 +330,20 @@ class Corrections(Relay):
         self.assertIn("plan finding", prompt)
         self.assertNotIn("Handing back", prompt)
 
+    def test_a_hand_back_stays_final_after_other_agents_hand_back(self):
+        self.code_review()
+        self.launch(*self.SECURITY, "a1")
+        self.launch(*self.REVIEW, "a2")
+        self.hand_back("general-purpose", "a1", "security finding")
+        for n in range(8):  # implementers and other helpers that run as general-purpose
+            self.hand_back("general-purpose", f"x{n}", "an implementer's summary")
+        self.stopped("general-purpose", "a1", "Handing back my report.")
+        self.hand_back("agentic:build-reviewer", "a2", "plan finding")
+        self.commit("Correct")
+        prompt = self.check()["updatedInput"]["prompt"]
+        self.assertIn("security finding", prompt)
+        self.assertNotIn("Handing back", prompt)
+
     def test_agents_no_review_waits_for_are_not_held(self):
         self.all_reviews()
         self.stopped("general-purpose", "a9", "an implementer's summary")
