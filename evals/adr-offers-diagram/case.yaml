@@ -1,0 +1,8 @@
+schema_version: "1.1"
+name: adr-offers-diagram
+expected_outcome: |
+  The decision is chosen, and the text names four parts (customs service, webhook endpoint,
+  message queue, status worker) and the calls between them. So the hand-over offers a flowchart of
+  them. While the review leaves items to settle, the offers are listed as optional and the first
+  item is the only question; once nothing is left, the question is, word for word, "Would you like
+  to add any of these diagrams to the ADR, or propose another?". No diagram is written unasked.

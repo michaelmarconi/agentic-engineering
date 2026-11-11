@@ -6,6 +6,21 @@ What changed in each version of the plugin, newest first. Versions follow
 past a major version: it says what you need to change in your documents. Until 1.0.0, any
 minor version may need such a change, and its entry says so.
 
+## [0.42.0] - 2026-11-11
+
+### Added
+
+- `/adr` offers diagrams of the chosen option. Once Decision says "Chosen:", each hand-over
+  offers one line per diagram the text has enough for (at least three parts, actors,
+  states or records and two connections between them), drawn as a flowchart, sequence diagram,
+  state diagram or entity-relationship diagram. While questions are open the offers sit with the
+  optional suggestions; once none are left, it asks "Would you like to add any of these diagrams to
+  the ADR, or propose another?". Nothing is drawn unless picked. A picked diagram is a
+  `mermaid` block in Decision, after the reason, drawn only from what the text says; rubric check
+  18 has the reviewer check every box and arrow against the text.
+- A `mermaid` diagram in an ADR's Decision does not count towards the 500 words of the plain part.
+- The offer's sentences are shared in `scripts/skill_check.py`, so `/plan` can hold the same ones.
+
 ## [0.41.0] - 2026-11-11
 
 ### Changed

@@ -284,7 +284,10 @@ class Transitions(Workspace):
         self.assertIsNotNone(result)
 
 
-def adr(status="📝 Draft", extra="", body="Chosen: keep sessions in Redis, because it is fast enough.",
+ADR_BODY = "Chosen: keep sessions in Redis, because it is fast enough."
+
+
+def adr(status="📝 Draft", extra="", body=ADR_BODY,
         questions="None.", background="B", detail="None.", kind="ADR", date=TODAY):
     return (
         "---\n"
@@ -398,6 +401,39 @@ class Adr(AdrWorkspace):
     def test_adr_plain_words_stop_at_technical_detail(self):
         text = "---\nstatus: 📝 Draft\n---\n\n# One two\n\n## Question\n\nthree?\n\n## Technical detail\n\nfour five\n"
         self.assertEqual(status_check.plain_words(text, "Technical detail"), 4)
+
+    def test_adr_plain_words_skip_a_diagram(self):
+        chart = "\n\n```mermaid\nflowchart LR\n  Sender -->|posts| Endpoint --> Queue\n```"
+        plain = adr()
+        self.assertEqual(status_check.plain_words(adr(body=ADR_BODY + chart), "Technical detail", "Decision"),
+                         status_check.plain_words(plain, "Technical detail", "Decision"))
+
+    def test_adr_plain_words_count_a_diagram_outside_decision(self):
+        chart = "\n\n```mermaid\nflowchart LR\n  Sender -->|posts| Endpoint --> Queue\n```"
+        self.assertGreater(status_check.plain_words(adr(background="B" + chart), "Technical detail", "Decision"),
+                           status_check.plain_words(adr(), "Technical detail", "Decision"))
+
+    def test_adr_plain_words_count_other_code_blocks(self):
+        code = "\n\n```python\nprint('one two')\n```"
+        self.assertGreater(status_check.plain_words(adr(body=ADR_BODY + code), "Technical detail", "Decision"),
+                           status_check.plain_words(adr(), "Technical detail", "Decision"))
+
+    def test_an_unclosed_diagram_is_counted(self):
+        text = "# One\n\n## Decision\n\n```mermaid\nflowchart LR\n  two three\n"
+        self.assertEqual(status_check.plain_words(text, "Technical detail", "Decision"), 7)
+
+    def test_a_diagram_after_another_block_is_skipped(self):
+        text = "# One\n\n## Decision\n\n```\ntwo\n```\n```Mermaid\nflowchart LR\n  a --> b\n```\nthree\n"
+        self.assertEqual(status_check.plain_words(text, "Technical detail", "Decision"), 4)
+
+    def test_a_diagram_in_a_comment_is_not_counted_twice(self):
+        text = "# One\n\n## Decision\n\n<!--\n```mermaid\nx\n```\n-->\ntwo\n"
+        self.assertEqual(status_check.plain_words(text, "Technical detail", "Decision"), 3)
+
+    def test_accepting_with_a_diagram_over_the_limit_allowed(self):
+        chart = "\n\n```mermaid\nflowchart LR\n" + "".join(f"  n{i} --> n{i + 1}\n" for i in range(100)) + "```"
+        self.put(adr(background=" ".join(["word"] * 400), body=ADR_BODY + chart))
+        self.assertIsNone(self.edit("status: 📝 Draft", "status: 👍 Accepted"))
 
     def test_rejecting_with_open_questions_allowed(self):
         self.put(adr(questions="- How long do sessions last?"))
@@ -1167,6 +1203,11 @@ class Spike(SpikeWorkspace):
         text = "---\nstatus: 📝 Draft\n---\n\n# One two\n\n## Hypothesis\n\nthree four.\n\n## Experiment\n\nfive six\n"
         self.assertEqual(status_check.plain_words(text), 5)
         self.assertEqual(status_check.plain_words(text.replace("## Experiment", "## Notes")), 8)
+
+    def test_plain_words_count_a_diagram(self):
+        chart = "\n\n```mermaid\nstateDiagram-v2\n  Waiting --> Open\n```"
+        self.assertGreater(status_check.plain_words(record(steps="Opens each file once." + chart)),
+                           status_check.plain_words(record()))
 
     def test_a_heading_in_a_comment_does_not_end_the_plain_part(self):
         text = "# One\n\n<!--\n## Experiment\n-->\n\ntwo three\n\n## Experiment\n\nfour\n"
