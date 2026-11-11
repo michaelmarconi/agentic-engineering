@@ -1,7 +1,8 @@
 schema_version: "1.1"
 name: adr-offers-diagram
 expected_outcome: |
-  The decision is chosen and nothing is left to settle, and the text names four parts (customs
-  service, webhook endpoint, message queue, status worker) and the calls between them. So the
-  hand-over offers a flowchart of them and asks, word for word, "Would you like to add any of these
-  diagrams to the ADR, or propose another?". No diagram is written into the ADR unasked.
+  The decision is chosen, and the text names four parts (customs service, webhook endpoint,
+  message queue, status worker) and the calls between them. So the hand-over offers a flowchart of
+  them with the question, word for word, "Would you like to add any of these diagrams to the ADR,
+  or propose another?", whether or not the review left items to settle. No diagram is written into
+  the ADR unasked.

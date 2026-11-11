@@ -142,8 +142,8 @@ with the reports.
 
 ## Diagrams
 
-Once a decision is chosen and nothing is left to settle, `/adr` offers to draw the chosen option,
-and asks whether to accept it once you have answered. It offers only what the text already describes
+Once a decision is chosen, each hand-over offers to draw the chosen option, beside the
+reviewers' suggestions, until you answer. It offers only what the text already describes
 in enough detail to be worth a picture: at least three things and two connections between them.
 There are four kinds:
 

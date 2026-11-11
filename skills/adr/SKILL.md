@@ -209,20 +209,22 @@ answers rather than further questions; if the person has said not to ask now, as
 count only, not the items: each comes up when you reach it. List the reviewers' suggestions
 separately, as optional: they never hold the ADR back.
 
-Once nothing is left to settle and Decision says "Chosen:", offer diagrams of the chosen option in
-place of asking whether to accept or reject the ADR, so a person can see how it works at a glance;
-an ADR not chosen yet gets no offer, and no other option is drawn. Offer a diagram only of a shape
-the text holds: parts that call each other, drawn as a flowchart; events passing between actors,
-drawn as a sequence diagram; the states one thing moves through, drawn as a state diagram; or
-records and how they relate, drawn as an entity-relationship diagram. Offer a shape only when the
-text names at least three of its things and at least two connections between them, such as three
-parts and two calls; otherwise say nothing about diagrams. Name each offer in one line, saying what
-it would show, and ask: "Would you like to add any of these diagrams to the ADR, or propose
-another?" Ask with your question tool, which lets the person pick several, or, where you have none,
-list the offers as text with the question last. Nothing is drawn unless the person picks it, and an
-offer never holds the ADR back from its next status. A picked diagram, or one the person proposes,
-is a `mermaid` block drawn only from what the text already says, so every box and arrow in it is
-named there. It goes in Decision, after the reason, which still reads on its own without it, and is
-reviewed like any change the person asks for. Offer once in a conversation, and ask nothing else in
-that reply; once the person has answered, ask whether to accept or reject the ADR. Leave committing
-to them.
+Once Decision says "Chosen:", end each hand-over by offering diagrams of the chosen option, after
+the reviewers' suggestions, so a person can see how it works at a glance; an ADR not chosen yet gets
+no offer, and no other option is drawn. Offer a diagram only of a shape the text holds: parts that
+call each other, drawn as a flowchart; events passing between actors, drawn as a sequence diagram;
+the states one thing moves through, drawn as a state diagram; or records and how they relate, drawn
+as an entity-relationship diagram. Offer a shape only when the text names at least three of its
+things and at least two connections between them, such as three parts and two calls; otherwise say
+nothing about diagrams. Name each offer in one line, saying what it would show, with the question
+"Would you like to add any of these diagrams to the ADR, or propose another?" Nothing is drawn
+unless the person picks it, and an offer never holds the ADR back from its next status. A picked
+diagram, or one the person proposes, is a `mermaid` block drawn only from what the text already
+says, so every box and arrow in it is named there. While items are left to settle, list the offers
+and their question as text and ask only the first item, so the person can answer the offer whenever
+they like; once nothing is left, the offer's question is the one you ask, with your question tool,
+which lets the person pick several, or as text where you have none. Offer them until the person
+answers, then never again in the conversation. A picked diagram goes in Decision, after the reason,
+which still reads on its own without it, and is reviewed like any change the person asks for. Once
+the offer is answered and nothing is left to settle, ask whether to accept or reject the ADR. Leave
+committing to them.

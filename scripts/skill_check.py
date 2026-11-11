@@ -120,10 +120,8 @@ DIAGRAM_RULES = (
     "Offer a shape only when the text names at least three of its things and at least two "
     "connections between them, such as three parts and two calls; otherwise say nothing about "
     "diagrams.",
-    "Name each offer in one line, saying what it would show, and ask: \"Would you like to add any "
-    "of these diagrams to the {document}, or propose another?\" Ask with your question tool, which "
-    "lets the person pick several, or, where you have none, list the offers as text with the "
-    "question last.",
+    "Name each offer in one line, saying what it would show, with the question \"Would you like to "
+    "add any of these diagrams to the {document}, or propose another?\"",
     "Nothing is drawn unless the person picks it, and an offer never holds the {document} back "
     "from its next status.",
     "A picked diagram, or one the person proposes, is a `mermaid` block drawn only from what the "

@@ -10,8 +10,8 @@ minor version may need such a change, and its entry says so.
 
 ### Added
 
-- `/adr` offers diagrams of the chosen option. Once Decision says "Chosen:" and nothing is left to
-  settle, it offers one line per diagram the text has enough for (at least three parts, actors,
+- `/adr` offers diagrams of the chosen option. Once Decision says "Chosen:", each hand-over
+  offers one line per diagram the text has enough for (at least three parts, actors,
   states or records and two connections between them), drawn as a flowchart, sequence diagram,
   state diagram or entity-relationship diagram, and asks "Would you like to add any of these
   diagrams to the ADR, or propose another?". Nothing is drawn unless picked. A picked diagram is a
