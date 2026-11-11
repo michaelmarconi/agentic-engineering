@@ -1,0 +1,11 @@
+schema_version: "1.1"
+name: plan-offers-diagram
+expected_outcome: |
+  The plan's text names a release passing through four parts (the customs broker, the update
+  handler in src/broker/updates.py, record_status() and the status history, and the list and page
+  that read it) and the calls between them. So the hand-over offers a flowchart of them. While the
+  review leaves items to settle, the offers are listed as optional and the first item is the only
+  question; once nothing is left, the question is, word for word, "Would you like to add any of
+  these diagrams to the plan, or propose another?". No diagram is written unasked.
+context:
+  scaffold_script: place-files.sh

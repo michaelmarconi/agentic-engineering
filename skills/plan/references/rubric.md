@@ -48,8 +48,8 @@ checking, and quotes the plan as evidence for every failure.
    and ADRs: a choice with a reasonable alternative that the specs, the ADRs, the practices and
    the existing code do not already settle. Following a pattern the code already uses is not a decision. A
    case you cannot judge from the page goes under Needs a person.
-7. **No code.** The Plan section holds no code: no code blocks and no lines of code, though it
-   may name files, functions and commands.
+7. **No code.** The Plan section holds no code: no code blocks other than `mermaid` diagrams, as
+   check 13 says, and no lines of code, though it may name files, functions and commands.
 8. **References.** The plan refers only to the specs and ADRs it lists, and to files in the code.
    It does not refer to the brief, to another plan or to a spike record in any way: no
    hyperlink, path or title. It refers to outside material only by a web link, never to material
@@ -68,6 +68,11 @@ checking, and quotes the plan as evidence for every failure.
     would choose, such as the decision an ADR to record should make, so the person can accept it
     in a word or give another. A question only the person can answer proposes no guess: its
     "Proposed:" says what would settle it.
+
+13. **Diagrams match the text.** A diagram is a `mermaid` block in the Plan section, after its
+    opening paragraph and before the steps. Every box, arrow and label in it names something the
+    plan's text already says, so the diagram makes no decision and states no fact of its own; quote
+    each one the text does not hold. A plan with no diagram passes.
 
 The reviewer also passes on this advice for the Plan section as suggestions, never as
 failures: start with why the work is being done and what it leaves for later; give one

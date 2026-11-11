@@ -124,8 +124,9 @@ file name and the template's comments removed:
   you the practice is recorded, or that the spec is `👍 Accepted` again after its change.
 - **Plan** says how the work will be done, with headings and length to suit it: start with why the
   work is being done and what it leaves for later, give one recommended approach, and name the
-  files that matter and the code to reuse. It holds no code, and no decision that is not under
-  Decisions or ADRs; a new one found while writing goes back to the person as a question first.
+  files that matter and the code to reuse. It holds no code, though it may hold a diagram the
+  person picked at the hand-over, and no decision that is not under Decisions or ADRs; a new one
+  found while writing goes back to the person as a question first.
 
 The plan refers only to the specs and ADRs it lists, and to the code. Never refer to the brief,
 another plan or a spike record, and never edit a spec or an ADR, even when the person asks you to
@@ -223,5 +224,27 @@ the check found not made or broken. Say you will take them one at a time, rather
 to, and ask the first only, as a single question, giving any examples as possible answers rather
 than further questions; if the person has said not to ask now, ask nothing. Name the count only, not
 the items: each comes up when you reach it. List the reviewers' suggestions separately, as optional:
-they never hold the plan back. Once nothing is left to settle, ask whether the plan is ready to
-build. Leave committing to them.
+they never hold the plan back.
+
+Offer diagrams of the work at each hand-over, so a person can see how it fits together at a glance.
+Offer a diagram only of a shape the text holds: parts that call each other, drawn as a flowchart;
+events passing between actors, drawn as a sequence diagram; the states one thing moves through,
+drawn as a state diagram; or records and how they relate, drawn as an entity-relationship diagram.
+Offer a shape only when the text names at least three of its things and at least two connections
+between them, such as three parts and two calls; otherwise say nothing about diagrams. Name each
+offer in one line, saying what it would show; the offer's question is "Would you like to add any of
+these diagrams to the plan, or propose another?" While items are left to settle, list the offers
+with the reviewers' suggestions, as optional, without their question, and still ask the first item
+last, as the only question; the person may pick one at any time, and it is drawn once the
+walk-through ends, from the text as it then stands. Once nothing is left, ask the offer's question
+as the only question, unless the person has already said the plan is ready to build: then list the
+offers as optional and ask about that, as the Status section says. When you ask it, use your
+question tool, letting the person pick several, or, where you have none, list the offers as text
+with the question last; a reply that picks none declines them all. Nothing is drawn unless the
+person picks it, and an offer never holds the plan back from its next status. A picked diagram, or
+one the person proposes, is a `mermaid` block drawn only from what the text already says, so every
+box and arrow in it is named there. Offer each plan's diagrams until the person picks or declines
+them, then not again for that plan. A picked diagram goes in the Plan section, after its opening
+paragraph and before the steps, and is reviewed with the rest of the plan, or on its own if the
+walk-through has ended. Once the offer is settled and nothing else is, ask whether the plan is ready
+to build. Leave committing to them.

@@ -1,0 +1,8 @@
+schema_version: "1.1"
+name: plan-diagram-matches-text
+expected_outcome: |
+  The person asks for a flowchart of the planned work. It is a mermaid block in the Plan section,
+  after the opening paragraph and before the steps, naming only the parts and calls the plan's
+  text names, and the plan is reviewed.
+context:
+  scaffold_script: place-files.sh

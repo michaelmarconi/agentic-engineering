@@ -1,0 +1,7 @@
+schema_version: "1.1"
+name: plan-no-diagram-offer
+expected_outcome: |
+  The plan's text names only a counting function and the `main` that calls it, fewer than three
+  connected parts, events, states or records, so the hand-over says nothing about diagrams at all.
+context:
+  scaffold_script: place-files.sh

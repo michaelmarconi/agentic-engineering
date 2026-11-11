@@ -168,13 +168,43 @@ mode?](#why-not-claude-codes-plan-mode)):
 When you are happy with the reviewed plan, tell `/plan` it is ready to build, and it sets the
 status.
 
+## Diagrams
+
+Each hand-over offers to draw the work, until you pick or decline, for each plan. While questions
+are open, the offers sit with the reviewers' optional suggestions and a picked diagram is drawn once
+the questions are settled; after that, the offer is the one question asked before "ready to build?".
+It offers only what the text already describes in enough detail to be worth a picture: at least
+three things and two connections between them. There are four kinds, the same as for ADRs:
+
+| What the text describes | Diagram |
+|---|---|
+| Parts that call each other | Flowchart |
+| Events passing between actors | Sequence diagram |
+| The states one thing moves through | State diagram |
+| Records and how they relate | Entity-relationship diagram |
+
+It asks "Would you like to add any of these diagrams to the plan, or propose another?" and draws
+nothing you don't pick. A plan with nothing to draw gets no offer at all. A picked diagram is a
+[Mermaid](https://mermaid.js.org/) block, which GitHub shows as a picture, placed in the Plan
+section after its opening paragraph. It may show only what the text says, so it can never slip in
+a decision of its own; the reviewer checks every box and arrow against the text. For the example
+plan above, the flowchart might be:
+
+```mermaid
+flowchart LR
+  Broker[Customs broker] -->|reports release| Updates[src/broker/updates.py]
+  Updates -->|records cleared event| History[Status history]
+  History -->|latest event| List[List of holds]
+  History -->|cleared since| Page[Container's page]
+```
+
 ## Review
 
 Before you see a plan, `/plan` has its reviewer agent check it against a short list of pass-or-fail
 checks: the fixed sections are there; every named requirement exists in its spec; the specs and
 ADRs are settled; no other plan that is not `✅ Built` names the same requirement; a plan that
 is `🟢 Ready to build` has no open questions; only specs and ADRs are referred to; the Plan section holds
-no code; no decision is made in the Plan section that is missing from Decisions or ADRs; and the plan
+no code, and any diagram in it draws only what the text says; no decision is made in the Plan section that is missing from Decisions or ADRs; and the plan
 keeps to any size or way of splitting work your practices record, or says why not. The
 reviewer may suggest how to improve the Plan section itself, but those suggestions never hold a
 plan back. The reviewer sees only the plan, the documents it names and your practices, not your conversation, so it

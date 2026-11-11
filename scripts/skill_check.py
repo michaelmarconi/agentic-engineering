@@ -114,7 +114,7 @@ CORRECT_RULES = (
 )
 
 # The skills that offer diagrams at hand-over, each with the name its sentences give its document.
-DIAGRAM_SKILLS = {"adr": "ADR"}
+DIAGRAM_SKILLS = {"adr": "ADR", "plan": "plan"}
 # The sentences every such skill holds, with its document's name filled in, so the offers cannot
 # drift apart.
 DIAGRAM_RULES = (
