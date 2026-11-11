@@ -34,14 +34,15 @@ released containers stay in the list of held containers. A release becomes a "cl
 event, "cleared" being the status of a container whose hold has ended, recorded through
 `record_status()` in `src/shipments.py`, the way `src/broker/updates.py` already records holds, as
 ADR 0003 requires. The list in `src/holds/list.py` already shows only containers whose latest event
-is "held", so a cleared container leaves it with no change there. Emailing the logistics
+is "held", so a cleared container leaves it with no change there. Release messages come slower
+than holds, and the connection's 10-second timeout in `src/broker/connection.py` already drops some. Emailing the logistics
 coordinator on a release is the spec's next requirement, left for a later plan.
 
 1. Write the failing test from the spec's scenario: hold at 2027-02-12 09:12, release at
    2027-02-13 14:30.
 2. Turn the broker's "released" message into a "cleared" event in `src/broker/updates.py`.
 3. Show "cleared since <time>" in `summary()` in `src/page.py`.
-4. Set the broker connection's timeout to 30 seconds.
+4. Raise the timeout in `connect()` in `src/broker/connection.py` to 30 seconds.
 
 ## Open questions
 
