@@ -1,3 +1,10 @@
+---
+tags: [plan]
+max_turns: 60
+timeout_seconds: 1200
+allowed_tools: [Read, Glob, Grep, Skill, Write, Edit, Agent]
+---
+
 Plan the work for the "Release recorded" requirement in the customs hold alerts spec. We've already agreed every decision, so don't ask me about any; write the plan now:
 
 - The new `/holds/status` endpoint answers with JSON `{"held": <count>, "since": <ISO 8601 time>}`; the operations dashboard reads those two fields.

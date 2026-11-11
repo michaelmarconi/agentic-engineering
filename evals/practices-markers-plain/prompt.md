@@ -1,3 +1,10 @@
+---
+tags: [practices]
+max_turns: 60
+timeout_seconds: 1200
+allowed_tools: [Read, Glob, Grep, Skill, Write, Edit, Agent]
+---
+
 /practices testing. Add these two practices word for word under Rules in the core, not in a topic file:
 
 - Write each test before the code it checks (default).
