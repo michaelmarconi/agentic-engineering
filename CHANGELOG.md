@@ -6,7 +6,7 @@ What changed in each version of the plugin, newest first. Versions follow
 past a major version: it says what you need to change in your documents. Until 1.0.0, any
 minor version may need such a change, and its entry says so.
 
-## [0.40.0] - 2026-11-11
+## [0.42.0] - 2026-11-11
 
 ### Added
 
@@ -20,6 +20,19 @@ minor version may need such a change, and its entry says so.
   18 has the reviewer check every box and arrow against the text.
 - A `mermaid` diagram in an ADR's Decision does not count towards the 500 words of the plain part.
 - The offer's sentences are shared in `scripts/skill_check.py`, so `/plan` can hold the same ones.
+
+## [0.41.0] - 2026-11-11
+
+### Changed
+
+- ADR and spike reviews no longer count sentences. A sentence over 25 words, a paragraph of more
+  than three sentences, a Question or Hypothesis over three sentences, or a reason for the choice
+  over two no longer fails a review or a correction check. The reviewer checks instead that each
+  paragraph makes one point and that a newcomer can follow every sentence in one reading, quoting
+  any sentence that fails. The counts stay in `/adr` and `/spike` as a guide for the writer, and a
+  reviewer may list a long sentence only as a suggestion. The word limits for the plain part, 500
+  for an ADR and 600 for a spike record, are unchanged and still checked by script. Nothing in
+  your documents needs to change.
 
 ## [0.39.1] - 2026-11-11
 

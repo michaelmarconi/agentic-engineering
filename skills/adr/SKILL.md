@@ -34,6 +34,12 @@ until it fits:
 python3 "${CLAUDE_SKILL_DIR}/scripts/adr.py" words <the ADR's path>
 ```
 
+Aim for sentences under 25 words and paragraphs of up to three sentences, with the Question in up
+to three sentences and the reason for the choice in up to two. These counts are a guide for you,
+not checks: never split, merge or rewrite text that already reads clearly just to meet them. The
+review checks that a newcomer can follow every sentence in one reading, and lists a long sentence
+or paragraph only as a suggestion.
+
 ## Find what exists
 
 List `docs/adrs/` and read the frontmatter of each ADR. If a `📝 Draft` or `👍 Accepted` ADR
@@ -54,7 +60,7 @@ spike record from `docs/spikes/`, put its measurements into the ADR's own words,
 12 of 12 transactions": a line in Options says what they showed, and Technical detail gives them in
 full. A spike record may be deleted at any time, so the ADR never names it. Only when there is nothing to draw on, ask what needs deciding first.
 
-Write the Question first: the one choice to make, in at most three sentences. Until the person
+Write the Question first: the one choice to make, briefly. Until the person
 has picked an option, Decision says only "Not chosen yet; see Open questions.", every row in
 Options is Open, and Open questions asks for the choice. Once they pick, write "Chosen:" and the
 option in full, so the sentence reads on its own, with the reason; mark that row Chosen and the

@@ -14,7 +14,7 @@ date: <YYYY-MM-DD>
 ## Decision
 
 Not chosen yet; see Open questions.
-<!-- Once the person picks: "Chosen: <the option in full>, because <the reason, in at most two sentences>." A `mermaid` diagram of the chosen option may follow, only if the person picks one at hand-over. -->
+<!-- Once the person picks: "Chosen: <the option in full>, because <the reason, briefly>." A `mermaid` diagram of the chosen option may follow, only if the person picks one at hand-over. -->
 
 ## Background
 
