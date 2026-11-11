@@ -18,7 +18,7 @@ Experiment; its technical part, for agents and reviewers, is Experiment, Code an
    in; the frontmatter's `#` line stays. In a design, Finding, Next steps, Results and Surprises
    are empty.
 2. **One hypothesis** (design). Hypothesis states one claim, the one the title states, that one
-   experiment can confirm or refute, in at most three sentences, without describing the method.
+   experiment can confirm or refute, briefly, without describing the method.
    A claim with parts that could each be tested without the others fails, naming the parts.
 3. **References** (design). The record refers to no document but the spec or ADR waiting on its
    hypothesis, which Hypothesis names if there is one. It never refers to the brief, a plan or
@@ -57,11 +57,12 @@ Experiment; its technical part, for agents and reviewers, is Experiment, Code an
     account, real data, money or someone else's system, has Risks and safeguards naming each way
     it could do harm and what stops it, with the details in Experiment. One that touches nothing
     real says only "None.".
-13. **Readable** (design). In the plain part, each section opens with its point; sentences are
-    under 25 words and paragraphs at most three sentences; versions, flags, settings, file names
-    and code names appear only when the hypothesis is about one of them; each domain term the Plain
-    words rule footnotes is explained once, in a footnote at its first use, while computing terms
-    need none; steps and runs are lists or tables, not sentences.
+13. **Readable** (design). In the plain part, each section opens with its point; each paragraph
+    makes one point; no sentence is one a newcomer would have to read twice to follow, and a finding
+    quotes that sentence; versions, flags, settings, file names and code names appear only when the
+    hypothesis is about one of them; each domain term the Plain words rule footnotes is explained
+    once, in a footnote at its first use, while computing terms need none; steps and runs are lists
+    or tables, not sentences.
 14. **Every run recorded** (verdict). Each result the Finding uses is in Runs, as a `### Run N`
     entry the run script wrote. The runs of the latest code, those whose code hash matches the
     last run's, number at least `- Runs:`, or the last of them shows the result named under
@@ -93,3 +94,6 @@ Experiment; its technical part, for agents and reviewers, is Experiment, Code an
 The plain part's size, at most 600 words, tables included, is checked by the run script's `words`
 command and by the status hook, not by the reviewer. So is a finishing status that the Finding
 does not open with, such as `💡 Confirmed` for a Finding that opens "Refuted:".
+
+Sentence and paragraph lengths are guidance in the skill, not checks: a reviewer may list a long
+one under Suggestions, which never fail the review, but never as a failed check.

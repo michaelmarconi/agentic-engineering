@@ -55,7 +55,7 @@ core parts kept, reordered and tightened.[^madr]
 |---|---|---|
 | `status:` and `date:` | `📝 Draft`, `👍 Accepted`, `❌ Rejected` or `↪️ Superseded`, and the day the status last changed; `supersedes:` or `superseded-by:` name another ADR by number | Status and date |
 | Title | The decision in plain words, such as "Keep session data in Redis" | Title |
-| Question | The one choice to make, in at most three sentences, written first | Part of Context and Problem Statement |
+| Question | The one choice to make, briefly, written first | Part of Context and Problem Statement |
 | Decision | "Not chosen yet" until you pick; then "Chosen:" and the option in full, with the reason | Decision Outcome, moved up |
 | Background | What forces the choice now, and the earlier ADRs it builds on | Context and Problem Statement |
 | Options | A table: each option, whether it was chosen or rejected, and why, in one line | Considered Options, with pros and cons cut to one line |
@@ -133,7 +133,9 @@ pass-or-fail checks: one decision, a plain title and question, a decision that r
 real options with reasons, good and bad consequences, each limit stated once, checks that can
 really be carried out, technical detail kept at the foot, references only to other ADRs, and no
 clash with another ADR. Before each review, `/adr` counts the words in the plain part and trims it
-to fit. The reviewer sees only the ADRs, not your conversation, so it judges
+to fit. That word count is the only length limit: sentence and paragraph lengths are a guide for
+the writer, and the reviewer judges instead whether a newcomer can follow each sentence in one
+reading. The reviewer sees only the ADRs, not your conversation, so it judges
 the page as a newcomer would. At the same time, a language checker reads it for words a newcomer
 could not follow, by the [Plain words](../lifecycle.md#plain-words) rule: a term from your field
 gets a footnote, and team shorthand is rewritten. `/adr` corrects what both find, once, and

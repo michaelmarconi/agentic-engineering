@@ -34,6 +34,11 @@ Out of scope. Check the plain part's size before each review, and fix it until i
 python3 "${CLAUDE_SKILL_DIR}/scripts/spike.py" words <the record's path>
 ```
 
+Aim for sentences under 25 words and paragraphs of up to three sentences, with the Hypothesis in up
+to three sentences. These counts are a guide for you, not checks: never split, merge or rewrite text
+that already reads clearly just to meet them. The review checks that a newcomer can follow every
+sentence in one reading, and lists a long sentence or paragraph only as a suggestion.
+
 A spike runs in four steps: design, review the design, run, review the verdict. Work out from the
 record's status where to start: no record or `📝 Draft` is design, `🟢 Ready to run` is running or
 the verdict, and a `💡 Confirmed`, `🚫 Refuted` or `❔ Not settled` record is finished and never

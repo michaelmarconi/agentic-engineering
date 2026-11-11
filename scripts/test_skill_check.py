@@ -358,6 +358,58 @@ class SkillCheck(unittest.TestCase):
         self.assertIn("one/SKILL.md", out)
         self.assertIn("two/SKILL.md", out)
 
+    def put_rubric(self, folder, text):
+        path = os.path.join(self.tmp.name, "skills", folder, "references", "rubric.md")
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        with open(path, "w") as f:
+            f.write(text)
+
+    def test_rubric_counting_words_per_sentence_fails(self):
+        self.put("demo", skill_md())
+        self.put_rubric("demo", "11. **Readable.** Sentences are under 25 words.\n")
+        self.assertFails("demo/references/rubric.md: count rule")
+
+    def test_rubric_counting_sentences_fails(self):
+        self.put("demo", skill_md())
+        self.put_rubric("demo", "4. **Question.** Names the choice in at most three sentences.\n")
+        self.assertFails("count rule")
+
+    def test_rubric_counting_sentences_per_paragraph_fails(self):
+        self.put("demo", skill_md())
+        self.put_rubric("demo", "11. Paragraphs at most 3 sentences.\n")
+        self.assertFails("count rule")
+
+    def test_rubric_count_wrapped_across_lines_fails(self):
+        self.put("demo", skill_md())
+        self.put_rubric("demo", "5. The reason follows in up to\n   two sentences.\n")
+        self.assertFails("count rule")
+
+    def test_rubric_word_budget_and_shape_rules_pass(self):
+        self.put("demo", skill_md())
+        self.put_rubric("demo", "The plain part, at most 500 words, is checked by a script.\n"
+                                "2. **One story.** Story is one sentence.\n"
+                                "3. Each requirement has exactly one rule sentence.\n")
+        done = self.check()
+        self.assertEqual((done.returncode, done.stdout), (0, ""))
+
+    def test_other_wordings_of_a_count_fail(self):
+        for wording in ("Each sentence is under 25 words.", "Sentences under twenty-five words.",
+                        "No sentence over 25 words.", "At most 25 words per sentence.",
+                        "Sentences shorter than 25 words.", "In one to three sentences.",
+                        "In 3 sentences or fewer.", "In two or three sentences."):
+            with self.subTest(wording=wording):
+                self.put("demo", skill_md())
+                self.put_rubric("demo", wording + "\n")
+                self.assertFails("count rule")
+
+    def test_reviewer_agent_counting_sentences_fails(self):
+        self.put_agent("demo-reviewer", "Fail any sentence over 25 words.\n")
+        self.assertFails("agents/demo-reviewer.md: count rule")
+
+    def test_skill_md_may_give_counts_as_guidance(self):
+        self.put("demo", skill_md(body="# Demo\n\nAim for sentences under 25 words.\n"))
+        self.assertEqual(self.check().returncode, 0)
+
     def test_help(self):
         done = subprocess.run([sys.executable, SCRIPT, "--help"], capture_output=True, text=True)
         self.assertEqual(done.returncode, 0)

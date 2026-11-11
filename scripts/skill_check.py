@@ -30,6 +30,11 @@ For each skills/<folder>/SKILL.md under the given plugin root (default: this plu
   document moves forward on the same terms, and DATE_RULE, so every one keeps its `date:` the same
   way (docs/adrs/0027).
 
+For each skills/<folder>/references/rubric.md and each agents/<name>.md, no check counts
+sentences or the words in a sentence, such as "sentences under 25 words" or "at most three
+sentences": a reviewer cannot count them reliably and corrections chase the numbers, so counts are
+guidance in SKILL.md, and brevity is held by the script-checked word budgets instead.
+
 For each agents/<name>.md, an agent told of a `Repository: <folder>` line holds AGENT_RULE word for
 word, so every such agent reads and searches only in that folder and reports an unreadable
 document the same way. Every document reviewer the review relay hook knows holds each of
@@ -226,6 +231,24 @@ def problems(folder, text):
     return found
 
 
+_NUMBER = r"(?:\d+|one|two|three|four|five|six|seven|eight|nine|ten|twenty(?:-\w+)?|thirty(?:-\w+)?)"
+_LIMIT = r"(?:under|over|at most|up to|no more than|fewer than|more than|shorter than|longer than)"
+COUNT_RULE = re.compile(
+    rf"\bsentences?\s+(?:is\s+|are\s+|of\s+)?{_LIMIT}\s+{_NUMBER}\s+words\b"
+    rf"|\b{_NUMBER}\s+words\s+(?:per|in an?|in each)\s+sentence\b"
+    rf"|\b{_LIMIT}\s+{_NUMBER}\s+sentences\b"
+    rf"|\b{_NUMBER}\s+(?:to|or)\s+{_NUMBER}\s+sentences\b"
+    rf"|\b{_NUMBER}\s+sentences\s+or\s+(?:fewer|less|more)\b",
+    re.I)
+
+
+def rubric_problems(text):
+    """A rubric's checks hold no sentence or words-per-sentence counts."""
+    flat = " ".join(text.split())
+    return [f"count rule: \"{m.group(0)}\" makes a count a check; give it as guidance in SKILL.md"
+            for m in COUNT_RULE.finditer(flat)]
+
+
 def agent_problems(name, text):
     """An agent the review relay hook or the audit starts with a `Repository:` line, or any agent
     told of one, must hold AGENT_RULE."""
@@ -259,12 +282,19 @@ def main(argv=None):
             for problem in problems(folder, f.read()):
                 print(f"{folder}/SKILL.md: {problem}")
                 failed = True
+        rubric = os.path.join(skills, folder, "references", "rubric.md")
+        if os.path.isfile(rubric):
+            with open(rubric, encoding="utf-8") as f:
+                for problem in rubric_problems(f.read()):
+                    print(f"{folder}/references/rubric.md: {problem}")
+                    failed = True
     agents = os.path.join(args.root, "agents")
     for name in sorted(os.listdir(agents)) if os.path.isdir(agents) else []:
         if not name.endswith(".md"):
             continue
         with open(os.path.join(agents, name), encoding="utf-8") as f:
-            for problem in agent_problems(name[:-3], f.read()):
+            text = f.read()
+            for problem in agent_problems(name[:-3], text) + rubric_problems(text):
                 print(f"agents/{name}: {problem}")
                 failed = True
     return 1 if failed else 0
