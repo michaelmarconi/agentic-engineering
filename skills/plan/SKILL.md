@@ -86,9 +86,7 @@ would need its reason after the build, in this order, taking the first answer th
 - someone changing this code later, who needs only its reason, such as why a wait has no random
   part: this plan, with the line saying that `/build` leaves the reason as a comment beside the
   code;
-- nobody, such as for the order of the steps or which file a helper goes in: this plan. A
-  decision that only follows a spec, an ADR, the practices or a pattern the code already uses is
-  one of these.
+- nobody, such as for the order of the steps or which file a helper goes in: this plan.
 
 Give any alternatives as possible answers, not as further
 questions, and end with a single question, such as whether they agree with your proposal. Ask the
