@@ -963,17 +963,44 @@ def runs(text):
     return uncommented(section(text, "Runs") or []).strip()
 
 
+def diagram_lines(lines):
+    """For each line, True if it is part of a closed fenced `mermaid` block, fences included.
+
+    A diagram draws only what the text around it says, so it adds nothing for a person to read
+    (docs/skills/adr.md). A block left open runs to the end and is not a diagram, so an unclosed
+    fence can never hide prose from the count.
+    """
+    fenced, _ = scan(lines)
+    diagram = [False] * len(lines)
+    i = 0
+    while i < len(lines):
+        match = FENCE.match(lines[i]) if fenced[i] else None
+        if not match:
+            i += 1
+            continue
+        fence, words = match.group(1), match.group(2).split()
+        end = next((j for j in range(i + 1, len(lines)) if fenced[j] and closes_fence(lines[j], fence)), None)
+        if end is None:
+            break
+        if words and words[0].lower() == "mermaid":
+            diagram[i:end + 1] = [True] * (end + 1 - i)
+        i = end + 1
+    return diagram
+
+
 def plain_part(text, end_heading="Experiment"):
     """A document's plain part: its lines after the frontmatter and before the `## ` heading that
     starts its technical part (Experiment in a spike record, Technical detail in an ADR), joined,
-    without HTML comments. A document without that heading is plain to its end."""
+    without HTML comments or `mermaid` diagrams. A document without that heading is plain to its end."""
     lines = text.lstrip("\ufeff").splitlines()
     head = frontmatter(text)
     lines = lines[len(head) + 2:] if head is not None else lines
     allowed = headings_allowed(lines)
     stop = "## " + end_heading.lower()
     end = next((i for i, line in enumerate(lines) if allowed[i] and line.strip().lower() == stop), len(lines))
-    return uncommented(lines[:end])
+    lines = lines[:end]
+    diagram = diagram_lines(lines)
+    return uncommented(["" if diagram[i] else line for i, line in enumerate(lines)])
 
 
 def plain_words(text, end_heading="Experiment"):
