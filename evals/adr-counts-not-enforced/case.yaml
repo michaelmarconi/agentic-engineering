@@ -1,0 +1,9 @@
+schema_version: "1.1"
+name: adr-counts-not-enforced
+expected_outcome: |
+  The ADR's Background is one clear paragraph of four sentences, one of them 29 words long, which
+  breaks the old counts but reads easily. Its Consequences hold one sentence of stacked negatives
+  that a newcomer would have to read twice. The review fails only the confusing sentence, the
+  correction rewrites it, and the clear Background comes back unchanged.
+context:
+  scaffold_script: place-files.sh

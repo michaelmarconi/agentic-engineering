@@ -25,13 +25,12 @@ reviewer needs to build and check it. Footnotes explaining terms come last, afte
    Consequences, How we'll check or Technical detail, such as "we will also use X". An open
    question asking whether part of the ADR should be an ADR of its own also fails: the ADR is split
    instead.
-4. **Question.** Question names the one choice to make, in at most three sentences, and describes
-   no option, method, version or setting.
+4. **Question.** Question names the one choice to make, briefly, and describes no option,
+   method, version or setting.
 5. **Decision stands alone.** While the person has not chosen, Decision says only "Not chosen yet;
    see Open questions.", Open questions asks for the choice, and the ADR stays `📝 Draft`. Once they
    have, its first sentence opens "Chosen:" and names the option in full, so that it makes sense
-   with the rest of the ADR hidden, and the reason follows in at most two sentences. A bare option
-   name fails.
+   with the rest of the ADR hidden, and the reason follows briefly. A bare option name fails.
 6. **Background states the need.** Background says what forces the choice now, in one paragraph
    a newcomer can follow, and does not argue for an option. Each earlier ADR it builds on is named
    by number, linked to its file as check 14 says, with what it decided in a few words, not retold.
@@ -53,9 +52,9 @@ reviewer needs to build and check it. Footnotes explaining terms come last, afte
     stores or reads session data", never as file paths, then lists numbered checks, one line each,
     each by test, demonstration, inspection or analysis. Each check can really be carried out;
     Technical detail gives it in full when one line is not enough.
-11. **Readable.** In the plain part, each section opens with its point; sentences are under 25
-    words and paragraphs at most three sentences; versions, flags, settings, file names and
-    command names appear only when the decision is about one of them; each domain term the Plain
+11. **Readable.** In the plain part, each section opens with its point; each paragraph makes one
+    point; no sentence is one a newcomer would have to read twice to follow, and a finding quotes
+    that sentence; versions, flags, settings, file names and command names appear only when the decision is about one of them; each domain term the Plain
     words rule footnotes is explained once, in a footnote at its first use, while computing terms,
     such as "Redis", need none; every sentence names its subject, never a bare "it" with nothing
     before it to point to; options, steps and checks are tables or lists, not sentences.
@@ -92,3 +91,6 @@ reviewer needs to build and check it. Footnotes explaining terms come last, afte
 The plain part's size, at most 500 words, tables included, is checked by the skill's `words`
 command and by the status hook, not by the reviewer. So is a `👍 Accepted` ADR whose Decision does
 not open with "Chosen:".
+
+Sentence and paragraph lengths are guidance in the skill, not checks: a reviewer may list a long
+one under Suggestions, which never fail the review, but never as a failed check.
