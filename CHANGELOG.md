@@ -6,6 +6,14 @@ What changed in each version of the plugin, newest first. Versions follow
 past a major version: it says what you need to change in your documents. Until 1.0.0, any
 minor version may need such a change, and its entry says so.
 
+## [0.39.1] - 2026-11-11
+
+### Fixed
+
+- When a plan's review fails a Decisions line on rubric check 5, `/plan`'s correction moves the
+  line to Open questions, naming the ADR, spec change or practice it belongs in, instead of
+  rewording it in place, which left the decision in the plan.
+
 ## [0.39.0] - 2026-11-11
 
 ### Changed
