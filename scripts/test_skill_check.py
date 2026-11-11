@@ -392,6 +392,20 @@ class SkillCheck(unittest.TestCase):
         done = self.check()
         self.assertEqual((done.returncode, done.stdout), (0, ""))
 
+    def test_other_wordings_of_a_count_fail(self):
+        for wording in ("Each sentence is under 25 words.", "Sentences under twenty-five words.",
+                        "No sentence over 25 words.", "At most 25 words per sentence.",
+                        "Sentences shorter than 25 words.", "In one to three sentences.",
+                        "In 3 sentences or fewer.", "In two or three sentences."):
+            with self.subTest(wording=wording):
+                self.put("demo", skill_md())
+                self.put_rubric("demo", wording + "\n")
+                self.assertFails("count rule")
+
+    def test_reviewer_agent_counting_sentences_fails(self):
+        self.put_agent("demo-reviewer", "Fail any sentence over 25 words.\n")
+        self.assertFails("agents/demo-reviewer.md: count rule")
+
     def test_skill_md_may_give_counts_as_guidance(self):
         self.put("demo", skill_md(body="# Demo\n\nAim for sentences under 25 words.\n"))
         self.assertEqual(self.check().returncode, 0)

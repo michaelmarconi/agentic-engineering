@@ -58,11 +58,11 @@ Experiment; its technical part, for agents and reviewers, is Experiment, Code an
     it could do harm and what stops it, with the details in Experiment. One that touches nothing
     real says only "None.".
 13. **Readable** (design). In the plain part, each section opens with its point; each paragraph
-    makes one point; no sentence is one a newcomer would have to read twice to follow, and a
-    finding quotes that sentence; versions, flags, settings, file names
-    and code names appear only when the hypothesis is about one of them; each domain term the Plain
-    words rule footnotes is explained once, in a footnote at its first use, while computing terms
-    need none; steps and runs are lists or tables, not sentences.
+    makes one point; no sentence is one a newcomer would have to read twice to follow, and a finding
+    quotes that sentence; versions, flags, settings, file names and code names appear only when the
+    hypothesis is about one of them; each domain term the Plain words rule footnotes is explained
+    once, in a footnote at its first use, while computing terms need none; steps and runs are lists
+    or tables, not sentences.
 14. **Every run recorded** (verdict). Each result the Finding uses is in Runs, as a `### Run N`
     entry the run script wrote. The runs of the latest code, those whose code hash matches the
     last run's, number at least `- Runs:`, or the last of them shows the result named under
