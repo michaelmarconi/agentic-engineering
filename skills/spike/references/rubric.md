@@ -90,7 +90,6 @@ Experiment; its technical part, for agents and reviewers, is Experiment, Code an
     word or give another. A question only the person can answer, such as whether a sample input
     stands for the real thing, proposes no guess: its "Proposed:" says what would settle it.
 
-The plain part's size, at most 600 words, tables included and `mermaid` diagrams left out, is
-checked by the run script's `words` command and by the status hook, not by the reviewer. So is a
-finishing status that the Finding does not open with, such as `💡 Confirmed` for a Finding that opens
-"Refuted:".
+The plain part's size, at most 600 words, tables included, is checked by the run script's `words`
+command and by the status hook, not by the reviewer. So is a finishing status that the Finding
+does not open with, such as `💡 Confirmed` for a Finding that opens "Refuted:".

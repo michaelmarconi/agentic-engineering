@@ -136,6 +136,7 @@ FIXED_PARTS = ("Hypothesis", "How we'll know", "Out of scope", "How the test wor
 PLAIN_LIMIT = 600  # words in a spike record's plain part, the part written for people
 ADR_PLAIN_LIMIT = 500  # words in an ADR's plain part, from the title down to Technical detail
 ADR_DETAIL = "Technical detail"  # the heading that starts an ADR's technical part
+ADR_DIAGRAMS = "Decision"  # the section whose diagrams the word limit leaves out
 WORD = re.compile(r"\S*[^\W_]\S*")  # a run of non-space characters holding a letter or digit
 ACCEPTED, REJECTED, SUPERSEDED = "👍 Accepted", "❌ Rejected", "↪️ Superseded"
 STATUSES = (DRAFT, READY, BUILT)
@@ -921,7 +922,7 @@ def adr_rules(path, before, after, old, new):
                 f"so the ADR cannot be `{ACCEPTED}` as it stands. Write the person's choice there, have "
                 "it reviewed, and ask them again."
             )
-        words = plain_words(after, ADR_DETAIL) if new == ACCEPTED else 0
+        words = plain_words(after, ADR_DETAIL, ADR_DIAGRAMS) if new == ACCEPTED else 0
         if words > ADR_PLAIN_LIMIT:
             return (
                 f"{name}: its plain part, from the title down to {ADR_DETAIL}, holds {words} words, more "
@@ -963,23 +964,31 @@ def runs(text):
     return uncommented(section(text, "Runs") or []).strip()
 
 
-def diagram_lines(lines):
-    """For each line, True if it is part of a closed fenced `mermaid` block, fences included.
+def diagram_lines(lines, heading):
+    """For each line, True if it is part of a closed fenced `mermaid` block inside the `## <heading>`
+    section, fences included.
 
-    A diagram draws only what the text around it says, so it adds nothing for a person to read
-    (docs/skills/adr.md). A block left open runs to the end and is not a diagram, so an unclosed
-    fence can never hide prose from the count.
+    A diagram there draws only what the text around it says (rubric check 18 of the ADR rubric),
+    so it adds nothing for a person to read. A block left open runs to the end and is not a
+    diagram, so an unclosed fence can never hide prose from the count, nor can a diagram anywhere
+    else.
     """
     fenced, _ = scan(lines)
+    allowed = headings_allowed(lines)
     diagram = [False] * len(lines)
-    i = 0
-    while i < len(lines):
+    start = next((i for i, line in enumerate(lines) if allowed[i] and line.strip().lower() == "## " + heading.lower()), None)
+    if start is None:
+        return diagram
+    stop = next((i for i in range(start + 1, len(lines))
+                 if allowed[i] and (lines[i].startswith("# ") or lines[i].startswith("## "))), len(lines))
+    i = start + 1
+    while i < stop:
         match = FENCE.match(lines[i]) if fenced[i] else None
         if not match:
             i += 1
             continue
         fence, words = match.group(1), match.group(2).split()
-        end = next((j for j in range(i + 1, len(lines)) if fenced[j] and closes_fence(lines[j], fence)), None)
+        end = next((j for j in range(i + 1, stop) if fenced[j] and closes_fence(lines[j], fence)), None)
         if end is None:
             break
         if words and words[0].lower() == "mermaid":
@@ -988,10 +997,11 @@ def diagram_lines(lines):
     return diagram
 
 
-def plain_part(text, end_heading="Experiment"):
+def plain_part(text, end_heading="Experiment", diagrams_in=None):
     """A document's plain part: its lines after the frontmatter and before the `## ` heading that
     starts its technical part (Experiment in a spike record, Technical detail in an ADR), joined,
-    without HTML comments or `mermaid` diagrams. A document without that heading is plain to its end."""
+    without HTML comments, and without the `mermaid` diagrams of the `## <diagrams_in>` section if
+    one is named (Decision in an ADR). A document without that heading is plain to its end."""
     lines = text.lstrip("\ufeff").splitlines()
     head = frontmatter(text)
     lines = lines[len(head) + 2:] if head is not None else lines
@@ -999,13 +1009,15 @@ def plain_part(text, end_heading="Experiment"):
     stop = "## " + end_heading.lower()
     end = next((i for i, line in enumerate(lines) if allowed[i] and line.strip().lower() == stop), len(lines))
     lines = lines[:end]
-    diagram = diagram_lines(lines)
+    if diagrams_in is None:
+        return uncommented(lines)
+    diagram = diagram_lines(lines, diagrams_in)
     return uncommented(["" if diagram[i] else line for i, line in enumerate(lines)])
 
 
-def plain_words(text, end_heading="Experiment"):
-    """How many words a document's plain part holds."""
-    return len(WORD.findall(plain_part(text, end_heading)))
+def plain_words(text, end_heading="Experiment", diagrams_in=None):
+    """How many words a document's plain part holds, leaving out the diagrams of `diagrams_in`."""
+    return len(WORD.findall(plain_part(text, end_heading, diagrams_in)))
 
 
 def decision_chosen(text):

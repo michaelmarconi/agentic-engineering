@@ -1,8 +1,8 @@
 ---
 type: regex
 target: last_message
-pattern: '(?i)diagram'
+pattern: 'diagrams to the ADR'
 match: not_contains
 weight: 1
 ---
-The hand-over says nothing about diagrams, not even that none is needed.
+The hand-over offers no diagram.

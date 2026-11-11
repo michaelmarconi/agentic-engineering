@@ -143,9 +143,9 @@ with the reports.
 ## Diagrams
 
 Once a decision is chosen and nothing is left to settle, `/adr` offers to draw the chosen option,
-before asking whether to accept it. It offers only what the text already describes in enough
-detail to be worth a picture: at least three things and two connections between them. There are
-four kinds:
+and asks whether to accept it once you have answered. It offers only what the text already describes
+in enough detail to be worth a picture: at least three things and two connections between them.
+There are four kinds:
 
 | What the text describes | Diagram |
 |---|---|
@@ -158,9 +158,9 @@ It asks "Would you like to add any of these diagrams to the ADR, or propose anot
 nothing you don't pick. A decision with nothing to draw, such as storing money as whole numbers of
 the smallest unit, gets no offer at all. A picked diagram is a [Mermaid](https://mermaid.js.org/)
 block, which GitHub shows as a picture, placed in Decision after the reason. It may show only what
-the text says, so it can never slip in a choice of its own; the reviewer checks every box and
-arrow against the text. Diagrams don't count towards the 500 words. For an ADR choosing to receive
-customs updates by webhook, the flowchart might be:
+the text says, so it can never slip in a choice of its own; the reviewer checks every box and arrow
+against the text. A diagram in Decision doesn't count towards the 500 words. For an ADR choosing to
+receive customs updates by webhook, the flowchart might be:
 
 ```mermaid
 flowchart LR

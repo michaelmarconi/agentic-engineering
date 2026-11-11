@@ -95,6 +95,6 @@ reviewer needs to build and check it. Footnotes explaining terms come last, afte
     label in it names something the ADR's text already says, so the diagram makes no choice and
     states no fact of its own; quote each one the text does not hold. An ADR with no diagram passes.
 
-The plain part's size, at most 500 words of prose, tables included and `mermaid` diagrams left out,
-is checked by the skill's `words` command and by the status hook, not by the reviewer. So is a
+The plain part's size, at most 500 words of prose, tables included and the diagrams in Decision left
+out, is checked by the skill's `words` command and by the status hook, not by the reviewer. So is a
 `👍 Accepted` ADR whose Decision does not open with "Chosen:".
