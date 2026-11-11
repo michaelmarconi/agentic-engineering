@@ -184,7 +184,10 @@ each round of corrections brings new mistakes.
    knows, is a decision like any other. A decision under Needs a person, such as a technical choice
    the Plan section makes that is not under Decisions, or whether to split a plan bigger than the
    practices allow or keep it whole, becomes an entry in the plan's Open questions, with its
-   "Proposed:", never a guess at the answer: leave the text it concerns as it is. Leave suggestions
+   "Proposed:", never a guess at the answer: leave the text it concerns as it is. A Decisions line
+   that fails rubric check 5 is not reworded or deleted: move it from Decisions to Open questions,
+   naming the ADR to record, the spec change to make with `/spec` or the practice to record with
+   `/practices` that the report names, with the decision itself as its "Proposed:". Leave suggestions
    alone and change nothing else, since an edit beyond the reports is the likeliest way to break
    something. Wait until every edit has succeeded. If nothing in the reports was yours to correct,
    there is nothing to check: go straight to handing over.

@@ -20,6 +20,14 @@ minor version may need such a change, and its entry says so.
 - A `mermaid` diagram in an ADR's Decision does not count towards the 500 words of the plain part.
 - The offer's sentences are shared in `scripts/skill_check.py`, so `/plan` can hold the same ones.
 
+## [0.39.1] - 2026-11-11
+
+### Fixed
+
+- When a plan's review fails a Decisions line on rubric check 5, `/plan`'s correction moves the
+  line to Open questions, naming the ADR, spec change or practice it belongs in, instead of
+  rewording it in place, which left the decision in the plan.
+
 ## [0.39.0] - 2026-11-11
 
 ### Changed
