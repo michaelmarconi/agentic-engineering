@@ -41,4 +41,10 @@ Test.
 
 ## Open questions
 
-- Should a credit note get its own number sequence? Proposed: yes, separate from invoices.
+### 1. Whether a credit note gets its own number sequence
+
+Credit notes could share the invoices' numbers or have their own.
+
+> **Proposed:** Yes, separate from invoices.
+>
+> **Why:** Accountants expect each kind of document to be numbered on its own.

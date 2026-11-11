@@ -51,9 +51,29 @@ Applies to: any code that sends an email.
 
 ## Open questions
 
-- Why was sending in a background thread of the web process rejected? Proposed: tell me what ruled it out.
-- How many times is a failed email retried before it is given up? Proposed: five times.
-- Which queue service runs the queue? Proposed: the Redis the app already uses.
+### 1. Why a background thread was rejected
+
+The ADR does not say why sending in a background thread of the web process was rejected.
+
+> **Proposed:** Tell me what ruled it out.
+>
+> **Why:** Only you know the reason.
+
+### 2. How often a failed email is retried
+
+The ADR does not say how many times a failed email is retried before it is given up.
+
+> **Proposed:** Five times.
+>
+> **Why:** Five tries ride out a short outage without retrying forever.
+
+### 3. Which queue service runs the queue
+
+The ADR chooses a queue but not the service that runs it.
+
+> **Proposed:** The Redis the app already uses.
+>
+> **Why:** It adds no new service to run.
 
 ## Technical detail
 

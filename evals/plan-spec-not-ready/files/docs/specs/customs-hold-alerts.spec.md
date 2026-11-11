@@ -76,5 +76,10 @@ Test, with a stand-in email server that records the messages it receives.
 
 ## Open questions
 
-- Should a release that arrives before its hold is recorded be kept? Proposed: yes, and matched
-  to the hold when it arrives.
+### 1. A release that arrives before its hold
+
+A release may arrive before its hold is recorded.
+
+> **Proposed:** Keep it, and match it to the hold when the hold arrives.
+>
+> **Why:** Dropping it would lose the release for good.

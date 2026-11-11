@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: practices-asks-in-layout
+expected_outcome: |
+  /practices testing with nothing answered. The skill asks its first question in the session layout: a bold line with its place in the count, the context, a block quote holding Proposed and Why, and the question last.
+context:
+  scaffold_script: place-files.sh

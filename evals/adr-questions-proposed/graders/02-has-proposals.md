@@ -1,8 +1,8 @@
 ---
 type: regex
 target: { source: file, path: docs/adrs/0001-session-data-storage.md }
-pattern: '^## Open questions\s*\n(?:(?!^## )[\s\S])*?^\s*[-*] (?!<)[^\n]*(?:\n(?![-*] |## )[^\n]*)*Proposed:'
+pattern: '^## Open questions\s*\n(?:(?!^## )[\s\S])*?^### 1\. \S[^\n]*\n(?:(?!^## )[\s\S])*?^> \*\*Proposed:\*\* *\S(?:(?!^## )[\s\S])*?^> \*\*Why:\*\* *\S'
 flags: m
 weight: 1
 ---
-Open questions holds at least one proposed answer.
+Open questions holds at least one entry in the layout: a numbered heading, then a block quote holding a "**Proposed:**" line and a "**Why:**" line.

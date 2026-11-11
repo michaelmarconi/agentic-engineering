@@ -51,7 +51,13 @@ Applies to: any code that sends an email.
 
 ## Open questions
 
-- Why was sending in a background thread of the web process rejected?
+### 1. Why a background thread was rejected
+
+The ADR does not say why sending in a background thread of the web process was rejected.
+
+> **Proposed:** Tell me what ruled it out.
+>
+> **Why:** Only you know the reason.
 
 ## Technical detail
 
