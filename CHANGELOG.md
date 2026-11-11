@@ -6,6 +6,15 @@ What changed in each version of the plugin, newest first. Versions follow
 past a major version: it says what you need to change in your documents. Until 1.0.0, any
 minor version may need such a change, and its entry says so.
 
+## [0.37.0] - 2026-11-11
+
+### Changed
+
+- In practices, the Practices section of `AGENTS.md` and the files under `docs/practices/`, the
+  lifecycle's own terms such as "spec", "ADR" and the statuses count as plain words, as they
+  already did in an issue or a plan, since agents that follow the lifecycle read them. The
+  plugin's commands, such as `/agentic:build`, now count as plain in all three.
+
 ## [0.36.0] - 2026-11-10
 
 ### Changed
