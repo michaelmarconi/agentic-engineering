@@ -176,9 +176,11 @@ the conversations behind the document. So each one follows this rule:
   replaced by the plain statement it stands for. For example, "the order hitchhikes on the nightly
   export" becomes "the order is included in the nightly export".
 
-An issue the plugin files is read by the plugin's maintainers, who know the lifecycle, and a plan
-by the people building it, who use the lifecycle. So in an issue or a plan the lifecycle's own
-terms, such as "spec", "ADR", "requirement" or `🟢 Ready to build`, count as plain too.
+An issue the plugin files is read by the plugin's maintainers, who know the lifecycle; a plan by
+the people building it, who use the lifecycle; and practices, in the Practices section of
+`AGENTS.md` and in `docs/practices/`, by agents that follow the lifecycle. So in an issue, a plan
+or practices, the lifecycle's own terms, such as "spec", "ADR", "requirement", `🟢 Ready to build`
+and the plugin's commands such as `/agentic:build`, count as plain too.
 
 The rule covers only what the plugin writes. Your own documents, code and messages follow your
 project's rules.

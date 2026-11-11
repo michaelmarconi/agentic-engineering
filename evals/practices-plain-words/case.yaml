@@ -1,0 +1,9 @@
+schema_version: "1.1"
+name: practices-plain-words
+expected_outcome: |
+  The person asks for two rules that use the lifecycle's own terms: "spec", "ADR", the statuses
+  `👍 Accepted`, `❌ Rejected` and `✅ Built`, and the command `/agentic:build`. Practices are read by
+  agents that follow the lifecycle, so those terms count as plain: the language checker does not
+  report them, and the rules reach the core word for word, with no definitions added.
+context:
+  scaffold_script: place-files.sh
