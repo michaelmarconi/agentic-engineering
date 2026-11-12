@@ -229,7 +229,9 @@ def agent_stopped(session, event):
         if isinstance(call, str):
             keep(record, call, record["started"].get(call), subagent_report.report(event))
         elif any(p in record["started"].values() and p not in record["reports"] for p in parts):
-            subagent_report.hold(stopped, agent_id, subagent_report.report(event))
+            # More room than review_relay.py holds: /code-review starts a dozen agents of its own,
+            # all general-purpose, whose stops must not push out a review's held report.
+            subagent_report.hold(stopped, agent_id, subagent_report.report(event), limit=50)
         else:
             return None
         if handed:

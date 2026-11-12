@@ -124,6 +124,7 @@ with the Skill tool: a plugin hook keeps only an agent's report.
   ```
   Document: <the plan's path>
   Run /code-review medium <default branch>...HEAD, then reply with its findings word for word, as text.
+  If it reports them through a findings tool, copy what you passed to that tool into your reply.
   ```
 
 - a `general-purpose` agent with this request, first two lines exactly as shown:

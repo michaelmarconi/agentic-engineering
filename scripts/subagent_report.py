@@ -100,9 +100,9 @@ def agent_id(response):
     return value if isinstance(value, str) and value else None
 
 
-def hold(held, key, value):
-    """Hold `value` under `key` in the dict `held`, keeping only the newest HELD entries."""
+def hold(held, key, value, limit=HELD):
+    """Hold `value` under `key` in the dict `held`, keeping only the newest `limit` entries."""
     held.pop(key, None)
     held[key] = value
-    for old in list(held)[:-HELD]:
+    for old in list(held)[:-limit]:
         del held[old]

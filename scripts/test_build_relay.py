@@ -296,6 +296,21 @@ class Corrections(Relay):
         self.assertIn("=== CODE REVIEW REPORT ===\ncode finding\n", prompt)
         self.assertNotIn("candidates", prompt)
 
+    def test_a_held_report_outlasts_the_code_reviews_own_agents(self):
+        # The security review stops before its launch is seen, then the code review's finders stop.
+        self.code_review()
+        self.plan_review()
+        tool_input = {"subagent_type": "general-purpose", "prompt": self.SECURITY[1]}
+        self.hook({"hook_event_name": "PreToolUse", "tool_name": "Agent", "tool_use_id": "s",
+                   "tool_input": tool_input})
+        self.stopped("general-purpose", "a1", "security finding")
+        for n in range(20):
+            self.stopped("general-purpose", f"f{n}", "a finder's candidates")
+        self.hook({"hook_event_name": "PostToolUse", "tool_name": "Agent", "tool_use_id": "s",
+                   "tool_input": tool_input, "tool_response": {"status": "async_launched", "agentId": "a1"}})
+        self.commit("Correct")
+        self.assertIn("security finding", self.check()["updatedInput"]["prompt"])
+
     def test_a_launch_notice_alone_is_no_report(self):
         self.code_review()
         self.launch(*self.SECURITY, "a1")
