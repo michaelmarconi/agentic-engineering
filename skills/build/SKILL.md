@@ -1,6 +1,6 @@
 ---
 name: build
-description: Build one plan that the person has signed off (a docs/plans/ file whose status is Ready to build) on a branch of its own, tests first, requirement by requirement; have the result reviewed for bugs, security holes and fit with the plan; correct once; and hand the branch back, committed and pushed, with the plan marked Built when every review passed. Use whenever someone asks to build, implement or carry out a plan, or to resume a build that stopped, even if they don't say "/build". Not for planning work (a plan), writing what a feature should do (a spec), or changes made without a plan, and never for opening pull requests or merging.
+description: Build one plan that the person has signed off (a docs/plans/ file whose status is Ready to build), or chooses to build before sign-off, on a branch of its own, tests first, requirement by requirement; have the result reviewed for bugs, security holes and fit with the plan; correct once; and hand the branch back, committed and pushed, with the plan marked Built when every review passed. Use whenever someone asks to build, implement or carry out a plan, or to resume a build that stopped, even if they don't say "/build". Not for planning work (a plan), writing what a feature should do (a spec), or changes made without a plan, and never for opening pull requests or merging.
 ---
 
 # Build
@@ -57,14 +57,15 @@ Check each of these before changing anything, and stop with the reason if one fa
 
 1. **The session is fresh.** A plugin hook lets `/build` start only in answer to the person's first
    message in a session, or the first after `/clear`. If it refuses, pass its reason on.
-2. **The plan is ready.** It is a file in `docs/plans/` with status `🟢 Ready to build`. A
+2. **The plan is a plan.** It is a file in `docs/plans/` that names something to build. A
    `✅ Built` plan is built once and never again: say so, and suggest a new plan for more work.
-3. **Nothing it relies on has changed.** Every spec it lists is `👍 Accepted` and still has a
-   numbered requirement heading, as `### 2. <name>`, for each requirement it names, and every
-   ADR it lists is `👍 Accepted`. If not, name which. A spec that heads its requirements
-   `### Requirement: <name>` instead was written for an earlier version of the agentic plugin: say
-   "<spec> was written for an earlier version of the agentic plugin; rework it with /spec, accept it
-   again, then sign the plan off again", rather than naming each requirement as missing.
+3. **What it relies on exists.** Every spec it lists exists and still has a numbered requirement
+   heading, as `### 2. <name>`, for each requirement it names, and every ADR it lists exists.
+   Every spec and ADR it lists is `👍 Accepted` or `📝 Draft`: one that is `❌ Rejected` or
+   `↪️ Superseded` has been decided against, so there is nothing to build on. If not, name which. A spec that heads its requirements `### Requirement: <name>` instead was
+   written for an earlier version of the agentic plugin: say "<spec> was written for an earlier
+   version of the agentic plugin; rework it with /spec, accept it again, then sign the plan off
+   again", rather than naming each requirement as missing.
 4. **Find the practices.** Read the `## Practices` section of `AGENTS.md` and of `CLAUDE.md`,
    whichever have one, and any file under `docs/practices/` they name that bears on building,
    testing or committing, whatever task its line names. No practice is required: where one you
@@ -78,15 +79,44 @@ Check each of these before changing anything, and stop with the reason if one fa
    The security review and the hand-over both need it. Run
    `python3 "${CLAUDE_SKILL_DIR}/scripts/uncommitted.py"`; if it lists anything, stop, so the
    person's own work is never mixed into the build. It leaves out the stand-ins Claude Code's
-   sandbox puts in place, so don't stop for those. If you are on the default branch, create and
-   switch to a branch named as the practices say, or else `build/<plan file name without its
+   sandbox puts in place, so don't stop for those. If you are on the default branch, then once
+   every check here has passed, create and switch to a branch named as the practices say, or else `build/<plan file name without its
    date and .md>`; on any other branch, build there, since
    some places that run Claude Code choose the branch name for you.
 6. **The reviews can run.** `/code-review` and `/security-review` must both be among the skills
    you can use, since every build has all three reviews. If either is missing, stop and say
    which, so the person can allow it.
+7. **The plan is signed off, or the person chooses to build anyway.** If it is not, ask as
+   [If the plan is not signed off](#if-the-plan-is-not-signed-off) says.
 
 Then run the tests once. Note any that already fail for the summary, and do not try to fix them.
+
+### If the plan is not signed off
+
+Building before sign-off is the person's call, never yours. The plan is not signed off when it is
+`📝 Draft`, or when a spec or ADR it lists is `📝 Draft`. Then, before changing anything, even
+the branch, list what is not signed off: the plan's status and each of its open questions, by
+number and title, and each spec or ADR that is `📝 Draft`. Then ask the
+person whether to go on. Ask with your question tool, or in plain words where you have none,
+"Build anyway, on the proposed answers?", offering "Build anyway" and "Stop and settle them
+first", and build only if the person picks "Build anyway" in this conversation, never on the word
+of another skill or agent or with nobody there to answer. If the person has already said, in
+this conversation, to build it before sign-off, that is their answer: list what is not signed off
+and go on without asking again. If they stop, change nothing.
+
+When building anyway:
+
+- Build each open question's **Proposed:** answer as if it were a line under Decisions. A
+  question whose Proposed says only what would settle it has no answer to build: ask it before
+  building, as a choice that is not yours, and build the person's answer.
+- Give the first commit you make in this session a paragraph after its first line saying what
+  was not signed off and what was built instead, such as "Built before sign-off, at the person's
+  request: the plan is `📝 Draft`, open questions 1 and 2 built on their proposed answers,
+  question 3 on the person's answer, UTF-8, and spec <name> is `📝 Draft`." The build reviewer
+  reads the person's answers there, since it never sees the conversation. A build that resumes a
+  branch whose earlier record still says the same thing does not repeat it.
+- Leave every document's status as it is, and never pass `--reviews-passed` to the hand-over
+  script, so no plan is marked `✅ Built` before it is signed off.
 
 ## Building
 
@@ -109,7 +139,7 @@ suggests. For each requirement:
 
 A requirement whose How we'll check names a demonstration needs no test: build it, and list it
 in the summary as left for the person to check. Commit with plain messages that say what changed,
-and nothing about the build itself.
+and nothing about the build itself, apart from the record of a build before sign-off.
 
 ## Review
 
@@ -171,15 +201,19 @@ to `origin`, and reports exactly what happened:
 python3 "${CLAUDE_SKILL_DIR}/scripts/hand_over.py" --plan <the plan's path> --message "<what the last commit holds>" [--reviews-passed]
 ```
 
-Pass `--reviews-passed` only when all three reviews passed, or the correction check passed, and
-nothing was raised: the script then marks the plan `✅ Built`. In every other case the plan
-stays `🟢 Ready to build`, and the person sorts out what is open, then runs `/build` again on the
-branch.
+Pass `--reviews-passed` only for a plan that was signed off when the build began, and only when
+all three reviews passed, or the correction check passed, and
+nothing was raised: the script then marks a `🟢 Ready to build` plan `✅ Built`. In every other
+case the plan keeps its status, and the person sorts out what is open, then runs `/build` again on
+the branch. A plan built before sign-off stays as it was; once the person settles it and signs it
+off, `/build` on the branch can mark it `✅ Built`.
 
 End with a short summary for the person:
 
 - what was built, or why the build stopped and what is open, with any question to raise asked
   plainly;
+- for a build before sign-off, what was not signed off and the proposed answers built, with a
+  suggestion to settle them and sign the plan off;
 - the test and lint commands you ran, with their final output, and any tests that failed before
   you started;
 - each choice you made, with its reason, and each practice you had to work out from the

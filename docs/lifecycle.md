@@ -184,6 +184,8 @@ flowchart LR
 - **A plan builds only on settled documents.** A plan is `🟢 Ready to build` only when each spec
   and each ADR it touches is `👍 Accepted`. No two
   plans that are not `✅ Built` name the same requirement.
+  `/build` builds a plan that isn't signed off only when the person chooses to, building its open
+  questions' proposed answers, and the build's first commit says what wasn't signed off.
 - **Drift is a finding, not a status.** `/audit` reports it with a suggested correction: correct
   the code, return the spec to `📝 Draft`, or supersede the ADR.
 
