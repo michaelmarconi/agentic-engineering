@@ -1,0 +1,10 @@
+schema_version: "1.1"
+name: audit-brief-contradiction
+expected_outcome: |
+  The accepted deposit spec takes payment, which the brief puts out of scope, and the accepted ADR
+  stores customer records in the United States, against the brief's UK-only constraint. One brief
+  checker is started, a checker confirms, and both are reported as contradicting the brief with
+  quotes of both and either correction named. The closed-days spec only adds detail and is not
+  reported. Nothing is changed.
+context:
+  scaffold_script: place-files.sh

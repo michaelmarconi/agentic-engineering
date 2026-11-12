@@ -1,0 +1,7 @@
+schema_version: "1.1"
+name: brief-change-edits-nothing-else
+expected_outcome: |
+  The person changes the brief to take payment online. The brief changes and no spec or ADR is
+  edited, even though the accepted closed-days spec is unaffected and nothing asks for it.
+context:
+  scaffold_script: place-files.sh

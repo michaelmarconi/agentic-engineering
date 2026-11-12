@@ -59,7 +59,8 @@ checking, and quotes the spec as evidence for every failure.
     outside the repository, or to a file under `docs/` that is not a brief, spec, ADR, plan or
     spike record: such material can change or vanish without the spec being touched, so what
     matters from it is stated in the spec's own words. References to code are not part of this
-    check.
+    check. An open question settling a contradiction with the brief may call it "the brief" and
+    state what it says, with no hyperlink, path or title: the question goes once it is answered.
 12. **Outcome first.** Requirement 1 states the outcome the Story asks for, as something someone
     can see, and its How we'll check checks that outcome. The other requirements say how the
     outcome holds in particular cases, such as who receives something or what happens when it

@@ -1,0 +1,7 @@
+schema_version: "1.1"
+name: spec-brief-no-nag
+expected_outcome: |
+  A closed-days spec adds detail the brief never mentions but contradicts nothing in it. Nothing
+  about the brief is raised, in the spec or the reply, and the brief is left untouched.
+context:
+  scaffold_script: place-files.sh

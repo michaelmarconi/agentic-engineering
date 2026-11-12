@@ -1,7 +1,7 @@
 # `/audit`
 
 `/audit` is the skill for finding drift: places where the code and its documents no longer
-agree. It is not a step in the sequence of [the lifecycle](../../README.md); run it whenever you want
+agree, and specs or ADRs that contradict the brief. It is not a step in the sequence of [the lifecycle](../../README.md); run it whenever you want
 to know, or on a schedule. Read that page first for the documents, skills and agents it mentions.
 
 ## What drift is
@@ -96,6 +96,18 @@ end with the checking agent's reason, so a real finding dropped by mistake is st
 you. A document with no findings needs no checking agent, so this costs more only when there is
 drift to check.
 
+**The brief, by judgement.** When the project has a brief, one more agent reads it beside the
+accepted specs and ADRs the run covers, without the code, and reports any that contradicts the
+brief's goals, what it puts out of scope or its constraints, such as a spec for something the brief
+says the product will not do. A spec or ADR that only adds detail the brief doesn't mention is
+never reported: they always say more than the brief. Each document it names is checked by another
+fresh agent, as drift is, and only confirmed contradictions are reported, with quotes of both. The
+suggested correction is either side: change the spec or supersede the ADR to fit the brief, or
+change the brief if your intent for the product has changed. The brief changes only when you say
+so (see [the lifecycle rules](../lifecycle.md#principles)), so this is where a contradiction
+appearing after a brief change comes to light. It costs one agent per run, plus one per document
+it names.
+
 `/audit` does not report code that no spec covers. Writing specs for an existing codebase happens
 as work touches each part, not all at once.
 
@@ -112,7 +124,9 @@ read on the branch you have checked out.
 A changed file is any file a window's commits added, changed, renamed or deleted, tests and
 configuration included. For a window, one agent reads the changes beside the text of every
 accepted spec and ADR, and picks the ones the changes could affect; every spec or ADR whose own
-text changed in the window is picked too. Only those are checked. Picking is a judgement and can
+text changed in the window is picked too. Only those are checked, against the code and against the
+brief, except that a window in which the brief changed checks every accepted spec and ADR against
+it. Picking is a judgement and can
 miss a document, so a window never replaces an occasional full run.
 
 `/audit` keeps nothing between runs. Git already records what changed, and you, or the schedule,

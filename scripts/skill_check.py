@@ -175,9 +175,9 @@ SHOW_RULE = (
 )
 REPOSITORY_LINE = "`Repository: <folder>`"
 # Every agent given a `Repository:` line: the document reviewers the review relay hook knows (all
-# but /feedback's, whose draft is never a file), its two checkers, and the audit's two.
+# but /feedback's, whose draft is never a file), its two checkers, and the audit's three.
 REPOSITORY_AGENTS = sorted({name for name in review_relay.REVIEWERS if name != "feedback-reviewer"}
-                           | {review_relay.LANGUAGE, review_relay.CHECKER, "auditor", "audit-checker"})
+                           | {review_relay.LANGUAGE, review_relay.CHECKER, "auditor", "audit-checker", "brief-checker"})
 AGENT_RULE = (
     "Your request's second line names the repository, `Repository: <folder>`, which may not be "
     "the folder you start in; a request without that line means the folder you start in. Every "
