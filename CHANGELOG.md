@@ -6,6 +6,24 @@ What changed in each version of the plugin, newest first. Versions follow
 past a major version: it says what you need to change in your documents. Until 1.0.0, any
 minor version may need such a change, and its entry says so.
 
+## [0.49.0] - 2026-11-12
+
+### Changed
+
+- `/build` lets you build a plan before it is signed off, if you choose to
+  ([#77](https://github.com/michaelmarconi/agentic-engineering/issues/77)). When the plan, or a
+  spec or ADR it lists, is `📝 Draft`, it no longer refuses. It runs its other checks, lists what
+  isn't signed off, including the plan's open questions, and asks "Build anyway, on the proposed
+  answers?". Pick "Build anyway" and it builds each open question's proposed answer, asking you
+  any question that has none. Pick "Stop and settle them first" and it changes nothing. It never
+  builds an unsigned plan without your answer in the conversation.
+- A build before sign-off records in a commit what wasn't signed off and how each open question
+  was answered, so the record is in git. No document's status changes: the plan stays
+  `📝 Draft` until you settle it and sign it off, and a later `/build` on the branch marks it
+  `✅ Built`.
+- A spec or ADR that is `❌ Rejected` or `↪️ Superseded`, a missing one, or a missing requirement
+  heading still stops the build, with no offer to build anyway.
+
 ## [0.48.0] - 2026-11-12
 
 ### Changed
