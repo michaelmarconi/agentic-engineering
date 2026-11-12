@@ -57,9 +57,11 @@ anything, `/build` checks:
   long planning
   conversation is a poor start for building: Anthropic's own advice is to start a fresh session to
   build from a written spec,[^fresh] so the build begins with a clean context and a written
-  definition of done. A plugin hook enforces this, and if it refuses, it says why. In a Claude
-  project, a new session is a new thread, and the note that opens a thread does not count as your
-  message.
+  definition of done. A plugin hook enforces this. The plugin has no reliable way to start a new
+  session for you, so if the hook refuses, it gives you the two steps instead: run `/clear`, then
+  send `/agentic:build docs/plans/<plan>.md`. In a Claude project, a new session is a new thread:
+  open one and send that command as its first message, since the note that opens a thread does not
+  count as your message. `/plan` gives you the same steps when you sign a plan off.
 - **The plan is ready.** It is `🟢 Ready to build`. A `✅ Built` plan is refused: a plan is built
   once.
 - **Nothing it relies on has changed.** Every spec the plan names is still `👍 Accepted`, and every

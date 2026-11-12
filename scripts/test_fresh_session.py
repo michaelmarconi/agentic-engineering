@@ -55,16 +55,24 @@ class Hooks(unittest.TestCase):
         return self.hook({"hook_event_name": "PreToolUse", "tool_name": "Skill",
                           "tool_input": {"skill": name, "args": "docs/plans/x.md"}}, session)
 
+    def assert_gives_the_steps(self, reason):
+        """The refusal says why the plugin can't start the session, then gives the two steps
+        and the step for a Claude project thread (ADR 0031)."""
+        self.assertIn("no reliable way to start a new session", reason)
+        self.assertIn("run /clear, then send /agentic:build <path to the plan>", reason)
+        self.assertIn("In a Claude project thread", reason)
+        self.assertIn("open a new thread", reason)
+
     def assert_refused_prompt(self, result):
         self.assertIsNotNone(result)
         self.assertEqual(result["decision"], "block")
-        self.assertIn("new session", result["reason"])
+        self.assert_gives_the_steps(result["reason"])
 
     def assert_refused_skill(self, result):
         self.assertIsNotNone(result)
         decision = result["hookSpecificOutput"]
         self.assertEqual(decision["permissionDecision"], "deny")
-        self.assertIn("new session", decision["permissionDecisionReason"])
+        self.assert_gives_the_steps(decision["permissionDecisionReason"])
 
 
 class Typed(Hooks):
