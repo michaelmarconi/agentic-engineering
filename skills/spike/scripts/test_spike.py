@@ -107,6 +107,26 @@ class Words(Project):
         self.assertIn("Finding, Next steps, Results or Surprises", done.stdout)
         self.assertNotIn("into Experiment", done.stdout)
 
+    def test_a_long_verdict_in_a_draft_is_not_counted_against_it(self):
+        long = "## Finding\n\nConfirmed: " + " ".join(["word"] * 420)
+        self.put(record("📝 Draft").replace("## Finding\n", long, 1))
+        done = self.words(self.path())
+        self.assertEqual(done.returncode, 0, done.stdout)
+
+    def test_a_ready_record_is_never_told_to_return_to_draft(self):
+        self.put(record().replace("Prints things.", " ".join(["word"] * 650), 1))
+        done = self.words(self.path())
+        self.assertEqual(done.returncode, 1)
+        self.assertIn("title", done.stdout)
+        self.assertNotIn("Draft", done.stdout)
+
+    def test_a_finished_record_is_never_told_to_shorten(self):
+        long = "## Finding\n\nConfirmed: " + " ".join(["word"] * 420)
+        self.put(record("💡 Confirmed").replace("## Finding\n", long, 1))
+        done = self.words(self.path())
+        self.assertEqual(done.returncode, 0, done.stdout)
+        self.assertNotIn("shorten", done.stdout)
+
     def test_a_design_near_its_limit_leaves_the_verdict_its_room(self):
         text = record().replace("Prints things.", " ".join(["word"] * 560), 1)
         text = text.replace("## Finding\n", "## Finding\n\nConfirmed: " + " ".join(["word"] * 360), 1)

@@ -1223,6 +1223,24 @@ class Spike(SpikeWorkspace):
         text = text.replace("## Next steps\n\n\n", "## Next steps\n\n- Spec: Nothing\n")
         self.assertEqual(status_check.spike_words(text)[1], 5 + 5)
 
+    def test_spike_words_finds_the_parts_as_the_plain_part_and_sections_do(self):
+        text = record(answer="one two", runs=RUN).replace("## Experiment", " ## Experiment")
+        self.assertEqual(sum(status_check.spike_words(text)), status_check.plain_words(text))
+        text = record().replace("## Surprises\n\n\n", "## Surprises\n\nNone.\n\n# Appendix\n\nthree four five\n")
+        self.assertEqual(status_check.spike_words(text)[1], 5 + 1)
+        text = record(answer="one two").replace("## Finding", " ## Finding")
+        self.assertEqual(status_check.spike_words(text)[1], 5 + 2)
+
+    def test_a_design_over_its_limit_at_a_finish_is_not_told_to_return_to_draft(self):
+        long_title = "# The library reads " + " ".join(["word"] * 600)
+        self.put(record("🟢 Ready to run", answer="Confirmed: it opens.", runs=RUN))
+        self.assertIsNone(self.edit("# The library reads our TIFF files", long_title))
+        self.put(record("🟢 Ready to run", answer="Confirmed: it opens.", runs=RUN).replace(
+            "# The library reads our TIFF files", long_title))
+        refusal = self.move("🟢 Ready to run", "💡 Confirmed")
+        self.assertIn("design", refusal)
+        self.assertNotIn("Draft", refusal)
+
     def test_a_comment_in_the_verdict_is_not_counted(self):
         text = record(answer="<!-- " + "x " * 500 + "-->")
         self.assertEqual(status_check.spike_words(text)[1], 5)  # the headings only

@@ -24,13 +24,14 @@ document's type, as "Spec:" or "ADR:" in front of it would: the frontmatter's `t
 what it is.
 
 A record is written for a person first. It reads from plain to technical: the plain part, from the
-title down to Experiment, says what we expected, what we found and what happens next;
-Experiment, Code and Runs below it hold everything an agent or reviewer needs to check or repeat
-the experiment. The plain part has two word budgets, tables included: the verdict, its Finding,
-Next steps, Results and Surprises, written after the runs, gets at most 400 words, and the design,
-the rest of it, at most 600, so a design that fits always leaves the verdict its room. Versions, settings, file names and exact output
-go in Experiment unless the hypothesis is about one of them, and each limit is stated once, under
-Out of scope. Check the plain part's size before each review, and fix it until it fits:
+title down to Experiment, says what we expected, what we found and what happens next; Experiment,
+Code and Runs below it hold everything an agent or reviewer needs to check or repeat the experiment.
+The plain part has two word budgets, tables included: the verdict, its Finding, Next steps, Results
+and Surprises, written after the runs, gets at most 400 words, and the design, the rest of it, at
+most 600, so a design that fits always leaves the verdict its room. Versions, settings, file names
+and exact output go in Experiment unless the hypothesis is about one of them, and each limit is
+stated once, under Out of scope. Check the plain part's size before each review, and fix it until it
+fits:
 
 ```
 python3 "${CLAUDE_SKILL_DIR}/scripts/spike.py" words <the record's path>

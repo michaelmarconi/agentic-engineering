@@ -33,12 +33,12 @@ YYYY-MM-DD; a plugin hook refuses a status change that does not set it to that d
   changed again, and may be deleted whenever nobody needs it.
 - **Spike record**, `docs/spikes/YYYY-MM-DD-<hypothesis>.md`, in one flat folder: one hypothesis
   tested by a throwaway experiment, with the finding, the experiment's code and what each run
-  produced. It reads from plain to technical: a part for people, of at most 600 words for the design and 400 for the
-  verdict written after the runs, then the
-  experiment's detail for agents and reviewers. Statuses: `📝 Draft` → `🟢 Ready to run` →
-  `💡 Confirmed`, `🚫 Refuted` or `❔ Not settled`; `🟢 Ready to run` → `📝 Draft` only before the
-  first run. Once `🟢 Ready to run`, its design is fixed, and only the run script adds runs. A
-  finished spike record is never changed again, and may be deleted whenever nobody needs it.
+  produced. It reads from plain to technical: a part for people, of at most 600 words for the design
+  and 400 for the verdict written after the runs, then the experiment's detail for agents and
+  reviewers. Statuses: `📝 Draft` → `🟢 Ready to run` → `💡 Confirmed`, `🚫 Refuted` or `❔ Not settled`;
+  `🟢 Ready to run` → `📝 Draft` only before the first run. Once `🟢 Ready to run`, its design is
+  fixed, and only the run script adds runs. A finished spike record is never changed again, and may
+  be deleted whenever nobody needs it.
 
 Every document has an Open questions section, holding what only you can settle, or "None." when
 nothing is open. Each open question is laid out the same way, so you can find the proposal at a

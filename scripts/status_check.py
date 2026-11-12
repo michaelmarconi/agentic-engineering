@@ -1171,18 +1171,24 @@ def diagram_lines(lines, heading):
     return diagram
 
 
-def plain_part(text, end_heading="Experiment", diagrams_in=None):
-    """A document's plain part: its lines after the frontmatter and before the `## ` heading that
-    starts its technical part (Experiment in a spike record, Technical detail in an ADR), joined,
-    without HTML comments, and without the `mermaid` diagrams of the `## <diagrams_in>` section if
-    one is named (Decision in an ADR). A document without that heading is plain to its end."""
+def plain_lines(text, end_heading="Experiment"):
+    """A document's plain part as lines, after the frontmatter and before `## <end_heading>`, with
+    which of them may be headings (headings_allowed)."""
     lines = text.lstrip("\ufeff").splitlines()
     head = frontmatter(text)
     lines = lines[len(head) + 2:] if head is not None else lines
     allowed = headings_allowed(lines)
     stop = "## " + end_heading.lower()
     end = next((i for i, line in enumerate(lines) if allowed[i] and line.strip().lower() == stop), len(lines))
-    lines = lines[:end]
+    return lines[:end], allowed[:end]
+
+
+def plain_part(text, end_heading="Experiment", diagrams_in=None):
+    """A document's plain part: its lines after the frontmatter and before the `## ` heading that
+    starts its technical part (Experiment in a spike record, Technical detail in an ADR), joined,
+    without HTML comments, and without the `mermaid` diagrams of the `## <diagrams_in>` section if
+    one is named (Decision in an ADR). A document without that heading is plain to its end."""
+    lines, _ = plain_lines(text, end_heading)
     if diagrams_in is None:
         return uncommented(lines)
     diagram = diagram_lines(lines, diagrams_in)
@@ -1198,18 +1204,15 @@ def spike_words(text):
     """How many words a spike record's plain part holds, as (design, verdict): the verdict is its
     Finding, Next steps, Results and Surprises sections, the design everything else, title
     included."""
-    lines = text.lstrip("\ufeff").splitlines()
-    head = frontmatter(text)
-    lines = lines[len(head) + 2:] if head is not None else lines
-    allowed = headings_allowed(lines)
-    verdict_names = {name.lower() for name in VERDICT_PARTS}
+    lines, allowed = plain_lines(text)
+    starts = {"## " + name.lower() for name in VERDICT_PARTS}
     design, verdict, in_verdict = [], [], False
     for i, line in enumerate(lines):
-        if allowed[i] and line.startswith("## "):
-            name = line[3:].strip().lower()
-            if name == "experiment":
-                break
-            in_verdict = name in verdict_names
+        # Sections start and end as section() finds them.
+        if allowed[i] and line.strip().lower() in starts:
+            in_verdict = True
+        elif allowed[i] and (line.startswith("# ") or line.startswith("## ")):
+            in_verdict = False
         (verdict if in_verdict else design).append(line)
     return len(WORD.findall(uncommented(design))), len(WORD.findall(uncommented(verdict)))
 
@@ -1260,7 +1263,7 @@ def spike_size_refusal(name, text, new):
     at every move forward; the verdict, written after the runs, only at a finishing status."""
     design, verdict = spike_words(text)
     if design > DESIGN_LIMIT:
-        shorten = ("Its design is fixed, so return it to `📝 Draft`, shorten it"
+        shorten = ("Its other sections are fixed now, so shorten its title"
                    if new in FINISHED else "Shorten it, moving detail down into Experiment")
         return (
             f"{name}: its design, the plain part above Experiment apart from Finding, Next steps, Results "

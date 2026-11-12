@@ -65,7 +65,7 @@ import urllib.request
 # The record is read with the status hook's own parsing, so the two always agree on where each
 # section ends and what the status is. The hook lives in the plugin's scripts/ folder.
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "..", "scripts"))
-from status_check import (DESIGN_LIMIT, DRAFT, FENCE, FINISHED, READY_TO_RUN,  # noqa: E402
+from status_check import (DESIGN_LIMIT, FENCE, FINISHED, READY_TO_RUN,  # noqa: E402
                           SPIKE_STATUSES, VERDICT_LIMIT, headings_allowed, lifecycle_status, section,
                           spike_words)
 
@@ -514,14 +514,17 @@ def words(path):
     name = os.path.basename(path)
     print(f"{name}: the design holds {design} of the {DESIGN_LIMIT} words allowed, and the verdict holds "
           f"{verdict} of the {VERDICT_LIMIT} words allowed")
+    status = status_of(text)
+    if status in FINISHED:
+        return 0  # final: never changed again, so there is nothing to shorten
     over = False
     if design > DESIGN_LIMIT:
         over = True
-        fixed = status_of(text) != DRAFT
         print(f"the design is {design - DESIGN_LIMIT} over; "
-              + ("it is fixed now, so it can be shortened only by returning the record to Draft"
-                 if fixed else "shorten it, moving detail down into Experiment"))
-    if verdict > VERDICT_LIMIT:
+              + ("its other sections are fixed now, so shorten its title" if status == READY_TO_RUN
+                 else "shorten it, moving detail down into Experiment"))
+    # The verdict is written after the runs, and the status hook checks it only at a finishing status.
+    if status == READY_TO_RUN and verdict > VERDICT_LIMIT:
         over = True
         print(f"the verdict is {verdict - VERDICT_LIMIT} over; shorten its Finding, Next steps, Results or Surprises")
     return 1 if over else 0
@@ -553,9 +556,10 @@ def main(argv=None):
         description="Count the words in a spike record's plain part, from the title down to Experiment, "
                     "apart from HTML comments, as the status hook counts them: the verdict (Finding, Next "
                     "steps, Results and Surprises) and the design (the rest) apart.",
-        epilog=f"Exit codes: 0 with the design within {DESIGN_LIMIT} words and the verdict within "
-               f"{VERDICT_LIMIT}; 1 when either is over, or the record can't be read, with the reason on "
-               f"stderr. Output: both counts, their limits and what to shorten, on stdout.",
+        epilog=f"Exit codes: 0 with the design within {DESIGN_LIMIT} words and, once the record is Ready "
+               f"to run, the verdict within {VERDICT_LIMIT}, or for a finished record; 1 when either is "
+               f"over, or the record can't be read, with the reason on stderr. Output: both counts, their "
+               f"limits and what to shorten, on stdout.",
     )
     words_parser.add_argument("record", help="the spike record, a .md file in docs/spikes/")
     args = parser.parse_args(argv)

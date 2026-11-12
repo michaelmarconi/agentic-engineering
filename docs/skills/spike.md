@@ -62,13 +62,13 @@ account of how that document stood.
 
 ## The parts of a spike record
 
-A spike record is written for you first. It reads from plain to technical: the top part says
-what we expected, what we found and what happens next, in plain words. It has two word limits,
-tables included: at most 600 words for the design, written before the runs, and 400 for the
-verdict (Finding, Next steps, Results and Surprises), written after them, so a design that fits
-always leaves room for the verdict. Below it, the Experiment, Code and Runs hold everything an agent or a reviewer
-needs to check the experiment or run it again. Versions, settings, file names and exact output
-sit down there, unless the hypothesis is about one of them, and each limit of the finding is
+A spike record is written for you first. It reads from plain to technical: the top part says what we
+expected, what we found and what happens next, in plain words. It has two word limits, tables
+included: at most 600 words for the design, written before the runs, and 400 for the verdict
+(Finding, Next steps, Results and Surprises), written after them, so a design that fits always
+leaves room for the verdict. Below it, the Experiment, Code and Runs hold everything an agent or a
+reviewer needs to check the experiment or run it again. Versions, settings, file names and exact
+output sit down there, unless the hypothesis is about one of them, and each limit of the finding is
 stated once, under Out of scope.
 
 | Part | Holds |
@@ -134,9 +134,10 @@ nobody needs it. Another try at a hypothesis that was not settled is a new spike
 
 A plugin hook enforces these rules when Claude edits a record with its file-editing tools: it
 refuses any move not shown above, a move forward while Open questions holds anything or while the
-design is over 600 words, a finishing status while the verdict is over 400 words, a finishing status that the Finding does not open with, a change to
-the design of a `🟢 Ready to run` record that does not return it to `📝 Draft` before the first
-run, any change to Runs, and any change to a finished record. A change made by hand, or by a shell command, is not checked.
+design is over 600 words, a finishing status while the verdict is over 400 words, a finishing status
+that the Finding does not open with, a change to the design of a `🟢 Ready to run` record that does
+not return it to `📝 Draft` before the first run, any change to Runs, and any change to a finished
+record. A change made by hand, or by a shell command, is not checked.
 
 ## Using `/spike`
 
