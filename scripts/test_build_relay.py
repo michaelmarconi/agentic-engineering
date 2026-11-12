@@ -16,6 +16,8 @@ import build_relay  # noqa: E402
 import fresh_session  # noqa: E402
 
 PLAN = "docs/plans/2026-11-03-thing.md"
+CODE_PROMPT = (f"Document: {PLAN}\nRun /code-review medium main...HEAD on the current branch, then reply "
+               "with its findings word for word, as text.")
 ENV = dict(os.environ, GIT_AUTHOR_NAME="Test", GIT_AUTHOR_EMAIL="test@example.com",
            GIT_COMMITTER_NAME="Test", GIT_COMMITTER_EMAIL="test@example.com",
            GIT_CONFIG_GLOBAL=os.devnull, GIT_CONFIG_NOSYSTEM="1")
@@ -70,9 +72,7 @@ class Relay(unittest.TestCase):
         return self.agent("general-purpose", f"Document: {PLAN}\nRun /security-review and report.", report, session)
 
     def code_review(self, report='[{"summary": "code finding"}]', session="s1"):
-        self.hook({"hook_event_name": "PostToolUse", "tool_name": "Skill",
-                   "tool_input": {"skill": "code-review", "args": "medium main...HEAD"},
-                   "tool_response": {"success": True, "result": report}}, session)
+        return self.agent("general-purpose", CODE_PROMPT, report, session)
 
     def all_reviews(self, session="s1"):
         self.code_review(session=session)
@@ -165,22 +165,46 @@ class Corrections(Relay):
     def test_reports_handed_back_are_attached(self):
         # In a Claude project thread the report comes in handbackReport; content only points to it.
         pointer = "This agent's report was delivered to you as a message (its SubagentHandback call)."
-        self.code_review()
         for agent, prompt, report in [
+                ("general-purpose", CODE_PROMPT, "code finding"),
                 ("general-purpose", f"Document: {PLAN}\nRun /security-review and report.", "security finding"),
                 ("agentic:build-reviewer", f"Document: {PLAN}\nBase: main\nReview this build.", "plan finding")]:
             tool_input = {"subagent_type": agent, "prompt": prompt}
-            self.hook({"hook_event_name": "PreToolUse", "tool_name": "Agent", "tool_use_id": agent,
+            self.hook({"hook_event_name": "PreToolUse", "tool_name": "Agent", "tool_use_id": prompt,
                        "tool_input": tool_input})
-            self.hook({"hook_event_name": "PostToolUse", "tool_name": "Agent", "tool_use_id": agent,
+            self.hook({"hook_event_name": "PostToolUse", "tool_name": "Agent", "tool_use_id": prompt,
                        "tool_input": tool_input,
                        "tool_response": {"handback": "send", "handbackReport": {"text": report},
                                          "content": [{"type": "text", "text": pointer}]}})
         self.commit("Correct")
         prompt = self.check()["updatedInput"]["prompt"]
+        self.assertIn("=== CODE REVIEW REPORT ===\ncode finding\n", prompt)
         self.assertIn("security finding", prompt)
         self.assertIn("plan finding", prompt)
         self.assertNotIn("SubagentHandback", prompt)
+
+    def test_a_code_review_run_inside_the_session_is_no_report(self):
+        # Issue #79: run by the Skill tool, the review's findings never reach the hook, whether the
+        # skill runs inline (only a success flag comes back) or forked (its result has text). Only
+        # the agent /build starts for it counts.
+        for response in ({"success": True, "commandName": "code-review"},
+                         {"success": True, "status": "forked", "result": "code finding"}):
+            self.hook({"hook_event_name": "PostToolUse", "tool_name": "Skill",
+                       "tool_input": {"skill": "code-review", "args": "medium main...HEAD"},
+                       "tool_response": response})
+        self.security_review()
+        self.plan_review()
+        self.commit("Correct")
+        self.assertIn("No code review report", self.check()["permissionDecisionReason"])
+
+    def test_the_code_and_security_reviews_are_told_apart(self):
+        self.code_review(report="code finding")
+        self.security_review(report="security finding")
+        self.plan_review()
+        self.commit("Correct")
+        prompt = self.check()["updatedInput"]["prompt"]
+        self.assertIn("=== CODE REVIEW REPORT ===\ncode finding\n", prompt)
+        self.assertIn("=== SECURITY REVIEW REPORT ===\nsecurity finding\n", prompt)
 
     def launch(self, agent, prompt, agent_id, session="s1", **extra):
         """Start a review that Claude Code runs in the background: its tool result is a launch notice."""
@@ -200,6 +224,7 @@ class Corrections(Relay):
                           "stop_hook_active": False, "last_assistant_message": report}, session)
 
     SECURITY = ("general-purpose", f"Document: {PLAN}\nRun /security-review and report.")
+    CODE = ("general-purpose", CODE_PROMPT)
     REVIEW = ("agentic:build-reviewer", f"Document: {PLAN}\nBase: main\nReview this build.")
 
     def test_reports_of_background_reviews_are_attached(self):
@@ -233,6 +258,43 @@ class Corrections(Relay):
         prompt = self.check()["updatedInput"]["prompt"]
         self.assertIn("security finding", prompt)
         self.assertIn("plan finding", prompt)
+
+    def test_a_background_code_review_is_attached_beside_a_background_security_review(self):
+        self.launch(*self.CODE, "a3")
+        self.launch(*self.SECURITY, "a1")
+        self.plan_review()
+        self.stopped("general-purpose", "a1", "security finding")
+        self.stopped("general-purpose", "a3", "code finding")
+        self.commit("Correct")
+        prompt = self.check()["updatedInput"]["prompt"]
+        self.assertIn("=== CODE REVIEW REPORT ===\ncode finding\n", prompt)
+        self.assertIn("=== SECURITY REVIEW REPORT ===\nsecurity finding\n", prompt)
+
+    def test_a_code_review_that_stops_before_its_launch_is_seen_counts(self):
+        self.security_review()
+        self.plan_review()
+        self.calls += 1
+        tool_input = {"subagent_type": "general-purpose", "prompt": CODE_PROMPT}
+        self.hook({"hook_event_name": "PreToolUse", "tool_name": "Agent", "tool_use_id": "c",
+                   "tool_input": tool_input})
+        self.stopped("general-purpose", "a3", "code finding")
+        self.hook({"hook_event_name": "PostToolUse", "tool_name": "Agent", "tool_use_id": "c",
+                   "tool_input": tool_input, "tool_response": {"status": "async_launched", "agentId": "a3"}})
+        self.commit("Correct")
+        self.assertIn("code finding", self.check()["updatedInput"]["prompt"])
+
+    def test_the_code_reviews_own_agents_do_not_replace_its_report(self):
+        # /code-review starts finder and verifier agents of its own, which also run as general-purpose.
+        self.launch(*self.CODE, "a3")
+        self.security_review()
+        self.plan_review()
+        for n in range(8):
+            self.stopped("general-purpose", f"f{n}", "a finder's candidates")
+        self.stopped("general-purpose", "a3", "code finding")
+        self.commit("Correct")
+        prompt = self.check()["updatedInput"]["prompt"]
+        self.assertIn("=== CODE REVIEW REPORT ===\ncode finding\n", prompt)
+        self.assertNotIn("candidates", prompt)
 
     def test_a_launch_notice_alone_is_no_report(self):
         self.code_review()

@@ -114,12 +114,19 @@ and nothing about the build itself.
 ## Review
 
 When every requirement is built, start the three reviews in one message, so they run side by
-side, each in the foreground:
+side, each as an agent in the foreground. Never run `/code-review` or `/security-review` yourself
+with the Skill tool: a plugin hook keeps only an agent's report.
 
-- the `code-review` skill, with the arguments `medium <default branch>...HEAD`, so it reviews
-  the whole branch, not just the latest commits;
-- a `general-purpose` agent with this request, first two lines exactly as shown, since a plugin
-  hook reads them to keep its report:
+- a `general-purpose` agent with this request, first two lines exactly as shown, since the hook
+  reads them to keep its report; the arguments make it review the whole branch, not just the
+  latest commits:
+
+  ```
+  Document: <the plan's path>
+  Run /code-review medium <default branch>...HEAD, then reply with its findings word for word, as text.
+  ```
+
+- a `general-purpose` agent with this request, first two lines exactly as shown:
 
   ```
   Document: <the plan's path>
