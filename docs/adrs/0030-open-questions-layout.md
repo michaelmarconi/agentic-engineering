@@ -1,8 +1,8 @@
 ---
 # Change status only through the agentic plugin's skills, which check each change; a change made by hand is not checked.
 type: ADR
-status: 📝 Draft
-date: 2026-11-11
+status: 👍 Accepted
+date: 2026-11-12
 ---
 
 # Show every proposal in a block quote, in documents and in the conversation
