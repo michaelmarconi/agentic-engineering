@@ -56,9 +56,7 @@ build reviewer will apply, so building to it leaves less to correct. Read it wit
 Check each of these before changing anything, and stop with the reason if one fails:
 
 1. **The session is fresh.** A plugin hook lets `/build` start only in answer to the person's first
-   message in a session, or the first after `/clear`. If it refuses, pass its reason on with the
-   plan's path in place of `<path to the plan>`, and stop. Never try to start a new session another
-   way: the plugin has no reliable one, which is why the reason gives the person the steps.
+   message in a session, or the first after `/clear`. If it refuses, pass its reason on.
 2. **The plan is ready.** It is a file in `docs/plans/` with status `🟢 Ready to build`. A
    `✅ Built` plan is built once and never again: say so, and suggest a new plan for more work.
 3. **Nothing it relies on has changed.** Every spec it lists is `👍 Accepted` and still has a

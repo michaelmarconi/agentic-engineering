@@ -39,6 +39,12 @@ REASON = (
     "/agentic:build <path to the plan>. In a Claude project thread, which has no /clear, open a "
     "new thread and send /agentic:build <path to the plan> as its first message."
 )
+# A refused Skill call reaches Claude, not the person, and the build skill is not loaded, so the
+# reason itself says how to pass it on (ADR 0031). A blocked typed /build reaches only the person.
+TO_CLAUDE = (
+    " Pass this on to the person: put the plan's path in place of <path to the plan>, and do not "
+    "try to start a new session any other way."
+)
 
 
 def folder():
@@ -137,7 +143,7 @@ def on_skill(event):
         save(session, record)
         return None
     return {"hookSpecificOutput": {"hookEventName": "PreToolUse", "permissionDecision": "deny",
-                                   "permissionDecisionReason": REASON}}
+                                   "permissionDecisionReason": REASON + TO_CLAUDE}}
 
 
 HANDLERS = {"SessionStart": on_start, "UserPromptSubmit": on_prompt, "PreToolUse": on_skill}

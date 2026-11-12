@@ -167,7 +167,7 @@ Built`: that belongs to the step that builds the plan. Any change to a `🟢 Rea
 returns it to `📝 Draft`, for the person to sign off again. A plugin hook refuses status changes that
 break these rules; if it refuses one, tell the person why.
 
-Once the plan is `🟢 Ready to build`, end the reply with how to build it. A build starts only in a
+Close the reply that sets `🟢 Ready to build` with how to build the plan. A build starts only in a
 fresh session, and the plugin has no reliable way to start one for the person, so say so and give
 the two steps with the plan's path: run `/clear`, then send `/agentic:build <the plan's path>`. In a
 Claude project thread, which has no `/clear`, they open a new thread and send that command as its
