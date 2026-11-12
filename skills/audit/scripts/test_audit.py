@@ -222,6 +222,14 @@ class Documents(Project):
                                          "docs/specs/statement-import.spec.md", "docs/spikes/2026-11-01-can-it.md"])
         self.assertIn("### 1.", found["docs/brief.md"])
 
+    def test_proposed_and_why_run_together_are_listed(self):
+        joined = ("### 1. Which format\n\nNobody has said.\n\n> **Proposed:** CSV.\n"
+                  "> **Why:** Every bank exports it.\n")
+        self.put("docs/specs/exports.spec.md", spec(status="📝 Draft").replace("- None.\n", joined))
+        found = {p["document"]: p["detail"] for p in self.problems("question layout")}
+        self.assertEqual(list(found), ["docs/specs/exports.spec.md"])
+        self.assertIn("line holding only `>`", found["docs/specs/exports.spec.md"])
+
     def test_question_layout_is_not_listed_where_it_cannot_or_need_not_change(self):
         self.put("docs/adrs/0001-cents.md", adr(status="❌ Rejected", open_questions="Which currency?"))
         self.put("docs/specs/statement-import.spec.md", spec(open_questions="What about refunds?"))

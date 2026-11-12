@@ -112,7 +112,8 @@ finished spike record. A rule that a status be set on its own lets the `date:` l
 Every open question in the brief, a spec, an ADR, a plan or a spike record is laid out as ADR 0030
 says: a heading `### N. <what is to be settled>`, numbered from 1 in order, then at least one line
 of context, then one block quote, last in the entry, holding exactly one line starting `>
-**Proposed:**` and, after it, exactly one line starting `> **Why:**`; or the section says only
+**Proposed:**` and, after it and a line holding only `>`, exactly one line starting `> **Why:**`
+(without that line Markdown shows both as one); or the section says only
 "None.". HTML comments, footnote definitions and a closing horizontal rule in the section are
 ignored, and a heading or `>` inside a fenced code block is text. A block quote earlier in the entry
 counts as context; a quote runs on over its lines without `>`, as Markdown's lazy continuation lines
@@ -349,8 +350,9 @@ def has_open_questions(text):
 OPEN_QUESTIONS_LAYOUT = (
     'Lay out each open question as a heading `### 1. <what is to be settled>`, numbered in order, '
     "then the context it needs, then one block quote, last in the entry, holding a line starting "
-    "`> **Proposed:**` with the answer you would choose (or what would settle it) and, after it, a "
-    'line starting `> **Why:**` with the reason; or write "None." if nothing is open.'
+    "`> **Proposed:**` with the answer you would choose (or what would settle it), then a line "
+    'holding only `>`, then a line starting `> **Why:**` with the reason; or write "None." if '
+    'nothing is open.'
 )
 QUESTION_HEADING = re.compile(r"^ {0,3}###\s+(.*?)\s*$")
 NUMBERED = re.compile(r"^(\d+)\.(?:\s+(.*))?$")
@@ -384,9 +386,10 @@ def open_questions_entries(lines):
 def quote_blocks(body):
     """The block quotes in an entry's body, each as its first and last index into the body's
     non-blank lines. A quote runs on over lines without `>` until a blank line, as Markdown's lazy
-    continuation lines do, unless the line starts a block of its own, such as a list item; a line in
-    a fenced code block is never part of one."""
-    blocks, open_block, index = [], False, -1
+    continuation lines do, unless the line starts a block of its own, such as a list item, or follows
+    a line holding only `>`, which ends the quote's paragraph; a line in a fenced code block is never
+    part of one."""
+    blocks, open_block, lazy, index = [], False, False, -1
     for line, in_fence in body:
         if not line.strip():
             open_block = False
@@ -398,7 +401,10 @@ def quote_blocks(body):
             else:
                 blocks.append([index, index])
                 open_block = True
-        elif open_block and not in_fence and not STARTS_BLOCK.match(line) and not THEMATIC_BREAK.match(line):
+            # A line holding only `>` ends the quote's paragraph, and only a paragraph runs on lazily.
+            lazy = bool(QUOTE.sub("", line, count=1).strip())
+        elif (open_block and lazy and not in_fence and not STARTS_BLOCK.match(line)
+              and not THEMATIC_BREAK.match(line)):
             blocks[-1][1] = index
         else:
             open_block = False
@@ -441,6 +447,9 @@ def entry_problem(number, heading, body):
         return f"its block quote holds {found} `> **Why:**` lines; keep exactly one `> **Why:**` line"
     if why[0] < proposed[0]:
         return "its `> **Why:**` line must come after its `> **Proposed:**` line"
+    if inside[why[0] - 1]:
+        return ("its `> **Why:**` line must have a line holding only `>` before it, or Markdown joins "
+                "it to the `> **Proposed:**` line and shows both as one")
     return None
 
 
