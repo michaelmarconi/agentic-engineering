@@ -29,9 +29,10 @@ failure. "The build" is every commit on the branch that the default branch does 
 7. **Plan followed.** The code follows the Plan section and each line under Decisions, and where
    a Decisions line says to leave its reason as a comment beside the code, that comment is there. Where it
    departs from them, the departure is a choice rubric check 8 allows `/build` to make itself.
-   For a plan that is not `🟢 Ready to build`, built before sign-off at the person's request, each
-   open question's **Proposed:** answer counts as a line under Decisions, and a Proposed that only
-   says what would settle it counts as a choice to raise under rubric check 8.
+   For a plan built before sign-off at the person's request, each open question's **Proposed:**
+   answer counts as a line under Decisions, and so does each answer of the person's that the
+   record in rubric check 10 gives. A question with neither is a choice to raise under rubric
+   check 8.
 8. **No choice made quietly.** The build makes no choice that would need an ADR or a change to a
    spec: a lasting choice between real alternatives, such as a library, a data format or the
    shape of an interface, that no listed ADR, spec, Decisions line or existing code already
@@ -45,10 +46,11 @@ failure. "The build" is every commit on the branch that the default branch does 
    summary lists it.
 9. **Documents untouched.** The build changes no spec, ADR or brief, and changes the plan only to
    set its status.
-10. **Building before sign-off recorded.** If the plan is not `🟢 Ready to build`, or a spec or ADR
-    it lists is not `👍 Accepted`, the message of the build's first commit holds a paragraph
-    saying what was not signed off: the plan's status and the open questions built on their
-    proposed answers, and each spec or ADR not `👍 Accepted`, with its status. A build of a plan
-    that is signed off passes this check.
+10. **Building before sign-off recorded.** If the plan is `📝 Draft`, or a spec or ADR it lists
+    is `📝 Draft`, a commit of the build, made before any code built on it, holds a paragraph
+    saying what is not signed off as the documents now stand: the plan's status, each open
+    question and whether it was built on its proposed answer or on the person's answer, given
+    there, and each spec or ADR that is `📝 Draft`. The plan is not marked `✅ Built`. A build of a
+    plan that is signed off passes this check.
 
 A finding about tidiness or style is a suggestion, never a failure.

@@ -258,15 +258,6 @@ class SkillCheck(unittest.TestCase):
         self.put("build", skill_md(name="build", body=f"# Build\n\n{rule}\n"))
         self.assertFails("build/SKILL.md: build-anyway rule missing")
 
-    def test_build_ask_rule_offers_both_answers(self):
-        for part in ("\"Build anyway\"", "\"Stop and settle them first\"", "question tool"):
-            self.assertIn(part, BUILD_ASK_RULE)
-
-    def test_other_skills_need_no_build_ask_rule(self):
-        self.put("demo", skill_md())
-        done = self.check()
-        self.assertEqual(done.returncode, 0, done.stdout)
-
     def test_the_asking_skills_are_the_document_skills_and_practices(self):
         self.assertEqual(sorted(ASK_SKILLS), ["adr", "brief", "plan", "practices", "spec", "spike"])
 

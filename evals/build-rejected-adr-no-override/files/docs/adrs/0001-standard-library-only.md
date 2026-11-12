@@ -1,7 +1,7 @@
 ---
 # Change status only through the sdlc plugin's skills, which check each change; a change made by hand is not checked.
 type: ADR
-status: 👍 Accepted
+status: ❌ Rejected
 date: 2026-11-01
 ---
 

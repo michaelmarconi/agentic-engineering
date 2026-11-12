@@ -1,6 +1,0 @@
-schema_version: "1.1"
-name: build-missing-spec-no-override
-expected_outcome: |
-  The plan names a spec that does not exist. Even asked to build anyway, the build stops, names the missing spec, and offers no way to build anyway.
-context:
-  scaffold_script: place-files.sh

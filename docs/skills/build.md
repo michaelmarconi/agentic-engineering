@@ -5,7 +5,8 @@ that page first for the documents, skills and agents it mentions.
 
 ## What `/build` does
 
-`/build` takes one plan that you have signed off, or choose to build before sign-off, writes the code and tests it describes on a
+`/build` takes one plan that you have signed off, or that you choose to build before sign-off,
+and writes the code and tests it describes on a
 branch of its own, has the result reviewed, and hands the branch back to you.
 
 ```mermaid
@@ -66,15 +67,18 @@ anything, `/build` checks:
   open one and send that command as its first message, since the note that opens a thread does not
   count as your message. `/plan` gives you the same steps when you sign a plan off.
 - **The plan exists and can be built.** A `✅ Built` plan is refused: a plan is built once. Every
-  spec and ADR the plan names must exist, with a heading for each requirement it names. These
-  can't be overridden, since there would be nothing to build against.
-- **The plan is signed off, or you choose to build anyway.** If the plan isn't
-  `🟢 Ready to build`, or a spec or ADR it names isn't `👍 Accepted`, `/build` doesn't refuse. It lists what
+  spec and ADR the plan names must exist, with a heading for each requirement it names, and none
+  may be `❌ Rejected` or `↪️ Superseded`. These can't be overridden, since there would be nothing
+  to build against.
+- **The plan is signed off, or you choose to build anyway.** If the plan, or a spec or ADR it
+  names, is `📝 Draft`, `/build` doesn't refuse. This is its last check, so a build you choose to
+  go on with isn't then stopped by another. It lists what
   isn't signed off, including the plan's open questions, and asks "Build anyway, on the proposed
   answers?". Building before sign-off is your call: pick "Build anyway" and it builds each open
   question's proposed answer, or "Stop and settle them first" and it changes nothing. It never
   builds an unsigned plan without your answer, so an unattended run stops. The build's first
-  commit says what wasn't signed off, so the record is in git, and the plan keeps its status.
+  commit says what wasn't signed off and how each open question was answered, so the record is in
+  git, and the plan keeps its status.
 - **Your practices, if any.** `/build` looks for the `## Practices` heading, and reads any file
   it names to read before a task like this. None is required:
   where a practice it needs is not recorded, such as how to run the tests, it works it out from
@@ -184,7 +188,7 @@ The plan is set to `✅ Built` only when it was `🟢 Ready to build` and every 
 plan built before sign-off keeps its status: settle it and sign it off, then rerun `/build` on the
 branch to mark it `✅ Built`. If the build stopped instead,
 because the corrections failed their check, a requirement's tests still failed after two attempts,
-or a choice needed raising, the plan stays `🟢 Ready to build`. Sort out what is open however suits
+or a choice needed raising, the plan keeps its status. Sort out what is open however suits
 you: with Claude directly, by changing a spec or ADR, or by deciding a finding is wrong. Then rerun
 `/build` on the branch. It resumes, reviews again, and marks the plan `✅ Built` once every review
 passes. If you think a finding is wrong, say so when you rerun it.
