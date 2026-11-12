@@ -145,7 +145,10 @@ seen the conversation:
 
 - **Code:** Claude Code's own `/code-review`,[^codereview] looking for bugs. `/build` always runs
   it at `medium` effort, and always compares the whole branch with the main branch, so a rerun
-  reviews the whole build, not just its latest commits.[^localreview]
+  reviews the whole build, not just its latest commits.[^localreview] `/build` starts it inside an
+  agent, as it does the security review, because some Claude Code versions run the skill inside
+  the session rather than in a fresh agent of its own, and only an agent's report reliably reaches
+  the plugin's hook that hands the reports to the correction check.
 - **Security:** Claude Code's own `/security-review`, looking for security holes.
 - **Plan:** the plugin's build reviewer. It checks that each requirement the plan names is built,
   with a test that checks each of its examples as the spec words it; that nothing unrequested was

@@ -7,13 +7,14 @@ the reviews saw, so it can read exactly what the corrections changed. A model co
 could reword them, so this hook keeps them and adds them to the checker's request itself, as
 review_relay.py does for documents.
 
-Claude Code runs it on PreToolUse for the Agent tool, on PostToolUse for the Agent and Skill
-tools and a subagent's SubagentHandback tool, and on SubagentStop. It acts only in a session where /build was allowed to start (recorded by
+Claude Code runs it on PreToolUse for the Agent tool, on PostToolUse for the Agent tool and a
+subagent's SubagentHandback tool, and on SubagentStop. It acts only in a session where /build was allowed to start (recorded by
 fresh_session.py), and keeps:
 
-- the report of Claude Code's `/code-review`, from the Skill tool's result;
-- the report of the agent that runs `/security-review`: an agent whose request's first line is
-  `Document: <plan>` and whose second line starts `Run /security-review`;
+- the report of the agent that runs Claude Code's `/code-review`: an agent whose request's first
+  line is `Document: <plan>` and whose second line starts `Run /code-review`;
+- the report of the agent that runs `/security-review`: the same, with a second line that starts
+  `Run /security-review`;
 - the report of the `build-reviewer` agent, whose request's first line is `Document: <plan>`.
 
 In a Claude project thread an agent's report is the one it handed back, not the tool's text,
@@ -56,7 +57,11 @@ ROOT = os.environ.get("CLAUDE_PLUGIN_ROOT") or os.path.normpath(
     os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
 RUBRIC = os.path.join(ROOT, "skills", "build", "references", "rubric.md")
 CHECKER = "build-correction-checker"
-STOPPING = {"build-reviewer": "plan", "general-purpose": "security"}  # agent types a review runs as
+# The agent types a review runs as. Both skill reviews run in an agent, never through the Skill
+# tool: depending on the Claude Code version, /code-review run by the Skill tool either forks or
+# runs inside the session and reports through a tool of its own, so its findings may never reach
+# a hook (issue #79). An agent's report reaches it either way.
+STOPPING = {"build-reviewer": ("plan",), "general-purpose": ("code", "security")}
 PARTS = (("code", "CODE REVIEW REPORT"), ("security", "SECURITY REVIEW REPORT"),
          ("plan", "BUILD REVIEW REPORT"))
 
@@ -138,11 +143,13 @@ def part_of(tool_input):
         return "plan"
     if agent == "general-purpose" and second.startswith("Run /security-review"):
         return "security"
+    if agent == "general-purpose" and second.startswith("Run /code-review"):
+        return "code"
     return None
 
 
 def text_of(response):
-    """The agent's or skill's report; one handed back in a Claude project thread, as review_relay.py."""
+    """The agent's report; one handed back in a Claude project thread, as review_relay.py."""
     if isinstance(response, dict):
         if "handback" in response or "handbackReport" in response:
             report = response.get("handbackReport")
@@ -205,8 +212,8 @@ def agent_stopped(session, event):
     last report is the one kept. A hand-back ends the agent's run, so once its report is in, a later
     stop, whose last message is then at most a line written beside the hand-back, is left alone."""
     agent_id = event.get("agent_id")
-    part = STOPPING.get(str(event.get("agent_type") or "").split(":")[-1])
-    if (not isinstance(agent_id, str) or not agent_id or not part
+    parts = STOPPING.get(str(event.get("agent_type") or "").split(":")[-1])
+    if (not isinstance(agent_id, str) or not agent_id or not parts
             or not fresh_session.building(session) or not record_path(session)):
         return None
     handed = subagent_report.handed_back_report(event) is not None
@@ -221,8 +228,10 @@ def agent_stopped(session, event):
         call = launched.get(agent_id)
         if isinstance(call, str):
             keep(record, call, record["started"].get(call), subagent_report.report(event))
-        elif part in record["started"].values() and part not in record["reports"]:
-            subagent_report.hold(stopped, agent_id, subagent_report.report(event))
+        elif any(p in record["started"].values() and p not in record["reports"] for p in parts):
+            # More room than review_relay.py holds: /code-review starts a dozen agents of its own,
+            # all general-purpose, whose stops must not push out a review's held report.
+            subagent_report.hold(stopped, agent_id, subagent_report.report(event), limit=50)
         else:
             return None
         if handed:
@@ -255,15 +264,6 @@ def handle(event):
                     os.remove(path)
         return None
     if not fresh_session.building(session) or not record_path(session):
-        return None
-    if tool == "Skill":
-        report = text_of(event.get("tool_response")).strip()
-        if (when == "PostToolUse" and str(tool_input.get("skill")).split(":")[-1] == "code-review"
-                and report and not report.startswith("Launching skill")):
-            with locked(session):
-                record = for_commit(session, head())
-                record["reports"]["code"] = report
-                save(session, record)
         return None
     if tool not in ("Agent", "Task"):
         return None

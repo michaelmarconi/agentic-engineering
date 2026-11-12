@@ -6,6 +6,17 @@ What changed in each version of the plugin, newest first. Versions follow
 past a major version: it says what you need to change in your documents. Until 1.0.0, any
 minor version may need such a change, and its entry says so.
 
+## [0.47.1] - 2026-11-12
+
+### Fixed
+
+- `/build` now always reaches its correction check after the code review finds something
+  ([#79](https://github.com/michaelmarconi/agentic-engineering/issues/79)). It runs `/code-review`
+  inside a `general-purpose` agent, as it already ran `/security-review`, so the review's report
+  reaches the plugin's hook whatever way the Claude Code version runs the skill: forked into an
+  agent of its own, or inside the session, reporting through a tool the hook never sees. The hook
+  no longer reads the Skill tool's result.
+
 ## [0.47.0] - 2026-11-12
 
 ### Changed
