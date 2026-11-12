@@ -40,8 +40,9 @@ Finally it deletes the working folder, and any folder this project left in eithe
 record that is finished or no longer exists. Other projects' folders are never touched.
 
 The `words` command counts the words in a record's plain part, everything from the title down to
-`## Experiment` apart from HTML comments, and says whether it is within the 600 the status hook
-allows when the record moves forward.
+`## Experiment` apart from HTML comments, in two parts: the verdict, its Finding, Next steps,
+Results and Surprises, and the design, the rest. It says whether each is within what the status
+hook allows when the record moves forward: 600 words for the design and 400 for the verdict.
 """
 
 import argparse
@@ -64,8 +65,9 @@ import urllib.request
 # The record is read with the status hook's own parsing, so the two always agree on where each
 # section ends and what the status is. The hook lives in the plugin's scripts/ folder.
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "..", "scripts"))
-from status_check import (FENCE, FINISHED, PLAIN_LIMIT, READY_TO_RUN, SPIKE_STATUSES,  # noqa: E402
-                          headings_allowed, lifecycle_status, plain_words, section)
+from status_check import (DESIGN_LIMIT, FENCE, FINISHED, READY_TO_RUN,  # noqa: E402
+                          SPIKE_STATUSES, VERDICT_LIMIT, headings_allowed, lifecycle_status, section,
+                          spike_size_problems, spike_words)
 
 MAX_LINES, KEPT_LINES = 500, 200
 TIME_LIMIT = 540  # seconds: under the 10 minutes Claude Code's shell tool allows a command
@@ -508,15 +510,17 @@ def words(path):
     except RecordError:
         print(f"{os.path.basename(path)}: can't read {path}", file=sys.stderr)
         return 1
-    count = plain_words(text)
-    if count > PLAIN_LIMIT:
-        shorten = ("shorten its Finding, Next steps, Results or Surprises, since the rest is fixed"
-                   if status_of(text) == READY_TO_RUN else "shorten it, moving detail down into Experiment")
-        print(f"{os.path.basename(path)}: the plain part holds {count} words, {count - PLAIN_LIMIT} over the "
-              f"{PLAIN_LIMIT} allowed; {shorten}")
-        return 1
-    print(f"{os.path.basename(path)}: the plain part holds {count} words, within the {PLAIN_LIMIT} allowed")
-    return 0
+    design, verdict = spike_words(text)
+    name = os.path.basename(path)
+    print(f"{name}: the design holds {design} of the {DESIGN_LIMIT} words allowed, and the verdict holds "
+          f"{verdict} of the {VERDICT_LIMIT} words allowed")
+    status = status_of(text)
+    if status in FINISHED:
+        return 0  # final: never changed again, so there is nothing to shorten
+    problems = spike_size_problems(text, status)
+    for problem in problems:
+        print(f"{name}: {problem}")
+    return 1 if problems else 0
 
 
 def main(argv=None):
@@ -541,11 +545,14 @@ def main(argv=None):
                             help="record the person's own words as this run, for a step only they can do")
     words_parser = commands.add_parser(
         "words",
-        help="count the words in the record's plain part",
+        help="count the words in the record's design and verdict",
         description="Count the words in a spike record's plain part, from the title down to Experiment, "
-                    "apart from HTML comments, as the status hook counts them.",
-        epilog=f"Output: the count and the limit, on stdout. Exit codes: 0 within {PLAIN_LIMIT} words; "
-               f"1 over it, or the record can't be read, with the reason on stderr.",
+                    "apart from HTML comments, as the status hook counts them: the verdict (Finding, Next "
+                    "steps, Results and Surprises) and the design (the rest) apart.",
+        epilog=f"Exit codes: 0 with the design within {DESIGN_LIMIT} words and the verdict within "
+               f"{VERDICT_LIMIT}, or for a finished record, which never changes; 1 when either is over, "
+               f"with what to shorten on stdout, or when the record can't be read, with the reason on "
+               f"stderr. Output: both counts and their limits, on stdout.",
     )
     words_parser.add_argument("record", help="the spike record, a .md file in docs/spikes/")
     args = parser.parse_args(argv)

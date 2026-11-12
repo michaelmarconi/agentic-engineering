@@ -3,7 +3,10 @@
 Each check passes or fails. `/spike` reads this while writing; the spike reviewer reads it while
 checking, and quotes the record as evidence for every failure. A spike record is reviewed twice:
 the design review, before `🟢 Ready to run`, applies the checks marked *design*; the verdict
-review, before `💡 Confirmed`, `🚫 Refuted` or `❔ Not settled`, applies every check.
+review, before `💡 Confirmed`, `🚫 Refuted` or `❔ Not settled`, applies the checks marked
+*verdict*, and the design checks only to what can still change after the runs: the title, Code and
+Open questions. The rest of the design was reviewed and signed off before the runs and is fixed
+now, so the verdict review reads it to judge the verdict but never fails it.
 
 A record reads from plain to technical. Its plain part, for people, runs from the title down to
 Experiment; its technical part, for agents and reviewers, is Experiment, Code and Runs.
@@ -38,10 +41,12 @@ Experiment; its technical part, for agents and reviewers, is Experiment, Code an
    network, anything timed, or anything that calls an AI model, runs more than once, with the
    reason for the count given. One run is enough only when the result cannot vary, and the
    record says why.
-8. **Inputs named** (design). Every file or web address the code or command reads that is not
-   written by the Code section is named under Inputs: a path in the commit the experiment starts
-   from, or a web address. A path in the repository, and any diff block, come with a commit under
-   `- Starts from commit:`.
+8. **Inputs named** (design). Every file the code or command reads that is not written by the Code
+   section is named under Inputs: a path in the commit the experiment starts from, or the web
+   address of a file the run downloads a copy of. An address the experiment talks to, such as a site
+   or service it tests, is not an input, and is not listed there, since the run script downloads
+   every Input before the run starts. A path in the repository, and any diff block, come with a
+   commit under `- Starts from commit:`.
 9. **Code** (design). Each code block names its file on its first line, such as `# file: check.py`,
    or is a `diff` block changing the product's own files; the Command runs that code; nothing the
    experiment needs is missing from the record.
@@ -95,7 +100,8 @@ Experiment; its technical part, for agents and reviewers, is Experiment, Code an
     person can answer, such as whether a sample input stands for the real thing, proposes no guess:
     its "Proposed:" says what would settle it.
 
-The plain part's size, at most 600 words, tables included, is checked by the run script's `words`
+The plain part's size, at most 600 words for the design and 400 for the verdict (Finding, Next
+steps, Results and Surprises), tables included, is checked by the run script's `words`
 command and by the status hook, not by the reviewer. So is a finishing status that the Finding
 does not open with, such as `💡 Confirmed` for a Finding that opens "Refuted:".
 

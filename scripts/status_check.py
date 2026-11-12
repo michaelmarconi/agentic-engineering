@@ -78,10 +78,12 @@ For a spike record it refuses:
 - any move but `📝 Draft` to `🟢 Ready to run`, `🟢 Ready to run` back to `📝 Draft` while Runs is
   empty, and `🟢 Ready to run` to `💡 Confirmed`, `🚫 Refuted` or `❔ Not settled`;
 - a move forward in the same edit as any other change, while the Open questions section is
-  missing or not empty or "None.", or while the record's plain part, everything between the
-  frontmatter and `## Experiment` apart from HTML comments, holds more than 600 words (counted as
-  runs of non-space characters holding a letter or digit, so a table's bars and rules don't
-  count); `💡 Confirmed` or `🚫 Refuted` while Runs holds no run; and a finishing status that the
+  missing or not empty or "None.", or while the record's design holds more than 600 words or its
+  verdict more than 400. The verdict is the Finding, Next steps,
+  Results and Surprises sections, written after the runs; the design is the rest of the plain part,
+  everything between the frontmatter and `## Experiment`. Neither counts HTML comments, and words
+  are runs of non-space characters holding a letter or digit, so a table's bars and rules don't
+  count. `💡 Confirmed` or `🚫 Refuted` while Runs holds no run; and a finishing status that the
   Finding does not open with, such as `💡 Confirmed` for a Finding that opens "Refuted:";
 - a change to the Hypothesis, How we'll know, Out of scope, How the test works, Risks and
   safeguards or Experiment section of a `🟢 Ready to run` record that does not return it to
@@ -148,7 +150,10 @@ FINISHED = (CONFIRMED, REFUTED, NOT_SETTLED)
 # A spike record's design: fixed once it is signed off.
 FIXED_PARTS = ("Hypothesis", "How we'll know", "Out of scope", "How the test works", "Risks and safeguards",
                "Experiment")
-PLAIN_LIMIT = 600  # words in a spike record's plain part, the part written for people
+# A spike record's verdict: the sections of its plain part written after the runs.
+VERDICT_PARTS = ("Finding", "Next steps", "Results", "Surprises")
+DESIGN_LIMIT = 600  # words in the rest of a spike record's plain part, its design
+VERDICT_LIMIT = 400  # words in a spike record's verdict
 ADR_PLAIN_LIMIT = 500  # words in an ADR's plain part, from the title down to Technical detail
 ADR_DETAIL = "Technical detail"  # the heading that starts an ADR's technical part
 ADR_DIAGRAMS = "Decision"  # the section whose diagrams the word limit leaves out
@@ -1166,18 +1171,24 @@ def diagram_lines(lines, heading):
     return diagram
 
 
-def plain_part(text, end_heading="Experiment", diagrams_in=None):
-    """A document's plain part: its lines after the frontmatter and before the `## ` heading that
-    starts its technical part (Experiment in a spike record, Technical detail in an ADR), joined,
-    without HTML comments, and without the `mermaid` diagrams of the `## <diagrams_in>` section if
-    one is named (Decision in an ADR). A document without that heading is plain to its end."""
+def plain_lines(text, end_heading="Experiment"):
+    """A document's plain part as lines, after the frontmatter and before `## <end_heading>`, with
+    which of them may be headings (headings_allowed)."""
     lines = text.lstrip("\ufeff").splitlines()
     head = frontmatter(text)
     lines = lines[len(head) + 2:] if head is not None else lines
     allowed = headings_allowed(lines)
     stop = "## " + end_heading.lower()
     end = next((i for i, line in enumerate(lines) if allowed[i] and line.strip().lower() == stop), len(lines))
-    lines = lines[:end]
+    return lines[:end], allowed[:end]
+
+
+def plain_part(text, end_heading="Experiment", diagrams_in=None):
+    """A document's plain part: its lines after the frontmatter and before the `## ` heading that
+    starts its technical part (Experiment in a spike record, Technical detail in an ADR), joined,
+    without HTML comments, and without the `mermaid` diagrams of the `## <diagrams_in>` section if
+    one is named (Decision in an ADR). A document without that heading is plain to its end."""
+    lines, _ = plain_lines(text, end_heading)
     if diagrams_in is None:
         return uncommented(lines)
     diagram = diagram_lines(lines, diagrams_in)
@@ -1187,6 +1198,24 @@ def plain_part(text, end_heading="Experiment", diagrams_in=None):
 def plain_words(text, end_heading="Experiment", diagrams_in=None):
     """How many words a document's plain part holds, leaving out the diagrams of `diagrams_in`."""
     return len(WORD.findall(plain_part(text, end_heading, diagrams_in)))
+
+
+def spike_words(text):
+    """How many words a spike record's plain part holds, as (design, verdict): the verdict is its
+    Finding, Next steps, Results and Surprises sections, the design everything else, title
+    included."""
+    lines, allowed = plain_lines(text)
+    starts = {"## " + name.lower() for name in VERDICT_PARTS}
+    design, verdict, in_verdict = [], [], False
+    for i, line in enumerate(lines):
+        # Sections start and end as section() finds them: at the first heading of that name.
+        if allowed[i] and line.strip().lower() in starts:
+            starts.discard(line.strip().lower())
+            in_verdict = True
+        elif allowed[i] and (line.startswith("# ") or line.startswith("## ")):
+            in_verdict = False
+        (verdict if in_verdict else design).append(line)
+    return len(WORD.findall(uncommented(design))), len(WORD.findall(uncommented(verdict)))
 
 
 def decision_chosen(text):
@@ -1230,6 +1259,48 @@ def ran(text):
     return False
 
 
+def joined(names, last):
+    """The names as an English list, such as "a, b and c" with last "and"."""
+    return ", ".join(names[:-1]) + f" {last} " + names[-1] if len(names) > 1 else names[0]
+
+
+def spike_size_problems(text, status):
+    """What is too long in a spike record's plain part, as full sentences, each with what to shorten:
+    the design over DESIGN_LIMIT words or the verdict over VERDICT_LIMIT. `status` is the record's
+    status before any move, which decides what can still be shortened."""
+    design, verdict = spike_words(text)
+    problems = []
+    if design > DESIGN_LIMIT:
+        if status == DRAFT:
+            shorten = "Shorten it, moving detail down into Experiment."
+        elif not runs(text):
+            shorten = f"Its design is fixed, so return it to `{DRAFT}` to shorten it."
+        else:
+            shorten = ("It has run, so its design is fixed: shorten its title or any text outside "
+                       "the fixed sections.")
+        problems.append(
+            f"its design, the plain part above Experiment apart from {joined(VERDICT_PARTS, 'and')}, holds "
+            f"{design} words, {design - DESIGN_LIMIT} more than the {DESIGN_LIMIT} allowed. {shorten}"
+        )
+    if verdict > VERDICT_LIMIT:
+        problems.append(
+            f"its verdict, the {joined(VERDICT_PARTS, 'and')} sections, holds {verdict} words, "
+            f"{verdict - VERDICT_LIMIT} more than the {VERDICT_LIMIT} allowed. Shorten its "
+            f"{joined(VERDICT_PARTS, 'or')}."
+        )
+    return problems
+
+
+def spike_size_refusal(name, text, old, new):
+    """Why a spike record's plain part is too long to move from `old` to `new`, or None. Both parts
+    are checked at every move forward, so a person never signs off more than they are asked to read."""
+    problems = spike_size_problems(text, old)
+    if not problems:
+        return None
+    return (f"{name}: it cannot be `{new}`, since a person is asked to read no more: "
+            + " Also, ".join(problems) + " Then have it reviewed again.")
+
+
 def spike_rules(path, before, after, old, new):
     name = os.path.basename(path)
     if old not in SPIKE_STATUSES:
@@ -1270,15 +1341,9 @@ def spike_rules(path, before, after, old, new):
             )
         if has_open_questions(after):
             return open_questions_refusal(name, after, new, "spike record")
-        words = plain_words(after)
-        if words > PLAIN_LIMIT:
-            shorten = ("Shorten its Finding, Next steps, Results or Surprises, since the rest is fixed"
-                       if new in FINISHED else "Shorten it, moving detail down into Experiment")
-            return (
-                f"{name}: its plain part, from the title down to Experiment, holds {words} words, "
-                f"more than the {PLAIN_LIMIT} a person is asked to read, so it cannot be `{new}`. "
-                f"{shorten}, and have it reviewed again."
-            )
+        refusal = spike_size_refusal(name, after, old, new)
+        if refusal:
+            return refusal
         if new in (CONFIRMED, REFUTED) and not ran(after):
             return (
                 f"{name}: it has no runs, so it cannot be `{new}`: only an experiment's runs "

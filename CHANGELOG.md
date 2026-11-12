@@ -6,7 +6,7 @@ What changed in each version of the plugin, newest first. Versions follow
 past a major version: it says what you need to change in your documents. Until 1.0.0, any
 minor version may need such a change, and its entry says so.
 
-## [0.45.0] - 2026-11-12
+## [0.47.0] - 2026-11-12
 
 ### Changed
 
@@ -26,6 +26,29 @@ minor version may need such a change, and its entry says so.
   in which the brief changed checks every accepted spec and ADR against it.
 - The audit script's `documents` command reports the brief's path as `brief`, and `window` reports
   `brief_changed`.
+
+## [0.46.0] - 2026-11-12
+
+### Changed
+
+- A spike record's plain part now has two word limits: at most 600 words for the design, written
+  before the runs, and 400 for the verdict, its Finding, Next steps, Results and Surprises, written
+  after them. One 600-word limit used to cover both, so a design close to it left the verdict no
+  room. The status hook checks both at every move forward, and `spike.py words` reports both.
+- In a spike record, the lifecycle's own terms, such as "spec" and "ADR", count as plain words, as
+  they already did in issues, plans and practices, so the template's `- Spec:` and `- ADR:` lines no
+  longer fail the wording check.
+- A spike record's Inputs are only files the run keeps a copy of. A site or service the experiment
+  talks to, such as the one it tests, is not an input, since the run script downloads every input
+  before the run starts and an address that can't simply be downloaded stopped the run.
+- The verdict review judges only what can still change after the runs: the verdict, and the title,
+  Code and Open questions. The design was reviewed and signed off before the runs and is fixed, so a
+  finding about it could never be corrected and left the record unable to finish.
+
+### What you need to change
+
+- Nothing in finished spike records. A record that is not finished and holds more than 400 words in
+  its Finding, Next steps, Results and Surprises must shorten them before it moves on.
 
 ## [0.44.1] - 2026-11-12
 
