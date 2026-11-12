@@ -8,6 +8,9 @@ description: Write or change the product brief, the one short document at docs/b
 The brief says what the product is, who it is for, why it exists and how we will know it works.
 A product has one, at `docs/brief.md`, edited in place; git is its history. Specs are written
 against it, one per capability, so the brief holds only what is true of the whole product.
+It states what the person intends the product to be, so change it only when they say that intent
+has changed, never to match a spec or an ADR. Changing the brief edits no other document: any spec
+or ADR it now contradicts is for the person to settle, and `/audit` finds them.
 
 Before writing, read [references/rubric.md](references/rubric.md): it is the list of checks the
 reviewer will apply, so writing to it leaves less to correct. Write in plain words, as the Plain

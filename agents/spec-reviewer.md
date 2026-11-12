@@ -19,13 +19,12 @@ Read:
 - The spec named on your request's first line, `Document: <path>`.
 - The rubric at `${CLAUDE_PLUGIN_ROOT}/skills/spec/references/rubric.md`.
 - The other specs under `docs/specs/`, for the overlap check.
-- `docs/brief.md`, if it exists, to see whether the spec fits the product.
+- `docs/brief.md`, if it exists, for the brief check.
 - For the references check only, the title (first `# ` heading) of each file under `docs/adrs/`,
   `docs/plans/` and `docs/spikes/`, so you can tell when the spec names one.
 
 Read nothing else. Apply every rubric check. For each failure, quote the spec as evidence and say
-what would make it pass. Then note anything else that would make the spec wrong or hard to build,
-such as a conflict with the brief. Other findings holds only problems, never what you checked and
+what would make it pass. Then note anything else that would make the spec wrong or hard to build. Other findings holds only problems, never what you checked and
 found right. Leave out matters of style or taste: a finding must be something the builder would
 otherwise get wrong. Keep apart the findings only a person can settle: those are decisions, not
 fixes. Under Needs a person goes a decision about what the spec already says: a sentence two

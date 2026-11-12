@@ -103,7 +103,7 @@ documents by hand.
 | [`/agentic:plan`](docs/skills/plan.md) | Plans a piece of work against its specs and ADRs |
 | [`/agentic:build`](docs/skills/build.md) | Builds a plan on a branch, has it reviewed and hands it back |
 | [`/agentic:practices`](docs/skills/practices.md) | Records how the project does things, one topic at a time |
-| [`/agentic:audit`](docs/skills/audit.md) | Finds where the code and its documents no longer agree, and changes nothing |
+| [`/agentic:audit`](docs/skills/audit.md) | Finds where the code and its documents no longer agree, and where a spec or ADR contradicts the brief, and changes nothing |
 | [`/agentic:feedback`](docs/skills/feedback.md) | Drafts a GitHub issue about the plugin itself |
 
 ```mermaid

@@ -197,7 +197,8 @@ agents/
   correction-checker.md # checks the corrections after a review, for every skill that writes a document
   build-correction-checker.md # checks the corrections after a build's reviews
   auditor.md           # /audit: checks the code against one accepted spec or ADR
-  audit-checker.md     # /audit: tries to disprove one auditor's drift findings
+  audit-checker.md     # /audit: tries to disprove one auditor's drift findings, or the brief checker's
+  brief-checker.md     # /audit: checks accepted specs and ADRs against the brief
   audit-picker.md      # /audit: picks the documents a window of commits could affect
 hooks/
   hooks.json           # session map, status checks, the review relay, reads of the plugin's own files, fresh sessions for /build, the build branch guard, the build review relay, the practices limits

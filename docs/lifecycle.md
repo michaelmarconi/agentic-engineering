@@ -16,8 +16,8 @@ how far along it is. Beside it, the `date:` field gives the day that status was 
 YYYY-MM-DD; a plugin hook refuses a status change that does not set it to that day.
 
 - **Brief**, `docs/brief.md`: what the product is, who it is for and why. One per product,
-  holding only what is true of the whole product. No status; it is never built, only kept true,
-  and edited in place.
+  holding only what is true of the whole product. No status, since it is never built: it states
+  the product's intent, is edited in place, and changes only when you change that intent.
 - **Spec**, `docs/specs/**/<capability>.spec.md`: what one capability of the product should do,
   and how we will know it does. A product has many. Statuses: `📝 Draft` → `👍 Accepted`; any change returns it
   to `📝 Draft`. The status describes the document, not the software: whether the software meets
@@ -77,8 +77,8 @@ the `agentic:` prefix.
 - `/build` builds a plan on a branch of its own, has it reviewed, and pushes the branch to your
   remote.
   Verifying the software, opening a pull request and merging stay with you.
-- `/audit` finds drift, where the code and its documents disagree, at any time. It changes
-  nothing: you choose each correction.
+- `/audit` finds drift, where the code and its documents disagree, and any spec or ADR that
+  contradicts the brief, at any time. It changes nothing: you choose each correction.
 - `/practices` records how the project does things, such as the commands that check the work and
   the rules an agent follows, one topic at a time. It is not a step in the sequence: run it
   whenever you need it. Practices are not a lifecycle document and have no status: their essentials
@@ -126,6 +126,7 @@ flowchart LR
     Code[Code on the main branch] -.-> Audit
     Audit -.->|drift| Spec
     Audit -.->|drift| ADR
+    Audit -.->|contradiction| Brief
     ADR ~~~ Pad["#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;"]
     style Pad fill:none,stroke:none
 ```
@@ -134,6 +135,14 @@ flowchart LR
 
 - **The brief is the whole product.** It holds only what is true of the whole product; one
   capability's behaviour belongs in its spec.
+- **The brief changes only when its intent does.** Specs and ADRs add detail the brief never
+  mentions, and that is never a reason to change it, so no skill or agent proposes an edit to the
+  brief to match one. Only an outright contradiction counts: a spec or ADR that breaks the brief's
+  Goals, Out of scope or Constraints, such as a spec for something the brief puts out of scope. You
+  settle it one of two ways: change the spec, or supersede the ADR, to fit the brief; or change the
+  brief. Either answer removes the contradiction, so it is never raised again. `/spec` raises one
+  while the spec is written, as an open question in the spec; `/audit` finds any that appear later,
+  such as after the brief changes.
 - **Specs say what, never how.** A spec says what the system does. A technical choice is an ADR.
 - **One living spec per capability.** It is edited in place, and git is its history. A retired
   spec is deleted.

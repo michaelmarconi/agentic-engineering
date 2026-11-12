@@ -6,6 +6,27 @@ What changed in each version of the plugin, newest first. Versions follow
 past a major version: it says what you need to change in your documents. Until 1.0.0, any
 minor version may need such a change, and its entry says so.
 
+## [0.47.0] - 2026-11-12
+
+### Changed
+
+- The brief now changes only when you decide the product's intent has changed. No skill proposes
+  editing it to match a spec or ADR, and changing the brief edits no other document.
+- `/spec` raises the brief only when a spec contradicts its Goals, Out of scope or Constraints,
+  such as a rule for something the brief puts out of scope. Detail the brief doesn't mention is
+  never raised. A contradiction becomes an open question in the spec with two answers: change the
+  spec, or you change the brief. Once you settle it, it is not raised again. The spec rubric gains
+  check 15, "Fits the brief".
+
+### Added
+
+- `/audit` checks accepted specs and ADRs against the brief, with one new agent, `brief-checker`,
+  that reads documents only. A second agent tries to disprove each contradiction before it is
+  reported under "Contradicts the brief", with quotes of both and both corrections named. A window
+  in which the brief changed checks every accepted spec and ADR against it.
+- The audit script's `documents` command reports the brief's path as `brief`, and `window` reports
+  `brief_changed`.
+
 ## [0.46.0] - 2026-11-12
 
 ### Changed

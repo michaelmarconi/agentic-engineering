@@ -126,6 +126,15 @@ class Documents(Project):
         self.assertTrue(out["lifecycle"])
         self.assertEqual(out["accepted"], {"specs": [], "adrs": []})
 
+    def test_the_brief_is_named_when_there_is_one(self):
+        self.assertIsNone(self.documents()["brief"])
+        self.put("docs/brief.md", "# Product\n\nWhat it is.\n")
+        self.assertEqual(self.documents()["brief"], "docs/brief.md")
+
+    def test_the_brief_is_found_whatever_the_case_of_its_name(self):
+        self.put("docs/Brief.md", "# Product\n\nWhat it is.\n")
+        self.assertEqual(self.documents()["brief"], "docs/Brief.md")
+
     def test_a_status_without_its_emoji_or_unknown_is_a_problem(self):
         self.put("docs/specs/statement-import.spec.md", spec(status="Accepted"))
         self.put("docs/adrs/0001-cents.md", adr(status="Approved"))
@@ -448,6 +457,31 @@ class Window(Project):
         self.commit("Edit spec", date="2026-11-01T12:00:00+00:00")
         out = self.ok("last", "7", "days")
         self.assertEqual(out["changed_accepted_documents"], ["docs/specs/statement-import.spec.md"])
+
+    def test_a_change_to_the_brief_in_the_window_is_named(self):
+        self.put("docs/brief.md", "# Product\n\nWhat it is now.\n")
+        self.commit("Edit brief", date="2026-11-01T12:00:00+00:00")
+        self.assertTrue(self.ok("last", "7", "days")["brief_changed"])
+
+    def test_renaming_or_deleting_the_brief_in_the_window_is_a_change_to_it(self):
+        self.put("docs/brief.md", "# Product\n\nWhat it is.\n")
+        self.commit("Add brief", date="2026-10-01T12:00:00+00:00")
+        os.rename(os.path.join(self.project, "docs/brief.md"), os.path.join(self.project, "docs/old-brief.md"))
+        self.commit("Move brief", date="2026-11-01T12:00:00+00:00")
+        self.assertTrue(self.ok("last", "7", "days")["brief_changed"])
+        os.remove(os.path.join(self.project, "docs/old-brief.md"))
+        self.put("docs/brief.md", "# Product\n")
+        self.commit("Back", date="2026-11-02T12:00:00+00:00")
+        os.remove(os.path.join(self.project, "docs/brief.md"))
+        self.commit("Delete brief", date="2026-11-03T12:00:00+00:00")
+        self.assertTrue(self.ok("since", "HEAD~1")["brief_changed"])
+
+    def test_a_window_that_leaves_the_brief_alone_says_so(self):
+        self.put("docs/brief.md", "# Product\n\nWhat it is.\n")
+        self.commit("Add brief", date="2026-10-01T12:00:00+00:00")
+        self.put("src/main.py", "m\n")
+        self.commit("Code", date="2026-11-01T12:00:00+00:00")
+        self.assertFalse(self.ok("last", "7", "days")["brief_changed"])
 
     def test_work_merged_in_the_window_counts_even_if_its_commits_are_older(self):
         self.git("checkout", "-q", "-b", "feature")

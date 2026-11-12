@@ -1,0 +1,8 @@
+schema_version: "1.1"
+name: audit-window-brief-changed
+expected_outcome: |
+  In the window only the brief changed, now putting closed days out of scope. No code or spec
+  changed, but because the brief did, the brief checker is given every accepted spec and ADR, and
+  the closed-days spec is reported as contradicting the changed brief.
+context:
+  scaffold_script: place-files.sh

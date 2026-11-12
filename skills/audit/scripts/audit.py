@@ -52,7 +52,8 @@ documents
 
     It also lists the `✅ Built` plans, the finished spike records (`💡 Confirmed`,
     `🚫 Refuted` or `❔ Not settled`) and the unfinished ones with the date their name starts with. `lifecycle`
-    is false when the project has no lifecycle document at all. Every path is relative to `root`,
+    is false when the project has no lifecycle document at all. `brief` is the brief's path, or null
+    when the project has none. Every path is relative to `root`,
     the project's full path, which both commands print, so an agent started from another folder
     can be given whole paths.
 
@@ -60,7 +61,8 @@ window <words>
     Reads `last N days` (commits whose commit date falls in the N days before now) or
     `since <commit>` (the commits after that commit, not including it) on the checked-out branch,
     and lists the files those commits added (A), changed (M), renamed (R, with the old name) or
-    deleted (D), and the `👍 Accepted` specs and ADRs whose own text changed. A merge commit counts
+    deleted (D), the `👍 Accepted` specs and ADRs whose own text changed, and `brief_changed`, true
+    when the window added, changed, renamed or deleted docs/brief.md. A merge commit counts
     as its change from its first parent, so work merged in the window counts even when its own
     commits are older. It also lists the window's commits, oldest first, with their dates and
     subjects, and writes nothing, so agents read the changed files themselves. It refuses, with
@@ -393,9 +395,11 @@ def check_documents(project):
         add(document, "supersede", detail)
     for document, detail in overlap_problems(project, documents):
         add(document, "overlap", detail)
+    brief = next((relative for relative, (kind, _) in sorted(documents.items()) if kind == "brief"), None)
     return {
         "root": project,
         "lifecycle": bool(documents),
+        "brief": brief,
         "accepted": accepted,
         "problems": problems,
         "built_plans": built,
@@ -484,8 +488,10 @@ def window(project, words, now):
     touched = {change["path"] for change in changes}
     accepted = [relative for relative, (kind, text) in sorted(documents.items())
                 if kind in ("spec", "ADR") and status(kind, text) == ACCEPTED and relative in touched]
+    brief_changed = any(kind_of(path) == "brief" for change in changes
+                        for path in (change["path"], change.get("from", "")))
     return {"root": project, "window": description, "commits": commits, "changed": changes,
-            "changed_accepted_documents": accepted}
+            "changed_accepted_documents": accepted, "brief_changed": brief_changed}
 
 
 def parse_now(value):
@@ -505,14 +511,15 @@ def main(argv=None):
     documents_parser = commands.add_parser(
         "documents", help="check every lifecycle document and list the accepted specs and ADRs",
         description="Check every lifecycle document as it stands, and list the accepted specs and ADRs. "
-                    "Output: JSON with root (the project's full path, which every other path is relative to), lifecycle, accepted {specs, adrs}, problems [{document, check, detail}], "
+                    "Output: JSON with root (the project's full path, which every other path is relative to), lifecycle, brief (its path, or null), accepted {specs, adrs}, problems [{document, check, detail}], "
                     "built_plans, finished_spikes and unfinished_spikes [{document, status, date}]. "
                     "Exit codes: 0 done, whatever it found; 1 failed, with the reason on stderr.")
     window_parser = commands.add_parser(
         "window", help="list a window of commits and the files they changed",
         description="Read `last N days` or `since <commit>` on the checked-out branch, writing nothing.\n"
                     "Output: JSON with root, window, commits [{commit, date, subject}], oldest first,\n"
-                    "changed [{status, path, from}] and changed_accepted_documents.\n"
+                    "changed [{status, path, from}], changed_accepted_documents and brief_changed\n"
+                    "(true when the window added, changed, renamed or deleted docs/brief.md).\n"
                     "Exit codes: 0 done, even when the window holds no commits; 1 refused, with the\n"
                     "reason on stderr.",
         formatter_class=argparse.RawDescriptionHelpFormatter)

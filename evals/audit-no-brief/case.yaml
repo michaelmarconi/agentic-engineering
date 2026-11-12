@@ -1,0 +1,7 @@
+schema_version: "1.1"
+name: audit-no-brief
+expected_outcome: |
+  The project has no brief, so the audit starts no brief checker and checks the accepted spec
+  against the code as usual.
+context:
+  scaffold_script: place-files.sh

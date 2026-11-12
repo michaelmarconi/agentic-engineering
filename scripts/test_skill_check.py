@@ -174,7 +174,7 @@ class SkillCheck(unittest.TestCase):
                     holding.add(name[:-3])
         self.assertEqual(holding, {"spec-reviewer", "brief-reviewer", "adr-reviewer", "plan-reviewer",
                                    "spike-reviewer", "practices-reviewer", "language-checker",
-                                   "correction-checker", "auditor", "audit-checker"})
+                                   "correction-checker", "auditor", "audit-checker", "brief-checker"})
 
     def test_document_skill_without_type_rule_fails(self):
         self.put("spec", skill_md(name="spec"))

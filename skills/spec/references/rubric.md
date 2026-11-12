@@ -59,7 +59,8 @@ checking, and quotes the spec as evidence for every failure.
     outside the repository, or to a file under `docs/` that is not a brief, spec, ADR, plan or
     spike record: such material can change or vanish without the spec being touched, so what
     matters from it is stated in the spec's own words. References to code are not part of this
-    check.
+    check. An open question settling a contradiction with the brief may call it "the brief" and
+    state what it says, with no hyperlink, path or title: the question goes once it is answered.
 12. **Outcome first.** Requirement 1 states the outcome the Story asks for, as something someone
     can see, and its How we'll check checks that outcome. The other requirements say how the
     outcome holds in particular cases, such as who receives something or what happens when it
@@ -76,3 +77,8 @@ checking, and quotes the spec as evidence for every failure.
     proposes no guess: its "Proposed:" says what would settle it, such as "tell me who asked for
     this and what happens to them today". A default the person did not give is never stated as a
     rule: it is an open question with that default proposed.
+15. **Fits the brief.** Nothing in the spec contradicts the brief's Goals, Out of scope or
+    Constraints, such as a rule for something the brief puts out of scope. Detail the brief doesn't
+    mention never fails this check, however much there is. A contradiction passes only while Open
+    questions asks the person to settle it, proposing one of its two answers: change the spec to
+    fit, or the person changes the brief. With no brief, this check passes.
