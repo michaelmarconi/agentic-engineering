@@ -42,7 +42,8 @@ Write only what they said or showed you, as rubric check 8 describes. What they 
 an open question, each asking one thing: "What do they do today, and how long does it take?" is two
 questions. Write each open question as a heading, `### 1. <what is to be settled>`, numbered in
 order, then the context it needs, then a block quote holding a line starting `> **Proposed:**` with
-the answer you would choose and, after it, a line starting `> **Why:**` with the reason, so the
+the answer you would choose, then a line holding only `>`, then a line starting `> **Why:**` with
+the reason, so the
 person can find the proposal at a glance and accept it in a word or give another. Each question
 holds one proposal, so a question with two answers is two questions, and a plugin hook refuses Open
 questions laid out any other way. Where only the person can know the answer, "Proposed:" says what
@@ -67,8 +68,9 @@ only the first, as one question rather than two joined together, with any exampl
 answers rather than further questions. When you ask the person to settle a question in the
 conversation, lay it out in four parts, so they can find your proposal at a glance: a bold line
 naming it and its place in the count, such as "**Question 1 of 3: how often a failed pull is
-retried**"; the context it needs; a block quote holding a "**Proposed:**" line with your answer and
-a "**Why:**" line with the reason; and the question itself, last, in one line. The others wait in
+retried**"; the context it needs; a block quote holding a "**Proposed:**" line with your answer, a
+line holding only `>`, and a "**Why:**" line with the reason; and the question itself, last, in one
+line. The others wait in
 the brief, so leave them out of that reply entirely: describe the draft by what it says, never by
 what it lacks ("nothing yet on who else is involved" names a question), and report what you or the
 review changed without naming the gaps that remain. Ask the next once the first is settled, playing

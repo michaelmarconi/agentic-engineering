@@ -1588,6 +1588,7 @@ SECOND = (
     "### 2. Who may read the copy\n\n"
     "Nobody has said who reads it.\n\n"
     "> **Proposed:** Ask the finance team who needs it.\n"
+    ">\n"
     "> **Why:** Only they know.\n"
 )
 OLD_ENTRY = "- Where is the copy kept? Proposed: object storage, since it is read whole."
@@ -1610,8 +1611,17 @@ class OpenQuestionsShape(unittest.TestCase):
         self.assertIsNone(layout(ENTRY))
         self.assertIsNone(layout(ENTRY + "\n" + SECOND))
 
-    def test_quote_without_blank_line_between_proposed_and_why_passes(self):
-        self.assertIsNone(layout(SECOND.replace("### 2.", "### 1.")))
+    def test_why_straight_after_proposed_refused(self):
+        # Markdown joins adjacent quoted lines into one paragraph, so Why would show on Proposed's line.
+        problem = layout(ENTRY.replace(">\n> **Why:**", "> **Why:**"))
+        self.assertIn("line holding only `>`", problem)
+
+    def test_why_after_a_wrapped_proposal_with_no_quote_line_between_refused(self):
+        entry = ENTRY.replace("one file per day.\n>\n", "one file\nper day.\n")
+        self.assertIn("line holding only `>`", layout(entry))
+
+    def test_wrapped_proposal_then_quote_line_passes(self):
+        self.assertIsNone(layout(ENTRY.replace("one file per day.", "one file\n> per day.")))
 
     def test_comment_in_the_section_ignored(self):
         self.assertIsNone(layout("<!-- One entry per question. -->\n" + ENTRY))

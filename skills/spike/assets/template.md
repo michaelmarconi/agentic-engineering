@@ -63,7 +63,7 @@ date: <YYYY-MM-DD>
 <!-- What only the person can settle about the spike, each a heading `### 1. <what is to be
      settled>`, numbered in order; the context it needs; then a block quote, last, holding
      `> **Proposed:** <the answer you would choose, or, if only the person can know, what would
-     settle it>` and `> **Why:** <the reason>`. "None." before it moves on. -->
+     settle it>`, `>` alone on the next line, then `> **Why:** <the reason>`. "None." before it moves on. -->
 None.
 
 ## Experiment

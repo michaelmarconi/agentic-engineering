@@ -1,8 +1,8 @@
 ---
 type: regex
 target: { source: file, path: docs/specs/appointment-reminders.spec.md }
-pattern: '^## Open questions\s*\n(?:(?!^## )[\s\S])*?^### 1\. \S[^\n]*\n(?:(?!^## )[\s\S])*?^> \*\*Proposed:\*\* *\S(?:(?!^## )[\s\S])*?^> \*\*Why:\*\* *\S'
+pattern: '^## Open questions\s*\n(?:(?!^## )[\s\S])*?^### 1\. \S[^\n]*\n(?:(?!^## )[\s\S])*?^> \*\*Proposed:\*\* *\S(?:(?!^## )[\s\S])*?^>[ \t]*\n> \*\*Why:\*\* *\S'
 flags: m
 weight: 1
 ---
-Open questions holds at least one entry in the layout: a numbered heading, then a block quote holding a "**Proposed:**" line and a "**Why:**" line.
+Open questions holds at least one entry in the layout: a numbered heading, then a block quote holding a "**Proposed:**" line and, after a line holding only ">", a "**Why:**" line.
