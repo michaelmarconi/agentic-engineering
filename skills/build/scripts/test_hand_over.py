@@ -158,6 +158,14 @@ class Built(Repo):
         self.assertIn("status: 🟢 Ready to build\n", self.read(PLAN))
         self.assertIn("🟢 Ready to build", out)
 
+    def test_draft_plan_without_passing_reviews_says_it_is_not_ready(self):
+        self.put(PLAN, plan("📝 Draft"))
+        code, out = self.run_it()
+        self.assertEqual(code, 0)
+        self.assertIn("status: 📝 Draft\n", self.read(PLAN))
+        self.assertIn("stays `📝 Draft`, because it is not `🟢 Ready to build`", out)
+        self.assertNotIn("reviews have not all passed", out)
+
     def test_only_a_ready_plan_is_marked_built(self):
         self.put(PLAN, plan("📝 Draft"))
         code, out = self.run_it("--reviews-passed")

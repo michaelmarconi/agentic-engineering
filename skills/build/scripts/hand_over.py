@@ -158,7 +158,12 @@ def hand_over(repo, plan, message, reviews_passed):
             lines.append(f"Plan: {plan} is `{status}`, not `{READY}`, so it was not marked `{BUILT}`.")
             code = 1
     else:
-        reason = "the reviews have not all passed" if not reviews_passed else "a commit failed"
+        if reviews_passed:
+            reason = "a commit failed"
+        elif match and not is_ready(status):
+            reason = f"it is not `{READY}`"
+        else:
+            reason = "the reviews have not all passed"
         lines.append(f"Plan: {plan} stays `{status}`, because {reason}.")
 
     result = git(repo, "push", "-q", "-u", "origin", branch)
