@@ -43,6 +43,12 @@ Test, importing the sample statement `samples/statement.csv`.
 
 ## Open questions
 
-- Can the system read the statement file as the bank sends it, without anyone converting it
-  first? A real statement, with the account number removed, is in `samples/statement.csv`.
-  Proposed: find out by trying the importer on that sample.
+### 1. Whether the statement file can be read as the bank sends it
+
+Nobody knows yet whether the system can read the statement file as the bank sends it, without
+anyone converting it first. A real statement, with the account number removed, is in
+`samples/statement.csv`.
+
+> **Proposed:** Find out by trying the importer on that sample.
+>
+> **Why:** Only a run on a real file can settle it.

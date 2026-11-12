@@ -39,6 +39,27 @@ YYYY-MM-DD; a plugin hook refuses a status change that does not set it to that d
   first run. Once `🟢 Ready to run`, its design is fixed, and only the run script adds runs. A
   finished spike record is never changed again, and may be deleted whenever nobody needs it.
 
+Every document has an Open questions section, holding what only you can settle, or "None." when
+nothing is open. Each open question is laid out the same way, so you can find the proposal at a
+glance: a numbered heading saying what is to be settled, the context it needs, then a quote holding
+the proposed answer and the reason for it. A question with two answers is two questions. A plugin
+hook refuses Open questions laid out any other way. A document written before this layout keeps
+it until its Open questions next change.
+
+```markdown
+### 1. Where the daily tariff copy is kept
+
+The tariff is copied every day, but where it is kept is not yet chosen.
+
+> **Proposed:** Object storage, one file per day.
+>
+> **Why:** The copy is read whole once a day and never searched.
+```
+
+When a skill asks you to settle a question during the session, it uses the same parts: a bold line
+naming the question and its place in the count, such as "**Question 1 of 3: where the tariff copy is
+kept**", then the context, the quote, and the question itself last.
+
 ## Steps
 
 Each step has a skill: instructions Claude follows for that step, which you run as a slash

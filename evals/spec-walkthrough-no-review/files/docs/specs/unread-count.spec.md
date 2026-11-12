@@ -104,7 +104,26 @@ reloading, and checks the bell shows 1 and then no number.
 
 ## Open questions
 
-- Should the number on the bell icon stop at a maximum, such as 99+? Proposed: yes, 99+.
-- Should a notification the person has deleted still count as unopened? Proposed: no.
-- Should a notification stop counting as unopened after some time, and if so, after how long?
-  Proposed: no, it counts until it is opened.
+### 1. A maximum on the bell icon's number
+
+The number on the bell icon could stop at a maximum, such as 99+.
+
+> **Proposed:** Yes, 99+.
+>
+> **Why:** A longer number would not fit the icon.
+
+### 2. Deleted notifications
+
+A notification the person has deleted could still count as unopened.
+
+> **Proposed:** No.
+>
+> **Why:** A deleted notification can no longer be opened.
+
+### 3. Whether unopened notifications expire
+
+A notification could stop counting as unopened after some time.
+
+> **Proposed:** No, it counts until it is opened.
+>
+> **Why:** An expiry would hide notifications the person never saw.

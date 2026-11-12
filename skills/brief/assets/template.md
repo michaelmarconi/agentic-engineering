@@ -28,4 +28,10 @@ type: Brief
 
 ## Open questions
 
-- <A question still to answer, ending "Proposed:" and the answer the person's own words point to (or, if nothing does, what would settle it), or "None.">
+### 1. <What is still to settle; or "None." in place of every entry when nothing is open>
+
+<The context the question needs.>
+
+> **Proposed:** <The answer the person's own words point to, or, if nothing does, what would settle it>
+>
+> **Why:** <The reason, briefly.>

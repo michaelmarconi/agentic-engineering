@@ -107,9 +107,10 @@ Run `/adr` and say what you want: record a decision, accept or reject one, or re
 - **Drafts from the conversation.** If you have already talked the decision through, `/adr`
   drafts from that, and where you changed your mind, the latest word wins. It writes what is
   missing, such as an option nobody named or why one was rejected, into the ADR's Open questions,
-  tells you how many there are and asks them one at a time. Each ends with "Proposed:" and the
-  answer `/adr` would choose, such as the option it recommends, or, where only you can know, what
-  would settle it. Your answer goes into the ADR and the question is removed.
+  tells you how many there are and asks them one at a time. Each sets its proposal apart in a
+  quote, as [the lifecycle page](../lifecycle.md#documents) shows: the answer `/adr` would choose,
+  such as the option it recommends, or, where only you can know, what would settle it, with the
+  reason beside it. Your answer goes into the ADR and the question is removed.
 - **Spikes before untested assumptions.** If the choice depends on something nobody has tried,
   such as how an outside service behaves, `/adr` puts that first in Open questions, ahead of the
   choice, and proposes a [spike](spike.md) to test it, rather than leaving it to be found out

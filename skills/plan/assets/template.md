@@ -44,6 +44,8 @@ date: <YYYY-MM-DD>
 
 ## Open questions
 
-<!-- Each question ends "Proposed:" and the answer you would choose (or, if only the person
-     can know, what would settle it). "None." before `🟢 Ready to build`. -->
-- None.
+<!-- Each question is a heading `### 1. <what is to be settled>`, numbered in order; the context
+     it needs; then a block quote, last, holding `> **Proposed:** <the answer you would choose, or,
+     if only the person can know, what would settle it>` and `> **Why:** <the reason>`.
+     "None." before `🟢 Ready to build`. -->
+None.

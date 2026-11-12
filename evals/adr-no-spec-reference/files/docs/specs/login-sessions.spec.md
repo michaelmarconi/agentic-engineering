@@ -40,4 +40,10 @@ Test that ages a session to 29 days and checks it still works.
 
 ## Open questions
 
-- Which store will hold sessions so every server can read them? Proposed: settle it in an ADR.
+### 1. Where sessions are stored
+
+Every server must be able to read the same sessions.
+
+> **Proposed:** Settle it in an ADR.
+>
+> **Why:** Choosing a store is a technical decision, not a behaviour.

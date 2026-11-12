@@ -1577,6 +1577,220 @@ class DateField(Workspace):
         self.assertIsNone(self.write(BRIEF))
 
 
+ENTRY = (
+    "### 1. Where the daily tariff copy is kept\n\n"
+    "The tariff is copied daily, but where is not yet chosen.\n\n"
+    "> **Proposed:** Object storage, one file per day.\n"
+    ">\n"
+    "> **Why:** The copy is read whole once a day and never queried.\n"
+)
+SECOND = (
+    "### 2. Who may read the copy\n\n"
+    "Nobody has said who reads it.\n\n"
+    "> **Proposed:** Ask the finance team who needs it.\n"
+    "> **Why:** Only they know.\n"
+)
+OLD_ENTRY = "- Where is the copy kept? Proposed: object storage, since it is read whole."
+
+
+def layout(questions):
+    """What status_check.open_questions_problem() says of a spec holding these open questions."""
+    return status_check.open_questions_problem(spec(questions=questions))
+
+
+class OpenQuestionsShape(unittest.TestCase):
+    """Each open question is a numbered heading, its context, then a block quote holding one
+    Proposed: line and, after it, one Why: line; "None." means nothing is open (ADR 0030)."""
+
+    def test_none_forms_pass(self):
+        for body in ["None.", "- None.", "None", "_None._", "<!-- Each question ... -->\n- None."]:
+            self.assertIsNone(layout(body), body)
+
+    def test_entries_in_the_layout_pass(self):
+        self.assertIsNone(layout(ENTRY))
+        self.assertIsNone(layout(ENTRY + "\n" + SECOND))
+
+    def test_quote_without_blank_line_between_proposed_and_why_passes(self):
+        self.assertIsNone(layout(SECOND.replace("### 2.", "### 1.")))
+
+    def test_comment_in_the_section_ignored(self):
+        self.assertIsNone(layout("<!-- One entry per question. -->\n" + ENTRY))
+
+    def test_footnotes_after_the_entries_ignored(self):
+        self.assertIsNone(status_check.open_questions_problem(spec(questions=ENTRY) + "\n[^1]: A source\n    wrapped.\n"))
+
+    def test_no_section_is_not_this_check(self):
+        self.assertIsNone(status_check.open_questions_problem(spec().split("\n## Open questions")[0]))
+
+    def test_old_bullet_layout_refused(self):
+        problem = layout(OLD_ENTRY)
+        self.assertIn("heading", problem)
+        self.assertIn("### 1.", problem)
+
+    def test_text_before_the_first_heading_refused(self):
+        self.assertIn("heading", layout("Some notes.\n\n" + ENTRY))
+
+    def test_none_beside_entries_refused(self):
+        self.assertIn("heading", layout("None.\n\n" + ENTRY))
+
+    def test_heading_without_a_number_refused(self):
+        self.assertIn("### 1.", layout(ENTRY.replace("### 1. ", "### ")))
+
+    def test_numbers_out_of_order_refused(self):
+        self.assertIn("number 2", layout(ENTRY + "\n" + SECOND.replace("### 2.", "### 3.")))
+        self.assertIn("number 1", layout(ENTRY.replace("### 1.", "### 2.")))
+
+    def test_heading_with_no_title_refused(self):
+        self.assertIn("title", layout(ENTRY.replace("### 1. Where the daily tariff copy is kept", "### 1.")))
+
+    def test_entry_without_context_refused(self):
+        self.assertIn("context", layout(ENTRY.replace("The tariff is copied daily, but where is not yet chosen.\n\n", "")))
+
+    def test_entry_without_a_quote_refused(self):
+        bare = ENTRY.replace("> ", "").replace(">\n", "\n")
+        self.assertIn("block quote", layout(bare))
+
+    def test_two_quotes_refused(self):
+        self.assertIn("one block quote", layout(ENTRY.replace(">\n> **Why:**", "\n> **Why:**")))
+
+    def test_text_after_the_quote_refused(self):
+        self.assertIn("last", layout(ENTRY + "\nMore thoughts.\n"))
+
+    def test_missing_proposed_refused(self):
+        self.assertIn("Proposed:", layout(ENTRY.replace("**Proposed:**", "Maybe:")))
+
+    def test_missing_why_refused(self):
+        self.assertIn("Why:", layout(ENTRY.replace("**Why:**", "Because")))
+
+    def test_why_before_proposed_refused(self):
+        swapped = (
+            "### 1. Where the copy is kept\n\nNot chosen.\n\n"
+            "> **Why:** It is read whole.\n>\n> **Proposed:** Object storage.\n"
+        )
+        self.assertIn("after", layout(swapped))
+
+    def test_two_proposals_refused(self):
+        twice = ENTRY.replace("> **Why:**", "> **Proposed:** Also keep a table.\n>\n> **Why:**")
+        self.assertIn("one `> **Proposed:**`", layout(twice))
+
+    def test_two_reasons_refused(self):
+        self.assertIn("one `> **Why:**`", layout(ENTRY + "> **Why:** And it is cheap.\n"))
+
+    def test_refusal_names_the_entry_and_shows_the_layout(self):
+        problem = layout(ENTRY.replace("**Why:**", "Because"))
+        self.assertIn("entry 1", problem)
+        self.assertIn("Where the daily tariff copy is kept", problem)
+        self.assertIn(status_check.OPEN_QUESTIONS_LAYOUT, problem)
+
+    def test_wrapped_proposal_without_its_marker_passes(self):
+        wrapped = ENTRY.replace("> **Proposed:** Object storage, one file per day.\n",
+                                "> **Proposed:** Object storage, one file per day, kept for as long\nas the tariff rules say.\n")
+        self.assertIsNone(layout(wrapped))
+
+    def test_list_item_straight_after_the_quote_refused(self):
+        self.assertIn("last", layout(ENTRY + "- Should tabs count? Proposed: yes.\n"))
+
+    def test_rule_straight_after_the_quote_passes(self):
+        self.assertIsNone(layout(ENTRY + "---\n"))
+
+    def test_quote_like_line_in_a_code_block_is_context(self):
+        fenced = ENTRY.replace("The tariff is copied daily, but where is not yet chosen.",
+                               "The import prints:\n\n```\n> done\n```")
+        self.assertIsNone(layout(fenced))
+
+    def test_quote_in_the_context_passes_when_the_proposal_quote_is_last(self):
+        quoted = ENTRY.replace("The tariff is copied daily, but where is not yet chosen.",
+                               "> Keep a copy every day.\n\nThe owner asked for this, but not where.")
+        self.assertIsNone(layout(quoted))
+
+    def test_proposed_in_an_earlier_quote_refused(self):
+        early = ENTRY.replace("The tariff is copied daily, but where is not yet chosen.",
+                              "> **Proposed:** A table.\n\nNot chosen.")
+        self.assertIn("Proposed:", layout(early))
+
+    def test_rule_after_the_last_entry_passes(self):
+        self.assertIsNone(layout(ENTRY + "\n---\n"))
+
+    def test_heading_indented_up_to_three_spaces_passes(self):
+        self.assertIsNone(layout(" " + ENTRY))
+
+    def test_heading_inside_a_code_block_is_text(self):
+        fenced = ENTRY.replace("The tariff is copied daily, but where is not yet chosen.",
+                               "The tariff is copied daily:\n\n```\n### 2. not a heading\n```")
+        self.assertIsNone(layout(fenced))
+
+
+class OpenQuestionsLayout(Workspace):
+    """The hook refuses an Open questions section that is new or changed and not in the layout;
+    a document written before it may be edited elsewhere (ADR 0030)."""
+
+    KINDS = {
+        "spec": (("docs", "specs", "thing.spec.md"), spec),
+        "ADR": (("docs", "adrs", "0001-session-data-storage.md"), adr),
+        "plan": (("docs", "plans", "2026-10-29-thing-release.md"), lambda **kw: plan(specs="None.", **kw)),
+        "spike record": (("docs", "spikes", "2026-11-04-tiff-files-open.md"), record),
+        "brief": (("docs", "brief.md"),
+                  lambda questions="None.": BRIEF + f"\n## Open questions\n\n{questions}\n"),
+    }
+
+    def at(self, kind):
+        parts, make = self.KINDS[kind]
+        self.path = os.path.join(self.tmp.name, *parts)
+        return make
+
+    def test_new_document_in_the_layout_allowed(self):
+        for kind in self.KINDS:
+            make = self.at(kind)
+            self.assertIsNone(self.write(make(questions=ENTRY)), kind)
+
+    def test_new_document_in_the_old_layout_refused(self):
+        for kind in self.KINDS:
+            make = self.at(kind)
+            reason = self.write(make(questions=OLD_ENTRY))
+            self.assertIsNotNone(reason, kind)
+            self.assertIn("Open questions", reason, kind)
+
+    def test_old_layout_document_edited_elsewhere_allowed(self):
+        for kind in self.KINDS:
+            make = self.at(kind)
+            self.put(make(questions=OLD_ENTRY))
+            text = make(questions=OLD_ENTRY)
+            edited = text.replace("\n# ", "\n# Renamed ", 1)
+            self.assertIsNone(self.write(edited), kind)
+
+    def test_old_layout_document_whose_questions_change_refused(self):
+        for kind in self.KINDS:
+            make = self.at(kind)
+            self.put(make(questions=OLD_ENTRY))
+            self.assertIn("heading", self.edit("object storage", "a database"), kind)
+
+    def test_old_layout_relaid_allowed(self):
+        for kind in self.KINDS:
+            make = self.at(kind)
+            self.put(make(questions=OLD_ENTRY))
+            self.assertIsNone(self.edit(OLD_ENTRY, ENTRY), kind)
+
+    def test_answering_the_last_question_allowed(self):
+        for kind in self.KINDS:
+            make = self.at(kind)
+            self.put(make(questions=ENTRY))
+            self.assertIsNone(self.edit(ENTRY, "None.\n"), kind)
+
+    def test_old_layout_document_gaining_a_footnote_allowed(self):
+        self.at("spec")
+        self.put(spec(questions=OLD_ENTRY))
+        self.assertIsNone(self.write(spec(questions=OLD_ENTRY) + "\n[^u]: A term used above.\n"))
+
+    def test_old_layout_document_changing_only_space_or_comments_allowed(self):
+        self.at("spec")
+        self.put(spec(questions=OLD_ENTRY))
+        self.assertIsNone(self.edit(OLD_ENTRY, "<!-- note -->\n" + OLD_ENTRY + "\n"))
+
+    def test_file_without_a_lifecycle_status_left_alone(self):
+        self.path = os.path.join(self.tmp.name, "docs", "specs", "notes.spec.md")
+        self.assertIsNone(self.write("# Notes\n\n## Open questions\n\n- Anything?\n"))
+
+
 class Command(Workspace):
     def run_hook(self, payload):
         return subprocess.run(

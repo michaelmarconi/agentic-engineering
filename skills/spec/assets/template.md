@@ -41,4 +41,10 @@ When <situation>, <who> wants to <do something>, so they can <outcome>.
 
 ## Open questions
 
-- <A question still to answer, ending "Proposed:" and the answer you would choose (or, if only the person can know, what would settle it), or "None.">
+### 1. <What is still to settle; or "None." in place of every entry when nothing is open>
+
+<The context the question needs.>
+
+> **Proposed:** <The answer you would choose, or, if only the person can know, what would settle it>
+>
+> **Why:** <The reason, briefly.>

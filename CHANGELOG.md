@@ -6,6 +6,33 @@ What changed in each version of the plugin, newest first. Versions follow
 past a major version: it says what you need to change in your documents. Until 1.0.0, any
 minor version may need such a change, and its entry says so.
 
+## [0.44.0] - 2026-11-11
+
+### Changed
+
+- Every open question in a brief, spec, ADR, plan or spike record is now a numbered heading,
+  `### 1. <what is to be settled>`, then the context it needs, then a block quote holding one
+  `> **Proposed:**` line with the answer and one `> **Why:**` line with the reason, so the
+  proposal is easy to spot. Each question holds one proposal: a question with two answers becomes
+  two questions. ADR 0030 records the choice.
+- The status hook refuses an edit that adds or changes Open questions in any other layout, naming
+  the entry and what is wrong. An edit that leaves Open questions as they were is allowed, so older
+  documents can still be edited.
+- When a skill asks you to settle a question in the conversation, it shows a bold line such as
+  "**Question 1 of 3: …**", the context, the same Proposed and Why quote, and the question itself
+  last. This covers `/brief`, `/spec`, `/adr`, `/plan`, `/spike` and `/practices`.
+
+### Added
+
+- `/audit`'s document check lists each document whose Open questions are not in the new layout,
+  leaving out documents that are never edited again, such as an accepted ADR or a built plan.
+
+### What you need to change
+
+- Nothing at once. A document written before this keeps its old Open questions until they next
+  change; the change then has to bring the whole section into the new layout. Run `/audit` for the
+  list of documents to bring over.
+
 ## [0.43.1] - 2026-11-11
 
 ### Fixed

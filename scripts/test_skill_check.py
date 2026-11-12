@@ -8,7 +8,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 SCRIPT = os.path.join(HERE, "skill_check.py")
 ROOT = os.path.join(HERE, "..")
 sys.path.insert(0, HERE)
-from skill_check import (AGENT_RULE, CORRECT_RULES, DOCUMENT_SKILLS, PATH_RULE, PROPOSED_RULE,  # noqa: E402
+from skill_check import (AGENT_RULE, ASK_RULE, ASK_SKILLS, CORRECT_RULES, DOCUMENT_SKILLS, PATH_RULE, PROPOSED_RULE,  # noqa: E402
                          QUESTIONS_RULE, REPORT_RULES, REVIEW_RULE, SHOW_RULE,
                          SIGNOFF_RULE, STATUS_SKILLS, TYPE_RULE, DATE_RULE, DIAGRAM_SKILLS,
                          diagram_rules, holds)
@@ -181,7 +181,7 @@ class SkillCheck(unittest.TestCase):
         self.assertFails("spec/SKILL.md: type rule missing")
 
     def test_document_skill_with_type_rule_passes(self):
-        body = f"# Spec\n\n{TYPE_RULE}\n\n{PROPOSED_RULE}\n\n{SIGNOFF_RULE}\n\n{DATE_RULE}\n"
+        body = f"# Spec\n\n{TYPE_RULE}\n\n{PROPOSED_RULE}\n\n{ASK_RULE}\n\n{SIGNOFF_RULE}\n\n{DATE_RULE}\n"
         self.put("spec", skill_md(name="spec", body=body))
         done = self.check()
         self.assertEqual((done.returncode, done.stdout), (0, ""))
@@ -193,8 +193,9 @@ class SkillCheck(unittest.TestCase):
         self.assertFails("plan/SKILL.md: type rule missing")
 
     def test_other_skills_need_no_type_rule(self):
-        for name in ("practices", "feedback", "audit", "build"):
+        for name in ("feedback", "audit", "build"):
             self.put(name, skill_md(name=name))
+        self.put("practices", skill_md(name="practices", body=f"# Practices\n\n{ASK_RULE}\n"))
         done = self.check()
         self.assertEqual((done.returncode, done.stdout), (0, ""))
 
@@ -225,35 +226,54 @@ class SkillCheck(unittest.TestCase):
         self.put("brief", skill_md(name="brief", body=f"# Brief\n\n{TYPE_RULE}\n"))
         self.assertFails("brief/SKILL.md: proposed rule missing")
 
+    def test_proposed_rule_gives_the_layout_the_hook_checks(self):
+        for part in ("`### 1.", "`> **Proposed:**`", "`> **Why:**`", "two questions"):
+            self.assertIn(part, PROPOSED_RULE)
+
+    def test_asking_skill_without_ask_rule_fails(self):
+        self.put("practices", skill_md(name="practices"))
+        self.assertFails("practices/SKILL.md: ask rule missing")
+        self.put("brief", skill_md(name="brief", body=f"# Brief\n\n{TYPE_RULE}\n\n{PROPOSED_RULE}\n"))
+        self.assertFails("brief/SKILL.md: ask rule missing")
+
+    def test_reworded_ask_rule_fails(self):
+        rule = ASK_RULE.replace("last", "first")
+        self.assertNotEqual(rule, ASK_RULE)
+        self.put("practices", skill_md(name="practices", body=f"# Practices\n\n{rule}\n"))
+        self.assertFails("practices/SKILL.md: ask rule missing")
+
+    def test_the_asking_skills_are_the_document_skills_and_practices(self):
+        self.assertEqual(sorted(ASK_SKILLS), ["adr", "brief", "plan", "practices", "spec", "spike"])
+
     def test_status_skill_without_signoff_rule_fails(self):
-        self.put("adr", skill_md(name="adr", body=f"# ADR\n\n{TYPE_RULE}\n\n{PROPOSED_RULE}\n"))
+        self.put("adr", skill_md(name="adr", body=f"# ADR\n\n{TYPE_RULE}\n\n{PROPOSED_RULE}\n\n{ASK_RULE}\n"))
         self.assertFails("adr/SKILL.md: sign-off rule missing")
 
     def test_brief_has_no_status_so_needs_no_signoff_rule(self):
-        self.put("brief", skill_md(name="brief", body=f"# Brief\n\n{TYPE_RULE}\n\n{PROPOSED_RULE}\n"))
+        self.put("brief", skill_md(name="brief", body=f"# Brief\n\n{TYPE_RULE}\n\n{PROPOSED_RULE}\n\n{ASK_RULE}\n"))
         done = self.check()
         self.assertEqual((done.returncode, done.stdout), (0, ""))
 
     def test_reworded_signoff_rule_fails(self):
         rule = SIGNOFF_RULE.replace("does not count", "counts")
         self.assertNotEqual(rule, SIGNOFF_RULE)
-        self.put("plan", skill_md(name="plan", body=f"# Plan\n\n{TYPE_RULE}\n\n{PROPOSED_RULE}\n\n{rule}\n"))
+        self.put("plan", skill_md(name="plan", body=f"# Plan\n\n{TYPE_RULE}\n\n{PROPOSED_RULE}\n\n{ASK_RULE}\n\n{rule}\n"))
         self.assertFails("plan/SKILL.md: sign-off rule missing")
 
     def test_status_skill_without_date_rule_fails(self):
-        body = f"# ADR\n\n{TYPE_RULE}\n\n{PROPOSED_RULE}\n\n{SIGNOFF_RULE}\n"
+        body = f"# ADR\n\n{TYPE_RULE}\n\n{PROPOSED_RULE}\n\n{ASK_RULE}\n\n{SIGNOFF_RULE}\n"
         self.put("adr", skill_md(name="adr", body=body))
         self.assertFails("adr/SKILL.md: date rule missing")
 
     def test_reworded_date_rule_fails(self):
         rule = DATE_RULE.replace("never", "seldom")
         self.assertNotEqual(rule, DATE_RULE)
-        body = f"# Spike\n\n{TYPE_RULE}\n\n{PROPOSED_RULE}\n\n{SIGNOFF_RULE}\n\n{rule}\n"
+        body = f"# Spike\n\n{TYPE_RULE}\n\n{PROPOSED_RULE}\n\n{ASK_RULE}\n\n{SIGNOFF_RULE}\n\n{rule}\n"
         self.put("spike", skill_md(name="spike", body=body))
         self.assertFails("spike/SKILL.md: date rule missing")
 
     def test_brief_needs_no_date_rule(self):
-        self.put("brief", skill_md(name="brief", body=f"# Brief\n\n{TYPE_RULE}\n\n{PROPOSED_RULE}\n"))
+        self.put("brief", skill_md(name="brief", body=f"# Brief\n\n{TYPE_RULE}\n\n{PROPOSED_RULE}\n\n{ASK_RULE}\n"))
         done = self.check()
         self.assertEqual((done.returncode, done.stdout), (0, ""))
 
@@ -263,7 +283,7 @@ class SkillCheck(unittest.TestCase):
     # Every skill that offers diagrams offers them the same way
 
     def adr_body(self, rules):
-        return "# ADR\n\n" + "\n\n".join([TYPE_RULE, PROPOSED_RULE, SIGNOFF_RULE, DATE_RULE, *rules]) + "\n"
+        return "# ADR\n\n" + "\n\n".join([TYPE_RULE, PROPOSED_RULE, ASK_RULE, SIGNOFF_RULE, DATE_RULE, *rules]) + "\n"
 
     def test_diagram_skill_with_every_diagram_rule_passes(self):
         self.put("adr", skill_md(name="adr", body=self.adr_body(diagram_rules("ADR"))))
@@ -285,7 +305,7 @@ class SkillCheck(unittest.TestCase):
                       " ".join(diagram_rules("ADR")))
 
     def test_skills_that_offer_no_diagrams_need_no_diagram_rules(self):
-        self.put("brief", skill_md(name="brief", body=f"# Brief\n\n{TYPE_RULE}\n\n{PROPOSED_RULE}\n"))
+        self.put("brief", skill_md(name="brief", body=f"# Brief\n\n{TYPE_RULE}\n\n{PROPOSED_RULE}\n\n{ASK_RULE}\n"))
         done = self.check()
         self.assertEqual((done.returncode, done.stdout), (0, ""))
 

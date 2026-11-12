@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: spec-two-answers-split
+expected_outcome: |
+  The person leaves two separate things open in one sentence: when the reminder is sent and whether patients can turn reminders off. The skill writes them as two open questions, each with one proposal, never one question proposing both.

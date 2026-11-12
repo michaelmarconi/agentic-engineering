@@ -155,8 +155,8 @@ mode?](#why-not-claude-codes-plan-mode)):
    with a reasonable alternative that the specs, the ADRs and the existing code don't already
    settle. Following a pattern the code already uses is not a decision.
 3. **Ask.** It tells you how many decisions there are and asks them one at a time, then waits
-   for your answer. Each question proposes an answer and where it belongs, with a reason for
-   both. A decision stays in the plan only if nobody needs its reason once the work is built, or
+   for your answer. Each question proposes one answer that also says where it belongs, with
+   the reason, set apart in a quote so you can find it at a glance. A decision stays in the plan only if nobody needs its reason once the work is built, or
    only someone changing that code later, who gets the reason as a comment beside the code.
    Otherwise it goes to an ADR if later work must follow it, to the spec if a user or caller
    relies on it, or to the practices if every piece of work follows it, taking the first of

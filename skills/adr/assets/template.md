@@ -43,7 +43,13 @@ Applies to: <the concern, such as "any code that stores or reads session data">.
 
 ## Open questions
 
-- <What only the person can settle, ending "Proposed:" and the answer you would choose (or, if only the person can know, what would settle it), or "None.">
+### 1. <What only the person can settle; or "None." in place of every entry when nothing is open>
+
+<The context the question needs.>
+
+> **Proposed:** <The answer you would choose, or, if only the person can know, what would settle it>
+>
+> **Why:** <The reason, briefly.>
 
 ## Technical detail
 

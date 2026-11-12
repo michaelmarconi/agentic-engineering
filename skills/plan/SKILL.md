@@ -71,10 +71,15 @@ code already uses is not a decision, and nor is anything a spec, an ADR or a pra
 ## Ask
 
 Tell the person how many decisions there are, naming the count only, not the decisions: each comes
-up when you reach it. Then ask the first only, and wait for the answer. Each question gives your
-proposed answer and where it belongs, with a reason for both. A plan may be deleted once built, so
-a decision belongs in it only if nobody needs its reason once the work is built. Ask of each who
-would need its reason after the build, in this order, taking the first answer that fits:
+up when you reach it. Then ask the first only, and wait for the answer. Each question's proposal is
+one answer that also says where it belongs, such as "Record an ADR choosing the Redis the app
+already uses", and its reason covers both. When you ask the person to settle a question in the
+conversation, lay it out in four parts, so they can find your proposal at a glance: a bold line
+naming it and its place in the count, such as "**Question 1 of 3: how often a failed pull is
+retried**"; the context it needs; a block quote holding a "**Proposed:**" line with your answer and
+a "**Why:**" line with the reason; and the question itself, last, in one line. A plan may be deleted
+once built, so a decision belongs in it only if nobody needs its reason once the work is built. Ask
+of each who would need its reason after the build, in this order, taking the first answer that fits:
 
 - later work, which must follow it: an ADR. Choosing a service, library, protocol, way of storing
   data or test set-up that the rest of the code would then use the same way is an ADR, even if
@@ -110,10 +115,13 @@ file name and the template's comments removed:
 - **Decisions** holds one line for each decision whose reason nobody needs once the work is
   built, or only someone changing that code later: what was decided and why, and for the second
   kind, that `/build` leaves the reason as a comment beside the code.
-- **Open questions** holds whatever only the person can settle. Every open question ends with
-  "Proposed:" and the answer you would choose, so the person can accept it in a word or give
-  another; where only the person can know the answer, "Proposed:" says what would settle it instead,
-  never a guess.
+- **Open questions** holds whatever only the person can settle. Write each open question as a
+  heading, `### 1. <what is to be settled>`, numbered in order, then the context it needs, then a
+  block quote holding a line starting `> **Proposed:**` with the answer you would choose and, after
+  it, a line starting `> **Why:**` with the reason, so the person can find the proposal at a glance
+  and accept it in a word or give another. Each question holds one proposal, so a question with two
+  answers is two questions, and a plugin hook refuses Open questions laid out any other way. Where
+  only the person can know the answer, "Proposed:" says what would settle it instead, never a guess.
 - A decision the person agreed belongs in an ADR goes under **Open questions**, as an ADR to record
   and accept, proposing its decision. You never write the ADR yourself. Once the person tells you it
   is `👍 Accepted`, list it under ADRs and remove the question. A decision that belongs in a spec or

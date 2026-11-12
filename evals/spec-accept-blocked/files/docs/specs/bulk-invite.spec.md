@@ -42,6 +42,18 @@ outgoing invitations.
 
 ## Open questions
 
-- Is there a limit on how many addresses one submission can hold? Proposed: 100.
-- Should invalid addresses block the whole submission or be skipped and reported? Proposed:
-  skipped and reported, so the rest are invited.
+### 1. A limit on addresses per submission
+
+The spec does not say how many addresses one submission can hold.
+
+> **Proposed:** 100.
+>
+> **Why:** It keeps one submission quick to check.
+
+### 2. What invalid addresses do
+
+Invalid addresses could block the whole submission, or be skipped and reported.
+
+> **Proposed:** Skip and report them, so the rest are invited.
+>
+> **Why:** One typo should not stop everyone else's invitation.

@@ -38,6 +38,8 @@ repository. It always checks every document, whatever window the run was given (
   YYYY-MM-DD; one written before dates is listed, so it can be given one by hand;
 - no accepted spec or ADR, no `🟢 Ready to build` plan and no `🟢 Ready to run` spike record has
   open questions;
+- every open question is laid out as [the lifecycle page](../lifecycle.md#documents) shows; one
+  written before that layout is listed, so it can be laid out again;
 - no document links to another, or names its path, where
   [the references rule](../lifecycle.md#principles) does not allow it;
 - each ADR named in a `supersedes:` field names it back in `superseded-by:`, and the other way

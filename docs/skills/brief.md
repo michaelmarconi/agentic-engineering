@@ -61,8 +61,9 @@ Run `/brief` and say what you want: a new brief, or a change to the one you have
   deadline, stays in the brief as a constraint.
 - **One question at a time.** When the brief has open questions, `/brief` tells you how many
   there are and asks them one at a time, playing back what it has understood.[^superpowers] The
-  rest wait in Open questions, each ending with "Proposed:": an answer your own words point to,
-  or, where nothing does, what would settle it. If you would rather not answer now, it leaves them
+  rest wait in Open questions, each with its proposal set apart in a quote, as
+  [the lifecycle page](../lifecycle.md#documents) shows: an answer your own words point to, or,
+  where nothing does, what would settle it. If you would rather not answer now, it leaves them
   there.
 
 ## Review

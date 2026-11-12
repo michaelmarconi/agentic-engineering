@@ -73,8 +73,9 @@ everything else is judgement.
    - A document with a status has an Open questions section, last apart from a spike record's
      Experiment, Code and Runs and an ADR's Technical detail, their technical parts, which follow
      it so the document reads plain first. The skill writes there
-     whatever only the person can settle, each question ending with a proposed answer
-     (`PROPOSED_RULE`), and never moves the document forward while the section holds anything, nor
+     whatever only the person can settle, each question laid out with its proposed answer in a block
+     quote, as [ADR 0030](docs/adrs/0030-open-questions-layout.md) says (`PROPOSED_RULE`; questions
+     asked in the conversation follow `ASK_RULE`), and never moves the document forward while the section holds anything, nor
      without the person's sign-off on the reviewed text (`SIGNOFF_RULE`). The status hook (`scripts/status_check.py`) refuses such a move
      for specs, ADRs, plans and spike records; a new document type with a status adds its rule there.
 5. **Evaluated.** Every skill ships with evals under the plugin's `evals/`, in the case-folder

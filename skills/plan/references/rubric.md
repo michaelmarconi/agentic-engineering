@@ -64,10 +64,13 @@ checking, and quotes the plan as evidence for every failure.
     plan may be, the plan keeps to them, or Decisions has a line saying the work was kept whole
     and why. With no such practice, this passes. Only the person can choose between splitting a
     plan that fails and keeping it whole, so that choice also goes under Needs a person.
-12. **Proposed answers.** Each open question ends with "Proposed:" and the answer the writer
-    would choose, such as the decision an ADR to record should make, so the person can accept it
-    in a word or give another. A question only the person can answer proposes no guess: its
-    "Proposed:" says what would settle it.
+12. **Proposed answers.** Each open question's "**Proposed:**" line makes one proposal, a single
+    decision the person can accept in a word or replace, and its "**Why:**" line gives the reason,
+    which the proposal does not repeat; a second proposal hidden in either line fails, since it
+    belongs in a question of its own. The layout itself, a numbered heading, the context and a block
+    quote holding both lines, is checked by the status hook, not here. The proposal is the answer
+    the writer would choose, such as the decision an ADR to record should make. A question only the
+    person can answer proposes no guess: its "Proposed:" says what would settle it.
 
 13. **Diagrams match the text.** A diagram is a `mermaid` block in the Plan section, after its
     opening paragraph; one anywhere else fails. Every box, arrow and label in it names something the
