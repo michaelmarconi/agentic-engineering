@@ -76,8 +76,9 @@ one answer that also says where it belongs, such as "Record an ADR choosing the 
 already uses", and its reason covers both. When you ask the person to settle a question in the
 conversation, lay it out in four parts, so they can find your proposal at a glance: a bold line
 naming it and its place in the count, such as "**Question 1 of 3: how often a failed pull is
-retried**"; the context it needs; a block quote holding a "**Proposed:**" line with your answer and
-a "**Why:**" line with the reason; and the question itself, last, in one line. A plan may be deleted
+retried**"; the context it needs; a block quote holding a "**Proposed:**" line with your answer, a
+line holding only `>`, and a "**Why:**" line with the reason; and the question itself, last, in one
+line. A plan may be deleted
 once built, so a decision belongs in it only if nobody needs its reason once the work is built. Ask
 of each who would need its reason after the build, in this order, taking the first answer that fits:
 
@@ -117,8 +118,9 @@ file name and the template's comments removed:
   kind, that `/build` leaves the reason as a comment beside the code.
 - **Open questions** holds whatever only the person can settle. Write each open question as a
   heading, `### 1. <what is to be settled>`, numbered in order, then the context it needs, then a
-  block quote holding a line starting `> **Proposed:**` with the answer you would choose and, after
-  it, a line starting `> **Why:**` with the reason, so the person can find the proposal at a glance
+  block quote holding a line starting `> **Proposed:**` with the answer you would choose, then a
+  line holding only `>`, then a line starting `> **Why:**` with the reason, so the person can find
+  the proposal at a glance
   and accept it in a word or give another. Each question holds one proposal, so a question with two
   answers is two questions, and a plugin hook refuses Open questions laid out any other way. Where
   only the person can know the answer, "Proposed:" says what would settle it instead, never a guess.

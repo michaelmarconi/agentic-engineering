@@ -6,6 +6,15 @@ What changed in each version of the plugin, newest first. Versions follow
 past a major version: it says what you need to change in your documents. Until 1.0.0, any
 minor version may need such a change, and its entry says so.
 
+## [0.44.1] - 2026-11-12
+
+### Fixed
+
+- An open question's **Proposed:** and **Why:** lines could show as one line, because without a
+  line holding only `>` between them Markdown joins them into one paragraph. The skills now write
+  that line, the status hook refuses Open questions without it, and `/audit` lists documents that
+  lack it. To correct a document, add a line holding only `>` between the two lines.
+
 ## [0.44.0] - 2026-11-11
 
 ### Changed

@@ -88,7 +88,8 @@ Never fill a gap with a guess. An option nobody named, a reason nobody gave, or 
 made goes into Open questions as a question the person can answer, never as an invented answer.
 Write each open question as a heading, `### 1. <what is to be settled>`, numbered in order, then the
 context it needs, then a block quote holding a line starting `> **Proposed:**` with the answer you
-would choose and, after it, a line starting `> **Why:**` with the reason, so the person can find the
+would choose, then a line holding only `>`, then a line starting `> **Why:**` with the reason, so
+the person can find the
 proposal at a glance and accept it in a word or give another. Each question holds one proposal, so a
 question with two answers is two questions, and a plugin hook refuses Open questions laid out any
 other way. Where only the person can know the answer, "Proposed:" says what would settle it instead,
@@ -101,7 +102,8 @@ first is settled, playing back what you have understood. When you ask the person
 question in the conversation, lay it out in four parts, so they can find your proposal at a glance:
 a bold line naming it and its place in the count, such as "**Question 1 of 3: how often a failed
 pull is retried**"; the context it needs; a block quote holding a "**Proposed:**" line with your
-answer and a "**Why:**" line with the reason; and the question itself, last, in one line. If they
+answer, a line holding only `>`, and a "**Why:**" line with the reason; and the question itself,
+last, in one line. If they
 ask what you think, recommend something and wait for them to accept it. If they would rather not
 answer now, leave the rest in Open questions.
 
