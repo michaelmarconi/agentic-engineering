@@ -1206,9 +1206,17 @@ class Spike(SpikeWorkspace):
         self.assertIn("400", refusal)
         self.assertNotIn("design", refusal)
 
-    def test_ready_to_run_counts_only_the_design(self):
+    def test_ready_to_run_counts_the_verdict_too(self):
         self.put(record(answer=" ".join(["word"] * 450)))
-        self.assertIsNone(self.move("📝 Draft", "🟢 Ready to run"))
+        self.assertIn("verdict", self.move("📝 Draft", "🟢 Ready to run"))
+
+    def test_a_ready_record_that_has_not_run_is_told_to_return_to_draft(self):
+        self.put(record("🟢 Ready to run", steps=" ".join(["word"] * 600), answer="Not settled: no run."))
+        self.assertIn("📝 Draft", self.move("🟢 Ready to run", "❔ Not settled"))
+
+    def test_spike_words_takes_the_first_heading_of_a_name_as_section_does(self):
+        text = record(answer="one two").replace("## Open questions", "## Results\n\nthree four\n\n## Open questions")
+        self.assertEqual(status_check.spike_words(text)[1], 5 + 2)
 
     def test_spike_words_splits_design_and_verdict(self):
         text = record(hypothesis="one two", answer="three four five", answer_if="six",

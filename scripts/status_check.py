@@ -78,8 +78,8 @@ For a spike record it refuses:
 - any move but `📝 Draft` to `🟢 Ready to run`, `🟢 Ready to run` back to `📝 Draft` while Runs is
   empty, and `🟢 Ready to run` to `💡 Confirmed`, `🚫 Refuted` or `❔ Not settled`;
 - a move forward in the same edit as any other change, while the Open questions section is
-  missing or not empty or "None.", or while the record's design holds more than 600 words; a
-  finishing status while its verdict holds more than 400. The verdict is the Finding, Next steps,
+  missing or not empty or "None.", or while the record's design holds more than 600 words or its
+  verdict more than 400. The verdict is the Finding, Next steps,
   Results and Surprises sections, written after the runs; the design is the rest of the plain part,
   everything between the frontmatter and `## Experiment`. Neither counts HTML comments, and words
   are runs of non-space characters holding a letter or digit, so a table's bars and rules don't
@@ -1208,8 +1208,9 @@ def spike_words(text):
     starts = {"## " + name.lower() for name in VERDICT_PARTS}
     design, verdict, in_verdict = [], [], False
     for i, line in enumerate(lines):
-        # Sections start and end as section() finds them.
+        # Sections start and end as section() finds them: at the first heading of that name.
         if allowed[i] and line.strip().lower() in starts:
+            starts.discard(line.strip().lower())
             in_verdict = True
         elif allowed[i] and (line.startswith("# ") or line.startswith("## ")):
             in_verdict = False
@@ -1258,25 +1259,46 @@ def ran(text):
     return False
 
 
-def spike_size_refusal(name, text, new):
-    """Why a spike record's plain part is too long to move to `new`, or None. The design is checked
-    at every move forward; the verdict, written after the runs, only at a finishing status."""
+def joined(names, last):
+    """The names as an English list, such as "a, b and c" with last "and"."""
+    return ", ".join(names[:-1]) + f" {last} " + names[-1] if len(names) > 1 else names[0]
+
+
+def spike_size_problems(text, status):
+    """What is too long in a spike record's plain part, as full sentences, each with what to shorten:
+    the design over DESIGN_LIMIT words or the verdict over VERDICT_LIMIT. `status` is the record's
+    status before any move, which decides what can still be shortened."""
     design, verdict = spike_words(text)
+    problems = []
     if design > DESIGN_LIMIT:
-        shorten = ("Its other sections are fixed now, so shorten its title"
-                   if new in FINISHED else "Shorten it, moving detail down into Experiment")
-        return (
-            f"{name}: its design, the plain part above Experiment apart from Finding, Next steps, Results "
-            f"and Surprises, holds {design} words, more than the {DESIGN_LIMIT} a person is asked to read, "
-            f"so it cannot be `{new}`. {shorten}, and have it reviewed again."
+        if status == DRAFT:
+            shorten = "Shorten it, moving detail down into Experiment."
+        elif not runs(text):
+            shorten = f"Its design is fixed, so return it to `{DRAFT}` to shorten it."
+        else:
+            shorten = ("It has run, so its design is fixed: shorten its title or any text outside "
+                       "the fixed sections.")
+        problems.append(
+            f"its design, the plain part above Experiment apart from {joined(VERDICT_PARTS, 'and')}, holds "
+            f"{design} words, {design - DESIGN_LIMIT} more than the {DESIGN_LIMIT} allowed. {shorten}"
         )
-    if new in FINISHED and verdict > VERDICT_LIMIT:
-        return (
-            f"{name}: its verdict, the Finding, Next steps, Results and Surprises sections, holds {verdict} "
-            f"words, more than the {VERDICT_LIMIT} a person is asked to read, so it cannot be `{new}`. "
-            "Shorten its Finding, Next steps, Results or Surprises, and have it reviewed again."
+    if verdict > VERDICT_LIMIT:
+        problems.append(
+            f"its verdict, the {joined(VERDICT_PARTS, 'and')} sections, holds {verdict} words, "
+            f"{verdict - VERDICT_LIMIT} more than the {VERDICT_LIMIT} allowed. Shorten its "
+            f"{joined(VERDICT_PARTS, 'or')}."
         )
-    return None
+    return problems
+
+
+def spike_size_refusal(name, text, old, new):
+    """Why a spike record's plain part is too long to move from `old` to `new`, or None. Both parts
+    are checked at every move forward, so a person never signs off more than they are asked to read."""
+    problems = spike_size_problems(text, old)
+    if not problems:
+        return None
+    return (f"{name}: it cannot be `{new}`, since a person is asked to read no more: "
+            + " Also, ".join(problems) + " Then have it reviewed again.")
 
 
 def spike_rules(path, before, after, old, new):
@@ -1319,7 +1341,7 @@ def spike_rules(path, before, after, old, new):
             )
         if has_open_questions(after):
             return open_questions_refusal(name, after, new, "spike record")
-        refusal = spike_size_refusal(name, after, new)
+        refusal = spike_size_refusal(name, after, old, new)
         if refusal:
             return refusal
         if new in (CONFIRMED, REFUTED) and not ran(after):

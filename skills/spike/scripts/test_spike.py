@@ -107,18 +107,35 @@ class Words(Project):
         self.assertIn("Finding, Next steps, Results or Surprises", done.stdout)
         self.assertNotIn("into Experiment", done.stdout)
 
-    def test_a_long_verdict_in_a_draft_is_not_counted_against_it(self):
+    def test_a_long_verdict_in_a_draft_fails(self):
         long = "## Finding\n\nConfirmed: " + " ".join(["word"] * 420)
         self.put(record("📝 Draft").replace("## Finding\n", long, 1))
         done = self.words(self.path())
-        self.assertEqual(done.returncode, 0, done.stdout)
+        self.assertEqual(done.returncode, 1, done.stdout)
+        self.assertIn("verdict", done.stdout)
 
-    def test_a_ready_record_is_never_told_to_return_to_draft(self):
+    def test_a_ready_record_that_has_not_run_is_told_to_return_to_draft(self):
         self.put(record().replace("Prints things.", " ".join(["word"] * 650), 1))
+        done = self.words(self.path())
+        self.assertEqual(done.returncode, 1)
+        self.assertIn("Draft", done.stdout)
+
+    def test_a_record_that_has_run_is_never_told_to_return_to_draft(self):
+        run = "### Run 1\n\n2026-11-04 15:02, Linux, a cloud session, code `a91c03e7b2d4`\n\n```\nok\n```\n"
+        self.put(record(runs=run).replace("Prints things.", " ".join(["word"] * 650), 1))
         done = self.words(self.path())
         self.assertEqual(done.returncode, 1)
         self.assertIn("title", done.stdout)
         self.assertNotIn("Draft", done.stdout)
+
+    def test_every_line_names_the_record(self):
+        long = "## Finding\n\nConfirmed: " + " ".join(["word"] * 420)
+        self.put(record().replace("Prints things.", " ".join(["word"] * 650), 1).replace("## Finding\n", long, 1))
+        done = self.words(self.path())
+        lines = done.stdout.strip().splitlines()
+        self.assertEqual(len(lines), 3)
+        for line in lines:
+            self.assertTrue(line.startswith(os.path.basename(self.path()) + ": "), line)
 
     def test_a_finished_record_is_never_told_to_shorten(self):
         long = "## Finding\n\nConfirmed: " + " ".join(["word"] * 420)
