@@ -11,7 +11,8 @@ what is on the page.
 
 Your request's first line is `Document: <path>`; a later line says which review it is. "Review this
 spike record's design." applies the rubric's checks marked design; "Review this spike record's
-verdict." applies every check.
+verdict." applies the checks the rubric names for the verdict review, and never fails the parts of
+the design that are fixed by then.
 
 Your request's second line names the repository, `Repository: <folder>`, which may not be the
 folder you start in; a request without that line means the folder you start in. Every relative

@@ -1181,14 +1181,77 @@ class Spike(SpikeWorkspace):
         self.put(record("🟢 Ready to run", answer="Not settled: the tool would not install."))
         self.assertIsNone(self.move("🟢 Ready to run", "❔ Not settled"))
 
-    def test_plain_part_over_the_limit_cannot_move_forward(self):
+    def test_design_over_its_limit_cannot_move_forward(self):
         long = " ".join(["word"] * 600)
         self.put(record(steps=long))
-        self.assertIn("plain part", self.move("📝 Draft", "🟢 Ready to run"))
+        refusal = self.move("📝 Draft", "🟢 Ready to run")
+        self.assertIn("design", refusal)
+        self.assertIn("600", refusal)
         for status in ("💡 Confirmed", "🚫 Refuted", "❔ Not settled"):
             word = status.split(" ", 1)[1]
             self.put(record("🟢 Ready to run", steps=long, answer=f"{word}: it opens.", runs=RUN))
-            self.assertIn("plain part", self.move("🟢 Ready to run", status), status)
+            self.assertIn("design", self.move("🟢 Ready to run", status), status)
+
+    def test_a_design_near_its_limit_leaves_room_for_the_verdict(self):
+        design = " ".join(["word"] * 560)
+        verdict = "Confirmed: " + " ".join(["word"] * 360)
+        self.put(record("🟢 Ready to run", steps=design, answer=verdict, runs=RUN))
+        self.assertIsNone(self.move("🟢 Ready to run", "💡 Confirmed"))
+
+    def test_verdict_over_its_limit_cannot_finish(self):
+        verdict = "Confirmed: " + " ".join(["word"] * 400)
+        self.put(record("🟢 Ready to run", answer=verdict, runs=RUN))
+        refusal = self.move("🟢 Ready to run", "💡 Confirmed")
+        self.assertIn("verdict", refusal)
+        self.assertIn("400", refusal)
+        self.assertNotIn("design", refusal)
+
+    def test_ready_to_run_counts_the_verdict_too(self):
+        self.put(record(answer=" ".join(["word"] * 450)))
+        self.assertIn("verdict", self.move("📝 Draft", "🟢 Ready to run"))
+
+    def test_a_ready_record_that_has_not_run_is_told_to_return_to_draft(self):
+        self.put(record("🟢 Ready to run", steps=" ".join(["word"] * 600), answer="Not settled: no run."))
+        self.assertIn("📝 Draft", self.move("🟢 Ready to run", "❔ Not settled"))
+
+    def test_spike_words_takes_the_first_heading_of_a_name_as_section_does(self):
+        text = record(answer="one two").replace("## Open questions", "## Results\n\nthree four\n\n## Open questions")
+        self.assertEqual(status_check.spike_words(text)[1], 5 + 2)
+
+    def test_spike_words_splits_design_and_verdict(self):
+        text = record(hypothesis="one two", answer="three four five", answer_if="six",
+                      steps="| seven | eight |\n|---|---|", scope="nine", risks="ten")
+        design, verdict = status_check.spike_words(text)
+        self.assertEqual(verdict, 3 + 5)  # the Finding's words and the four headings' five
+        self.assertEqual(design + verdict, status_check.plain_words(text))
+
+    def test_verdict_sections_are_counted_wherever_they_sit(self):
+        text = record().replace("## Results\n\n\n", "## Results\n\n| 1 | ok |\n")
+        text = text.replace("## Surprises\n\n\n", "## Surprises\n\nNone.\n")
+        text = text.replace("## Next steps\n\n\n", "## Next steps\n\n- Spec: Nothing\n")
+        self.assertEqual(status_check.spike_words(text)[1], 5 + 5)
+
+    def test_spike_words_finds_the_parts_as_the_plain_part_and_sections_do(self):
+        text = record(answer="one two", runs=RUN).replace("## Experiment", " ## Experiment")
+        self.assertEqual(sum(status_check.spike_words(text)), status_check.plain_words(text))
+        text = record().replace("## Surprises\n\n\n", "## Surprises\n\nNone.\n\n# Appendix\n\nthree four five\n")
+        self.assertEqual(status_check.spike_words(text)[1], 5 + 1)
+        text = record(answer="one two").replace("## Finding", " ## Finding")
+        self.assertEqual(status_check.spike_words(text)[1], 5 + 2)
+
+    def test_a_design_over_its_limit_at_a_finish_is_not_told_to_return_to_draft(self):
+        long_title = "# The library reads " + " ".join(["word"] * 600)
+        self.put(record("🟢 Ready to run", answer="Confirmed: it opens.", runs=RUN))
+        self.assertIsNone(self.edit("# The library reads our TIFF files", long_title))
+        self.put(record("🟢 Ready to run", answer="Confirmed: it opens.", runs=RUN).replace(
+            "# The library reads our TIFF files", long_title))
+        refusal = self.move("🟢 Ready to run", "💡 Confirmed")
+        self.assertIn("design", refusal)
+        self.assertNotIn("Draft", refusal)
+
+    def test_a_comment_in_the_verdict_is_not_counted(self):
+        text = record(answer="<!-- " + "x " * 500 + "-->")
+        self.assertEqual(status_check.spike_words(text)[1], 5)  # the headings only
 
     def test_a_long_draft_is_allowed(self):
         self.assertIsNone(self.write(record(steps=" ".join(["word"] * 900))))
@@ -1235,7 +1298,7 @@ class Spike(SpikeWorkspace):
         self.assertIn("Finding", self.move("🟢 Ready to run", "🚫 Refuted"))
 
     def test_a_long_verdict_is_told_to_shorten_the_verdict_sections(self):
-        long = " ".join(["word"] * 600)
+        long = " ".join(["word"] * 400)
         self.put(record("🟢 Ready to run", answer="Confirmed: " + long, runs=RUN))
         refusal = self.move("🟢 Ready to run", "💡 Confirmed")
         self.assertIn("Finding, Next steps, Results or Surprises", refusal)

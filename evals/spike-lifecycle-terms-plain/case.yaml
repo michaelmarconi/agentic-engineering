@@ -1,0 +1,9 @@
+schema_version: "1.1"
+name: spike-lifecycle-terms-plain
+expected_outcome: |
+  The skill writes the verdict, with Next steps holding the template's "- Spec:" and "- ADR:"
+  lines. The lifecycle's own terms count as plain in a spike record, so the language checker does
+  not fail them and nothing in the record spells out or footnotes "spec" or "ADR". Issue #74:
+  the checkers failed the template's own labels, so the record could not pass its review.
+context:
+  scaffold_script: place-files.sh

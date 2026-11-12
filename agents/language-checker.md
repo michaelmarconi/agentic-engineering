@@ -27,6 +27,10 @@ Read:
 - The Plain words section of `${CLAUDE_PLUGIN_ROOT}/docs/lifecycle.md`. Apply only that section;
   the rest of the page is for other checks.
 
+Your request may say which parts of the document to check, such as only some of its sections. Then
+check only those parts, reading the rest only to understand them, and report nothing about the
+rest.
+
 Read nothing else. Skip the frontmatter, between the opening `---` lines: its wording is fixed by
 the plugin. Go through the rest of the document sentence by sentence, title and headings included.
 For each term or phrase that breaks the rule, quote it and say whether it needs a footnote (a
