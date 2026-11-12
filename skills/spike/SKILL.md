@@ -208,7 +208,9 @@ corrections brings new mistakes.
    out the document's repository from it, so the review reads the right one whatever folder you
    started in. If it refuses to start them, do what its reason says. For the verdict, the second
    line is `Review this spike record's verdict.` Ask the language checker to leave out the Code and
-   Runs, which are the experiment's own text. Each reads everything else it needs itself. Wait for
+   Runs, which are the experiment's own text, and at the verdict review to check only the title,
+   Finding, Next steps, Results and Surprises: the rest was checked at the design review and is
+   fixed now, so a finding there could never be corrected. Each reads everything else it needs itself. Wait for
    both reports before touching the record. If both pass with nothing under Needs a person, go
    straight to handing over.
 2. **Correct, once.** Read the rubric and the Plain words rule again, then correct only what the

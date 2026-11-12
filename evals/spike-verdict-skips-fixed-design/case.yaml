@@ -1,0 +1,11 @@
+schema_version: "1.1"
+name: spike-verdict-skips-fixed-design
+expected_outcome: |
+  The runs are done and the design, signed off and fixed, holds two phrases the Plain words rule
+  would question ("the whole lot", "put the question to bed"). The skill writes the verdict and
+  runs the verdict review, which judges only the verdict: the language checker is asked to check
+  only the title and the verdict sections, the fixed design is left unchanged, and the review
+  sequence does not end in a failed correction check over text that can no longer change. Found
+  in the install trial for issue #74, where such a finding left the record unable to finish.
+context:
+  scaffold_script: place-files.sh

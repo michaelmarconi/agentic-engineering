@@ -3,7 +3,10 @@
 Each check passes or fails. `/spike` reads this while writing; the spike reviewer reads it while
 checking, and quotes the record as evidence for every failure. A spike record is reviewed twice:
 the design review, before `🟢 Ready to run`, applies the checks marked *design*; the verdict
-review, before `💡 Confirmed`, `🚫 Refuted` or `❔ Not settled`, applies every check.
+review, before `💡 Confirmed`, `🚫 Refuted` or `❔ Not settled`, applies the checks marked
+*verdict*, and the design checks only to what can still change after the runs: the title, Code and
+Open questions. The rest of the design was reviewed and signed off before the runs and is fixed
+now, so the verdict review reads it to judge the verdict but never fails it.
 
 A record reads from plain to technical. Its plain part, for people, runs from the title down to
 Experiment; its technical part, for agents and reviewers, is Experiment, Code and Runs.
