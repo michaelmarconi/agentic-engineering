@@ -5,4 +5,4 @@ timeout_seconds: 1200
 allowed_tools: [Read, Glob, Grep, Skill, Write, Edit, Agent]
 ---
 
-Let's settle the open question on docs/specs/booking-deposit.spec.md: keep to the brief, no deposit and no card payment. A slot is confirmed as soon as it's booked, and a customer who doesn't turn up twice can't book online any more.
+Let's settle the open question on docs/specs/booking-deposit.spec.md: keep to the brief, so no deposit and no card payment. Instead, a customer who has twice not turned up for a booked slot can't book online any more.
