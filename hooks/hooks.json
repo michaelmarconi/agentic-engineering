@@ -95,7 +95,7 @@
         ]
       },
       {
-        "matcher": "Agent|Task|Skill|SubagentHandback",
+        "matcher": "Agent|Task|SubagentHandback",
         "hooks": [
           {
             "type": "command",
