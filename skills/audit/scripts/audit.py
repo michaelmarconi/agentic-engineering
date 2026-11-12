@@ -26,7 +26,8 @@ documents
       spike record whose Open questions section is missing or holds anything but "None.";
     - question layout: an open question is not laid out as ADR 0030 says, a heading
       `### N. <what is to be settled>`, its context, then a block quote holding one
-      `> **Proposed:**` line and one `> **Why:**` line, as documents written before that layout
+      `> **Proposed:**` line and one `> **Why:**` line with a line holding only `>` between them,
+      so they show as two lines, as documents written before that layout
       are; they are listed here so they can be laid out again, which their next change to Open
       questions must do anyway. A decided ADR, a `✅ Built` plan and a finished spike record are
       never edited, so they are not listed, nor is a document the open questions check above

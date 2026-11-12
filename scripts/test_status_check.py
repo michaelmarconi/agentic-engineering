@@ -1620,6 +1620,12 @@ class OpenQuestionsShape(unittest.TestCase):
         entry = ENTRY.replace("one file per day.\n>\n", "one file\nper day.\n")
         self.assertIn("line holding only `>`", layout(entry))
 
+    def test_why_without_quote_mark_after_quote_line_refused(self):
+        # After a line holding only `>` the quote's paragraph has ended, so a line without `>`
+        # is not part of the quote: Why would show outside it.
+        problem = layout(ENTRY.replace("> **Why:**", "**Why:**"))
+        self.assertIsNotNone(problem)
+
     def test_wrapped_proposal_then_quote_line_passes(self):
         self.assertIsNone(layout(ENTRY.replace("one file per day.", "one file\n> per day.")))
 

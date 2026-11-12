@@ -386,9 +386,10 @@ def open_questions_entries(lines):
 def quote_blocks(body):
     """The block quotes in an entry's body, each as its first and last index into the body's
     non-blank lines. A quote runs on over lines without `>` until a blank line, as Markdown's lazy
-    continuation lines do, unless the line starts a block of its own, such as a list item; a line in
-    a fenced code block is never part of one."""
-    blocks, open_block, index = [], False, -1
+    continuation lines do, unless the line starts a block of its own, such as a list item, or follows
+    a line holding only `>`, which ends the quote's paragraph; a line in a fenced code block is never
+    part of one."""
+    blocks, open_block, lazy, index = [], False, False, -1
     for line, in_fence in body:
         if not line.strip():
             open_block = False
@@ -400,7 +401,10 @@ def quote_blocks(body):
             else:
                 blocks.append([index, index])
                 open_block = True
-        elif open_block and not in_fence and not STARTS_BLOCK.match(line) and not THEMATIC_BREAK.match(line):
+            # A line holding only `>` ends the quote's paragraph, and only a paragraph runs on lazily.
+            lazy = bool(QUOTE.sub("", line, count=1).strip())
+        elif (open_block and lazy and not in_fence and not STARTS_BLOCK.match(line)
+              and not THEMATIC_BREAK.match(line)):
             blocks[-1][1] = index
         else:
             open_block = False
