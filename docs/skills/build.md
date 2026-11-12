@@ -5,13 +5,16 @@ that page first for the documents, skills and agents it mentions.
 
 ## What `/build` does
 
-`/build` takes one plan that you have signed off, writes the code and tests it describes on a
+`/build` takes one plan that you have signed off, or choose to build before sign-off, writes the code and tests it describes on a
 branch of its own, has the result reviewed, and hands the branch back to you.
 
 ```mermaid
 flowchart LR
     Check[Check before starting] -->|a check fails| Stop[Stop and say why]
     Check --> Branch[Use or make a build branch]
+    Check -->|not signed off| Ask[Ask: build anyway?]
+    Ask -->|stop| Stop
+    Ask -->|build anyway| Branch
     Branch --> Build[Build: tests first, commit as it goes]
     Build --> Review[Three reviews]
     Review --> Correct[Correct once, then check the corrections]
@@ -62,11 +65,16 @@ anything, `/build` checks:
   send `/agentic:build docs/plans/<plan>.md`. In a Claude project, a new session is a new thread:
   open one and send that command as its first message, since the note that opens a thread does not
   count as your message. `/plan` gives you the same steps when you sign a plan off.
-- **The plan is ready.** It is `🟢 Ready to build`. A `✅ Built` plan is refused: a plan is built
-  once.
-- **Nothing it relies on has changed.** Every spec the plan names is still `👍 Accepted`, and every
-  ADR is still `👍 Accepted`. If one has changed since you signed the plan off, `/build` stops and
-  says which.
+- **The plan exists and can be built.** A `✅ Built` plan is refused: a plan is built once. Every
+  spec and ADR the plan names must exist, with a heading for each requirement it names. These
+  can't be overridden, since there would be nothing to build against.
+- **The plan is signed off, or you choose to build anyway.** If the plan isn't
+  `🟢 Ready to build`, or a spec or ADR it names isn't `👍 Accepted`, `/build` doesn't refuse. It lists what
+  isn't signed off, including the plan's open questions, and asks "Build anyway, on the proposed
+  answers?". Building before sign-off is your call: pick "Build anyway" and it builds each open
+  question's proposed answer, or "Stop and settle them first" and it changes nothing. It never
+  builds an unsigned plan without your answer, so an unattended run stops. The build's first
+  commit says what wasn't signed off, so the record is in git, and the plan keeps its status.
 - **Your practices, if any.** `/build` looks for the `## Practices` heading, and reads any file
   it names to read before a task like this. None is required:
   where a practice it needs is not recorded, such as how to run the tests, it works it out from
@@ -172,7 +180,9 @@ However the build ends, a small script commits the branch and pushes it to `orig
 this, not Claude, and reports exactly what happened, including the branch name and any failure
 to push. `/build` never opens a pull request and never merges.
 
-The plan is set to `✅ Built` only when every review has passed. If the build stopped instead,
+The plan is set to `✅ Built` only when it was `🟢 Ready to build` and every review has passed. A
+plan built before sign-off keeps its status: settle it and sign it off, then rerun `/build` on the
+branch to mark it `✅ Built`. If the build stopped instead,
 because the corrections failed their check, a requirement's tests still failed after two attempts,
 or a choice needed raising, the plan stays `🟢 Ready to build`. Sort out what is open however suits
 you: with Claude directly, by changing a spec or ADR, or by deciding a finding is wrong. Then rerun
