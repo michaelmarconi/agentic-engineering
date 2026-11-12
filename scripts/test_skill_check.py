@@ -8,7 +8,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 SCRIPT = os.path.join(HERE, "skill_check.py")
 ROOT = os.path.join(HERE, "..")
 sys.path.insert(0, HERE)
-from skill_check import (AGENT_RULE, ASK_RULE, ASK_SKILLS, CORRECT_RULES, DOCUMENT_SKILLS, PATH_RULE, PROPOSED_RULE,  # noqa: E402
+from skill_check import (AGENT_RULE, ASK_RULE, BUILD_ASK_RULE, ASK_SKILLS, CORRECT_RULES, DOCUMENT_SKILLS, PATH_RULE, PROPOSED_RULE,  # noqa: E402
                          QUESTIONS_RULE, REPORT_RULES, REVIEW_RULE, SHOW_RULE,
                          SIGNOFF_RULE, STATUS_SKILLS, TYPE_RULE, DATE_RULE, DIAGRAM_SKILLS,
                          diagram_rules, holds)
@@ -193,8 +193,9 @@ class SkillCheck(unittest.TestCase):
         self.assertFails("plan/SKILL.md: type rule missing")
 
     def test_other_skills_need_no_type_rule(self):
-        for name in ("feedback", "audit", "build"):
+        for name in ("feedback", "audit"):
             self.put(name, skill_md(name=name))
+        self.put("build", skill_md(name="build", body=f"# Build\n\n{BUILD_ASK_RULE}\n"))
         self.put("practices", skill_md(name="practices", body=f"# Practices\n\n{ASK_RULE}\n"))
         done = self.check()
         self.assertEqual((done.returncode, done.stdout), (0, ""))
@@ -241,6 +242,30 @@ class SkillCheck(unittest.TestCase):
         self.assertNotEqual(rule, ASK_RULE)
         self.put("practices", skill_md(name="practices", body=f"# Practices\n\n{rule}\n"))
         self.assertFails("practices/SKILL.md: ask rule missing")
+
+    def test_build_without_the_build_ask_rule_fails(self):
+        self.put("build", skill_md(name="build"))
+        self.assertFails("build/SKILL.md: build-anyway rule missing")
+
+    def test_build_with_the_build_ask_rule_passes(self):
+        self.put("build", skill_md(name="build", body=f"# Build\n\n{BUILD_ASK_RULE}\n"))
+        done = self.check()
+        self.assertEqual(done.returncode, 0, done.stdout)
+
+    def test_reworded_build_ask_rule_fails(self):
+        rule = BUILD_ASK_RULE.replace("Stop and settle them first", "Stop")
+        self.assertNotEqual(rule, BUILD_ASK_RULE)
+        self.put("build", skill_md(name="build", body=f"# Build\n\n{rule}\n"))
+        self.assertFails("build/SKILL.md: build-anyway rule missing")
+
+    def test_build_ask_rule_offers_both_answers(self):
+        for part in ("\"Build anyway\"", "\"Stop and settle them first\"", "question tool"):
+            self.assertIn(part, BUILD_ASK_RULE)
+
+    def test_other_skills_need_no_build_ask_rule(self):
+        self.put("demo", skill_md())
+        done = self.check()
+        self.assertEqual(done.returncode, 0, done.stdout)
 
     def test_the_asking_skills_are_the_document_skills_and_practices(self):
         self.assertEqual(sorted(ASK_SKILLS), ["adr", "brief", "plan", "practices", "spec", "spike"])

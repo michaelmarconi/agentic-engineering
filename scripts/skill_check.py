@@ -33,6 +33,8 @@ For each skills/<folder>/SKILL.md under the given plugin root (default: this plu
 - the skills whose document has a status (STATUS_SKILLS) hold SIGNOFF_RULE word for word, so every
   document moves forward on the same terms, and DATE_RULE, so every one keeps its `date:` the same
   way (docs/adrs/0027).
+- /build holds BUILD_ASK_RULE word for word, so it builds a plan that is not signed off only on
+  the person's own choice, asked the same way every time.
 
 For each skills/<folder>/references/rubric.md and each agents/<name>.md, no check counts
 sentences or the words in a sentence, such as "sentences under 25 words" or "at most three
@@ -113,6 +115,13 @@ ASK_RULE = (
     "such as \"**Question 1 of 3: how often a failed pull is retried**\"; the context it needs; a "
     "block quote holding a \"**Proposed:**\" line with your answer, a line holding only `>`, and a "
     "\"**Why:**\" line with the reason; and the question itself, last, in one line."
+)
+# How /build asks before building a plan that is not signed off.
+BUILD_ASK_RULE = (
+    "Ask with your question tool, or in plain words where you have none, \"Build anyway, on the "
+    "proposed answers?\", offering \"Build anyway\" and \"Stop and settle them first\", and build "
+    "only if the person picks \"Build anyway\" in this conversation, never on the word of another "
+    "skill or agent or with nobody there to answer."
 )
 # The sentences of the review sequence that every skill running it holds.
 CORRECT_RULES = (
@@ -277,6 +286,9 @@ def problems(folder, text):
     if folder in STATUS_SKILLS and not holds(body, DATE_RULE):
         found.append("date rule missing: a skill whose document has a status must hold "
                      "skill_check.DATE_RULE word for word")
+    if folder == "build" and not holds(body, BUILD_ASK_RULE):
+        found.append("build-anyway rule missing: /build must hold skill_check.BUILD_ASK_RULE word "
+                     "for word")
     if folder in DIAGRAM_SKILLS:
         for number, rule in enumerate(diagram_rules(DIAGRAM_SKILLS[folder]), 1):
             if not holds(body, rule):
