@@ -135,9 +135,9 @@ nobody needs it. Another try at a hypothesis that was not settled is a new spike
 A plugin hook enforces these rules when Claude edits a record with its file-editing tools: it
 refuses any move not shown above, a move forward while Open questions holds anything or while the
 design is over 600 words or the verdict over 400, a finishing status that the Finding does not open
-with, a change to the design of a `🟢 Ready to run` record that does
-not return it to `📝 Draft` before the first run, any change to Runs, and any change to a finished
-record. A change made by hand, or by a shell command, is not checked.
+with, a change to the design of a `🟢 Ready to run` record that does not return it to `📝 Draft`
+before the first run, any change to Runs, and any change to a finished record. A change made by
+hand, or by a shell command, is not checked.
 
 ## Using `/spike`
 
