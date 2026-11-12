@@ -455,6 +455,19 @@ class Window(Project):
         self.commit("Edit brief", date="2026-11-01T12:00:00+00:00")
         self.assertTrue(self.ok("last", "7", "days")["brief_changed"])
 
+    def test_renaming_or_deleting_the_brief_in_the_window_is_a_change_to_it(self):
+        self.put("docs/brief.md", "# Product\n\nWhat it is.\n")
+        self.commit("Add brief", date="2026-10-01T12:00:00+00:00")
+        os.rename(os.path.join(self.project, "docs/brief.md"), os.path.join(self.project, "docs/old-brief.md"))
+        self.commit("Move brief", date="2026-11-01T12:00:00+00:00")
+        self.assertTrue(self.ok("last", "7", "days")["brief_changed"])
+        os.remove(os.path.join(self.project, "docs/old-brief.md"))
+        self.put("docs/brief.md", "# Product\n")
+        self.commit("Back", date="2026-11-02T12:00:00+00:00")
+        os.remove(os.path.join(self.project, "docs/brief.md"))
+        self.commit("Delete brief", date="2026-11-03T12:00:00+00:00")
+        self.assertTrue(self.ok("since", "HEAD~1")["brief_changed"])
+
     def test_a_window_that_leaves_the_brief_alone_says_so(self):
         self.put("docs/brief.md", "# Product\n\nWhat it is.\n")
         self.commit("Add brief", date="2026-10-01T12:00:00+00:00")

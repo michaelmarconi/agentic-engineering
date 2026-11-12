@@ -38,7 +38,8 @@ For each drift finding:
 
 When the report comes between `=== BRIEF REPORT ===` and `=== END BRIEF REPORT ===` instead, it
 holds the brief checker's contradictions between the document and the brief, whose path is its
-first line, `Brief: <path>`. For each:
+first line, `Brief: <path>`. If you can't read the brief, check nothing and report only
+`Document: <path>` and, on the next line, `Error: can't read <the full path you tried>`. For each:
 
 1. Read the document and the brief, and confirm each quote is there word for word, in the
    requirement or section and the brief's section named.

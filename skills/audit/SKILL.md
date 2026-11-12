@@ -66,8 +66,8 @@ Documents:
 
 The documents to check are those it picks, and every one `window` lists under
 `changed_accepted_documents`, whose own text changed. If that leaves none, say the window's
-changes touch no accepted document; when `brief_changed` is true, still check every accepted spec
-and ADR against the brief, as below. If the picker reports an `Error:`, stop and give the person
+changes touch no accepted document; when `brief_changed` is true and `documents` names a `brief`,
+still check every accepted spec and ADR against it, as below. If the picker reports an `Error:`, stop and give the person
 the error: the window was not checked, and a full audit is no substitute for it.
 
 ## Check the code
@@ -124,7 +124,8 @@ Brief: <brief, as documents prints it>
 === END BRIEF REPORT ===
 ```
 
-A document the brief checker lists under Not read was not checked against the brief.
+A document the brief checker lists under Not read was not checked against the brief, and if the brief
+checker reports an `Error:`, no document was.
 
 A report, an auditor's, the brief checker's or a checker's, with an `Error:` line checked nothing: never count it
 as no drift, or its findings as rejected. A drift finding is
@@ -136,7 +137,7 @@ Give the findings in this order, grouped by document within each part, leaving o
 nothing in it and numbering the parts you give from 1:
 
 1. **Documents not checked:** each document whose auditor or checker reported an `Error:`, or the
-   brief checker could not read, with
+   brief checker could not read, and the brief itself if the brief checker reported an `Error:`, with
    the error, saying the audit is not complete until it is run again where the document can be
    read.
 2. **Drift:** each confirmed finding, with the auditor's quotes of the requirement or decision

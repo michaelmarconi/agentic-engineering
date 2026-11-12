@@ -29,8 +29,8 @@ covers the capability, change it instead, because two specs for one capability w
 If `docs/brief.md` exists, read it so the spec fits the product. A spec says far more than the
 brief, and detail the brief doesn't mention is never a reason to raise it. Only an outright
 contradiction with the brief's Goals, Out of scope or Constraints is, such as a rule for something
-the brief puts out of scope. Write it into Open questions, proposing one of its two answers: change
-the spec to fit, or the person changes the brief with `/brief`. Never edit the brief, or offer to:
+the brief puts out of scope (rubric check 15). Write it into Open questions, proposing one of its
+two answers: change the spec to fit, or the person changes the brief with `/brief`. Never edit the brief, or offer to:
 it changes only when the person changes the product's intent. If they choose to change the brief,
 the question goes once the brief no longer contradicts the spec.
 

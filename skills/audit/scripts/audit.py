@@ -510,14 +510,15 @@ def main(argv=None):
     documents_parser = commands.add_parser(
         "documents", help="check every lifecycle document and list the accepted specs and ADRs",
         description="Check every lifecycle document as it stands, and list the accepted specs and ADRs. "
-                    "Output: JSON with root (the project's full path, which every other path is relative to), lifecycle, accepted {specs, adrs}, problems [{document, check, detail}], "
+                    "Output: JSON with root (the project's full path, which every other path is relative to), lifecycle, brief (its path, or null), accepted {specs, adrs}, problems [{document, check, detail}], "
                     "built_plans, finished_spikes and unfinished_spikes [{document, status, date}]. "
                     "Exit codes: 0 done, whatever it found; 1 failed, with the reason on stderr.")
     window_parser = commands.add_parser(
         "window", help="list a window of commits and the files they changed",
         description="Read `last N days` or `since <commit>` on the checked-out branch, writing nothing.\n"
                     "Output: JSON with root, window, commits [{commit, date, subject}], oldest first,\n"
-                    "changed [{status, path, from}] and changed_accepted_documents.\n"
+                    "changed [{status, path, from}], changed_accepted_documents and brief_changed\n"
+                    "(true when the window added, changed, renamed or deleted docs/brief.md).\n"
                     "Exit codes: 0 done, even when the window holds no commits; 1 refused, with the\n"
                     "reason on stderr.",
         formatter_class=argparse.RawDescriptionHelpFormatter)
