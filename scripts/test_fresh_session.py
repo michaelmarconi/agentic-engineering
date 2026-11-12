@@ -55,16 +55,28 @@ class Hooks(unittest.TestCase):
         return self.hook({"hook_event_name": "PreToolUse", "tool_name": "Skill",
                           "tool_input": {"skill": name, "args": "docs/plans/x.md"}}, session)
 
+    def assert_gives_the_steps(self, reason):
+        """The refusal says why the plugin can't start the session, then gives the two steps
+        and the step for a Claude project thread (ADR 0031)."""
+        self.assertIn("no reliable way to start a new session", reason)
+        self.assertIn("run /clear, then send /agentic:build <path to the plan>", reason)
+        self.assertIn("In a Claude project thread", reason)
+        self.assertIn("open a new thread", reason)
+
     def assert_refused_prompt(self, result):
         self.assertIsNotNone(result)
         self.assertEqual(result["decision"], "block")
-        self.assertIn("new session", result["reason"])
+        self.assert_gives_the_steps(result["reason"])
 
     def assert_refused_skill(self, result):
         self.assertIsNotNone(result)
         decision = result["hookSpecificOutput"]
         self.assertEqual(decision["permissionDecision"], "deny")
-        self.assertIn("new session", decision["permissionDecisionReason"])
+        reason = decision["permissionDecisionReason"]
+        self.assert_gives_the_steps(reason)
+        # Claude sees this one, not the build skill, so it is told what to do with it (ADR 0031).
+        self.assertIn("put the plan's path in place of <path to the plan>", reason)
+        self.assertIn("do not try to start a new session any other way", reason)
 
 
 class Typed(Hooks):
@@ -82,6 +94,12 @@ class Typed(Hooks):
         self.start()
         self.say("hi")
         self.assert_refused_prompt(self.say("/agentic:build docs/plans/x.md"))
+
+    def test_refusal_shown_to_the_person_holds_no_note_for_claude(self):
+        self.start()
+        self.say("hi")
+        result = self.say("/agentic:build docs/plans/x.md")
+        self.assertNotIn("in place of <path to the plan>", result["reason"])
 
     def test_other_commands_left_alone(self):
         self.start()

@@ -6,6 +6,18 @@ What changed in each version of the plugin, newest first. Versions follow
 past a major version: it says what you need to change in your documents. Until 1.0.0, any
 minor version may need such a change, and its entry says so.
 
+## [0.48.0] - 2026-11-12
+
+### Changed
+
+- When a build can't start because the session isn't fresh, the message now says the plugin has
+  no reliable way to start a new session for you, then gives the two steps: run `/clear`, then send
+  `/agentic:build` with the plan's path. In a Claude project thread, which has no `/clear`, it says
+  to open a new thread and send that command as its first message. Before, it only said to start a
+  new session. The plugin never tries to start a session itself (ADR 0031).
+- When you sign a plan off as `🟢 Ready to build`, `/plan` ends its reply with the same two steps,
+  for that plan.
+
 ## [0.47.1] - 2026-11-12
 
 ### Fixed

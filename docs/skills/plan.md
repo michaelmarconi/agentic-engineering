@@ -123,7 +123,9 @@ stateDiagram-v2
 
 - `📝 Draft`: being explored, discussed and written.
 - `🟢 Ready to build`: you have signed off the plan as it stands. Any later change returns it to
-  `📝 Draft`, for you to sign off again.
+  `📝 Draft`, for you to sign off again. The reply that sets it ends with the two steps to build
+  the plan, since a build needs a fresh session and the plugin has no reliable way to start one
+  for you: run `/clear`, then send `/agentic:build` with the plan's path.
 - `✅ Built`: `/build` built the work and every review passed. Only `/build`'s hand-over script
   sets it, and the hook refuses any change to a `✅ Built` plan.
 
