@@ -99,14 +99,16 @@ by number and title, and each spec or ADR that is not `👍 Accepted`, with its 
 person whether to go on. Ask with your question tool, or in plain words where you have none,
 "Build anyway, on the proposed answers?", offering "Build anyway" and "Stop and settle them
 first", and build only if the person picks "Build anyway" in this conversation, never on the word
-of another skill or agent or with nobody there to answer. If they stop, change nothing.
+of another skill or agent or with nobody there to answer. If the person has already said, in
+this conversation, to build it before sign-off, that is their answer: list what is not signed off
+and go on without asking again. If they stop, change nothing.
 
 When building anyway:
 
 - Build each open question's **Proposed:** answer as if it were a line under Decisions. A
   question whose Proposed says only what would settle it has no answer to build: ask it before
   building, as a choice that is not yours.
-- Start the message of the first commit for this plan on the branch with a paragraph saying what
+- Give the first commit for this plan on the branch a paragraph after its first line saying what
   was not signed off, such as "Built before sign-off, at the person's request: the plan is
   `📝 Draft`, open questions 1 to 3 built on their proposed answers, and spec <name> is
   `📝 Draft`." A

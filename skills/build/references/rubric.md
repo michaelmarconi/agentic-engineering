@@ -46,7 +46,7 @@ failure. "The build" is every commit on the branch that the default branch does 
 9. **Documents untouched.** The build changes no spec, ADR or brief, and changes the plan only to
    set its status.
 10. **Building before sign-off recorded.** If the plan is not `🟢 Ready to build`, or a spec or ADR
-    it lists is not `👍 Accepted`, the message of the build's first commit opens with a paragraph
+    it lists is not `👍 Accepted`, the message of the build's first commit holds a paragraph
     saying what was not signed off: the plan's status and the open questions built on their
     proposed answers, and each spec or ADR not `👍 Accepted`, with its status. A build of a plan
     that is signed off passes this check.

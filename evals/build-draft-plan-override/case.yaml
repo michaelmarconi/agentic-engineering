@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: build-draft-plan-override
+expected_outcome: |
+  The person asks to build a Draft plan before sign-off. The build goes ahead on the proposed answers, records in its first commit what was not signed off, and leaves the plan Draft.
+context:
+  scaffold_script: place-files.sh
