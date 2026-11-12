@@ -5,21 +5,21 @@ status: 📝 Draft
 date: 2026-11-11
 ---
 
-# Give every open question a heading and its proposal in a block quote, checked by the status hook
+# Show every proposal in a block quote, in documents and in the conversation
 
 ## Question
 
-How does the plugin lay out each open question[^open] in a document[^documents], so the
-person[^person] can find the proposed answer quickly?
+How does the plugin lay out each question it puts to the person[^person], in a document's[^documents]
+open questions[^open] or in the conversation, so they can find the proposal quickly?
 
 ## Decision
 
-Chosen: each open question is a numbered heading, then the context it needs, then a block
-quote[^quote] holding one line starting "**Proposed:**", with the answer alone, and one line
-starting "**Why:**", with the reason. The hook[^hook] refuses any edit that adds or changes Open
-questions in another layout, and the audit[^audit] lists documents whose Open questions are not in
-it. This layout was chosen because the block quote is easy to see on GitHub, in an editor and in
-the conversation, and a script can check it.
+Chosen: each open question is a numbered heading, then its context, then a block quote[^quote]
+holding one line starting "**Proposed:**", with the answer alone, and one starting "**Why:**", with
+the reason. A question asked in the conversation has the same parts after a bold line naming it, and
+ends with the question. The hook[^hook] refuses an edit that adds or changes Open questions in
+another layout, and the audit[^audit] lists documents not in it. The block quote is easy to see on
+GitHub, in an editor and in the conversation, and a script can check it.
 
 ## Background
 
@@ -33,33 +33,34 @@ them.
 | Option | Outcome | Why |
 | --- | --- | --- |
 | Keep "Proposed:" at the end of the paragraph | Rejected | The part the person acts on is the hardest to find |
-| A bold "Proposed:" label in its own paragraph | Rejected | Simple to start using, but the reason ends up mixed into the proposal again |
+| A bold "Proposed:" label in its own paragraph | Rejected | The reason ends up mixed into the proposal again |
 | The proposal before the context | Rejected | It reads oddly when the proposal needs the context |
-| A heading, the context, then a block quote holding "Proposed:" and "Why:" | Chosen | It is easy to see wherever Markdown is read, even as raw text |
+| A heading, the context, then a block quote holding "Proposed:" and "Why:" | Chosen | Easy to see wherever Markdown is read, even raw |
 | A GitHub callout box | Rejected | Only GitHub draws the box; elsewhere a line of raw markup appears |
-| A one-cell table | Rejected | Hard to edit, and it wraps badly once the text is long |
+| A one-cell table | Rejected | Hard to edit, and long text wraps badly |
 | An arrow emoji before "Proposed:" | Rejected | Emoji are kept out of the documents' prose |
 
 ## Consequences
 
 - Good: each proposal, and its reason, can be found quickly.
-- Good: one layout holds for all five kinds of document.
+- Good: one layout holds for all five kinds of document and for the conversation.
 - Bad: an open question takes more lines than before.
 
 ## Out of scope
 
 - Edits made by hand, which the hook never sees.
-- How a skill lays out a question it asks in the conversation, which the skills set themselves.
-- Whether a proposal makes one decision, which the reviewer agent that checks each document judges.
+- Whether a proposal makes one decision, which the separate Claude reviewer that checks each document judges.
 - Documents written before this, which keep their old layout until their Open questions next change.
 
 ## How we'll check
 
-Applies to: every open question in a brief, spec, ADR, plan or spike record.
+Applies to: every open question in a brief, spec, ADR, plan or spike record, and every question a
+skill asks the person in the conversation.
 
 1. Test: unit tests give the hook Open questions in and out of the layout, and check what it allows and refuses.
 2. Test: unit tests check that the audit lists documents whose Open questions are not in the layout.
 3. Test: for each skill that writes one of the five documents, a sample conversation writes its open questions in the layout.
+4. Test: for each skill that asks the person questions, a sample conversation asks one in the layout.
 
 ## Open questions
 
@@ -86,6 +87,12 @@ The tariff is copied daily, but where is not yet chosen.
 **The hook.** `scripts/status_check.py` refuses a Write, Edit or MultiEdit to the brief, a spec,
 an ADR, a plan or a spike record when its Open questions section is new or differs from the file on
 disk, and any entry in it breaks the layout. The refusal names the entry and what is wrong.
+
+**In the conversation.** A question asked in the conversation starts with a bold line such as
+"**Question 1 of 3: how often a failed pull is retried**", then the context, then the same block
+quote, then the question itself in one line. One sentence, copied word for word into every skill
+that asks the person to settle questions, says so. No hook can see the conversation, so tests check
+it.
 
 **Audit.** The audit's document check lists each document whose Open questions are not in the
 layout, so older documents have a list to work through.
