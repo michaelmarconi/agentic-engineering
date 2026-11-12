@@ -8,7 +8,8 @@ date: <YYYY-MM-DD>
 # <The hypothesis, in plain words>
 
 <!-- The record reads from plain to technical. Everything above Experiment is for people: at most
-     600 words, tables included, in plain words, with no versions, settings, file names or code
+     600 words for the design and 400 for the verdict (Finding, Next steps, Results and
+     Surprises), tables included, in plain words, with no versions, settings, file names or code
      names unless the hypothesis is about one of them. Those go in Experiment. -->
 
 ## Hypothesis
@@ -75,7 +76,7 @@ None.
 - Runs: <how many times, as a number>
 - Stop early if: <a result that ends the runs early, such as a crash showing the approach can't work, or "None.">
 - Starts from commit: <`commit`, when it needs the product's own code or files, or "None.">
-- Inputs: <`path/in/that/commit`, `https://web.address/file`, or "None.">
+- Inputs: <`path/in/that/commit`, `https://web.address/data-file.csv` to download, or "None.">
 - Secrets: <`ENVIRONMENT_VARIABLE_NAME`, or "None.">
 - Command: <`the command, with any install step`>
 

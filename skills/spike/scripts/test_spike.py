@@ -84,25 +84,35 @@ class Words(Project):
     def words(self, *args):
         return subprocess.run([sys.executable, SCRIPT, "words", *args], capture_output=True, text=True)
 
-    def test_short_plain_part_passes(self):
+    def test_short_record_passes_and_reports_both_parts(self):
         self.put(record())
         done = self.words(self.path())
         self.assertEqual(done.returncode, 0, done.stderr)
-        self.assertIn(f"{spike.plain_words(self.text())} words", done.stdout)
-        self.assertIn("600", done.stdout)
+        design, verdict = spike.spike_words(self.text())
+        self.assertIn(f"design holds {design} of the 600 words", done.stdout)
+        self.assertIn(f"verdict holds {verdict} of the 400 words", done.stdout)
 
-    def test_long_plain_part_fails(self):
-        self.put(record().replace("Prints things.", " ".join(["word"] * 650), 1))
+    def test_long_design_fails(self):
+        self.put(record("📝 Draft").replace("Prints things.", " ".join(["word"] * 650), 1))
         done = self.words(self.path())
         self.assertEqual(done.returncode, 1)
-        self.assertIn("over", done.stdout)
+        self.assertIn("design", done.stdout)
+        self.assertIn("into Experiment", done.stdout)
 
-    def test_long_ready_record_is_told_to_shorten_the_verdict(self):
-        self.put(record("🟢 Ready to run").replace("Prints things.", " ".join(["word"] * 650), 1))
+    def test_long_verdict_fails_and_is_told_to_shorten_the_verdict(self):
+        long = "## Finding\n\nConfirmed: " + " ".join(["word"] * 420)
+        self.put(record().replace("## Finding\n", long, 1))
         done = self.words(self.path())
         self.assertEqual(done.returncode, 1)
         self.assertIn("Finding, Next steps, Results or Surprises", done.stdout)
         self.assertNotIn("into Experiment", done.stdout)
+
+    def test_a_design_near_its_limit_leaves_the_verdict_its_room(self):
+        text = record().replace("Prints things.", " ".join(["word"] * 560), 1)
+        text = text.replace("## Finding\n", "## Finding\n\nConfirmed: " + " ".join(["word"] * 360), 1)
+        self.put(text)
+        done = self.words(self.path())
+        self.assertEqual(done.returncode, 0, done.stdout)
 
     def test_unreadable_record(self):
         done = self.words(os.path.join(self.tmp.name, "missing.md"))

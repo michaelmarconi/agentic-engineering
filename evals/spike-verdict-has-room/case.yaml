@@ -1,0 +1,9 @@
+schema_version: "1.1"
+name: spike-verdict-has-room
+expected_outcome: |
+  The signed-off design is close to its 600-word limit and the run is done. The skill writes the
+  verdict within its own 400 words, without touching the design, and the Finding still says in
+  full what was found, so it makes sense on its own. Issue #74: with one 600-word limit for the
+  whole plain part, the Finding had to be cut until it no longer read on its own.
+context:
+  scaffold_script: place-files.sh

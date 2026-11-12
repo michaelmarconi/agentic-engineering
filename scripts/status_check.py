@@ -78,10 +78,12 @@ For a spike record it refuses:
 - any move but `📝 Draft` to `🟢 Ready to run`, `🟢 Ready to run` back to `📝 Draft` while Runs is
   empty, and `🟢 Ready to run` to `💡 Confirmed`, `🚫 Refuted` or `❔ Not settled`;
 - a move forward in the same edit as any other change, while the Open questions section is
-  missing or not empty or "None.", or while the record's plain part, everything between the
-  frontmatter and `## Experiment` apart from HTML comments, holds more than 600 words (counted as
-  runs of non-space characters holding a letter or digit, so a table's bars and rules don't
-  count); `💡 Confirmed` or `🚫 Refuted` while Runs holds no run; and a finishing status that the
+  missing or not empty or "None.", or while the record's design holds more than 600 words; a
+  finishing status while its verdict holds more than 400. The verdict is the Finding, Next steps,
+  Results and Surprises sections, written after the runs; the design is the rest of the plain part,
+  everything between the frontmatter and `## Experiment`. Neither counts HTML comments, and words
+  are runs of non-space characters holding a letter or digit, so a table's bars and rules don't
+  count. `💡 Confirmed` or `🚫 Refuted` while Runs holds no run; and a finishing status that the
   Finding does not open with, such as `💡 Confirmed` for a Finding that opens "Refuted:";
 - a change to the Hypothesis, How we'll know, Out of scope, How the test works, Risks and
   safeguards or Experiment section of a `🟢 Ready to run` record that does not return it to
@@ -148,7 +150,10 @@ FINISHED = (CONFIRMED, REFUTED, NOT_SETTLED)
 # A spike record's design: fixed once it is signed off.
 FIXED_PARTS = ("Hypothesis", "How we'll know", "Out of scope", "How the test works", "Risks and safeguards",
                "Experiment")
-PLAIN_LIMIT = 600  # words in a spike record's plain part, the part written for people
+# A spike record's verdict: the sections of its plain part written after the runs.
+VERDICT_PARTS = ("Finding", "Next steps", "Results", "Surprises")
+DESIGN_LIMIT = 600  # words in the rest of a spike record's plain part, its design
+VERDICT_LIMIT = 400  # words in a spike record's verdict
 ADR_PLAIN_LIMIT = 500  # words in an ADR's plain part, from the title down to Technical detail
 ADR_DETAIL = "Technical detail"  # the heading that starts an ADR's technical part
 ADR_DIAGRAMS = "Decision"  # the section whose diagrams the word limit leaves out
@@ -1189,6 +1194,26 @@ def plain_words(text, end_heading="Experiment", diagrams_in=None):
     return len(WORD.findall(plain_part(text, end_heading, diagrams_in)))
 
 
+def spike_words(text):
+    """How many words a spike record's plain part holds, as (design, verdict): the verdict is its
+    Finding, Next steps, Results and Surprises sections, the design everything else, title
+    included."""
+    lines = text.lstrip("\ufeff").splitlines()
+    head = frontmatter(text)
+    lines = lines[len(head) + 2:] if head is not None else lines
+    allowed = headings_allowed(lines)
+    verdict_names = {name.lower() for name in VERDICT_PARTS}
+    design, verdict, in_verdict = [], [], False
+    for i, line in enumerate(lines):
+        if allowed[i] and line.startswith("## "):
+            name = line[3:].strip().lower()
+            if name == "experiment":
+                break
+            in_verdict = name in verdict_names
+        (verdict if in_verdict else design).append(line)
+    return len(WORD.findall(uncommented(design))), len(WORD.findall(uncommented(verdict)))
+
+
 def decision_chosen(text):
     """Whether an ADR's Decision, without comments, opens with "Chosen:" (bold or not) and goes on
     to name the option."""
@@ -1228,6 +1253,27 @@ def ran(text):
             if not stamp.rstrip().endswith("did not run"):
                 return True
     return False
+
+
+def spike_size_refusal(name, text, new):
+    """Why a spike record's plain part is too long to move to `new`, or None. The design is checked
+    at every move forward; the verdict, written after the runs, only at a finishing status."""
+    design, verdict = spike_words(text)
+    if design > DESIGN_LIMIT:
+        shorten = ("Its design is fixed, so return it to `📝 Draft`, shorten it"
+                   if new in FINISHED else "Shorten it, moving detail down into Experiment")
+        return (
+            f"{name}: its design, the plain part above Experiment apart from Finding, Next steps, Results "
+            f"and Surprises, holds {design} words, more than the {DESIGN_LIMIT} a person is asked to read, "
+            f"so it cannot be `{new}`. {shorten}, and have it reviewed again."
+        )
+    if new in FINISHED and verdict > VERDICT_LIMIT:
+        return (
+            f"{name}: its verdict, the Finding, Next steps, Results and Surprises sections, holds {verdict} "
+            f"words, more than the {VERDICT_LIMIT} a person is asked to read, so it cannot be `{new}`. "
+            "Shorten its Finding, Next steps, Results or Surprises, and have it reviewed again."
+        )
+    return None
 
 
 def spike_rules(path, before, after, old, new):
@@ -1270,15 +1316,9 @@ def spike_rules(path, before, after, old, new):
             )
         if has_open_questions(after):
             return open_questions_refusal(name, after, new, "spike record")
-        words = plain_words(after)
-        if words > PLAIN_LIMIT:
-            shorten = ("Shorten its Finding, Next steps, Results or Surprises, since the rest is fixed"
-                       if new in FINISHED else "Shorten it, moving detail down into Experiment")
-            return (
-                f"{name}: its plain part, from the title down to Experiment, holds {words} words, "
-                f"more than the {PLAIN_LIMIT} a person is asked to read, so it cannot be `{new}`. "
-                f"{shorten}, and have it reviewed again."
-            )
+        refusal = spike_size_refusal(name, after, new)
+        if refusal:
+            return refusal
         if new in (CONFIRMED, REFUTED) and not ran(after):
             return (
                 f"{name}: it has no runs, so it cannot be `{new}`: only an experiment's runs "

@@ -24,9 +24,11 @@ document's type, as "Spec:" or "ADR:" in front of it would: the frontmatter's `t
 what it is.
 
 A record is written for a person first. It reads from plain to technical: the plain part, from the
-title down to Experiment, says what we expected, what we found and what happens next, in at most
-600 words, tables included; Experiment, Code and Runs below it hold everything an agent or
-reviewer needs to check or repeat the experiment. Versions, settings, file names and exact output
+title down to Experiment, says what we expected, what we found and what happens next;
+Experiment, Code and Runs below it hold everything an agent or reviewer needs to check or repeat
+the experiment. The plain part has two word budgets, tables included: the verdict, its Finding,
+Next steps, Results and Surprises, written after the runs, gets at most 400 words, and the design,
+the rest of it, at most 600, so a design that fits always leaves the verdict its room. Versions, settings, file names and exact output
 go in Experiment unless the hypothesis is about one of them, and each limit is stated once, under
 Out of scope. Check the plain part's size before each review, and fix it until it fits:
 
@@ -74,8 +76,10 @@ must actually exercise the thing in question.
   something in the product's own code, name the commit to start from and give the change as a
   `diff` block against it: the run script makes the copy, so never edit the product's files and
   never make a copy yourself. Read the product's code in the repository as you need.
-- **Inputs.** Name every file or web address the code reads that the Code doesn't write. A path in
-  the repository needs the commit to start from.
+- **Inputs.** Name every file the code reads that the Code doesn't write: a path in the
+  repository, which needs the commit to start from, or the web address of a file to download. The
+  run script downloads every Input before the run, so a site or service the experiment talks to,
+  such as the one it tests, is not an Input: How the test works and the Code already name it.
 - **Secrets.** Name each secret by its environment variable only. The experiment reads it from
   Claude Code's environment: set before Claude Code started, or in a cloud session's environment
   settings. Never ask for a secret's value in the conversation, and never let code print, log or
@@ -160,7 +164,7 @@ Once the runs are done, write:
 Never edit a spec or an ADR yourself: whoever looks after it takes the finding there with `/spec`
 or `/adr`, stating the evidence in that document's own words, since nothing may refer to a spike
 record. Check the plain part's size, then run the verdict review. The design is fixed by now, so
-a verdict over the limit shortens its own sections, not the design's.
+a verdict over its limit shortens its own sections, not the design's.
 
 ## Status
 

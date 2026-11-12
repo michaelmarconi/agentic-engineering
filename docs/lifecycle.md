@@ -33,7 +33,8 @@ YYYY-MM-DD; a plugin hook refuses a status change that does not set it to that d
   changed again, and may be deleted whenever nobody needs it.
 - **Spike record**, `docs/spikes/YYYY-MM-DD-<hypothesis>.md`, in one flat folder: one hypothesis
   tested by a throwaway experiment, with the finding, the experiment's code and what each run
-  produced. It reads from plain to technical: a part for people, of at most 600 words, then the
+  produced. It reads from plain to technical: a part for people, of at most 600 words for the design and 400 for the
+  verdict written after the runs, then the
   experiment's detail for agents and reviewers. Statuses: `📝 Draft` → `🟢 Ready to run` →
   `💡 Confirmed`, `🚫 Refuted` or `❔ Not settled`; `🟢 Ready to run` → `📝 Draft` only before the
   first run. Once `🟢 Ready to run`, its design is fixed, and only the run script adds runs. A
@@ -200,8 +201,9 @@ the conversations behind the document. So each one follows this rule:
   export" becomes "the order is included in the nightly export".
 
 An issue the plugin files is read by the plugin's maintainers, who know the lifecycle; a plan by
-the people building it, who use the lifecycle; and practices, in the Practices section of
-`AGENTS.md` and in `docs/practices/`, by agents that follow the lifecycle. So in an issue, a plan
+the people building it, who use the lifecycle; a spike record by whoever takes its finding to a
+spec or an ADR, as its Next steps asks; and practices, in the Practices section of `AGENTS.md` and
+in `docs/practices/`, by agents that follow the lifecycle. So in an issue, a plan, a spike record
 or practices, the lifecycle's own terms, such as "spec", "ADR", "requirement", `🟢 Ready to build`
 and the plugin's commands such as `/agentic:build`, count as plain too, and so do the marks
 `/practices` ends a practice with, "(default)" and "(not set up yet)".

@@ -63,8 +63,10 @@ account of how that document stood.
 ## The parts of a spike record
 
 A spike record is written for you first. It reads from plain to technical: the top part says
-what we expected, what we found and what happens next, in plain words and at most 600 words,
-tables included. Below it, the Experiment, Code and Runs hold everything an agent or a reviewer
+what we expected, what we found and what happens next, in plain words. It has two word limits,
+tables included: at most 600 words for the design, written before the runs, and 400 for the
+verdict (Finding, Next steps, Results and Surprises), written after them, so a design that fits
+always leaves room for the verdict. Below it, the Experiment, Code and Runs hold everything an agent or a reviewer
 needs to check the experiment or run it again. Versions, settings, file names and exact output
 sit down there, unless the hypothesis is about one of them, and each limit of the finding is
 stated once, under Out of scope.
@@ -83,7 +85,7 @@ stated once, under Out of scope.
 | Results | After the runs: a row for every run, with its date and outcome, saying which runs count |
 | Surprises | Anything unexpected the experiment showed, including any limit it uncovered, or "None." |
 | Open questions | What only you can settle about the spike, each with a proposed answer; "None." before it moves on |
-| Experiment | The full method, the exact rules for what counts as confirmed or refuted, every safeguard in detail, and then its settings: how many times it runs, and any result that would end it early, such as a crash showing the approach can't work; each input, as a path in the commit it starts from or a web address; the names of any secrets it needs; the command that runs it, including any install step; and the commit it starts from, when it needs the product's own code or files |
+| Experiment | The full method, the exact rules for what counts as confirmed or refuted, every safeguard in detail, and then its settings: how many times it runs, and any result that would end it early, such as a crash showing the approach can't work; each input, as a path in the commit it starts from or the web address of a file to download (a site the experiment tests is not an input, since every input is downloaded before the run); the names of any secrets it needs; the command that runs it, including any install step; and the commit it starts from, when it needs the product's own code or files |
 | Code | The experiment's code in code blocks, each naming its file on its first line; for an experiment on the product's own code, its changes as a diff |
 | Runs | Last, written only by the run script (see [The run script](#the-run-script)): for each run, when and where it ran, a short hash of the code it ran, and its output; or what you saw, for a step only a person can do |
 
@@ -132,7 +134,7 @@ nobody needs it. Another try at a hypothesis that was not settled is a new spike
 
 A plugin hook enforces these rules when Claude edits a record with its file-editing tools: it
 refuses any move not shown above, a move forward while Open questions holds anything or while the
-top part is over 600 words, a finishing status that the Finding does not open with, a change to
+design is over 600 words, a finishing status while the verdict is over 400 words, a finishing status that the Finding does not open with, a change to
 the design of a `🟢 Ready to run` record that does not return it to `📝 Draft` before the first
 run, any change to Runs, and any change to a finished record. A change made by hand, or by a shell command, is not checked.
 

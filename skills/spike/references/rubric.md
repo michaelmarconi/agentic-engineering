@@ -38,9 +38,11 @@ Experiment; its technical part, for agents and reviewers, is Experiment, Code an
    network, anything timed, or anything that calls an AI model, runs more than once, with the
    reason for the count given. One run is enough only when the result cannot vary, and the
    record says why.
-8. **Inputs named** (design). Every file or web address the code or command reads that is not
-   written by the Code section is named under Inputs: a path in the commit the experiment starts
-   from, or a web address. A path in the repository, and any diff block, come with a commit under
+8. **Inputs named** (design). Every file the code or command reads that is not written by the
+   Code section is named under Inputs: a path in the commit the experiment starts from, or the web
+   address of a file the run downloads a copy of. An address the experiment talks to, such as a
+   site or service it tests, is not an input, and is not listed there, since the run script
+   downloads every Input before the run starts. A path in the repository, and any diff block, come with a commit under
    `- Starts from commit:`.
 9. **Code** (design). Each code block names its file on its first line, such as `# file: check.py`,
    or is a `diff` block changing the product's own files; the Command runs that code; nothing the
@@ -95,7 +97,8 @@ Experiment; its technical part, for agents and reviewers, is Experiment, Code an
     person can answer, such as whether a sample input stands for the real thing, proposes no guess:
     its "Proposed:" says what would settle it.
 
-The plain part's size, at most 600 words, tables included, is checked by the run script's `words`
+The plain part's size, at most 600 words for the design and 400 for the verdict (Finding, Next
+steps, Results and Surprises), tables included, is checked by the run script's `words`
 command and by the status hook, not by the reviewer. So is a finishing status that the Finding
 does not open with, such as `💡 Confirmed` for a Finding that opens "Refuted:".
 
