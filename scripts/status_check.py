@@ -5,7 +5,7 @@ lifecycle document whose `type:` is wrong, and open questions not laid out as AD
 Claude Code runs this as a PreToolUse hook on Write, Edit and MultiEdit. It reads the hook's
 JSON from stdin and, for the project's docs/brief.md, a *.spec.md under its docs/specs/, a *.md
 under its docs/adrs/ or a *.md directly in its docs/plans/ or docs/spikes/ (the project being
-$CLAUDE_PROJECT_DIR, or the current directory if unset),
+the git repository holding the file, or the session folder when none does: docs/adrs/0032),
 works out what the file would contain after the edit and compares it with what is on disk now.
 Every status carries its emoji, emoji first: a spec is `📝 Draft` or `👍 Accepted`, describing the
 document, never the software; a plan is `📝 Draft`, `🟢 Ready to build` or `✅ Built`; an ADR is `📝 Draft`, `👍 Accepted`, `❌ Rejected` or `↪️ Superseded`; a spike record is `📝 Draft`, `🟢 Ready to run`, `💡 Confirmed`, `🚫 Refuted` or `❔ Not settled`. The U+FE0F that
@@ -142,6 +142,8 @@ import re
 import sys
 import unicodedata
 
+import repository
+
 DRAFT, READY, BUILT = "📝 Draft", "🟢 Ready to build", "✅ Built"
 READY_TO_RUN = "🟢 Ready to run"
 CONFIRMED, REFUTED, NOT_SETTLED = "💡 Confirmed", "🚫 Refuted", "❔ Not settled"
@@ -205,10 +207,8 @@ def today():
 
 
 def project_parts(path):
-    """The path's parts relative to the project ($CLAUDE_PROJECT_DIR or cwd)."""
-    project = os.environ.get("CLAUDE_PROJECT_DIR") or os.getcwd()
-    relative = os.path.relpath(os.path.abspath(path), os.path.abspath(project))
-    return os.path.normpath(relative).split(os.sep)
+    """The path's parts relative to the repository holding it (docs/adrs/0032)."""
+    return repository.relative_parts(path)
 
 
 def is_spec(path):
