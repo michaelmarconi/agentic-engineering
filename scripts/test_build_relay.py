@@ -483,5 +483,86 @@ class LeftAlone(Relay):
         self.assertEqual(out.getvalue(), "")
 
 
+class SessionFolderAboveTheRepository(Relay):
+    """A Claude project thread: the session folder is not a repository, and holds the repository
+    one level down (issue #84)."""
+
+    def setUp(self):
+        super().setUp()
+        self.session = os.path.realpath(self.tmp.name)
+        patcher = mock.patch.dict(os.environ, {"CLAUDE_PROJECT_DIR": self.session})
+        patcher.start()
+        self.addCleanup(patcher.stop)
+        self.cwd = self.session
+
+    def hook(self, event, session="s1"):
+        return super().hook(dict(event, cwd=self.cwd), session)
+
+    def reviews_named(self, plan):
+        self.agent("general-purpose", CODE_PROMPT.replace(PLAN, plan), '[{"summary": "code finding"}]')
+        self.agent("general-purpose", f"Document: {plan}\nRun /security-review and report.", "security finding")
+        self.agent("agentic:build-reviewer", f"Document: {plan}\nBase: main\nReview this build.", "plan finding")
+
+    def check_named(self, plan):
+        return self.hook({"hook_event_name": "PreToolUse", "tool_name": "Agent", "tool_use_id": "check",
+                          "tool_input": {"subagent_type": "agentic:build-correction-checker",
+                                         "prompt": f"Document: {plan}\nCheck the corrections."}})
+
+    def assert_checks_after_a_commit(self, plan):
+        reviewed = self.git("rev-parse", "HEAD")
+        self.reviews_named(plan)
+        self.assertEqual(self.check_named(plan)["permissionDecision"], "deny")
+        self.commit("Correct the findings")
+        result = self.check_named(plan)
+        self.assertEqual(result["permissionDecision"], "allow")
+        self.assertIn(f"Reviewed commit: {reviewed}", result["updatedInput"]["prompt"])
+
+    def test_plan_named_from_the_session_folder(self):
+        self.assert_checks_after_a_commit(f"repo/{PLAN}")
+
+    def test_plan_named_by_its_full_path(self):
+        self.assert_checks_after_a_commit(os.path.join(self.repo, PLAN))
+
+    def test_plan_named_from_the_repository_when_the_shell_is_in_it(self):
+        self.cwd = self.repo
+        self.assert_checks_after_a_commit(PLAN)
+
+    def test_no_repository_holds_the_plan(self):
+        os.makedirs(os.path.join(self.session, "loose"))
+        self.reviews_named(f"loose/{PLAN}")
+        result = self.check_named(f"loose/{PLAN}")
+        self.assertEqual(result["permissionDecision"], "deny")
+        reason = result["permissionDecisionReason"]
+        self.assertIn("no git repository", reason)
+        self.assertNotIn("Nothing has been committed", reason)
+
+    def test_a_record_with_no_repository_still_checks(self):
+        # A record written before the repository was kept beside the commit.
+        reviewed = self.git("rev-parse", "HEAD")
+        self.reviews_named(f"repo/{PLAN}")
+        path = build_relay.record_path("s1")
+        with open(path, encoding="utf-8") as f:
+            record = json.load(f)
+        record.pop("repository", None)
+        with open(path, "w", encoding="utf-8") as f:
+            json.dump(record, f)
+        self.commit("Correct")
+        result = self.check_named(f"repo/{PLAN}")
+        self.assertEqual(result["permissionDecision"], "allow")
+        self.assertIn(f"Reviewed commit: {reviewed}", result["updatedInput"]["prompt"])
+
+    def test_a_review_of_a_plan_in_another_repository_starts_a_new_record(self):
+        other = os.path.join(self.session, "other")
+        os.makedirs(other)
+        subprocess.run(["git", "init", "-q", "-b", "main", other], check=True, env=ENV)
+        subprocess.run(["git", "commit", "-q", "--allow-empty", "-m", "Start"], cwd=other, check=True, env=ENV)
+        self.reviews_named(f"repo/{PLAN}")
+        self.agent("agentic:build-reviewer", f"Document: other/{PLAN}\nBase: main\nReview this build.", "other finding")
+        with open(build_relay.record_path("s1"), encoding="utf-8") as f:
+            record = json.load(f)
+        self.assertEqual(record["repository"], other)
+        self.assertEqual(sorted(record["reports"]), ["plan"])
+
+
 if __name__ == "__main__":
     unittest.main()

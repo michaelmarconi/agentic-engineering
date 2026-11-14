@@ -50,6 +50,7 @@ except ImportError:  # Windows: run without the lock rather than fail every agen
     fcntl = None
 
 import fresh_session
+import repository
 import saved_records
 import subagent_report
 
@@ -66,13 +67,17 @@ PARTS = (("code", "CODE REVIEW REPORT"), ("security", "SECURITY REVIEW REPORT"),
          ("plan", "BUILD REVIEW REPORT"))
 
 
-def project():
-    return os.environ.get("CLAUDE_PROJECT_DIR") or os.getcwd()
+def repository_of(prompt, cwd):
+    """The repository holding the plan the request's `Document:` line names (docs/adrs/0032)."""
+    named, _ = first_lines(prompt)
+    return repository.repository_of(named, base=cwd) if named else None
 
 
-def head():
+def head(folder):
+    if not folder:
+        return None
     try:
-        result = subprocess.run(["git", "-C", project(), "rev-parse", "HEAD"], capture_output=True, text=True)
+        result = subprocess.run(["git", "-C", folder, "rev-parse", "HEAD"], capture_output=True, text=True)
     except OSError:
         return None
     return result.stdout.strip() if result.returncode == 0 else None
@@ -120,10 +125,10 @@ def save(session, record):
     saved_records.prune(os.path.dirname(path))
 
 
-def for_commit(session, commit):
+def for_commit(session, commit, folder):
     record = load(session)
-    if not record or record.get("commit") != commit:
-        record = {"commit": commit, "reports": {}, "started": {}}
+    if not record or record.get("commit") != commit or record.get("repository", folder) != folder:
+        record = {"commit": commit, "repository": folder, "reports": {}, "started": {}}
     record.setdefault("started", {})
     return record
 
@@ -167,7 +172,7 @@ def refuse(reason):
                                    "permissionDecisionReason": reason}}
 
 
-def start_checker(session, tool_input):
+def start_checker(session, tool_input, cwd):
     prompt = tool_input.get("prompt") or ""
     named, _ = first_lines(prompt)
     if not named:
@@ -180,7 +185,14 @@ def start_checker(session, tool_input):
         return refuse(f"No {' or '.join(missing)} report of the reviewed commit is on record in this "
                       "session, so the corrections cannot be checked. Do not review again: stop "
                       "and show the person the reports you have and this reason.")
-    if head() == record["commit"]:
+    # A record saved before the repository was kept beside the commit names none: the checker's
+    # own `Document:` line names the same plan.
+    folder = record.get("repository") or repository_of(prompt, cwd)
+    if record["commit"] is None or head(folder) is None:
+        return refuse(f"There is no git repository holding {named}, so the commit the reviews saw "
+                      "could not be recorded and the corrections cannot be checked. Do not review "
+                      "again: stop and show the person this reason.")
+    if head(folder) == record["commit"]:
         return refuse("Nothing has been committed since the reviews. Commit the corrections "
                       "first, then start the build correction checker.")
     blocks = [f"=== {title} ===\n{record['reports'][part]}\n=== END {title} ==="
@@ -255,7 +267,7 @@ def handle(event):
     checker = str(tool_input.get("subagent_type") or "").split(":")[-1] == CHECKER
     if tool in ("Agent", "Task") and checker:
         if when == "PreToolUse":
-            return start_checker(session, tool_input)
+            return start_checker(session, tool_input, event.get("cwd"))
         if when == "PostToolUse":
             # One correction check per review: a second would follow a second round of corrections.
             with locked(session):
@@ -273,7 +285,8 @@ def handle(event):
     call = str(event.get("tool_use_id") or part)
     with locked(session):
         if when == "PreToolUse":
-            record = for_commit(session, head())
+            folder = repository_of(tool_input.get("prompt"), event.get("cwd"))
+            record = for_commit(session, head(folder), folder)
             record["started"][call] = part
             save(session, record)
         elif when == "PostToolUse":

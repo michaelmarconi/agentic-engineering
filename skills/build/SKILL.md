@@ -145,14 +145,16 @@ and nothing about the build itself, apart from the record of a build before sign
 
 When every requirement is built, start the three reviews in one message, so they run side by
 side, each as an agent in the foreground. Never run `/code-review` or `/security-review` yourself
-with the Skill tool: a plugin hook keeps only an agent's report.
+with the Skill tool: a plugin hook keeps only an agent's report. Give the plan's full path on every
+`Document:` line: the hook works out the plan's repository from it, so the reviews and the
+correction check use the right one whatever folder you started in.
 
 - a `general-purpose` agent with this request, first two lines exactly as shown, since the hook
   reads them to keep its report; the arguments make it review the whole branch, not just the
   latest commits:
 
   ```
-  Document: <the plan's path>
+  Document: <the plan's full path>
   Run /code-review medium <default branch>...HEAD, then reply with its findings word for word, as text.
   If it reports them through a findings tool, copy what you passed to that tool into your reply.
   ```
@@ -160,14 +162,14 @@ with the Skill tool: a plugin hook keeps only an agent's report.
 - a `general-purpose` agent with this request, first two lines exactly as shown:
 
   ```
-  Document: <the plan's path>
+  Document: <the plan's full path>
   Run /security-review on the current branch, then reply with its report word for word.
   ```
 
 - the `agentic:build-reviewer` agent with this request:
 
   ```
-  Document: <the plan's path>
+  Document: <the plan's full path>
   Base: <default branch>
   Review this build.
   ```
@@ -185,7 +187,7 @@ in the summary.
    reviewed, word for word.
 
    ```
-   Document: <the plan's path>
+   Document: <the plan's full path>
    Check the corrections.
    ```
 
