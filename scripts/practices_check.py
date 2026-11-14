@@ -3,7 +3,8 @@
 
 Claude Code runs this as a PreToolUse hook on Write, Edit and MultiEdit. It reads the hook's
 JSON from stdin and works out what the file would hold after the edit. It checks two kinds of
-file, relative to the project ($CLAUDE_PROJECT_DIR, or the current directory if unset):
+file, relative to the git repository holding it (docs/adrs/0032; a relative path is read from the
+folder Claude's shell is in, and a file in no repository counts from the session folder):
 
 - `AGENTS.md` at the project's root: its `## Practices` section, from that heading to the next
   `## ` heading, trailing blank lines left out, may be at most 50 lines.
@@ -26,6 +27,8 @@ import os
 import re
 import sys
 
+import repository
+
 CORE_LIMIT = 50
 TOPIC_LIMIT = 200
 IMPORT = re.compile(r"^\s*@\S")  # a line that starts with @
@@ -34,14 +37,9 @@ CODE = re.compile(r"`[^`]*`")
 FENCE = re.compile(r"^\s*(```|~~~)")
 
 
-def project():
-    return os.environ.get("CLAUDE_PROJECT_DIR") or os.getcwd()
-
-
-def kind(path):
+def kind(path, cwd=None):
     """'core' for the root AGENTS.md, 'topic' for a Markdown file under docs/practices/, else None."""
-    full = path if os.path.isabs(path) else os.path.join(project(), path)
-    rel = os.path.relpath(os.path.normpath(full), project()).replace(os.sep, "/")
+    rel = "/".join(repository.relative_parts(path, base=cwd))
     if rel == "AGENTS.md":
         return "core"
     if rel.startswith("docs/practices/") and rel.endswith(".md"):
@@ -101,10 +99,11 @@ def handle(event):
         return None
     tool_input = event.get("tool_input")
     path = tool_input.get("file_path") if isinstance(tool_input, dict) else None
-    what = kind(path) if isinstance(path, str) and path else None
+    cwd = event.get("cwd") if isinstance(event.get("cwd"), str) else None
+    what = kind(path, cwd) if isinstance(path, str) and path else None
     if not what:
         return None
-    full = path if os.path.isabs(path) else os.path.join(project(), path)
+    full = repository.full_path(path, base=cwd)
     try:
         with open(full, encoding="utf-8") as f:
             before = f.read()
