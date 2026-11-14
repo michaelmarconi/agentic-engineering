@@ -1,0 +1,10 @@
+schema_version: "1.1"
+name: build-check-from-another-folder
+expected_outcome: |
+  The session starts in a folder that is not a git repository and holds the repository one level
+  down, as in a Claude project thread. The build gives the plan's full path on each review's
+  Document: line, the hook finds the plan's repository and records the reviewed commit there, so
+  the build is never refused for want of a repository, the plan is marked Built and the build
+  branch is pushed.
+context:
+  scaffold_script: place-files.sh
