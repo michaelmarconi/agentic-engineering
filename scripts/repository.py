@@ -4,7 +4,8 @@
 A hook that acts on a file finds its repository by going up from that file to the nearest folder
 holding `.git`, as a folder or a file, so worktrees and submodules count. A relative path is read
 from the folder given (the hook event's `cwd`, the folder Claude's shell is in), or else from the
-session folder: $CLAUDE_PROJECT_DIR, or the current directory if that is unset. A file in no
+session folder: $CLAUDE_PROJECT_DIR, or the current directory if that is unset. A path that exists
+only when read from the session folder is read from there, since the shell may have moved. A file in no
 repository uses the session folder instead. A hook with no file looks in the session folder and
 the repositories directly inside it, as in a Claude project thread, whose session folder holds
 each repository one level down.
@@ -25,10 +26,16 @@ def session_folder():
 
 
 def full_path(path, base=None):
-    """The path made full and real: a relative one is read from `base`, else the session folder."""
-    if not os.path.isabs(path):
-        path = os.path.join(base or session_folder(), path)
-    return os.path.realpath(path)
+    """The path made full and real: a relative one is read from `base`, else the session folder.
+
+    The shell may have moved into a subfolder since, so a relative path that exists only when read
+    from the session folder is read from there."""
+    if os.path.isabs(path):
+        return os.path.realpath(path)
+    first = os.path.join(base or session_folder(), path)
+    if base and not os.path.exists(first) and os.path.exists(os.path.join(session_folder(), path)):
+        first = os.path.join(session_folder(), path)
+    return os.path.realpath(first)
 
 
 def top(path, base=None):

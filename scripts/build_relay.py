@@ -18,13 +18,16 @@ fresh_session.py), and keeps:
 - the report of the `build-reviewer` agent, whose request's first line is `Document: <plan>`.
 
 In a Claude project thread an agent's report is the one it handed back, not the tool's text,
-which there only says where the report went. Each is kept with the commit checked out when it ran. A report of a later commit starts a new
-set, so the checker only ever gets reports of one commit.
+which there only says where the report went. Each is kept with the commit checked out when it ran,
+in the repository holding the plan its `Document:` line names, found as every hook finds one
+(docs/adrs/0032, repository.py), so it works when the repositories sit one level below the session
+folder, as in a Claude project thread. A report of a later commit, or of a plan in another
+repository, starts a new set, so the checker only ever gets reports of one commit.
 
 Before the `build-correction-checker` starts, it appends the three reports, the reviewed commit
 and the rubric to read, between fixed `=== ... ===` lines, and approves the start. It refuses the
 start, with a reason Claude sees, when the request has no `Document:` line, when any of the three
-reports of the reviewed commit is missing, or when nothing
+reports of the reviewed commit is missing, when no git repository holds the plan, or when nothing
 has been committed since the reviews, and deletes the record once the checker has run, so the
 corrections are checked only once. A review agent may run in the background, which Claude Code
 can choose even when the skill asks for the foreground: its PostToolUse event then only says it

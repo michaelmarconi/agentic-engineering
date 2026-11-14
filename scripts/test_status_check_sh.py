@@ -92,6 +92,22 @@ class WithPython(unittest.TestCase):
         # A new ADR must start as Draft, so the Python check refuses it.
         self.assertEqual(result.returncode, 2)
 
+    def test_checks_a_document_in_a_repository_below_the_session_folder(self):
+        # A Claude project thread: the session folder holds the repository one level down (ADR 0032).
+        with tempfile.TemporaryDirectory() as session:
+            app = os.path.join(session, "app")
+            path = os.path.join(app, "docs", "adrs", "0001-x.md")
+            os.makedirs(os.path.dirname(path))
+            subprocess.run(["git", "init", "-q", app], check=True)
+            text = json.dumps(
+                {"tool_name": "Write", "tool_input": {"file_path": path, "content": "---\nstatus: Accepted\n---\n"}}
+            )
+            result = subprocess.run(
+                ["sh", SCRIPT], input=text, capture_output=True, text=True,
+                env={**os.environ, "CLAUDE_PROJECT_DIR": session},
+            )
+        self.assertEqual(result.returncode, 2)
+
     def run_brief(self, content):
         with tempfile.TemporaryDirectory() as project:
             path = os.path.join(project, "docs", "brief.md")

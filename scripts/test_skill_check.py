@@ -85,7 +85,7 @@ class SkillCheck(unittest.TestCase):
         self.put("demo", skill_md())
         self.assertEqual(self.check().returncode, 0)
 
-    # Reviews find the document's repository (ADR 0022)
+    # Reviews find the document's repository (ADR 0032)
 
     def reviewing(self, document_line, extra=""):
         return (f"# Demo\n\nStart the `agentic:correction-checker` agent.\n\n{REVIEW_RULE}\n\n{STEPS}\n\n"

@@ -10,8 +10,8 @@ Claude Code runs it on PreToolUse and PostToolUse for the Agent tool, on PostToo
 subagent's SubagentHandback tool, and on SubagentStop. It reads
 the hook's JSON from stdin. A reviewer's or checker's request must start with the line
 `Document: <path>`. Skills give the document's full path; a relative path is read from a
-`Repository: <folder>` second line if the request has one, or else from the project
-($CLAUDE_PROJECT_DIR, or the current directory if unset). It may name several files separated by
+`Repository: <folder>` second line if the request has one, or else as every hook reads one (see
+repository.py): from the folder Claude's shell is in, or else the session folder. It may name several files separated by
 commas, such as `Document: /p/AGENTS.md, /p/docs/practices/testing.md`, which are then reviewed as
 one document (see docs/adrs/0018): the hook saves each, hands the checker each between `=== FILE: <path> ===` and
 `=== END FILE ===` lines, and starts the checker once any of them has changed. The order of the
@@ -21,8 +21,8 @@ uses `Document: feedback draft` and carries the draft between `=== DRAFT ===` an
 `=== END DRAFT ===` lines in the request.
 
 Before any of these agents starts, the hook finds the repository the document is in (see
-docs/adrs/0022): the top folder of the git repository holding its files, or the project when they
-are in none. It rewrites the request's first line to name each file relative to that folder, and
+docs/adrs/0032): the top folder of the git repository holding its files, or the session folder
+when they are in none. It rewrites the request's first line to name each file relative to that folder, and
 puts `Repository: <the folder's full path>` on the second line, so an agent started from a folder
 above the project still reads and searches the right one. Everything it saves is keyed by those
 relative paths. It refuses the start when none of the files exists, or when they sit in different
@@ -75,6 +75,7 @@ import re
 import sys
 import tempfile
 
+import repository as repositories
 import saved_records
 import subagent_report
 
@@ -138,38 +139,22 @@ def draft(prompt):
     return prompt[start + len(DRAFT_START):end] if end >= 0 else None
 
 
-def project():
-    return os.environ.get("CLAUDE_PROJECT_DIR") or os.getcwd()
-
-
 class Unreadable(Exception):
     """The `Document:` line names no file the hook can find, or files in different repositories."""
 
 
-def git_top(path):
-    """The top folder of the git repository holding `path`, or None when it is in none."""
-    folder = os.path.dirname(path)
-    while True:
-        if os.path.exists(os.path.join(folder, ".git")):
-            return folder
-        parent = os.path.dirname(folder)
-        if parent == folder:
-            return None
-        folder = parent
-
-
-def locate(name, prompt):
-    """The document's repository and its files relative to it, sorted (ADR 0018 and 0022).
+def locate(name, prompt, cwd=None):
+    """The document's repository and its files relative to it, sorted (ADR 0018 and 0032).
 
     A line that names an existing file is that one file, even if its name holds a comma, so the
     order of the names on the line never matters. Raises Unreadable when no named file exists, or
     when they sit in different repositories or outside the repository the others are in."""
     if name == FEEDBACK_DRAFT:
         return None, [FEEDBACK_DRAFT]
-    base = header(prompt)[1] or project()
+    base = header(prompt)[1] or cwd or repositories.session_folder()
 
     def full(path):
-        return os.path.realpath(path if os.path.isabs(path) else os.path.join(base, path))
+        return repositories.full_path(path, base)
 
     parts = [name]
     if "," in name and not os.path.isfile(full(name)):
@@ -179,19 +164,19 @@ def locate(name, prompt):
     if not found:
         raise Unreadable(f"Can't find {name}. Give the document's full path on the `Document:` "
                          "line, the path you wrote it to, and start the agent again.")
-    tops = sorted({git_top(p) or os.path.realpath(project()) for p in found})
+    tops = sorted({repositories.repository_of(p) for p in found})
     if len(tops) > 1:
         raise Unreadable(f"The files on the `Document:` line, {name}, sit in different "
                          f"repositories: {', '.join(tops)}. Name only one repository's files.")
     relative = sorted({os.path.relpath(p, tops[0]) for p in paths})
     outside = [p for p in relative if p == ".." or p.startswith(".." + os.sep)]
-    if outside and git_top(found[0]):
+    if outside and repositories.top(found[0]):
         raise Unreadable(f"{', '.join(outside)}, on the `Document:` line, is outside the repository "
                          f"{tops[0]} that holds the other files. Name only one repository's files.")
     return tops[0], relative
 
 
-def named_after(name, prompt):
+def named_after(name, prompt, cwd=None):
     """The document's files once its agent has run, for keeping its report.
 
     A request the hook rewrote names them relative to its `Repository:` line, so the report is
@@ -203,7 +188,7 @@ def named_after(name, prompt):
             parts = [p.strip() for p in name.split(",") if p.strip()]
         if not any(os.path.isabs(p) for p in parts):
             return sorted(set(parts))
-    return locate(name, prompt)[1]
+    return locate(name, prompt, cwd)[1]
 
 
 def rewritten(tool_input, repository, paths):
@@ -456,14 +441,14 @@ def attachments(name, record):
             "=== FILES TO READ ===\n" + "\n".join(lines) + "\n=== END FILES TO READ ===\n")
 
 
-def start_checker(session, tool_input):
+def start_checker(session, tool_input, cwd=None):
     prompt = tool_input.get("prompt") or ""
     named = document(prompt)
     if not named:
         return refuse("Start the correction checker with `Document: <path>` as the first line of "
                       "its request, the same line the reviewer was given.")
     try:
-        repository, paths = locate(named, prompt)
+        repository, paths = locate(named, prompt, cwd)
     except Unreadable as problem:
         return refuse(str(problem))
     name = ", ".join(paths)
@@ -503,12 +488,13 @@ def handle(event):
     agent = agent_name(tool_input)
     prompt = tool_input.get("prompt") or ""
     named = document(prompt)
+    cwd = event.get("cwd") if isinstance(event.get("cwd"), str) and event.get("cwd") else None
     if agent == CHECKER:
         if when == "PreToolUse":
-            return start_checker(session, tool_input)
+            return start_checker(session, tool_input, cwd)
         if when == "PostToolUse" and named:
             try:
-                name = ", ".join(named_after(named, prompt))
+                name = ", ".join(named_after(named, prompt, cwd))
             except Unreadable:
                 return None
             with locked(session, create=False):
@@ -520,9 +506,9 @@ def handle(event):
     part = "reviewer" if agent in REVIEWERS else "language"
     try:
         if when == "PreToolUse":
-            repository, paths = locate(named, prompt)
+            repository, paths = locate(named, prompt, cwd)
         else:
-            repository, paths = None, named_after(named, prompt)
+            repository, paths = None, named_after(named, prompt, cwd)
     except Unreadable as problem:
         return refuse(str(problem)) if when == "PreToolUse" else None
     name = ", ".join(paths)

@@ -36,6 +36,17 @@ class Layout(unittest.TestCase):
     def test_relative_path_counts_from_the_given_folder_first(self):
         self.assertEqual(repository.repository_of("docs/plans/x.md", base=self.app), self.app)
 
+    def test_a_relative_path_missing_from_the_given_folder_is_read_from_the_session_folder(self):
+        # The shell may have moved into a subfolder; a path that exists from the session folder wins.
+        plan = os.path.join(self.app, "docs", "plans", "x.md")
+        with open(plan, "w") as f:
+            f.write("x")
+        docs = os.path.join(self.app, "docs")
+        self.assertEqual(repository.full_path("app/docs/plans/x.md", base=docs), plan)
+
+    def test_a_relative_path_found_nowhere_is_read_from_the_given_folder(self):
+        self.assertEqual(repository.full_path("new.md", base=self.app), os.path.join(self.app, "new.md"))
+
     def test_without_a_session_variable_the_working_folder_is_the_session_folder(self):
         with mock.patch.dict(os.environ, {"CLAUDE_PROJECT_DIR": ""}), \
                 mock.patch("os.getcwd", return_value=self.session):
