@@ -16,23 +16,24 @@ How does each of the plugin's hooks[^hook] find the git repository it works in?
 
 Chosen: every hook that acts on a file finds the repository by going up from that file to the
 nearest folder holding git's `.git`, through one piece of code all hooks share. A relative path
-counts from the folder Claude's shell is in, or else the session folder[^session]. A hook with no
-file looks in the session folder and the repositories directly inside it. One rule then serves a plain session and a Claude project
+is read from the folder Claude's shell is in, or else from the session folder[^session]. A hook with no
+file looks in the session folder and the repositories directly inside it. One rule then serves a session started in a repository and a Claude project
 thread[^thread] alike.
 
 ## Background
 
 The hooks treat the session folder as the repository, but a project thread's session folder holds
-its repositories one level down. There, the build's[^build] hook found no git commit to record when
-the build's reviews ran, so that hook refused every correction check[^check]. [ADR 0022](0022-review-repository-folder.md) already solved this
-for document reviews alone; the other hooks never followed it.
+its repositories one level down. There, the build's[^build] hook could not record which commit
+its reviews saw. So it could never tell a correction was committed, and refused every correction
+check[^check]. [ADR 0022](0022-review-repository-folder.md) solved this for
+document reviews alone.
 
 ## Options
 
 | Option | Outcome | Why |
 | --- | --- | --- |
 | Keep using the session folder | Rejected | Wrong in every project thread, and in any session started above the repository |
-| Use the folder Claude's shell is in as the repository | Rejected | Claude may never have left the session folder; it only completes a relative path |
+| Use the folder Claude's shell is in as the repository | Rejected | Often still the session folder; used only to complete a relative path |
 | Look among the session folder's subfolders, for every hook | Rejected | With several repositories, a hook with a file could pick the wrong one |
 | Have each skill[^skill] tell the hook the repository | Rejected | Nothing would check the folder Claude named, as [ADR 0022](0022-review-repository-folder.md) found |
 | Go up from the file each hook acts on, through shared code | Chosen | The file's place on disk decides, in every kind of session |
@@ -46,7 +47,7 @@ for document reviews alone; the other hooks never followed it.
 
 ## Out of scope
 
-- A file outside any repository, for which the session folder is used instead.
+- A project without git: its files use the session folder, as today.
 - Repositories nested more than one level below the session folder, for a hook with no file.
 - Scripts Claude runs itself, which take the folder Claude names.
 - The hook that checks a command's git branch, which already uses the command's folder.
@@ -85,7 +86,7 @@ Applies to: any hook that acts on a repository's files, or looks for the session
   gives the reviewed document's full path on the first line of each review request; a line may
   name several files. Just before the agent starts, the hook finds the repository holding them,
   rewrites that line to name each file relative to it, and adds a second line,
-  `Repository: <the repository's full path>`. A relative path counts from that line first. The hook
+  `Repository: <the repository's full path>`. A relative path is read from that folder first. The hook
   refuses to start the agent, and says why, if no named file exists, or if the files sit in
   different repositories. Each agent reads and searches only inside the `Repository:` folder, and
   if it still cannot read the document, it reports an error instead of a result.
