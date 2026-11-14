@@ -151,10 +151,12 @@ def locate(name, prompt, cwd=None):
     when they sit in different repositories or outside the repository the others are in."""
     if name == FEEDBACK_DRAFT:
         return None, [FEEDBACK_DRAFT]
-    base = header(prompt)[1] or cwd or repositories.session_folder()
+    named_folder = header(prompt)[1]
+    base = named_folder or cwd or repositories.session_folder()
 
     def full(path):
-        return repositories.full_path(path, base)
+        # A folder the request names outright is not second-guessed.
+        return repositories.full_path(path, base, fallback=not named_folder)
 
     parts = [name]
     if "," in name and not os.path.isfile(full(name)):

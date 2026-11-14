@@ -191,11 +191,12 @@ def start_checker(session, tool_input, cwd):
     # A record saved before the repository was kept beside the commit names none: the checker's
     # own `Document:` line names the same plan.
     folder = record.get("repository") or repository_of(prompt, cwd)
-    if record["commit"] is None or head(folder) is None:
+    current = head(folder)
+    if record["commit"] is None or current is None:
         return refuse(f"There is no git repository holding {named}, so the commit the reviews saw "
                       "could not be recorded and the corrections cannot be checked. Do not review "
                       "again: stop and show the person this reason.")
-    if head(folder) == record["commit"]:
+    if current == record["commit"]:
         return refuse("Nothing has been committed since the reviews. Commit the corrections "
                       "first, then start the build correction checker.")
     blocks = [f"=== {title} ===\n{record['reports'][part]}\n=== END {title} ==="
@@ -289,7 +290,12 @@ def handle(event):
     with locked(session):
         if when == "PreToolUse":
             folder = repository_of(tool_input.get("prompt"), event.get("cwd"))
-            record = for_commit(session, head(folder), folder)
+            commit = head(folder)
+            kept = load(session)
+            if commit is None and kept and kept.get("commit"):
+                # A review whose plan no repository holds must not wipe the others' reports.
+                folder, commit = kept.get("repository", folder), kept["commit"]
+            record = for_commit(session, commit, folder)
             record["started"][call] = part
             save(session, record)
         elif when == "PostToolUse":

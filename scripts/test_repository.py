@@ -96,6 +96,31 @@ class Layout(unittest.TestCase):
         with mock.patch.dict(os.environ, {"CLAUDE_PROJECT_DIR": empty.name}):
             self.assertEqual(repository.session_folders(), [os.path.realpath(empty.name)])
 
+    def test_a_project_started_in_a_subfolder_of_a_repository_counts_from_the_session_folder(self):
+        # A package of a larger repository, with the session started in the package.
+        package = os.path.join(self.app, "pkg")
+        with mock.patch.dict(os.environ, {"CLAUDE_PROJECT_DIR": package}):
+            spec = os.path.join(package, "docs", "specs", "x.spec.md")
+            self.assertEqual(repository.relative_parts(spec), ["docs", "specs", "x.spec.md"])
+            # A file of the repository outside the package still counts from the repository.
+            self.assertEqual(repository.relative_parts(os.path.join(self.app, "docs", "brief.md")),
+                             ["docs", "brief.md"])
+
+    def test_session_folders_skip_repositories_inside_one_that_is_a_repository(self):
+        # Such as a submodule or a checkout kept inside the project.
+        nested = os.path.join(self.app, "vendor")
+        os.makedirs(nested)
+        subprocess.run(["git", "init", "-q", nested], check=True)
+        with mock.patch.dict(os.environ, {"CLAUDE_PROJECT_DIR": self.app}):
+            self.assertEqual(repository.session_folders(), [self.app])
+
+    def test_a_named_folder_is_kept_even_when_the_path_is_missing_there(self):
+        os.makedirs(os.path.join(self.session, "docs"))
+        with open(os.path.join(self.session, "docs", "x.md"), "w") as f:
+            f.write("x")
+        self.assertEqual(repository.full_path("docs/x.md", base=self.app, fallback=False),
+                         os.path.join(self.app, "docs", "x.md"))
+
     def test_the_main_script_runs(self):
         done = subprocess.run([sys.executable, os.path.join(HERE, "repository.py"), "--help"],
                               capture_output=True, text=True)

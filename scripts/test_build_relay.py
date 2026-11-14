@@ -551,6 +551,14 @@ class SessionFolderAboveTheRepository(Relay):
         self.assertEqual(result["permissionDecision"], "allow")
         self.assertIn(f"Reviewed commit: {reviewed}", result["updatedInput"]["prompt"])
 
+    def test_a_review_whose_plan_no_repository_holds_keeps_the_other_reports(self):
+        self.reviews_named(f"repo/{PLAN}")
+        self.agent("agentic:build-reviewer", f"Document: missing/{PLAN}\nBase: main\nReview this build.", "stray")
+        with open(build_relay.record_path("s1"), encoding="utf-8") as f:
+            record = json.load(f)
+        self.assertEqual(sorted(record["reports"]), ["code", "plan", "security"])
+        self.assertIsNotNone(record["commit"])
+
     def test_a_review_of_a_plan_in_another_repository_starts_a_new_record(self):
         other = os.path.join(self.session, "other")
         os.makedirs(other)

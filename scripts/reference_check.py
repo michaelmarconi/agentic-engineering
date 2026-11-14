@@ -104,7 +104,7 @@ def problem(source, target):
         return "is outside the repository"
     full = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(source)), path))
     # Counted from the document's own repository, so a link into a repository beside it leaves it.
-    parts = os.path.relpath(repository.full_path(full), repository.repository_of(source)).split(os.sep)
+    parts = os.path.relpath(repository.full_path(full), repository.project_of(source)).split(os.sep)
     if parts[0] == os.pardir:
         return "is outside the repository"
     if path.endswith("/") or os.path.isdir(full):
