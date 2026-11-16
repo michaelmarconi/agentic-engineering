@@ -141,6 +141,19 @@ class Start(Repo):
         self.assertFalse(spec["accepted"])
         self.assertEqual(spec["status"], "📝 Draft")
 
+    def test_spec_in_the_old_layout_flagged(self):
+        self.put("docs/specs/old.spec.md", "---\nstatus: 👍 Accepted\n---\n\n# Old\n\n## Requirements\n\n"
+                                           "### Requirement: Count words\n\n#### Scenario: three\n")
+        self.commit()
+        _, out, _ = self.start("docs/specs/old.spec.md")
+        spec = json.loads(out)["specs"][0]
+        self.assertTrue(spec["old_layout"])
+        self.assertEqual(spec["requirements"], [])
+
+    def test_current_layout_not_flagged(self):
+        _, out, _ = self.start("docs/specs/mail-pull.spec.md")
+        self.assertFalse(json.loads(out)["specs"][0]["old_layout"])
+
     def test_every_spec_when_none_named(self):
         _, out, _ = self.start()
         self.assertEqual([s["path"] for s in json.loads(out)["specs"]],

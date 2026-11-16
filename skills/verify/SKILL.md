@@ -45,7 +45,9 @@ Run `start` with the specs those requirements come from, or with none for every 
 the person the list you will check: each spec by its path, with its requirements by number and
 name and how many examples each holds, as `start` printed them. Leave out every requirement whose
 spec is not `👍 Accepted`, and say so with its status: a spec that is not accepted states no
-settled intent to check against. Ask the person to confirm or change the list, and check nothing
+settled intent to check against. Leave out, too, a spec `start` marks `old_layout`, whose
+requirements it cannot list, and say it must be brought to the current layout with `/spec` and
+accepted again. Ask the person to confirm or change the list, and check nothing
 until they agree. When their request already named what to check and said to go ahead, that is
 their agreement: show the list and carry on. If they change the list, run `start` again with its
 specs.

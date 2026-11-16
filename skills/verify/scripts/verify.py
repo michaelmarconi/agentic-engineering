@@ -11,12 +11,13 @@ start [<spec path> ...] --data <folder> --session <id> [--project <folder>]
     checked out, clears what the verify hook (scripts/verify_relay.py) kept of an earlier run in this
     session, and lists each spec named, or every spec under docs/specs/
     when none is: its path, its status as the status hook reads it (scripts/status_check.py),
-    whether it is `👍 Accepted`, and its numbered requirements, each with how many examples it holds
+    whether it is `👍 Accepted`, whether it still heads its requirements `### Requirement: <name>`, as
+    specs written for an earlier version of the plugin did (old_layout), and its numbered requirements, each with how many examples it holds
     (its `| Example | ... |` tables). A path may be relative to the repository or full. It refuses a
     path that is missing or is not a *.spec.md under docs/specs/, and a plan, saying to give
     the specs it names instead. Prints JSON: root (the
-    repository's full path), commit, and specs [{path, status, accepted, requirements [{number,
-    name, examples}]}].
+    repository's full path), commit, and specs [{path, status, accepted, old_layout, requirements
+    [{number, name, examples}]}].
 
 report --scope <what was checked> --commit <commit> --data <folder> --session <id> [--project <folder>]
     Writes the run's report file (ADRs 0033 and 0034) with scripts/run_report.py, outside the
@@ -46,7 +47,7 @@ import run_report  # noqa: E402
 import uncommitted  # noqa: E402
 import verify_relay  # noqa: E402
 from status_check import (ACCEPTED, REQUIREMENT_HEADING, SPEC_STATUSES, headings_allowed,  # noqa: E402
-                          lifecycle_status, section)
+                          lifecycle_status, old_layout, section)
 
 EXAMPLE_TABLE = re.compile(r"^\s*\|\s*Example\s*\|", re.IGNORECASE)
 AGENT_NAMES = {"verifier": "Verifier", "verify-checker": "Verify-checker"}
@@ -127,7 +128,8 @@ def describe(root, path):
     except (OSError, UnicodeDecodeError) as error:
         raise Refused(f"can't read {path} ({getattr(error, 'strerror', None) or error})")
     status = lifecycle_status(text, SPEC_STATUSES)
-    return {"path": path, "status": status, "accepted": status == ACCEPTED, "requirements": requirements(text)}
+    return {"path": path, "status": status, "accepted": status == ACCEPTED, "old_layout": old_layout(text),
+            "requirements": requirements(text)}
 
 
 def start(project, specs, data, session):
@@ -223,7 +225,7 @@ def main(argv=None):
         "start", help="refuse uncommitted changes, note the commit and list the specs' requirements",
         description="Refuse while anything is uncommitted; otherwise note the commit, clear the kept reports of "
                     "an earlier run in this session, and list each spec named, or every spec, with its status "
-                    "and requirements. Output: JSON with root, commit and specs [{path, status, accepted, "
+                    "and requirements. Output: JSON with root, commit and specs [{path, status, accepted, old_layout, "
                     "requirements [{number, name, examples}]}]. Exit codes: 0 done; 1 refused, with the reason "
                     "on stderr.")
     start_parser.add_argument("specs", nargs="*", help="the specs to list (default: every spec under docs/specs/)")
