@@ -74,6 +74,11 @@ class DocReferences(unittest.TestCase):
                            "[c](#notes) [d](#notes-1)\n")
         self.assertPasses()
 
+    def test_an_html_anchor_counts_as_a_heading(self):
+        self.write("a.md", "| Topic |\n|---|\n| <a id=\"running-the-product\"></a>Running |\n\n"
+                           "[r](#running-the-product)\n")
+        self.assertPasses()
+
     def test_web_and_mail_references_are_not_checked(self):
         self.write("README.md", "[w](https://example.com/x.md) [m](mailto:a@b.c) "
                                 "[h](http://example.com)\n")
