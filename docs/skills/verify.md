@@ -61,9 +61,6 @@ page). Once you have committed the practice, run `/verify` again.
 a start command that fails, it ends the run in the same way, says what failed, and asks you to
 correct the practice with `/practices`.
 
-If your project already has a run skill made by Claude Code's `/run-skill-generator`, the practice
-can simply name it.[^run]
-
 ## What it checks
 
 `/verify` checks examples: the Given, When and Then rows under each requirement of a spec. Each
@@ -187,5 +184,4 @@ You then decide what to do: merge, correct the code through a new plan, or chang
 
 [^boehm]: Barry Boehm, *Software Engineering Economics* (1981), separates verification, "are we
     building the product right?", from validation, "are we building the right product?".
-[^run]: Claude Code documentation, [Run and verify your app](https://code.claude.com/docs/en/skills#run-and-verify-your-app).
 [^codereview]: Claude Code documentation, [Review locally with /code-review](https://code.claude.com/docs/en/code-review-local).
