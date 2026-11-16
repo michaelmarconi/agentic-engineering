@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: practices-releasing-required
+expected_outcome: |
+  /practices releasing writes releasing.md under the three required headings, taking the publish step from the repository rather than proposing one, checks it with the completeness script, and never runs a real publish.
+context:
+  scaffold_script: place-files.sh

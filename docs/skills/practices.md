@@ -91,7 +91,7 @@ same way; only the commands change.
 
 ### Files to read before a task
 - before writing or changing tests: `docs/practices/testing.md`
-- before releasing or deploying: `docs/practices/releasing.md`
+- before releasing: `docs/practices/releasing.md`
 ```
 
 ## One command per step
@@ -111,6 +111,32 @@ scripts folder yet, it asks which you want first. A step that needs real logic, 
 ordinary work for [`/plan`](plan.md) and [`/build`](build.md). No other skill writes commands, so
 they don't pile up across the repository.
 
+## Releasing and deploying
+
+The release and deploy skills act on real systems, such as a package registry or a live server,
+and they never ask how: they run what these two topics record. So these topics are stricter than
+the rest. Each has a fixed set of headings, and the items under them must come from you or from
+what the repository already shows, never from a default Claude proposed. For example:
+
+```markdown
+## What may be released
+Only commits merged to main.
+## Version and its commit
+Semver in package.json; each release is tagged v<version>.
+## Publish
+npm run release
+```
+
+A deploying topic has one section per environment, each saying which releases may go there and
+the commands that deploy, check that the product works, and roll back. The check is drafted from
+Running the product, when it is recorded.
+
+While recording them, `/practices` tries only what is safe: it reads the current version, runs each
+check and runs a publish or deploy in its dry-run mode where there is one. It never publishes,
+deploys or rolls back. A small script decides whether each topic is complete, and the release and
+deploy skills run the same script before acting, so when something is missing they stop and say
+exactly what.
+
 ## Topics
 
 These are the topics `/practices` suggests. They are a starting point, not a complete list: any
@@ -125,7 +151,8 @@ other topic you ask for is recorded the same way.
 | Delivering work | How work is split, how big one plan may be, and what done means beyond the merge checks |
 | Reviews and merging | Who reviews, how work is merged, what must pass first, and whether [`/verify`](verify.md) must run and pass before a build is merged |
 | CI/CD | What the pipeline runs and when, which checks are required, and what to do when a run fails |
-| Releasing and deploying | Version numbers, changelog, environments, and rolling back |
+| <a id="releasing"></a>Releasing | Which code may be released, how the version is set and tied to one commit, and the command that publishes it; [`/release`](#releasing-and-deploying) relies on it |
+| <a id="deploying"></a>Deploying | For each environment: which releases may go there, and the commands that deploy, check and roll back; [`/deploy`](#releasing-and-deploying) relies on it |
 | Database changes | How they are written and applied, and whether they must be reversible |
 | Security and dependencies | What to check before adding a dependency, scanning, updates, and handling a security hole |
 | Hands off | Files an agent must never edit, and actions it must never take |

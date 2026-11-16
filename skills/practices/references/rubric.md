@@ -47,3 +47,8 @@ import, so the reviewer does not count lines or look for imports in the section 
     Check your work names it as the project's place for commands, and every runner entry or
     scripts-folder script a command runs is in that one place. A one-line command that needs no
     entry, such as `npm test` or `bin/wordcount {file}`, passes.
+15. **Releasing and deploying are complete.** A releasing topic has the headings `## What may be
+    released`, `## Version and its commit` and `## Publish`. A deploying topic has at least one
+    `## Environment: <name>` section, each with `### Releases allowed`, `### Deploy`, `### Check`
+    and `### Roll back`. Each of these holds text, and none is marked "(default)", since the
+    release and deploy skills would run a guessed step against real systems.
