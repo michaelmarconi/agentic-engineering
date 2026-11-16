@@ -9,7 +9,7 @@ review_relay.py does for documents.
 
 Claude Code runs it on PreToolUse for the Agent tool, on PostToolUse for the Agent tool and a
 subagent's SubagentHandback tool, and on SubagentStop. It acts only in a session where /build was allowed to start (recorded by
-fresh_session.py), and keeps:
+build_session.py), and keeps:
 
 - the report of the agent that runs Claude Code's `/code-review`: an agent whose request's first
   line is `Document: <plan>` and whose second line starts `Run /code-review`;
@@ -55,7 +55,7 @@ try:
 except ImportError:  # Windows: run without the lock rather than fail every agent start.
     fcntl = None
 
-import fresh_session
+import build_session
 import repository
 import saved_records
 import subagent_report
@@ -265,7 +265,7 @@ def agent_stopped(session, event):
     agent_id = event.get("agent_id")
     parts = STOPPING.get(str(event.get("agent_type") or "").split(":")[-1])
     if (not isinstance(agent_id, str) or not agent_id or not parts
-            or not fresh_session.building(session) or not record_path(session)):
+            or not build_session.building(session) or not record_path(session)):
         return None
     handed = subagent_report.handed_back_report(event) is not None
     with locked(session):
@@ -333,7 +333,7 @@ def handle(event):
                              event.get("tool_response"))
                     save(session, record)
         return None
-    if not fresh_session.building(session) or not record_path(session):
+    if not build_session.building(session) or not record_path(session):
         return None
     if tool not in ("Agent", "Task"):
         return None

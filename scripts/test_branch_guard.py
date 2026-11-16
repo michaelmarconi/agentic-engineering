@@ -12,7 +12,7 @@ from unittest import mock
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import branch_guard  # noqa: E402
-import fresh_session  # noqa: E402
+import build_session  # noqa: E402
 
 ENV = dict(os.environ, GIT_AUTHOR_NAME="Test", GIT_AUTHOR_EMAIL="test@example.com",
            GIT_COMMITTER_NAME="Test", GIT_COMMITTER_EMAIL="test@example.com",
@@ -36,7 +36,7 @@ class Guard(unittest.TestCase):
         subprocess.run(["git", *args], cwd=self.repo, env=ENV, check=True, capture_output=True)
 
     def build_running(self, session="s1"):
-        fresh_session.save(session, {"fresh": True, "messages": 1, "building": True})
+        build_session.save(session, {"building": True})
 
     def bash(self, command, session="s1"):
         event = {"hook_event_name": "PreToolUse", "session_id": session, "cwd": self.repo,

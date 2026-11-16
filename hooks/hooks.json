@@ -6,10 +6,6 @@
           {
             "type": "command",
             "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/scripts/session_map.py\""
-          },
-          {
-            "type": "command",
-            "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/scripts/fresh_session.py\""
           }
         ]
       }
@@ -19,7 +15,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/scripts/fresh_session.py\""
+            "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/scripts/build_session.py\""
           }
         ]
       }
@@ -61,7 +57,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/scripts/fresh_session.py\""
+            "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/scripts/build_session.py\""
           }
         ]
       },
