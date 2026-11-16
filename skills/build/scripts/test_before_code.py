@@ -1,4 +1,4 @@
-"""Tests for tests_fail.py, the check /build runs on a requirement's tests before its code."""
+"""Tests for before_code.py, which /build runs on a requirement's tests before its code."""
 
 import os
 import subprocess
@@ -7,7 +7,7 @@ import tempfile
 import unittest
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-SCRIPT = os.path.join(HERE, "tests_fail.py")
+SCRIPT = os.path.join(HERE, "before_code.py")
 COMMAND = sys.executable + " -m unittest {file}"
 
 PASSING = "import unittest\n\nclass T(unittest.TestCase):\n    def test_ok(self):\n        self.assertEqual(1, 1)\n"

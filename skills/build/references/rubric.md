@@ -13,7 +13,7 @@ failure. "The build" is every commit on the branch that the default branch does 
    shows what How we'll check says it checks. A requirement verified by demonstration needs no test:
    it is left for the person to check after the build, and is not a failure.
 3. **Tests first.** The `Tests first:` lines of the review request give each requirement with
-   tests a result: accepted by the tests-fail check, refused, or already built when this run
+   tests a result: accepted by the before-code check, refused, or already built when this run
    started. The log agrees: each accepted requirement's tests are committed before its code. A
    requirement refused because its code was committed before its tests does not fail this check,
    since commits are never rewritten: it goes under Needs a person, naming the requirement, for

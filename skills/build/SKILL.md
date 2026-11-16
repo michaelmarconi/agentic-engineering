@@ -179,7 +179,7 @@ suggests. For each requirement:
    and the test files you wrote or changed:
 
    ```
-   python3 "${CLAUDE_SKILL_DIR}/scripts/tests_fail.py" --command "<command with {file}>" <test files>
+   python3 "${CLAUDE_SKILL_DIR}/scripts/before_code.py" --command "<command with {file}>" <test files>
    ```
 
    Read each failure in its output: it must come from the behaviour not being there yet, not from
@@ -268,7 +268,7 @@ reads them exactly as they were given; you write only your own sections, as Mark
 2. `## Built before sign-off`: for a build before sign-off, what was not signed off and the
    proposed answers built, with a suggestion to settle them and sign the plan off.
 3. `## Tests and lint`: the test and lint commands you ran, with their final output, any tests
-   that failed before you started, and each requirement's result from the tests-fail check.
+   that failed before you started, and each requirement's result from the before-code check.
 4. `## Choices`: each choice you made, with its reason, and each practice you had to work out from
    the repository, with a suggestion to record it with `/practices`.
 5. `## Defects corrected`: each defect you corrected that no spec mentions, so the person can add

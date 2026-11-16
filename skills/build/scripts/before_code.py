@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""Check that a requirement's new tests fail, before any code makes them pass.
+"""Run before writing a requirement's code: check its new tests fail, then repeat the practices
+and the build's rules.
 
 `/build` runs this from the repository after writing each requirement's tests, before
 committing them. Give it the command that runs one test file, with `{file}` where the path goes,

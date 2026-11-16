@@ -89,7 +89,7 @@ None.
 
 ## Technical detail
 
-**The script.** `skills/build/scripts/tests_fail.py --command "<command with {file}>" FILE...`,
+**The script.** `skills/build/scripts/before_code.py --command "<command with {file}>" FILE...`,
 run from the repository. It lists the uncommitted paths and refuses, exit 1, when a named file is
 not new or changed, when anything other than the named files is uncommitted ("code must wait until
 its tests are committed"), or when any named file's command exits 0 ("its tests already pass, so
