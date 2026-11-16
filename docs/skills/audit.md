@@ -174,9 +174,9 @@ the skill that makes it:
 - for a problem with a document, the edit that corrects it.
 
 The full report goes in a Markdown file, and Claude's reply is short, under 150 words: the
-outcome, then at most five bullets with the main findings and any question or action for you,
-then the file's full path. The app shows you the file where it can. The file
-holds Claude's sections, such as each finding with its suggested correction, and every agent's
+outcome, then at most five bullets, each one short line, with the main findings and any
+question or action for you, then the file's full path. The app shows you the file where it
+can. The file holds Claude's sections, such as each finding with its suggested correction, and every agent's
 report copied in word for word by the audit's script, so you read each finding exactly as its agent
 gave it, quotes included. It is kept in the plugin's own data folder, outside your repository, at
 `reports/<repository>/<date>-audit-<scope>.md`, until you delete it; where that folder can't be
