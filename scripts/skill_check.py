@@ -189,8 +189,8 @@ BUILD_PATH_RULE = (
 )
 REPORT_RULE = (
     "End with a short reply, under 150 words: the outcome in a sentence or two, then at most five"
-    " bullets, each one short line, with the main findings and any question or action for the "
-    "person, then the report file's full path; if the app you run in can show them a file in a "
+    " bullets of at most 15 words each, with the main findings and any question or action for the"
+    " person, then the report file's full path; if the app you run in can show them a file in a "
     "viewer, show the report file there; never paste the report or its sections into the reply, "
     "since the file holds them."
 )

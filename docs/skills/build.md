@@ -194,7 +194,7 @@ you: with Claude directly, by changing a spec or ADR, or by deciding a finding i
 passes. If you think a finding is wrong, say so when you rerun it.
 
 It ends with a short reply, under 150 words: the outcome, the branch and whether the plan was
-marked `✅ Built`, then at most five bullets, each one short line, with the main findings and
+marked `✅ Built`, then at most five bullets of at most 15 words each, with the main findings and
 any question or action for you, then the full path of the build's report file. Where the app
 you run Claude Code in can show you a file, the report opens there. The file is Markdown, kept outside your repository
 in the plugin's data folder, under `reports/<repository>/`, named by date and plan; where that

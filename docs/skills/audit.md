@@ -174,7 +174,7 @@ the skill that makes it:
 - for a problem with a document, the edit that corrects it.
 
 The full report goes in a Markdown file, and Claude's reply is short, under 150 words: the
-outcome, then at most five bullets, each one short line, with the main findings and any
+outcome, then at most five bullets of at most 15 words each, with the main findings and any
 question or action for you, then the file's full path. The app shows you the file where it
 can. The file holds Claude's sections, such as each finding with its suggested correction,
 and every agent's report copied in word for word by the audit's script, so you read each finding exactly as its agent
