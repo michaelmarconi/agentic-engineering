@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: build-rereads-rules-each-requirement
+expected_outcome: |
+  The plan names two requirements. Before writing each requirement's tests, the build re-reads the Practices section of AGENTS.md and its own rules for the whole build, with the Read tool, so a long build keeps them in mind.
+context:
+  scaffold_script: place-files.sh
