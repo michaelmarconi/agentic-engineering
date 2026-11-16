@@ -6,6 +6,15 @@ What changed in each version of the plugin, newest first. Versions follow
 past a major version: it says what you need to change in your documents. Until 1.0.0, any
 minor version may need such a change, and its entry says so.
 
+## [0.51.1] - 2026-11-16
+
+### Changed
+
+- The reply that ends `/build` and `/audit` now gives the outcome in a sentence or two, then at
+  most five bullets of at most 15 words each with the main findings and any question or action
+  for you, then the report file's path, all under 150 words. Before, it was told not to list
+  findings, but did anyway, at length; the full report stays in the file.
+
 ## [0.51.0] - 2026-11-14
 
 ### Changed

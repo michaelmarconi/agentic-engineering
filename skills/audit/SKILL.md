@@ -191,7 +191,7 @@ contradiction and each problem:
   person's intent for the product has changed;
 - for a problem with a document, the edit that corrects it.
 
-End with a reply of a few lines, under 150 words: the outcome in a sentence or two, any question for the person and the report file's full path; if the app you run in can show them a file in a viewer, show the report file there; never paste the report into the reply or list its findings there, since the file holds them.
+End with a short reply, under 150 words: the outcome in a sentence or two, then at most five bullets of at most 15 words each, with the main findings and any question or action for the person, then the report file's full path; if the app you run in can show them a file in a viewer, show the report file there; never paste the report or its sections into the reply, since the file holds them.
 
 Make none of them. The audit writes, edits and deletes nothing in the repository, sets no status
 and makes no commit, so the person chooses every correction. If they then ask for one, such as
