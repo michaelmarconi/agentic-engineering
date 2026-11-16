@@ -169,6 +169,21 @@ class Write(unittest.TestCase):
         for heading in run_report.HEADINGS["audit"]:
             self.assertIn(f"## {heading}\n", text)
 
+    def test_verify_kind_headings_in_order(self):
+        path, _ = self.write(kind="verify", name="mail")
+        self.assertTrue(path.endswith("2026-11-14-verify-mail.md"))
+        with open(path, encoding="utf-8") as f:
+            text = f.read()
+        self.assertEqual(run_report.HEADINGS["verify"][:6],
+                         ["Commit checked", "Overall result", "Failed", "Disputed", "Not checked", "Passed"])
+        positions = [text.index(f"## {h}\n") for h in run_report.HEADINGS["verify"]]
+        self.assertEqual(positions, sorted(positions))
+
+    def test_verify_script_headings_refused_from_claude(self):
+        for heading in ("Commit checked", "What each agent reported", "The repository after the run"):
+            with self.assertRaises(run_report.ReportError):
+                run_report.parse("verify", f"## {heading}\n\nmine\n")
+
     def test_fallback_is_said(self):
         with mock.patch.object(run_report.tempfile, "gettempdir", return_value=self.tmp.name):
             path, lines = run_report.write("build", "p", "/work/repo", "", {}, {}, date="2026-11-14")

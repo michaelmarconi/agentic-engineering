@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Keep the reports of /verify's agents, so `verify.py report` can put them in the run's report
-file word for word (ADR 0034), and the commit the run checks.
+file word for word (ADR 0034).
 
 Claude Code runs it on PostToolUse for the Agent tool and a subagent's SubagentHandback tool, and
 on SubagentStop. It keeps the report of each `verifier` and `verify-checker` agent, keyed by the
@@ -11,9 +11,8 @@ agent that runs in the background is kept from the event that says it finished, 
 launch by its id.
 
 Records live in $CLAUDE_PLUGIN_DATA/verifies/<session>.json and are deleted once unchanged for 30
-days (see saved_records.py), or when `verify.py start` or `verify.py report` clears them. `verify.py
-start` also keeps the commit it found there. Without $CLAUDE_PLUGIN_DATA nothing is kept. It
-changes no request, refuses nothing and prints nothing.
+days (see saved_records.py), or when `verify.py start` or `verify.py report` clears them. Without
+$CLAUDE_PLUGIN_DATA nothing is kept. It changes no request, refuses nothing and prints nothing.
 """
 
 import argparse
@@ -47,24 +46,6 @@ def clear(data, session):
     path = record_path(data, session)
     if path and os.path.exists(path):
         os.remove(path)
-
-
-def set_commit(data, session, commit):
-    """Keep the commit a run checks, beside its agents' reports."""
-    path = record_path(data, session)
-    if not path:
-        return
-    with locked(path):
-        record = load(path)
-        record["commit"] = commit
-        save(path, record)
-
-
-def commit(data, session):
-    """The commit `set_commit` kept, or None."""
-    path = record_path(data, session)
-    value = load(path).get("commit") if path else None
-    return value if isinstance(value, str) and value else None
 
 
 def agent_type(value):

@@ -8,7 +8,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 SCRIPT = os.path.join(HERE, "skill_check.py")
 ROOT = os.path.join(HERE, "..")
 sys.path.insert(0, HERE)
-from skill_check import (AGENT_RULE, ASK_RULE, BUILD_ASK_RULE, BUILD_PATH_RULE, REPORT_RULE, ASK_SKILLS, CORRECT_RULES, DOCUMENT_SKILLS, PATH_RULE, PROPOSED_RULE,  # noqa: E402
+from skill_check import (AGENT_RULE, SHELL_AGENT_RULE, ASK_RULE, BUILD_ASK_RULE, BUILD_PATH_RULE, REPORT_RULE, ASK_SKILLS, CORRECT_RULES, DOCUMENT_SKILLS, PATH_RULE, PROPOSED_RULE,  # noqa: E402
                          QUESTIONS_RULE, REPORT_RULES, REVIEW_RULE, SHOW_RULE,
                          SIGNOFF_RULE, STATUS_SKILLS, TYPE_RULE, DATE_RULE, RENAME_RULE, DIAGRAM_SKILLS,
                          diagram_rules, holds)
@@ -176,6 +176,24 @@ class SkillCheck(unittest.TestCase):
                                    "spike-reviewer", "practices-reviewer", "language-checker",
                                    "correction-checker", "auditor", "audit-checker", "brief-checker"})
 
+    def test_every_agent_that_runs_commands_holds_the_shell_agent_rule(self):
+        agents = os.path.join(ROOT, "agents")
+        holding = set()
+        for name in os.listdir(agents):
+            with open(os.path.join(agents, name), encoding="utf-8") as f:
+                if SHELL_AGENT_RULE in " ".join(f.read().split()):
+                    holding.add(name[:-3])
+        self.assertEqual(holding, {"verifier", "verify-checker"})
+
+    def test_verify_agent_without_the_shell_agent_rule_fails(self):
+        self.put_agent("verifier", f"---\nname: verifier\n---\n\n{AGENT_RULE}\n")
+        self.assertFails("agents/verifier.md: repository rule missing")
+
+    def test_verify_agent_with_the_shell_agent_rule_passes(self):
+        self.put_agent("verifier", f"---\nname: verifier\n---\n\n{SHELL_AGENT_RULE}\n")
+        done = self.check()
+        self.assertEqual(done.returncode, 0, done.stdout)
+
     def test_document_skill_without_type_rule_fails(self):
         self.put("spec", skill_md(name="spec"))
         self.assertFails("spec/SKILL.md: type rule missing")
@@ -283,12 +301,14 @@ class SkillCheck(unittest.TestCase):
 
     # Build and audit end with a report file (ADR 0033)
 
-    def test_build_and_audit_without_the_report_rule_fail(self):
+    def test_build_audit_and_verify_without_the_report_rule_fail(self):
         self.put("build", skill_md(name="build", body=f"# Build\n\n{BUILD_ASK_RULE}\n\n{BUILD_PATH_RULE}\n"))
         self.put("audit", skill_md(name="audit"))
+        self.put("verify", skill_md(name="verify"))
         done = self.check()
         self.assertIn("build/SKILL.md: report rule missing", done.stdout)
         self.assertIn("audit/SKILL.md: report rule missing", done.stdout)
+        self.assertIn("verify/SKILL.md: report rule missing", done.stdout)
 
     def test_reworded_report_rule_fails(self):
         rule = REPORT_RULE.replace("never paste", "avoid pasting")

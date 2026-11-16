@@ -117,22 +117,6 @@ class Keeps(Relay):
         self.assertEqual(self.reports(), [])
 
 
-class Commit(Relay):
-    def test_commit_kept_beside_reports(self):
-        verify_relay.set_commit(self.data, "s1", "abc123")
-        self.agent(VERIFIER, "1.1 pass")
-        self.assertEqual(verify_relay.commit(self.data, "s1"), "abc123")
-        self.assertEqual([r["text"] for r in self.reports()], ["1.1 pass"])
-
-    def test_no_commit_before_start(self):
-        self.assertIsNone(verify_relay.commit(self.data, "s1"))
-
-    def test_clear_forgets_commit(self):
-        verify_relay.set_commit(self.data, "s1", "abc123")
-        verify_relay.clear(self.data, "s1")
-        self.assertIsNone(verify_relay.commit(self.data, "s1"))
-
-
 class Background(Relay):
     def test_background_report_from_stop(self):
         self.launch(VERIFIER, "a1")
