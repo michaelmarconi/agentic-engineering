@@ -111,6 +111,14 @@ class Documents(Project):
                                          "docs/spikes/2026-11-01-can-it-open-the-file-today.md"])
         self.assertIn("two to five", found["docs/specs/refunds.spec.md"])
 
+    def test_two_adrs_with_one_number_are_a_problem(self):
+        self.put("docs/adrs/0001-whole-cents.md", adr())
+        self.put("docs/adrs/0001-float-amounts.md", adr())
+        self.put("docs/adrs/0002-other-idea.md", adr())
+        found = {p["document"]: p["detail"] for p in self.problems("number")}
+        self.assertEqual(sorted(found), ["docs/adrs/0001-float-amounts.md", "docs/adrs/0001-whole-cents.md"])
+        self.assertIn("0001-whole-cents.md", found["docs/adrs/0001-float-amounts.md"])
+
     def test_an_old_name_of_the_right_form_is_not_a_problem(self):
         self.put("docs/adrs/0001-whole-cents-only.md", adr())  # words its title lacks
         self.put("docs/plans/2020-01-01-early-work.md", plan())  # a date long past

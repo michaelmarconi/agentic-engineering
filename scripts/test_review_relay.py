@@ -887,7 +887,7 @@ class Relay(unittest.TestCase):
     def test_checker_with_no_review_on_record_says_the_document_may_have_been_renamed(self):
         self.put(SPEC, "v1\n")
         reason = self.check()["hookSpecificOutput"]["permissionDecisionReason"]
-        self.assertIn("may have been renamed", reason)
+        self.assertIn("renamed the document", reason)
         self.assertIn("move it back", reason)
 
     def test_checker_after_a_review_missing_a_report_says_nothing_of_a_rename(self):

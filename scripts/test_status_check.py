@@ -1986,6 +1986,24 @@ class NameRule(Workspace):
         self.put(adr())
         self.assertIsNone(self.edit("# Store sessions in Redis", "# Keep user sessions in Redis"))
 
+    def test_a_plans_date_is_not_part_of_its_subject(self):
+        self.path = self.at("plans", f"{TODAY}-thing-release.md")
+        self.put(plan().replace("# Thing release", "# Thing release 11"))
+        self.assertIsNone(self.edit("# Thing release 11", "# Thing release"))
+
+    def test_accents_in_the_title_are_dropped(self):
+        text = adr().replace("# Store sessions in Redis", "# Gérer les sessions")
+        self.assertIsNone(self.write(text, self.at("adrs", "0001-gerer-sessions.md")))
+
+    def test_an_empty_subject_is_said_to_have_no_words(self):
+        self.assertIn("0 words", self.write(adr(), self.at("adrs", "0001-.md")))
+
+    def test_a_frozen_plan_is_refused_as_frozen_before_its_title_is_checked(self):
+        self.path = self.at("plans", f"{TODAY}-thing-release.md")
+        self.put(plan(status="✅ Built"))
+        reason = self.edit("# Thing release", "# Other work")
+        self.assertIn("Built", reason)
+
     def test_audit_form_checks_only_the_shape(self):
         old = self.at("adrs", "0001-session-data-storage.md")
         self.assertIsNone(status_check.name_problem(old, "ADR", adr(), new=False))

@@ -105,8 +105,10 @@ retried**"; the context it needs; a block quote holding a "**Proposed:**" line w
 line holding only `>`, and a "**Why:**" line with the reason; and the question itself, last, in one
 line.
 
-Write every new record as `📝 Draft`, named for today's date and two to five words of its title;
-then run the design review. Never rename a document once its review has started: the review hook keeps the review under the
+Write every new record as `📝 Draft`, named for today's date and two to five words of its title; then
+run the design review.
+
+Never rename a document once its review has started: the review hook keeps the review under the
 document's path, so a renamed document's corrections can't be checked. If the name no longer fits,
 say so to the person, who can rename it once the review has ended.
 

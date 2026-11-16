@@ -676,16 +676,13 @@ def check(payload):
         reason = name_problem(path, kind, after)
         if reason:
             return reason
-    elif before is not None and (old in statuses or new in statuses):
-        reason = title_problem(path, before, after)
-        if reason:
-            return reason
     # A status missing its emoji is judged as the one it names first, so a move the lifecycle
     # refuses anyway is refused for that, not with advice that only leads to that refusal.
     reason = lifecycle_problem(path, kind, statuses, rules, before, after, old, new, written)
     if not reason and (old in statuses or new in statuses):
         reason = (type_problem(name, kind, before, after) or date_problem(name, kind, before, after, old, new)
-                  or layout_problem(name, before, after))
+                  or layout_problem(name, before, after)
+                  or (title_problem(path, kind, before, after) if before is not None else None))
     if reason or new == written:
         return reason
     return (
@@ -713,10 +710,11 @@ def name_parts(kind, name):
 
 
 def title_words(text):
-    """The words of a document's `# ` title: lowercased and split at every character that is not a
-    letter or a digit, so "user's" holds "user"."""
-    title = title_of(text or "") or ""
-    return {word for word in re.split(r"[^a-z0-9]+", title.lower()) if word}
+    """The words of a document's `# ` title: lowercased, accents dropped, and split at every
+    character that is not a letter or a digit, so "user's" holds "user" and "Gérer" is "gerer"."""
+    title = unicodedata.normalize("NFKD", title_of(text or "") or "")
+    title = "".join(c for c in title if not unicodedata.combining(c)).lower()
+    return {word for word in re.split(r"[\W_]+", title) if word}
 
 
 def name_problem(path, kind, text, new=True):
@@ -734,9 +732,10 @@ def name_problem(path, kind, text, new=True):
     prefix, subject = parts
     if not SUBJECT.match(subject):
         words = len([word for word in re.split(r"[-_\s]+", subject) if word])
-        why = "has uppercase letters or characters other than lowercase letters, digits and single hyphens" \
-            if not re.fullmatch(r"[a-z0-9-]+", subject) or "--" in subject or subject.strip("-") != subject \
-            else f"has {words} word{'s' if words != 1 else ''}, not two to five"
+        shaped = subject and re.fullmatch(r"[a-z0-9-]+", subject) and "--" not in subject \
+            and subject.strip("-") == subject
+        why = f"has {words} word{'s' if words != 1 else ''}, not two to five" if shaped or not subject \
+            else "has uppercase letters or characters other than lowercase letters, digits and single hyphens"
         return f"{name}: the subject '{subject}' {why}; {form}."
     if not new:
         return None
@@ -751,7 +750,8 @@ def name_problem(path, kind, text, new=True):
         if others:
             return (f"{name}: {others[0]} already uses the number {prefix}; give the new ADR the next free "
                     "four-digit number.")
-    missing = [word for word in subject.split("-") if word not in title_words(text)]
+    held = title_words(text)
+    missing = [word for word in subject.split("-") if word not in held]
     if missing:
         listed_words = ", ".join(f"'{word}'" for word in missing)
         return (f"{name}: the subject's {listed_words} {'is' if len(missing) == 1 else 'are'} not a word of "
@@ -759,15 +759,11 @@ def name_problem(path, kind, text, new=True):
     return None
 
 
-def title_problem(path, before, after):
+def title_problem(path, kind, before, after):
     """Why an edit to an existing document drops one of its name's subject words from its title, or
     None. A word the title never held, as in a name from before the rule, is not asked for."""
     name = os.path.basename(path)
-    kind = "spec" if name.lower().endswith(".spec.md") else None
-    for candidate in ("ADR", "plan", "spike record"):
-        if kind is None and PREFIXED[candidate].match(name):
-            kind = candidate
-    parts = name_parts(kind, name) if kind else None
+    parts = name_parts(kind, name)
     if not parts:
         return None
     held, kept = title_words(before), title_words(after)

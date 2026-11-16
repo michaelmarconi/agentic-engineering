@@ -103,7 +103,9 @@ count. With no decisions, say so and go straight to writing.
 ## Write
 
 Only when every decision is settled, write the plan from the template, named as above and with the
-template's comments removed. Never rename a document once its review has started: the review hook keeps the review under the
+template's comments removed.
+
+Never rename a document once its review has started: the review hook keeps the review under the
 document's path, so a renamed document's corrections can't be checked. If the name no longer fits,
 say so to the person, who can rename it once the review has ended.
 

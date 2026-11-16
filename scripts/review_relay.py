@@ -463,9 +463,10 @@ def start_checker(session, tool_input, cwd=None):
         # Nothing saved under this path at all: the likeliest cause is a rename since the review,
         # which the skills forbid (docs/adrs/0036). Claude knows what it renamed in its own session.
         return refuse(f"No review of {name} is on record in this session, so the corrections cannot "
-                      "be checked. The document may have been renamed since its review: if so, move it "
-                      "back to the name it had when reviewed. Do not review again: stop and show the "
-                      "person this reason.")
+                      "be checked. If you renamed the document since its review, move it back to the name "
+                      "it had when reviewed. Do not review again: stop and show the person this reason; "
+                      "the review may also have been checked already, or saved before the plugin was "
+                      "updated.")
     if not reviews or not complete(reviews[0]):
         missing = [] if not reviews else [
             who for who, part in (("the reviewer's", "reviewer"), ("the language checker's", "language"))

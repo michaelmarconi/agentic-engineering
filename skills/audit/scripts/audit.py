@@ -358,6 +358,23 @@ def overlap_problems(project, documents):
     return found
 
 
+def number_problems(documents):
+    """(ADR, detail) for each ADR whose four-digit number another ADR also has, since ADRs refer to
+    each other by number (docs/adrs/0035 hands this check from the reviewer to the scripts)."""
+    by_number = {}
+    for relative, (kind, _) in sorted(documents.items()):
+        found = ADR_NAME.match(relative.rsplit("/", 1)[-1]) if kind == "ADR" else None
+        if found:
+            by_number.setdefault(found.group(1), []).append(relative)
+    problems = []
+    for number, holders in sorted(by_number.items()):
+        for relative in holders if len(holders) > 1 else []:
+            others = ", ".join(other.rsplit("/", 1)[-1] for other in holders if other != relative)
+            problems.append((relative, f"its number {number} is also {others}'s; give one of them the "
+                                       "next free number"))
+    return problems
+
+
 def check_documents(project):
     project = os.path.realpath(project)
     documents = lifecycle_documents(project)
@@ -418,6 +435,8 @@ def check_documents(project):
         add(document, "supersede", detail)
     for document, detail in overlap_problems(project, documents):
         add(document, "overlap", detail)
+    for document, detail in number_problems(documents):
+        add(document, "number", detail)
     brief = next((relative for relative, (kind, _) in sorted(documents.items()) if kind == "brief"), None)
     return {
         "root": project,
