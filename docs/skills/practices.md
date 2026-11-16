@@ -77,7 +77,9 @@ same way; only the commands change.
 - Run the website: `uv run fastapi dev src/recipes/main.py`
 - All tests: `uv run pytest`
 - One test file: `uv run pytest tests/test_recipes.py`
-- Lint and format: `uv run ruff check --fix . && uv run ruff format .`
+- Lint: `uv run ruff check --fix .`
+- Format: `uv run ruff format .`
+- Place for commands: the `Makefile`
 - Type check: `uv run mypy src`
 
 ### Rules
@@ -92,6 +94,23 @@ same way; only the commands change.
 - before releasing or deploying: `docs/practices/releasing.md`
 ```
 
+## One command per step
+
+Every step the practices record, such as running the tests or releasing, is one command: one line
+that calls one program with its arguments, needs no answer from you and says by its exit code
+whether it worked. Every skill can then run a step the same way and tell whether it passed, and
+nothing has to interpret a list of instructions written in prose.[^scripts] A step that needs
+several commands becomes a named entry in the project's one place for commands: a command runner,
+such as Make, a justfile or the scripts of `package.json`, or a single scripts folder. A runner is
+recommended but not required.
+
+When you agree a step of several commands, `/practices` writes that entry for you: it runs the
+commands in order and stops at the first failure. It shows you the entry, tries only what is safe
+to run, such as a dry run, and then records the one-line command. If the project has no runner or
+scripts folder yet, it asks which you want first. A step that needs real logic, such as retries, is
+ordinary work for [`/plan`](plan.md) and [`/build`](build.md). No other skill writes commands, so
+they don't pile up across the repository.
+
 ## Topics
 
 These are the topics `/practices` suggests. They are a starting point, not a complete list: any
@@ -99,7 +118,7 @@ other topic you ask for is recorded the same way.
 
 | Topic | What it records |
 |---|---|
-| Setting up | What a fresh copy needs: tools, services, local settings, where secrets live, and the setup command |
+| Setting up | What a fresh copy needs: tools, services, local settings, where secrets live, where the project keeps its commands, and the setup command |
 | Checking work | The exact commands for all tests, one test file, lint and format, and type check, and which run before every commit |
 | Testing | Whether tests come first, what each change is tested with, coverage, end-to-end tests, test data, and flaky or slow tests |
 | Branches and commits | Branch names, commit message style, and how long a branch may live |
@@ -194,6 +213,7 @@ every document (see [Review process](../lifecycle.md#review-process)).
 [^memory]: Claude Code documentation, [How Claude remembers your project](https://code.claude.com/docs/en/memory).
 [^agentsmd]: [AGENTS.md](https://agents.md/).
 [^check]: Claude Code documentation, [Best practices: give Claude a check to run](https://code.claude.com/docs/en/best-practices#give-claude-a-check-to-run).
+[^scripts]: GitHub's [Scripts to Rule Them All](https://github.blog/engineering/scripts-to-rule-them-all/) describes the same idea: one script per task, with the same names in every project.
 [^batches]: DORA's research on [working in small batches](https://dora.dev/capabilities/working-in-small-batches/)
     finds that small batches predict better delivery, and matter more when AI writes the code,
     since "large changes are difficult to review, test, and integrate safely".

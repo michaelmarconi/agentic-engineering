@@ -130,8 +130,9 @@ flowchart LR
 
 ## What it changes in your repository
 
-- It writes only the documents above, and the practices you ask it to record, and only when you
-  run a skill or ask for one.
+- It writes only the documents above, and the practices you ask it to record, with any entry in
+  your command runner or scripts folder that a recorded step needs, and only when you run a skill
+  or ask for one.
 - `/agentic:build` commits to a branch of its own and pushes it. It never commits to the main
   branch, never opens a pull request and never merges: those steps stay with you.
 - Review reports, and the report files `/agentic:build`, `/agentic:audit` and `/agentic:verify` end with, are kept in the
