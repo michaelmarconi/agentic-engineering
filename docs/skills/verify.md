@@ -105,8 +105,11 @@ the list says why.
    example; it reruns each fail once, to rule out a one-off; and it tries again any example left
    not checked. It says of each verdict whether it is **confirmed** or **rejected**, with its own
    evidence.
-4. **The report.** A verdict the verify-checker confirmed stands. A rejected one is shown with
-   both agents' evidence, as disputed, for you to decide.
+4. **The report.** Claude writes the full report as a Markdown file in the plugin's data folder,
+   outside your repository, and replies with a short summary of at most five bullets and the
+   file's path, as `/build` and `/audit` do (see [What you get](#what-you-get)). In it, a verdict
+   the verify-checker confirmed stands; one it rejected is shown with both agents' evidence, as
+   disputed, for you to decide.
 
 What each part sees, and what it never sees:
 
