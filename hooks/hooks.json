@@ -107,6 +107,15 @@
             "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/scripts/audit_relay.py\""
           }
         ]
+      },
+      {
+        "matcher": "Agent|Task|SubagentHandback",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/scripts/verify_relay.py\""
+          }
+        ]
       }
     ],
     "SubagentStop": [
@@ -123,6 +132,10 @@
           {
             "type": "command",
             "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/scripts/audit_relay.py\""
+          },
+          {
+            "type": "command",
+            "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/scripts/verify_relay.py\""
           }
         ]
       }
