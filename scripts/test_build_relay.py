@@ -13,7 +13,7 @@ from unittest import mock
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import build_relay  # noqa: E402
-import fresh_session  # noqa: E402
+import build_session  # noqa: E402
 
 PLAN = "docs/plans/2026-11-03-thing.md"
 CODE_PROMPT = (f"Document: {PLAN}\nRun /code-review medium main...HEAD on the current branch, then reply "
@@ -35,7 +35,7 @@ class Relay(unittest.TestCase):
         self.addCleanup(patcher.stop)
         self.git("init", "-q", "-b", "main")
         self.commit("Start")
-        fresh_session.save("s1", {"fresh": True, "messages": 1, "building": True})
+        build_session.save("s1", {"building": True})
         self.calls = 0
 
     def git(self, *args):
@@ -328,7 +328,7 @@ class Corrections(Relay):
         self.assertIn("plan finding", prompt)
 
     def test_a_stop_outside_a_build_saves_nothing(self):
-        fresh_session.save("s2", {"fresh": True, "messages": 1})
+        build_session.save("s2", {})
         self.stopped("agentic:build-reviewer", "a1", "plan finding", session="s2")
         self.assertFalse(os.path.exists(os.path.join(self.tmp.name, "data", "builds", "s2.json")))
 
@@ -510,7 +510,7 @@ class KeptForTheReport(Relay):
 
 class LeftAlone(Relay):
     def test_reviews_outside_a_build_not_kept(self):
-        fresh_session.save("s2", {"fresh": True, "messages": 1})
+        build_session.save("s2", {})
         self.all_reviews(session="s2")
         self.commit("Correct")
         self.assertEqual(self.check(session="s2")["permissionDecision"], "deny")
@@ -527,7 +527,7 @@ class LeftAlone(Relay):
         self.assertEqual(self.check()["permissionDecision"], "allow")
 
     def test_saving_reports_deletes_another_sessions_once_they_are_a_month_old(self):
-        fresh_session.save("old", {"fresh": True, "messages": 1, "building": True})
+        build_session.save("old", {"building": True})
         self.plan_review(session="old")
         builds = os.path.join(self.tmp.name, "data", "builds")
         month = time.time() - 31 * 24 * 60 * 60

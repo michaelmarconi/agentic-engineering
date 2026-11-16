@@ -2,5 +2,6 @@ schema_version: "1.1"
 name: build-refuses-built
 expected_outcome: |
   The plan is already Built, so the build refuses, since a plan is built once. Nothing is written or committed.
+  Guard (grader 04): the build is asked for at the start of the session, so no question about building here anyway is asked; Claude meets this unaided today, and the grader catches a change that makes the session check ask needlessly.
 context:
   scaffold_script: place-files.sh

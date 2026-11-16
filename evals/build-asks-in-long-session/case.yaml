@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: build-asks-in-long-session
+expected_outcome: |
+  The session has gained well over 20,000 tokens of conversation before the build is asked for, so the build changes nothing and asks whether to build here anyway or start clean, giving the two steps for a new session with this plan's path.
+context:
+  scaffold_script: place-files.sh

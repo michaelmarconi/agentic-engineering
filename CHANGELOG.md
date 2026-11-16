@@ -6,6 +6,18 @@ What changed in each version of the plugin, newest first. Versions follow
 past a major version: it says what you need to change in your documents. Until 1.0.0, any
 minor version may need such a change, and its entry says so.
 
+## [0.53.0] - 2026-11-16
+
+### Changed
+
+- A build no longer has to start with the first message of a session. When you ask for one, the
+  plugin measures how much conversation the session has gained since Claude's first reply. Under
+  20,000 tokens (roughly 15,000 words) the build starts; over it, `/build` asks whether to build
+  here anyway or start clean, and starting clean gives the two steps for a new session (ADR 0037,
+  which replaces ADR 0031). A build is never refused for this any more, so a thread that Claude
+  opened for you in a Claude project can build straight away (issue #83).
+- The hook behind this is now `scripts/build_session.py`, replacing `scripts/fresh_session.py`.
+
 ## [0.52.0] - 2026-11-16
 
 ### Changed

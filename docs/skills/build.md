@@ -53,19 +53,20 @@ practices say, because each needs a person:
 
 ## Before it starts
 
-Run `/agentic:build docs/plans/<plan>.md` as the first thing in a new session. Before it changes
-anything, `/build` checks:
+Run `/agentic:build docs/plans/<plan>.md`, best as the first thing in a new session. Before it
+changes anything, `/build` checks:
 
-- **The session is fresh.** `/build` starts only in answer to the first message you send in a
-  session, or the first after `/clear`, whether you type the command or ask in your own words. A
-  long planning
-  conversation is a poor start for building: Anthropic's own advice is to start a fresh session to
-  build from a written spec,[^fresh] so the build begins with a clean context and a written
-  definition of done. A plugin hook enforces this. The plugin has no reliable way to start a new
-  session for you, so if the hook refuses, it gives you the two steps instead: run `/clear`, then
-  send `/agentic:build docs/plans/<plan>.md`. In a Claude project, a new session is a new thread:
-  open one and send that command as its first message, since the note that opens a thread does not
-  count as your message. `/plan` gives you the same steps when you sign a plan off.
+- **The session is clean enough.** A long planning conversation is a poor start for building:
+  Anthropic's own advice is to start a fresh session to build from a written spec,[^fresh] so the
+  build begins from the written definition of done rather than the talk that led to it. So when you
+  ask for a build, whether you type the command or ask in your own words, a plugin hook measures how
+  much conversation the session has gained since Claude's first reply. Under 20,000 tokens (roughly
+  15,000 words) the build starts. Over it, `/build` asks you one question: build here anyway, or
+  start clean. Starting clean gives you two steps, since the plugin has no reliable way to start a
+  new session for you: run `/clear`, then send `/agentic:build docs/plans/<plan>.md`. In a Claude
+  project, a new session is a new thread: open one and send that command as its first message. A
+  thread that Claude opened for you can build straight away, as long as it hasn't done much else
+  first ([ADR 0037](../adrs/0037-build-session-check.md)).
 - **The plan exists and can be built.** A `✅ Built` plan is refused: a plan is built once. Every
   spec and ADR the plan names must exist, with a heading for each requirement it names, and none
   may be `❌ Rejected` or `↪️ Superseded`. These can't be overridden, since there would be nothing

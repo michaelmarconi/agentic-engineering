@@ -1,8 +1,9 @@
 ---
 # Change status only through the agentic plugin's skills, which check each change; a change made by hand is not checked.
 type: ADR
-status: 👍 Accepted
-date: 2026-11-12
+status: ↪️ Superseded
+date: 2026-11-16
+superseded-by: 0037
 ---
 
 # Tell the person the two steps to start a build, rather than starting a session for them
