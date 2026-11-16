@@ -15,16 +15,16 @@ Who checks that the built product does what its accepted specs[^spec] say, and h
 ## Decision
 
 Chosen: a skill[^skill] of the plugin's own, run separately from the build[^build], in which one agent[^agent]
-uses the running product from outside and gives each example[^example] a verdict with evidence,
-and a second agent tries to disprove each verdict; both see only the accepted specs and the
-project's practices[^practices], never the code. Only an agent that cannot read
-the code has to judge the product by what it does.
+uses the running product through its interfaces, as a person would, and gives each example[^example]
+a verdict with evidence, and a second agent tries to disprove each verdict. Both are given only the
+accepted specs and the project's practices[^practices], and told never to read the code, so they
+must judge the product by what it does.
 
 ## Background
 
-[ADR 0016](0016-build-and-verify-steps.md) kept verifying out of the build and left it to a person,
-with Claude Code's built-in verify skill. That skill checks a change, not the specs, and some places the plugin runs lack it, such as Claude project
-threads[^thread]. The build's reviewers read the code, so a plan[^plan] whose build has finished
+[ADR 0016](0016-build-and-verify-steps.md)[^adr] kept verifying out of the build and left it to a person,
+with Claude Code's built-in verify skill. That skill checks a change, not the specs, and Claude project
+threads[^thread] lack it. The build's reviewers read the code, so a plan[^plan] whose build has finished
 does not show the product works.
 
 ## Options
@@ -34,24 +34,24 @@ does not show the product works.
 | A person verifies, with Claude Code's built-in skill | Rejected | Checks the change, not the specs |
 | The build starts the product and checks it | Rejected | A build could then run only where the product runs |
 | A lasting test suite written from each spec's examples | Rejected | Keeping tests is the build's job; this is a check after it |
-| An agent that reads the code checks it against the specs | Rejected | The plugin's audit skill already compares code with specs |
-| Agents that see only the specs use the product from outside | Chosen | Judges what the product does, with evidence a person can follow |
+| An agent that reads the code checks it against the specs | Rejected | The plugin's audit skill, which checks the code against the specs, does this |
+| Agents that see only the specs use the running product | Chosen | Judges what the product does, with evidence a person can follow |
 
 ## Consequences
 
-- Good: each requirement verified is tried on the running product.
+- Good: each requirement[^requirement] verified is tried on the running product, at a recorded commit, once the person agrees which.
 - Good: every verdict carries its evidence, so a person can judge it.
-- Bad: each run costs agent time and tokens.
+- Bad: specs are checked one after another, since each check starts and stops the product.
 - Bad: verdicts can differ between runs.
 - Bad: only the agents' own instructions stop them reading the code.
-- Bad: nothing makes a person verify before merging, so it can be skipped.
+- Bad: a person can skip verifying before merging.
 
 ## Out of scope
 
 - Lasting tests that keep the product working: the build writes those.
 - Releasing or deploying the product.
 - Checking ADRs: the audit skill checks them against the code.
-- Checking whether the specs ask for the right thing: that stays with the person.
+- Whether the specs ask for the right thing.
 
 ## How we'll check
 
@@ -61,7 +61,7 @@ Applies to: the verify skill, its agents, and whether the build step starts the 
 2. Test: with no recorded way to run the product, the skill checks nothing and names the practices topic to record.
 3. Test: on a sample product with one broken requirement, that requirement's example fails, with evidence.
 4. Test: on a sample where the agent's own helper program crashes, the example is reported not checked, never failed.
-5. Inspection: the agents' instructions forbid reading code, plans and other documents; the build skill never starts the product.
+5. Inspection: the agents' instructions forbid reading the code; the build never starts the product.
 6. Demonstration: on a real project, examples a build corrected now pass, without the agents reading code.
 
 ## Open questions
@@ -72,9 +72,8 @@ Applies to: the verify skill, its agents, and whether the build step starts the 
 
 **Which examples.** Each run first agrees with the person a list of requirements from accepted
 specs: named one by one, whole specs, every accepted spec, or a plan standing for the requirements
-it names. Run with nothing named, the skill proposes the requirements of the plan the branch marked
-Built, if there is one. Nothing is checked until the person agrees the list. The skill then records
-the commit and refuses uncommitted changes; a requirement whose spec is not Accepted is left out,
+it names. Run with nothing named, the skill proposes the requirements of the plan whose build the branch
+finished, if there is one. A requirement whose spec is not Accepted is left out,
 with the reason.
 
 **Running the product.** The agents read the practices topic on running the product: machine,
@@ -82,8 +81,8 @@ start and stop commands, how to reach each interface, how to set up an example's
 and what is safe to touch. When it is missing or fails, the skill stops and names
 `/agentic:practices running the product`; the skill never writes it.
 
-**Agents.** Two plugin agents, neither of which has seen the conversation, using the session's
-Claude model:
+**Agents.** Two plugin agents, neither of which has seen the conversation, set to always
+run on the Sonnet model, like the plugin's other agents, which keeps cost and judgement alike:
 
 - `verifier`: one per spec, run one after another; given the spec's path, the requirements to check in it, and the
   practices; may write temporary helper programs in a folder outside the repository. Verdicts:
@@ -96,7 +95,7 @@ The two agents are one method: the trial below relied on the second to find the 
 verdicts, so they are decided together.
 
 **Report.** Written the way the build and audit skills write theirs: a file in the plugin's data
-folder, which is outside the repository, `reports/<repository>/<date>-verify-<scope>.md`, holding every agent's report copied by
+folder[^data], `reports/<repository>/<date>-verify-<scope>.md`, holding every agent's report copied by
 script, and a reply under 150 words. The skill sets no status and changes no file in the repository.
 
 **Evidence, from a trial on 2026-11-16.** On a mail service, 7 requirements built against an
@@ -113,4 +112,7 @@ in which two connections happened to open. Verifier: 29 minutes, 135,000 tokens;
 [^example]: An example is one Given, When and Then case under a requirement of a spec.
 [^practices]: Practices are the project's recorded ways of doing things, one topic at a time, including how to run the product.
 [^thread]: A Claude project thread is one conversation inside a project in the Claude app.
+[^adr]: An ADR (architecture decision record) is a document recording one technical decision and why it was made.
+[^requirement]: A requirement is one rule in a spec that the product must meet, with its examples.
+[^data]: The plugin's data folder is a folder Claude Code gives each plugin in the person's home folder, outside every repository.
 [^plan]: A plan is the plugin's document for one piece of work that builds part of a spec.
