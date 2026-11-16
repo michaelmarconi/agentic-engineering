@@ -17,8 +17,9 @@ sees them fail, before it writes that requirement's code?
 Chosen: before writing a requirement's code, the build names its new or changed test files to a
 script, which runs each with the project's test command. The script refuses if any file passes.
 It also refuses if other files are uncommitted. Once it accepts, the build commits the tests and
-reports the result. This turns code written before its tests into a script's refusal, not a slip a
-reviewer[^reviewer] may miss.
+reports the result. If the tests pass because their code is already committed, the build commits them
+anyway and reports the refusal. A script now refuses when code comes before its tests; before, a reviewer[^reviewer] had
+to notice it.
 
 ```mermaid
 sequenceDiagram
@@ -30,12 +31,16 @@ sequenceDiagram
     B->>S: Run on the new tests
     alt A test file passes, or another file is uncommitted
         S->>B: Refused
-        B->>B: Correct what the script names
-        B->>S: Run again
+        B->>B: Correct what the script names, and run again
+    else The tests pass because their code is already committed
+        S->>B: Refused
+        B->>B: Commit the tests anyway
+        B->>R: Report the refusal
+    else Every new test file fails
+        S->>B: Accepted
+        B->>B: Commit the tests, then write the code
+        B->>R: List the result
     end
-    S->>B: Accepted: every new test file fails
-    B->>B: Commit the tests, then write the code
-    B->>R: List the result
     V->>R: Read the results
 ```
 
@@ -62,13 +67,12 @@ when fixing it meant rewriting commits.
 - Good: a script refuses tests that already pass, or uncommitted code written before its tests.
 - Good: the reviewer reads recorded results instead of judging the commit order.
 - Bad: one more test run per requirement.
-- Bad: a test file that cannot load also fails, so the build must read why, or may accept a broken test.
+- Bad: a test file that cannot load also fails, so the build must read why, or may accept a broken test and correct it after the code.
 
 ## Out of scope
 
 - Whether the tests check what the examples in the spec[^spec] say: the reviewer's check against those examples covers that.
 - Judging tests one by one: the script judges whole files.
-- Code committed before the build started: its tests already pass, so the script refuses them; the build commits them, reporting the refusal for the reviewer to judge.
 - Repeating the build's instructions to Claude during a long build: left to another decision.
 
 ## How we'll check
@@ -98,7 +102,8 @@ build added fails.
 that runs one test file, taken from the test command the project has written down, or worked out from the repository, as
 the build already does. It reads each failure, which must come from the missing behaviour, not from
 a file that cannot load. On exit 0 it commits the tests, then writes the code. On exit 1 it corrects
-what the script names and runs it again. The "Tests and lint" section of the build's
+what the script names and runs it again, unless the tests pass because their code is already
+committed: then it commits them and reports the refusal. The "Tests and lint" section of the build's
 report file gives each requirement's result.
 
 **The reviewer.** The check that tests were written before code passes when the report gives, for
@@ -107,9 +112,9 @@ sound.
 
 **Evidence.** A trial on a small project of eight requirements, with code for two committed before
 their tests by an earlier stopped build. With this option, the script ran for every requirement,
-always before its code, and refused those two requirements' tests. One test file had a syntax
-error, so it failed and was accepted; the build found it, corrected it after writing the code and
-reported it. On the same project, a separate test-writer agent cost 1.6 times as much as the
+always before its code, and refused those two requirements' tests. The trial's build was not yet told to read each failure's cause: one test file had a
+syntax error, so it failed and was accepted, and the build corrected it after writing the code and
+reported it. That is why the build now reads each failure. On the same project, a separate test-writer agent cost 1.6 times as much as the
 current build step, and three agents 3 times the cost and time.
 
 [^build]: A build is the plugin's step that writes the code for one plan (a document scoping a piece of work), tests first, on a branch of its own, and has it reviewed by separate Claude agents.
