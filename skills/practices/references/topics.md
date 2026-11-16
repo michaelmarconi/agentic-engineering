@@ -6,7 +6,7 @@ otherwise it is a line in the core. A choice between alternatives goes to `/adr`
 
 | # | Topic | Asks | Usually ends up |
 |---|---|---|---|
-| 1 | Setting up | What a fresh copy needs: tools, services such as a database, local config; any machine or operating system the work needs; where secrets live; the command that sets it up | Check your work, Rules |
+| 1 | Setting up | What a fresh copy needs: tools, services such as a database, local config; any machine or operating system the work needs; where secrets live; where the project keeps its commands, if it has a command runner or one scripts folder; the command that sets it up | Check your work, Rules |
 | 2 | Checking work | The exact commands: all tests, one test file, lint and format, type check; which ones run before every commit | Check your work, Rules |
 | 3 | Testing | Test-first or not; what each change must be tested with; coverage and any minimum; end-to-end tests and when they run; test data; what to do with a flaky or slow test | Rules (test-first), `testing.md` |
 | 4 | Branches and commits | Branch names; commit message style; whether work may be committed straight to the default branch; how long a branch may live and how often it is merged back, such as merging to the default branch at least daily with three or fewer active branches (trunk-based development) | Rules |

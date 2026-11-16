@@ -11,9 +11,11 @@ import, so the reviewer does not count lines or look for imports in the section 
 2. **Commands are real.** Each script or file path a command names exists in the repository, and
    each tool it runs is one the repository's build, dependency, CI or setup files use. A command
    the repository does not show yet passes only while the section says it is not set up yet.
-3. **Commands are exact.** Each command is the literal text to run, with no placeholder the agent
-   would have to guess. Apart from the command that runs the product, each finishes on its own
-   without asking for input or waiting in watch mode.
+3. **Commands are exact.** Each command is the literal text to run: one line that calls one
+   program with its arguments, holding no `&&`, `||`, `;`, `|` or `&` outside quotes and no line
+   break, and exits non-zero when it fails. Its only placeholders are `{name}` marks for a value the skill running it fills in, such
+   as `{file}`; any other the agent would have to guess fails. Apart from the command that runs the
+   product, each finishes on its own without asking for input or waiting in watch mode.
 4. **Rules can be acted on.** Each rule says what to do or not do, in a way an agent could follow
    or break, such as "run the linter before every commit". A vague aim ("write clean code")
    fails.
@@ -41,3 +43,7 @@ import, so the reviewer does not count lines or look for imports in the section 
     its interfaces, how to put it in a starting state, and both the services safe to touch and
     those never to be touched. A topic that leaves either list out fails, since an agent using the
     product could not tell what it may touch.
+14. **Commands live in one place.** When the project has a command runner or scripts folder,
+    Check your work names it as the project's place for commands, and every runner entry or
+    scripts-folder script a command runs is in that one place. A one-line command that needs no
+    entry, such as `npm test` or `bin/wordcount {file}`, passes.

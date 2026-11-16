@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: practices-one-command
+expected_outcome: |
+  Asked to record a setup step made of two commands, /practices writes a package.json script that runs them in order and records the one-line command that runs it, never the chained commands.
+context:
+  scaffold_script: place-files.sh
