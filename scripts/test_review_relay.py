@@ -884,6 +884,19 @@ class Relay(unittest.TestCase):
         self.put(SPEC, "v1\n")
         self.assertRefused(self.check(), "No review")
 
+    def test_checker_with_no_review_on_record_says_the_document_may_have_been_renamed(self):
+        self.put(SPEC, "v1\n")
+        reason = self.check()["hookSpecificOutput"]["permissionDecisionReason"]
+        self.assertIn("renamed the document", reason)
+        self.assertIn("move it back", reason)
+
+    def test_checker_after_a_review_missing_a_report_says_nothing_of_a_rename(self):
+        self.put(SPEC, "v1\n")
+        self.review(report="")
+        self.put(SPEC, "v2\n")
+        reason = self.check()["hookSpecificOutput"]["permissionDecisionReason"]
+        self.assertNotIn("renamed", reason)
+
     def test_checker_before_the_review_finished_is_refused(self):
         self.put(SPEC, "v1\n")
         self.assertAllowed(self.agent("PreToolUse", "agentic:spec-reviewer", f"Document: {SPEC}\nReview."))

@@ -100,6 +100,30 @@ class Project(unittest.TestCase):
 
 
 class Documents(Project):
+    def test_a_name_of_the_wrong_form_is_a_problem(self):
+        self.put("docs/specs/refunds.spec.md", spec())
+        self.put("docs/adrs/0001-Cents-Only.md", adr())
+        self.put("docs/plans/work.md", plan())
+        self.put("docs/spikes/2026-11-01-can-it-open-the-file-today.md", spike())
+        found = {p["document"]: p["detail"] for p in self.problems("name")}
+        self.assertEqual(sorted(found), ["docs/adrs/0001-Cents-Only.md", "docs/plans/work.md",
+                                         "docs/specs/refunds.spec.md",
+                                         "docs/spikes/2026-11-01-can-it-open-the-file-today.md"])
+        self.assertIn("two to five", found["docs/specs/refunds.spec.md"])
+
+    def test_two_adrs_with_one_number_are_a_problem(self):
+        self.put("docs/adrs/0001-whole-cents.md", adr())
+        self.put("docs/adrs/0001-float-amounts.md", adr())
+        self.put("docs/adrs/0002-other-idea.md", adr())
+        found = {p["document"]: p["detail"] for p in self.problems("number")}
+        self.assertEqual(sorted(found), ["docs/adrs/0001-float-amounts.md", "docs/adrs/0001-whole-cents.md"])
+        self.assertIn("0001-whole-cents.md", found["docs/adrs/0001-float-amounts.md"])
+
+    def test_an_old_name_of_the_right_form_is_not_a_problem(self):
+        self.put("docs/adrs/0001-whole-cents-only.md", adr())  # words its title lacks
+        self.put("docs/plans/2020-01-01-early-work.md", plan())  # a date long past
+        self.assertEqual(self.problems("name"), [])
+
     def test_no_lifecycle_documents_says_so(self):
         out = self.documents()
         self.assertFalse(out["lifecycle"])
@@ -108,16 +132,16 @@ class Documents(Project):
 
     def test_accepted_specs_and_adrs_are_listed_and_others_are_not(self):
         self.put("docs/specs/statement-import.spec.md", spec())
-        self.put("docs/specs/sub/refunds.spec.md", spec())
-        self.put("docs/specs/exports.spec.md", spec(status="📝 Draft"))
-        self.put("docs/adrs/0001-cents.md", adr())
-        self.put("docs/adrs/0002-floats.md", adr(status="❌ Rejected"))
-        self.put("docs/adrs/0003-old.md", adr(status="📝 Draft"))
+        self.put("docs/specs/sub/refund-limits.spec.md", spec())
+        self.put("docs/specs/statement-exports.spec.md", spec(status="📝 Draft"))
+        self.put("docs/adrs/0001-whole-cents.md", adr())
+        self.put("docs/adrs/0002-float-amounts.md", adr(status="❌ Rejected"))
+        self.put("docs/adrs/0003-old-idea.md", adr(status="📝 Draft"))
         out = self.documents()
         self.assertTrue(out["lifecycle"])
         self.assertEqual(out["accepted"], {
-            "specs": ["docs/specs/statement-import.spec.md", "docs/specs/sub/refunds.spec.md"],
-            "adrs": ["docs/adrs/0001-cents.md"]})
+            "specs": ["docs/specs/statement-import.spec.md", "docs/specs/sub/refund-limits.spec.md"],
+            "adrs": ["docs/adrs/0001-whole-cents.md"]})
         self.assertEqual(out["problems"], [])
 
     def test_a_brief_alone_is_a_lifecycle_with_nothing_accepted(self):
@@ -182,8 +206,8 @@ class Documents(Project):
         self.assertIn("written for an earlier version of the agentic plugin", found["docs/plans/2026-11-01-good.md"])
 
     def test_a_status_written_without_the_variation_selector_is_fine(self):
-        self.put("docs/adrs/0001-cents.md", adr(status="↪ Superseded", superseded_by="0002"))
-        self.put("docs/adrs/0002-new.md", adr(supersedes="0001"))
+        self.put("docs/adrs/0001-whole-cents.md", adr(status="↪ Superseded", superseded_by="0002"))
+        self.put("docs/adrs/0002-new-idea.md", adr(supersedes="0001"))
         self.assertEqual(self.problems(), [])
 
     def test_a_spec_with_a_status_specs_no_longer_have_is_a_problem(self):

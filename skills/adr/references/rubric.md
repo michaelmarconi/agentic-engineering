@@ -7,10 +7,8 @@ An ADR reads from plain to technical. Its plain part, for a person deciding or c
 decision, runs from the title down to Technical detail; Technical detail holds what an agent or
 reviewer needs to build and check it. Footnotes explaining terms come last, after Technical detail.
 
-1. **Shape.** The file is `docs/adrs/NNNN-<subject>.md`, with a four-digit number no other ADR in
-   the folder uses. The subject is three to five lowercase words joined by hyphens, naming what
-   the decision is about, such as `0004-session-data-storage.md`, not the decision itself. Its
-   frontmatter has `type: ADR` and `status:` set to `📝 Draft`, `👍 Accepted`, `❌ Rejected` or `↪️ Superseded`,
+1. **Shape.** The file is directly in `docs/adrs/`; its name is checked by a plugin hook, not
+   here. Its frontmatter has `type: ADR` and `status:` set to `📝 Draft`, `👍 Accepted`, `❌ Rejected` or `↪️ Superseded`,
    emoji included, and `date:` as YYYY-MM-DD if it has one (a missing date passes: a plugin hook requires it with the next
    status change). The sections are Question, Decision, Background,
    Options, Consequences, Out of scope, How we'll check, Open questions and Technical detail, in

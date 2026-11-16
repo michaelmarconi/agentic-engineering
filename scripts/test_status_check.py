@@ -34,7 +34,7 @@ def spec(status="📝 Draft", questions="None.", rule="The system SHALL do X.", 
         f"{head(kind)}"
         f"status: {status}\n"
         f"{dated(date)}"
-        "---\n\n# Thing\n\n## Story\n\nWhen a, someone wants to b, so they can c.\n\n"
+        "---\n\n# Big thing\n\n## Story\n\nWhen a, someone wants to b, so they can c.\n\n"
         "## In scope\n\n- a\n\n## Out of scope\n\n- b\n\n"
         f"## Requirements\n\n### 1. X\n\n{rule}\n\n#### How we'll check\n\nTest.\n\n"
         f"## Constraints\n\n- None.\n\n## Open questions\n\n{questions}\n"
@@ -62,7 +62,7 @@ class Workspace(unittest.TestCase):
         today = mock.patch.object(status_check, "today", return_value=TODAY)
         today.start()
         self.addCleanup(today.stop)
-        self.path = os.path.join(self.tmp.name, "docs", "specs", "thing.spec.md")
+        self.path = os.path.join(self.tmp.name, "docs", "specs", "big-thing.spec.md")
 
     def put(self, text):
         os.makedirs(os.path.dirname(self.path), exist_ok=True)
@@ -150,7 +150,7 @@ class NewSpec(Workspace):
         self.assertIsNone(self.write("anything", path=other))
 
     def test_docs_specs_outside_project_root_ignored(self):
-        nested = os.path.join(self.tmp.name, "evals", "case", "docs", "specs", "thing.spec.md")
+        nested = os.path.join(self.tmp.name, "evals", "case", "docs", "specs", "big-thing.spec.md")
         self.assertIsNone(self.write(spec("✅ Built"), path=nested))
 
     def test_unreadable_spec_refused(self):
@@ -311,7 +311,7 @@ def adr(status="📝 Draft", extra="", body=ADR_BODY,
 class AdrWorkspace(Workspace):
     def setUp(self):
         super().setUp()
-        self.path = os.path.join(self.tmp.name, "docs", "adrs", "0001-session-data-storage.md")
+        self.path = os.path.join(self.tmp.name, "docs", "adrs", "0001-sessions-redis.md")
 
 
 class Adr(AdrWorkspace):
@@ -683,7 +683,7 @@ class AdrEmoji(AdrWorkspace):
     def test_body_edit_of_old_accepted_spec_must_return_to_draft(self):
         self.put(adr())
         os.remove(self.path)
-        self.path = os.path.join(self.tmp.name, "docs", "specs", "thing.spec.md")
+        self.path = os.path.join(self.tmp.name, "docs", "specs", "big-thing.spec.md")
         self.put(spec("Accepted"))
         self.assertIn("back to `📝 Draft`", self.edit("do X", "do Y"))
 
@@ -719,7 +719,7 @@ class AdrEmoji(AdrWorkspace):
 def plan(status="📝 Draft", specs=None, adrs="None.", questions="None.", decisions="None.", kind="Plan",
          date=TODAY):
     if specs is None:
-        specs = "- [Thing](../specs/thing.spec.md)\n  - [X](../specs/thing.spec.md#1-x)"
+        specs = "- [Thing](../specs/big-thing.spec.md)\n  - [X](../specs/big-thing.spec.md#1-x)"
     return (
         "---\n"
         "# Change status only through the sdlc plugin's skills, which check each change; a change made by hand is not checked.\n"
@@ -736,7 +736,7 @@ class PlanWorkspace(Workspace):
     def setUp(self):
         super().setUp()
         self.spec_path = self.path
-        self.path = os.path.join(self.tmp.name, "docs", "plans", "2026-10-29-thing-release.md")
+        self.path = os.path.join(self.tmp.name, "docs", "plans", "2026-11-10-thing-release.md")
         self.put_at(self.spec_path, spec("👍 Accepted"))
 
     def put_at(self, path, text):
@@ -788,7 +788,7 @@ class Plan(PlanWorkspace):
         self.assertIn("open questions", self.edit("status: 📝 Draft", "status: 🟢 Ready to build"))
 
     def test_ready_needs_the_spec_to_exist(self):
-        reason = self.ready(specs="- [Gone](../specs/gone.spec.md)\n  - [X](../specs/thing.spec.md#1-x)")
+        reason = self.ready(specs="- [Gone](../specs/gone.spec.md)\n  - [X](../specs/big-thing.spec.md#1-x)")
         self.assertIn("gone.spec.md", reason)
 
     def test_ready_needs_the_spec_settled(self):
@@ -801,12 +801,12 @@ class Plan(PlanWorkspace):
             self.assertIn("`👍 Accepted`", self.ready())
 
     def test_ready_needs_each_requirement_in_its_spec(self):
-        reason = self.ready(specs="- [Thing](../specs/thing.spec.md)\n  - [Y](../specs/thing.spec.md#2-y)")
+        reason = self.ready(specs="- [Thing](../specs/big-thing.spec.md)\n  - [Y](../specs/big-thing.spec.md#2-y)")
         self.assertIn("no requirement named 'Y'", reason)
 
     def test_ready_refused_when_the_plan_gives_the_requirement_number(self):
         for line in ("1. X", "1 X", "1) X"):
-            reason = self.ready(specs=f"- [Thing](../specs/thing.spec.md)\n  - [{line}](../specs/thing.spec.md#1-x)")
+            reason = self.ready(specs=f"- [Thing](../specs/big-thing.spec.md)\n  - [{line}](../specs/big-thing.spec.md#1-x)")
             self.assertIn("name alone", reason, line)
 
     def test_ready_refused_on_an_old_layout_spec(self):
@@ -819,45 +819,45 @@ class Plan(PlanWorkspace):
         text = spec("👍 Accepted").replace("## Constraints\n\n- None.", "## Constraints\n\n### 2. Y\n\n- None.")
         self.put_at(self.spec_path, text)
         self.assertIn("no requirement named 'Y'",
-                      self.ready(specs="- [Thing](../specs/thing.spec.md)\n  - [Y](../specs/thing.spec.md#2-y)"))
+                      self.ready(specs="- [Thing](../specs/big-thing.spec.md)\n  - [Y](../specs/big-thing.spec.md#2-y)"))
 
     def test_a_requirement_heading_without_a_number_does_not_count(self):
         self.put_at(self.spec_path, spec("👍 Accepted", rule="The system SHALL do X.\n\n### Y\n\nThe system SHALL do Y."))
         self.assertIn("no requirement named 'Y'",
-                      self.ready(specs="- [Thing](../specs/thing.spec.md)\n  - [Y](../specs/thing.spec.md#2-y)"))
+                      self.ready(specs="- [Thing](../specs/big-thing.spec.md)\n  - [Y](../specs/big-thing.spec.md#2-y)"))
 
     def test_a_requirement_heading_in_a_code_block_does_not_count(self):
         self.put_at(self.spec_path, spec("👍 Accepted", rule="The system SHALL do X.\n\n```\n### 2. Y\n```"))
         self.assertIn("no requirement named 'Y'",
-                      self.ready(specs="- [Thing](../specs/thing.spec.md)\n  - [Y](../specs/thing.spec.md#2-y)"))
+                      self.ready(specs="- [Thing](../specs/big-thing.spec.md)\n  - [Y](../specs/big-thing.spec.md#2-y)"))
 
     def test_a_requirement_heading_in_a_nested_code_block_does_not_count(self):
         rule = "The system SHALL do X.\n\n~~~markdown\n```\n### 9. Fake\n```\n~~~\n\n### 2. Y\n\nThe system SHALL do Y."
         self.put_at(self.spec_path, spec("👍 Accepted", rule=rule))
-        self.assertIsNone(self.ready(specs="- [Thing](../specs/thing.spec.md)\n  - [Y](../specs/thing.spec.md#2-y)"))
+        self.assertIsNone(self.ready(specs="- [Thing](../specs/big-thing.spec.md)\n  - [Y](../specs/big-thing.spec.md#2-y)"))
         self.assertIn("no requirement named 'Fake'",
-                      self.ready(specs="- [Thing](../specs/thing.spec.md)\n  - [Fake](../specs/thing.spec.md#9-fake)"))
+                      self.ready(specs="- [Thing](../specs/big-thing.spec.md)\n  - [Fake](../specs/big-thing.spec.md#9-fake)"))
 
     def test_a_requirement_heading_in_a_comment_does_not_count(self):
         rule = "The system SHALL do X.\n\n<!--\n### 2. Dropped\n### Requirement: Older\n-->"
         self.put_at(self.spec_path, spec("👍 Accepted", rule=rule))
         self.assertIsNone(self.ready())
         self.assertIn("no requirement named 'Dropped'",
-                      self.ready(specs="- [Thing](../specs/thing.spec.md)\n  - [Dropped](../specs/thing.spec.md#2-dropped)"))
+                      self.ready(specs="- [Thing](../specs/big-thing.spec.md)\n  - [Dropped](../specs/big-thing.spec.md#2-dropped)"))
 
     def test_a_leftover_old_heading_blocks_only_a_requirement_it_hides(self):
         text = spec("👍 Accepted").replace("## Constraints", "### Requirement: Y\n\nThe system SHALL do Y.\n\n## Constraints")
         self.put_at(self.spec_path, text)
         self.assertIsNone(self.ready())
         self.assertIn("written for an earlier version",
-                      self.ready(specs="- [Thing](../specs/thing.spec.md)\n  - [Y](../specs/thing.spec.md#2-y)"))
+                      self.ready(specs="- [Thing](../specs/big-thing.spec.md)\n  - [Y](../specs/big-thing.spec.md#2-y)"))
 
     def test_requirement_heading_spacing_is_ignored(self):
         self.put_at(self.spec_path, spec("👍 Accepted").replace("### 1. X", "###  12.  X  "))
-        self.assertIsNone(self.ready(specs="- [Thing](../specs/thing.spec.md)\n  - [X](../specs/thing.spec.md#12--x)"))
+        self.assertIsNone(self.ready(specs="- [Thing](../specs/big-thing.spec.md)\n  - [X](../specs/big-thing.spec.md#12--x)"))
 
     def test_ready_needs_a_requirement_under_each_spec(self):
-        self.assertIn("requirement", self.ready(specs="- [Thing](../specs/thing.spec.md)"))
+        self.assertIn("requirement", self.ready(specs="- [Thing](../specs/big-thing.spec.md)"))
 
     def test_ready_needs_something_to_build(self):
         self.assertIn("nothing", self.ready(specs="None."))
@@ -887,7 +887,7 @@ class Plan(PlanWorkspace):
     def test_another_plan_for_another_requirement_allowed(self):
         self.put_at(self.spec_path, spec("👍 Accepted", rule="The system SHALL do X.\n\n### 2. Y\n\nThe system SHALL do Y."))
         other = os.path.join(self.tmp.name, "docs", "plans", "2026-10-01-earlier.md")
-        self.put_at(other, plan(specs="- [Thing](../specs/thing.spec.md)\n  - [Y](../specs/thing.spec.md#2-y)"))
+        self.put_at(other, plan(specs="- [Thing](../specs/big-thing.spec.md)\n  - [Y](../specs/big-thing.spec.md#2-y)"))
         self.assertIsNone(self.ready())
 
     def test_ready_refused_when_an_adr_line_cannot_be_read(self):
@@ -896,7 +896,7 @@ class Plan(PlanWorkspace):
         self.assertIn("cannot read", reason)
 
     def test_ready_refused_when_a_spec_line_cannot_be_read(self):
-        specs = "- [Thing](../specs/thing.spec.md)\n  - [X](../specs/thing.spec.md#1-x)\n- Spec B: [B](../specs/b.spec.md)\n  - [B1](../specs/b.spec.md#1-b1)"
+        specs = "- [Thing](../specs/big-thing.spec.md)\n  - [X](../specs/big-thing.spec.md#1-x)\n- Spec B: [B](../specs/b.spec.md)\n  - [B1](../specs/b.spec.md#1-b1)"
         self.assertIn("cannot read", self.ready(specs=specs))
 
     def test_ready_refused_when_specs_holds_prose_beside_a_good_adr(self):
@@ -905,29 +905,29 @@ class Plan(PlanWorkspace):
         self.assertIn("cannot read", reason)
 
     def test_ready_refused_for_a_requirement_before_any_spec(self):
-        self.assertIn("cannot read", self.ready(specs="  - [X](../specs/thing.spec.md#1-x)"))
+        self.assertIn("cannot read", self.ready(specs="  - [X](../specs/big-thing.spec.md#1-x)"))
 
     def test_footnote_marks_and_definitions_in_references_are_ignored(self):
-        specs = ("- [Thing](../specs/thing.spec.md)[^1]\n  - [X](../specs/thing.spec.md#1-x)\n\n"
+        specs = ("- [Thing](../specs/big-thing.spec.md)[^1]\n  - [X](../specs/big-thing.spec.md#1-x)\n\n"
                  "[^1]: A thing is what the\n    product makes.")
         self.assertIsNone(self.ready(specs=specs))
 
     def test_template_comments_in_references_are_ignored(self):
-        specs = "<!-- Each spec this work builds,\n     over two lines. -->\n- [Thing](../specs/thing.spec.md)\n  - [X](../specs/thing.spec.md#1-x)"
+        specs = "<!-- Each spec this work builds,\n     over two lines. -->\n- [Thing](../specs/big-thing.spec.md)\n  - [X](../specs/big-thing.spec.md#1-x)"
         self.assertIsNone(self.ready(specs=specs))
 
     def test_ready_refused_when_a_spec_link_is_not_a_spec(self):
         other = os.path.join(self.tmp.name, "docs", "plans", "2026-10-01-earlier.md")
         self.put_at(other, plan("🟢 Ready to build", specs="None.", adrs="None."))
-        reason = self.ready(specs="- [Earlier](2026-10-01-earlier.md)\n  - [X](../specs/thing.spec.md#1-x)")
+        reason = self.ready(specs="- [Earlier](2026-10-01-earlier.md)\n  - [X](../specs/big-thing.spec.md#1-x)")
         self.assertIn("not a spec", reason)
 
     def test_ready_refused_when_an_adr_link_is_not_an_adr(self):
-        reason = self.ready(adrs="| ADR | Decision |\n| --- | --- |\n| [Thing](../specs/thing.spec.md) | Thing |")
+        reason = self.ready(adrs="| ADR | Decision |\n| --- | --- |\n| [Thing](../specs/big-thing.spec.md) | Thing |")
         self.assertIn("not an ADR", reason)
 
     def test_ready_refused_on_the_old_requirement_lines(self):
-        reason = self.ready(specs="- [Thing](../specs/thing.spec.md)\n  - Requirement: X")
+        reason = self.ready(specs="- [Thing](../specs/big-thing.spec.md)\n  - Requirement: X")
         self.assertIn("layout plans had before", reason)
         self.assertIn("  - [<requirement name>](<path>#<heading anchor>)", reason)
 
@@ -938,16 +938,16 @@ class Plan(PlanWorkspace):
         self.assertIn("| ADR | Decision |", reason)
 
     def test_ready_refused_on_a_wrong_anchor_naming_the_right_one(self):
-        reason = self.ready(specs="- [Thing](../specs/thing.spec.md)\n  - [X](../specs/thing.spec.md#2-x)")
-        self.assertIn("[X](../specs/thing.spec.md#1-x)", reason)
+        reason = self.ready(specs="- [Thing](../specs/big-thing.spec.md)\n  - [X](../specs/big-thing.spec.md#2-x)")
+        self.assertIn("[X](../specs/big-thing.spec.md#1-x)", reason)
 
     def test_ready_refused_on_a_requirement_link_without_an_anchor(self):
-        reason = self.ready(specs="- [Thing](../specs/thing.spec.md)\n  - [X](../specs/thing.spec.md)")
+        reason = self.ready(specs="- [Thing](../specs/big-thing.spec.md)\n  - [X](../specs/big-thing.spec.md)")
         self.assertIn("#1-x", reason)
 
     def test_ready_refused_on_a_requirement_link_to_another_file(self):
-        reason = self.ready(specs="- [Thing](../specs/thing.spec.md)\n  - [X](../specs/other.spec.md#1-x)")
-        self.assertIn("[X](../specs/thing.spec.md#1-x)", reason)
+        reason = self.ready(specs="- [Thing](../specs/big-thing.spec.md)\n  - [X](../specs/other.spec.md#1-x)")
+        self.assertIn("[X](../specs/big-thing.spec.md#1-x)", reason)
 
     def test_ready_refused_when_the_decision_is_not_the_adr_title(self):
         self.put_at(os.path.join(self.tmp.name, "docs", "adrs", "0003-history.md"), adr("👍 Accepted"))
@@ -962,7 +962,7 @@ class Plan(PlanWorkspace):
     def test_footnote_marks_after_new_layout_links_are_ignored(self):
         self.put_at(os.path.join(self.tmp.name, "docs", "adrs", "0003-history.md"), adr("👍 Accepted"))
         self.assertIsNone(self.ready(
-            specs="- [Thing](../specs/thing.spec.md)\n  - [X](../specs/thing.spec.md#1-x)[^1]\n\n[^1]: A thing.",
+            specs="- [Thing](../specs/big-thing.spec.md)\n  - [X](../specs/big-thing.spec.md#1-x)[^1]\n\n[^1]: A thing.",
             adrs="| ADR | Decision |\n| --- | --- |\n| [0003](../adrs/0003-history.md)[^2] | Store sessions in Redis[^3] |"))
 
     def test_adr_title_read_past_crlf_frontmatter(self):
@@ -972,7 +972,7 @@ class Plan(PlanWorkspace):
 
     def test_an_old_layout_plan_still_blocks_a_shared_requirement(self):
         other = os.path.join(self.tmp.name, "docs", "plans", "2026-10-01-earlier.md")
-        self.put_at(other, plan(specs="- [Thing](../specs/thing.spec.md)\n  - Requirement: X"))
+        self.put_at(other, plan(specs="- [Thing](../specs/big-thing.spec.md)\n  - Requirement: X"))
         self.assertIn("2026-10-01-earlier.md", self.ready())
 
     def test_adr_table_without_its_header_still_read(self):
@@ -982,7 +982,7 @@ class Plan(PlanWorkspace):
     def test_two_specs_each_with_their_requirements(self):
         other = os.path.join(self.tmp.name, "docs", "specs", "b.spec.md")
         self.put_at(other, spec("👍 Accepted").replace("### 1. X", "### 1. B one"))
-        specs = ("- [Thing](../specs/thing.spec.md)\n  - [X](../specs/thing.spec.md#1-x)\n"
+        specs = ("- [Thing](../specs/big-thing.spec.md)\n  - [X](../specs/big-thing.spec.md#1-x)\n"
                  "- [B](../specs/b.spec.md)\n  - [B one](../specs/b.spec.md#1-b-one)")
         self.assertIsNone(self.ready(specs=specs))
 
@@ -1056,7 +1056,7 @@ RUN = "### Run 1\n\n2026-11-04 15:02, Linux, a cloud session, code `a91c03e7b2d4
 class SpikeWorkspace(Workspace):
     def setUp(self):
         super().setUp()
-        self.path = os.path.join(self.tmp.name, "docs", "spikes", "2026-11-04-tiff-files-open.md")
+        self.path = os.path.join(self.tmp.name, "docs", "spikes", "2026-11-10-library-reads-tiff.md")
 
     def move(self, old, new):
         return self.edit(f"status: {old}", f"status: {new}")
@@ -1240,7 +1240,7 @@ class Spike(SpikeWorkspace):
         self.assertEqual(status_check.spike_words(text)[1], 5 + 2)
 
     def test_a_design_over_its_limit_at_a_finish_is_not_told_to_return_to_draft(self):
-        long_title = "# The library reads " + " ".join(["word"] * 600)
+        long_title = "# The library reads TIFF " + " ".join(["word"] * 600)
         self.put(record("🟢 Ready to run", answer="Confirmed: it opens.", runs=RUN))
         self.assertIsNone(self.edit("# The library reads our TIFF files", long_title))
         self.put(record("🟢 Ready to run", answer="Confirmed: it opens.", runs=RUN).replace(
@@ -1353,10 +1353,10 @@ class DocumentType(Workspace):
 
     def test_each_kind_with_its_type_allowed(self):
         for parts, text in [
-            (("docs", "specs", "thing.spec.md"), spec()),
-            (("docs", "adrs", "0001-session-data-storage.md"), adr()),
-            (("docs", "plans", "2026-10-29-thing-release.md"), plan(specs="None.")),
-            (("docs", "spikes", "2026-11-04-tiff-files-open.md"), record()),
+            (("docs", "specs", "big-thing.spec.md"), spec()),
+            (("docs", "adrs", "0001-sessions-redis.md"), adr()),
+            (("docs", "plans", "2026-11-10-thing-release.md"), plan(specs="None.")),
+            (("docs", "spikes", "2026-11-10-library-reads-tiff.md"), record()),
             (("docs", "brief.md"), BRIEF),
         ]:
             self.at(*parts)
@@ -1364,10 +1364,10 @@ class DocumentType(Workspace):
 
     def test_new_document_without_type_refused(self):
         for parts, text, value in [
-            (("docs", "specs", "thing.spec.md"), spec(kind=None), "Spec"),
-            (("docs", "adrs", "0001-session-data-storage.md"), adr(kind=None), "ADR"),
-            (("docs", "plans", "2026-10-29-thing-release.md"), plan(specs="None.", kind=None), "Plan"),
-            (("docs", "spikes", "2026-11-04-tiff-files-open.md"), record(kind=None), "Spike"),
+            (("docs", "specs", "big-thing.spec.md"), spec(kind=None), "Spec"),
+            (("docs", "adrs", "0001-sessions-redis.md"), adr(kind=None), "ADR"),
+            (("docs", "plans", "2026-11-10-thing-release.md"), plan(specs="None.", kind=None), "Plan"),
+            (("docs", "spikes", "2026-11-10-library-reads-tiff.md"), record(kind=None), "Spike"),
             (("docs", "brief.md"), BRIEF.replace("type: Brief\n", ""), "Brief"),
         ]:
             self.at(*parts)
@@ -1416,13 +1416,13 @@ class DocumentType(Workspace):
         self.assertIsNone(self.edit("status: 👍 Accepted", "type: Spec\nstatus: 👍 Accepted"))
 
     def test_adding_type_to_decided_adrs_allowed(self):
-        self.at("docs", "adrs", "0001-session-data-storage.md")
+        self.at("docs", "adrs", "0001-sessions-redis.md")
         for status in ("👍 Accepted", "❌ Rejected", "↪️ Superseded"):
             self.put(adr(status, kind=None))
             self.assertIsNone(self.edit(f"status: {status}", f"type: ADR\nstatus: {status}"), status)
 
     def test_old_accepted_adr_superseded_while_gaining_type(self):
-        self.at("docs", "adrs", "0001-session-data-storage.md")
+        self.at("docs", "adrs", "0001-sessions-redis.md")
         self.put(adr("👍 Accepted", kind=None))
         replacement = os.path.join(self.tmp.name, "docs", "adrs", "0002-sessions-in-postgres.md")
         with open(replacement, "w") as f:
@@ -1431,18 +1431,18 @@ class DocumentType(Workspace):
         self.assertIsNone(reason)
 
     def test_adding_type_to_a_built_plan_allowed(self):
-        self.at("docs", "plans", "2026-10-29-thing-release.md")
+        self.at("docs", "plans", "2026-11-10-thing-release.md")
         self.put(plan("✅ Built", kind=None))
         self.assertIsNone(self.edit("status: ✅ Built", "type: Plan\nstatus: ✅ Built"))
 
     def test_adding_type_to_a_finished_spike_record_allowed(self):
-        self.at("docs", "spikes", "2026-11-04-tiff-files-open.md")
+        self.at("docs", "spikes", "2026-11-10-library-reads-tiff.md")
         for status in ("💡 Confirmed", "🚫 Refuted", "❔ Not settled"):
             self.put(record(status, kind=None, answer=status.split(" ", 1)[1] + ": all 20 open.", runs=RUN))
             self.assertIsNone(self.edit(f"status: {status}", f"type: Spike\nstatus: {status}"), status)
 
     def test_finished_spike_record_otherwise_unchanged(self):
-        self.at("docs", "spikes", "2026-11-04-tiff-files-open.md")
+        self.at("docs", "spikes", "2026-11-10-library-reads-tiff.md")
         self.put(record("💡 Confirmed", answer="Confirmed: all 20 open.", runs=RUN))
         self.assertIsNotNone(self.edit("All 20 open.", "All 21 open."))
 
@@ -1451,7 +1451,7 @@ class DocumentType(Workspace):
         self.assertIn("type: Spec", self.edit("type: Spec\nstatus: 👍 Accepted", "status: 👍 Accepted"))
 
     def test_removing_type_from_a_decided_adr_refused(self):
-        self.at("docs", "adrs", "0001-session-data-storage.md")
+        self.at("docs", "adrs", "0001-sessions-redis.md")
         self.put(adr("👍 Accepted"))
         self.assertIn("type: ADR", self.edit("type: ADR\nstatus: 👍 Accepted", "status: 👍 Accepted"))
 
@@ -1470,12 +1470,12 @@ class DocumentType(Workspace):
     def test_finished_spike_record_status_gains_its_emoji_with_its_type(self):
         # An old record's status may lack its emoji; the hook asks for it, so adding it with
         # `type:` must not count as changing a final record.
-        self.at("docs", "spikes", "2026-11-04-tiff-files-open.md")
+        self.at("docs", "spikes", "2026-11-10-library-reads-tiff.md")
         self.put(record("Confirmed", kind=None, answer="Confirmed: all 20 open.", runs=RUN))
         self.assertIsNone(self.edit("status: Confirmed", "type: Spike\nstatus: 💡 Confirmed"))
 
     def test_finished_spike_record_status_comment_not_changed(self):
-        self.at("docs", "spikes", "2026-11-04-tiff-files-open.md")
+        self.at("docs", "spikes", "2026-11-10-library-reads-tiff.md")
         self.put(record("💡 Confirmed", answer="Confirmed: all 20 open.", runs=RUN))
         self.assertIsNotNone(self.edit("status: 💡 Confirmed", "status: 💡 Confirmed  # done"))
 
@@ -1487,10 +1487,10 @@ class DateField(Workspace):
     """Every document with a status records in `date:` the day its status last changed."""
 
     KINDS = {
-        "spec": (("docs", "specs", "thing.spec.md"), spec),
-        "ADR": (("docs", "adrs", "0001-session-data-storage.md"), adr),
-        "plan": (("docs", "plans", "2026-10-29-thing-release.md"), lambda **kw: plan(specs="None.", **kw)),
-        "spike record": (("docs", "spikes", "2026-11-04-tiff-files-open.md"), record),
+        "spec": (("docs", "specs", "big-thing.spec.md"), spec),
+        "ADR": (("docs", "adrs", "0001-sessions-redis.md"), adr),
+        "plan": (("docs", "plans", "2026-11-10-thing-release.md"), lambda **kw: plan(specs="None.", **kw)),
+        "spike record": (("docs", "spikes", "2026-11-10-library-reads-tiff.md"), record),
     }
 
     def at(self, kind):
@@ -1569,8 +1569,8 @@ class DateField(Workspace):
 
     def test_plan_sign_off_sets_todays_date(self):
         self.at("plan")
-        self.put(plan(specs="- [Thing](../specs/thing.spec.md)\n  - [X](../specs/thing.spec.md#1-x)", date="2026-11-01"))
-        spec_path = os.path.join(self.tmp.name, "docs", "specs", "thing.spec.md")
+        self.put(plan(specs="- [Thing](../specs/big-thing.spec.md)\n  - [X](../specs/big-thing.spec.md#1-x)", date="2026-11-01"))
+        spec_path = os.path.join(self.tmp.name, "docs", "specs", "big-thing.spec.md")
         os.makedirs(os.path.dirname(spec_path), exist_ok=True)
         with open(spec_path, "w") as f:
             f.write(spec("👍 Accepted"))
@@ -1804,10 +1804,10 @@ class OpenQuestionsLayout(Workspace):
     a document written before it may be edited elsewhere (ADR 0030)."""
 
     KINDS = {
-        "spec": (("docs", "specs", "thing.spec.md"), spec),
-        "ADR": (("docs", "adrs", "0001-session-data-storage.md"), adr),
-        "plan": (("docs", "plans", "2026-10-29-thing-release.md"), lambda **kw: plan(specs="None.", **kw)),
-        "spike record": (("docs", "spikes", "2026-11-04-tiff-files-open.md"), record),
+        "spec": (("docs", "specs", "big-thing.spec.md"), spec),
+        "ADR": (("docs", "adrs", "0001-sessions-redis.md"), adr),
+        "plan": (("docs", "plans", "2026-11-10-thing-release.md"), lambda **kw: plan(specs="None.", **kw)),
+        "spike record": (("docs", "spikes", "2026-11-10-library-reads-tiff.md"), record),
         "brief": (("docs", "brief.md"),
                   lambda questions="None.": BRIEF + f"\n## Open questions\n\n{questions}\n"),
     }
@@ -1908,6 +1908,109 @@ class Anchors(unittest.TestCase):
                  "5. Cafe\u0301 open": "5-cafe\u0301-open"}
         for heading, anchor in cases.items():
             self.assertEqual(status_check.anchor_of(heading), anchor, heading)
+
+
+class NameRule(Workspace):
+    """Every spec, ADR, plan and spike record is named by one rule (docs/adrs/0035)."""
+
+    def at(self, *parts):
+        return os.path.join(self.tmp.name, "docs", *parts)
+
+    def test_new_documents_named_by_the_rule_allowed(self):
+        big = spec().replace("# Thing", "# Big thing")
+        self.assertIsNone(self.write(big, self.at("specs", "big-thing.spec.md")))
+        self.assertIsNone(self.write(big, self.at("specs", "billing", "big-thing.spec.md")))
+        self.assertIsNone(self.write(adr(), self.at("adrs", "0001-sessions-redis.md")))
+        self.assertIsNone(self.write(plan(), self.at("plans", f"{TODAY}-thing-release.md")))
+        self.assertIsNone(self.write(record(), self.at("spikes", f"{TODAY}-library-reads-tiff.md")))
+
+    def test_subject_of_one_word_refused(self):
+        reason = self.write(adr(), self.at("adrs", "0001-sessions.md"))
+        self.assertIn("two to five", reason)
+
+    def test_subject_of_six_words_refused(self):
+        text = adr().replace("# Store sessions in Redis", "# Store the sessions in Redis for now")
+        reason = self.write(text, self.at("adrs", "0001-store-the-sessions-in-redis-for.md"))
+        self.assertIn("two to five", reason)
+
+    def test_uppercase_or_spaces_refused(self):
+        self.assertIn("lowercase", self.write(adr(), self.at("adrs", "0001-Sessions-Redis.md")))
+        self.assertIn("lowercase", self.write(spec(), self.at("specs", "big_thing.spec.md")))
+
+    def test_subject_word_missing_from_title_refused(self):
+        reason = self.write(adr(), self.at("adrs", "0001-session-storage.md"))
+        self.assertIn("'session'", reason)
+        self.assertIn("title", reason)
+
+    def test_title_compared_in_lowercase_split_at_punctuation(self):
+        text = adr().replace("# Store sessions in Redis", "# Keep each user's sessions in Redis")
+        self.assertIsNone(self.write(text, self.at("adrs", "0001-user-sessions.md")))
+        self.assertIsNotNone(self.write(text, self.at("adrs", "0001-users-sessions.md")))
+
+    def test_adr_without_four_digit_number_refused(self):
+        self.assertIn("four-digit", self.write(adr(), self.at("adrs", "1-sessions-redis.md")))
+        self.assertIn("four-digit", self.write(adr(), self.at("adrs", "sessions-redis.md")))
+
+    def test_adr_number_another_file_uses_refused(self):
+        os.makedirs(self.at("adrs"), exist_ok=True)
+        with open(self.at("adrs", "0001-other-thing.md"), "w") as f:
+            f.write(adr())
+        reason = self.write(adr(), self.at("adrs", "0001-sessions-redis.md"))
+        self.assertIn("0001-other-thing.md", reason)
+
+    def test_plan_and_spike_need_todays_date(self):
+        self.assertIn(TODAY, self.write(plan(), self.at("plans", "2026-10-29-thing-release.md")))
+        self.assertIn(TODAY, self.write(plan(), self.at("plans", "thing-release.md")))
+        self.assertIn(TODAY, self.write(record(), self.at("spikes", "2026-11-04-library-reads-tiff.md")))
+
+    def test_spec_subject_is_the_name_before_spec_md(self):
+        self.assertIn("two to five", self.write(spec(), self.at("specs", "thing.spec.md")))
+
+    def test_file_without_status_or_type_left_alone(self):
+        self.assertIsNone(self.write("# Notes\n", self.at("plans", "notes.md")))
+        self.assertIsNone(self.write("# Notes\n", self.at("adrs", "README.md")))
+
+    def test_existing_file_named_before_the_rule_still_editable(self):
+        self.path = self.at("adrs", "0001-session-data-storage.md")
+        self.put(adr())
+        self.assertIsNone(self.edit("Fast", "Quick"))
+
+    def test_edit_dropping_a_subject_word_from_the_title_refused(self):
+        self.path = self.at("adrs", "0001-sessions-redis.md")
+        self.put(adr())
+        reason = self.edit("# Store sessions in Redis", "# Store sessions in Postgres")
+        self.assertIn("'redis'", reason)
+
+    def test_edit_keeping_the_subject_words_allowed(self):
+        self.path = self.at("adrs", "0001-sessions-redis.md")
+        self.put(adr())
+        self.assertIsNone(self.edit("# Store sessions in Redis", "# Keep user sessions in Redis"))
+
+    def test_a_plans_date_is_not_part_of_its_subject(self):
+        self.path = self.at("plans", f"{TODAY}-thing-release.md")
+        self.put(plan().replace("# Thing release", "# Thing release 11"))
+        self.assertIsNone(self.edit("# Thing release 11", "# Thing release"))
+
+    def test_accents_in_the_title_are_dropped(self):
+        text = adr().replace("# Store sessions in Redis", "# Gérer les sessions")
+        self.assertIsNone(self.write(text, self.at("adrs", "0001-gerer-sessions.md")))
+
+    def test_an_empty_subject_is_said_to_have_no_words(self):
+        self.assertIn("0 words", self.write(adr(), self.at("adrs", "0001-.md")))
+
+    def test_a_frozen_plan_is_refused_as_frozen_before_its_title_is_checked(self):
+        self.path = self.at("plans", f"{TODAY}-thing-release.md")
+        self.put(plan(status="✅ Built"))
+        reason = self.edit("# Thing release", "# Other work")
+        self.assertIn("Built", reason)
+
+    def test_audit_form_checks_only_the_shape(self):
+        old = self.at("adrs", "0001-session-data-storage.md")
+        self.assertIsNone(status_check.name_problem(old, "ADR", adr(), new=False))
+        dated_long_ago = self.at("plans", "2020-01-01-thing-release.md")
+        self.assertIsNone(status_check.name_problem(dated_long_ago, "plan", plan(), new=False))
+        self.assertIsNotNone(status_check.name_problem(self.at("adrs", "0001-x.md"), "ADR", adr(), new=False))
+        self.assertIsNotNone(status_check.name_problem(self.at("specs", "Thing.spec.md"), "spec", spec(), new=False))
 
 
 class _Folder:

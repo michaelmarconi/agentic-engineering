@@ -6,6 +6,25 @@ What changed in each version of the plugin, newest first. Versions follow
 past a major version: it says what you need to change in your documents. Until 1.0.0, any
 minor version may need such a change, and its entry says so.
 
+## [0.52.0] - 2026-11-16
+
+### Changed
+
+- Every spec, ADR, plan and spike record is named by one rule: its number or date, then a
+  subject of two to five lowercase words, each a word of its title (ADR 0035). The hook that
+  checks each write refuses a new document whose name breaks the rule, giving the form it should
+  take, and an edit that drops one of the name's words from the title. It refuses names it used
+  to allow, such as a one-word ADR subject or a plan named with its whole title, so this is a
+  minor version. Existing names are left as they are: the hook never refuses a file for its name
+  alone, and documents written before the rule stay editable.
+- `/audit` lists each document whose name does not have the rule's shape, and ADRs that share a
+  number. It does not compare an existing name's words with its title.
+- The ADR, plan and spike reviewers no longer check file names, since the hook does.
+- Every document skill now holds the same sentence forbidding a rename once a document's review
+  has started (ADR 0036), checked by `skill_check.py`; it replaces the spike skill's own.
+- When the correction check finds no saved review of a document, its refusal says the document
+  may have been renamed since its review, and to move it back.
+
 ## [0.51.1] - 2026-11-16
 
 ### Changed

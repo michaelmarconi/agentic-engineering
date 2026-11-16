@@ -7,8 +7,9 @@ description: Plan one piece of work that builds requirements of settled specs or
 
 A plan says how one piece of work will build part of what the specs and ADRs have already settled:
 the requirements it delivers, the decisions the code must follow, and how the work will be done.
-Plans live in one flat folder, `docs/plans/`, as `YYYY-MM-DD-<title>.md`, dated the day the plan is
-first written. A plan is temporary: `/build` marks it `✅ Built`, after which it is frozen, never
+Plans live in one flat folder, `docs/plans/`, as `YYYY-MM-DD-<subject>.md`, dated the day the plan is
+first written, where the subject is two to five lowercase words of its title joined by hyphens,
+as a plugin hook checks. A plan is temporary: `/build` marks it `✅ Built`, after which it is frozen, never
 edited, and may be deleted whenever nobody needs it, so it never holds anything later work needs. A
 technical decision later work has to follow belongs in an ADR, not here.
 
@@ -101,8 +102,14 @@ count. With no decisions, say so and go straight to writing.
 
 ## Write
 
-Only when every decision is settled, write the plan from the template, with today's date in its
-file name and the template's comments removed:
+Only when every decision is settled, write the plan from the template, named as above and with the
+template's comments removed.
+
+Never rename a document once its review has started: the review hook keeps the review under the
+document's path, so a renamed document's corrections can't be checked. If the name no longer fits,
+say so to the person, who can rename it once the review has ended.
+
+The plan's sections:
 
 - **Specs** lists each spec with the requirements this work delivers nested beneath it, and
   **ADRs** each ADR the code must follow, as a table; either says "None." when there are none,

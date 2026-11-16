@@ -24,6 +24,10 @@ written before it has no frontmatter, so add the template's with your next edit.
 names the document's type, as "Spec:" or "ADR:" in front of it would: the frontmatter's `type:`
 already says what it is.
 
+Never rename a document once its review has started: the review hook keeps the review under the
+document's path, so a renamed document's corrections can't be checked. If the name no longer fits,
+say so to the person, who can rename it once the review has ended.
+
 ## What to read
 
 The brief records what the person intends, which only they know. So draft from what they said in

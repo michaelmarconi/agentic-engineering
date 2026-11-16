@@ -53,7 +53,9 @@ feedback, practices or spike) and the shared language checker, which checks the 
   both its reports, the document as reviewed, and the files that skill's checker should read,
   between fixed `=== ... ===` lines, and approves the start. It refuses the start, with a reason
   Claude sees, when the request has no `Document:` line, when that review lacks either report or
-  none is on record in this session, or when the document is unchanged since its review. No
+  none is on record in this session, or when the document is unchanged since its review. When
+  nothing at all is saved under the document's path, the reason adds that it may have been renamed
+  since its review, and to move it back (docs/adrs/0036). No
   refusal asks for another review, which the lifecycle never repeats: when a report is missing,
   it tells Claude to stop and show the person.
 - When the checker finishes, it deletes that document's saved review, so a later review of the
@@ -455,7 +457,16 @@ def start_checker(session, tool_input, cwd=None):
         return refuse(str(problem))
     name = ", ".join(paths)
     with locked(session, create=False):
-        reviews = [r for r in load(session, name) if reviewed(r)][-1:]
+        saved = load(session, name)
+        reviews = [r for r in saved if reviewed(r)][-1:]
+    if not saved:
+        # Nothing saved under this path at all: the likeliest cause is a rename since the review,
+        # which the skills forbid (docs/adrs/0036). Claude knows what it renamed in its own session.
+        return refuse(f"No review of {name} is on record in this session, so the corrections cannot "
+                      "be checked. If you renamed the document since its review, move it back to the name "
+                      "it had when reviewed. Do not review again: stop and show the person this reason; "
+                      "the review may also have been checked already, or saved before the plugin was "
+                      "updated.")
     if not reviews or not complete(reviews[0]):
         missing = [] if not reviews else [
             who for who, part in (("the reviewer's", "reviewer"), ("the language checker's", "language"))

@@ -26,6 +26,7 @@ For each skills/<folder>/SKILL.md under the given plugin root (default: this plu
 - the skills that write a lifecycle document (DOCUMENT_SKILLS) hold TYPE_RULE word for word, so
   none puts the document's type in its title, and PROPOSED_RULE, so no open question is ever left
   without a proposed answer or what would settle it, laid out as ADR 0030 says.
+  They also hold RENAME_RULE, so no document is renamed while its review runs (docs/adrs/0036).
 - those skills and /practices (ASK_SKILLS), which ask the person to settle questions, hold
   ASK_RULE word for word, so every question asked in the conversation is laid out the same way.
 - the skills that offer diagrams at hand-over (DIAGRAM_SKILLS) hold each of DIAGRAM_RULES word
@@ -80,6 +81,13 @@ DOCUMENT_SKILLS = ("brief", "spec", "adr", "plan", "spike")
 TYPE_RULE = (
     "The title never names the document's type, as \"Spec:\" or \"ADR:\" in front of it would: "
     "the frontmatter's `type:` already says what it is."
+)
+
+# Every document's name stays as it was while its review runs (docs/adrs/0036).
+RENAME_RULE = (
+    "Never rename a document once its review has started: the review hook keeps the review under "
+    "the document's path, so a renamed document's corrections can't be checked. If the name no "
+    "longer fits, say so to the person, who can rename it once the review has ended."
 )
 
 # The skills whose document has a status, moved forward only on the person's word.
@@ -294,6 +302,9 @@ def problems(folder, text):
     if folder in DOCUMENT_SKILLS and not holds(body, PROPOSED_RULE):
         found.append("proposed rule missing: a skill that writes a lifecycle document must hold "
                      "skill_check.PROPOSED_RULE word for word")
+    if folder in DOCUMENT_SKILLS and not holds(body, RENAME_RULE):
+        found.append("rename rule missing: a skill that writes a lifecycle document must hold "
+                     "skill_check.RENAME_RULE word for word")
     if folder in ASK_SKILLS and not holds(body, ASK_RULE):
         found.append("ask rule missing: a skill that asks the person to settle questions must hold "
                      "skill_check.ASK_RULE word for word")
