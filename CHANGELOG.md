@@ -6,6 +6,17 @@ What changed in each version of the plugin, newest first. Versions follow
 past a major version: it says what you need to change in your documents. Until 1.0.0, any
 minor version may need such a change, and its entry says so.
 
+## [0.57.0] - 2026-11-16
+
+### Changed
+
+- `/agentic:build` keeps your practices and its own rules in view however long it runs. A long
+  build gives less weight to what it read at the start, so each time the script that checks a
+  requirement's new tests runs, it prints the `## Practices` sections of `AGENTS.md` and
+  `CLAUDE.md` and the build's rules for the whole build again, before any of that requirement's
+  code is written. Only those sections are printed, about 1,500 tokens each time, not the rest of
+  `AGENTS.md` or the topic files under `docs/practices/`.
+
 ## [0.56.0] - 2026-11-16
 
 ### Changed
