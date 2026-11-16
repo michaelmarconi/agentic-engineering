@@ -6,7 +6,7 @@ otherwise it is a line in the core. A choice between alternatives goes to `/adr`
 
 | # | Topic | Asks | Usually ends up |
 |---|---|---|---|
-| 1 | Setting up | What a fresh copy needs: tools, services such as a database, local config; any machine or operating system the work needs; where secrets live; the command that sets it up and the one that runs the product | Check your work, Rules |
+| 1 | Setting up | What a fresh copy needs: tools, services such as a database, local config; any machine or operating system the work needs; where secrets live; the command that sets it up | Check your work, Rules |
 | 2 | Checking work | The exact commands: all tests, one test file, lint and format, type check; which ones run before every commit | Check your work, Rules |
 | 3 | Testing | Test-first or not; what each change must be tested with; coverage and any minimum; end-to-end tests and when they run; test data; what to do with a flaky or slow test | Rules (test-first), `testing.md` |
 | 4 | Branches and commits | Branch names; commit message style; whether work may be committed straight to the default branch; how long a branch may live and how often it is merged back, such as merging to the default branch at least daily with three or fewer active branches (trunk-based development) | Rules |
@@ -18,5 +18,6 @@ otherwise it is a line in the core. A choice between alternatives goes to `/adr`
 | 10 | Security and dependencies | Before adding a dependency: what to check (kept up to date by its authors, widely used, licence, the exact name, to avoid look-alike packages) and who agrees it; if the project has a lock file, that it is committed and installs use only it; the command that scans dependencies for known holes, and when it runs; how and how often dependencies are updated; secret scanning; what to do on finding a security hole, such as never describing it in a public issue or commit message | `security.md` |
 | 11 | Hands off | Files and folders an agent must never edit, such as generated code; actions it must never take, such as running a script that changes shared data | Rules |
 | 12 | Documents to keep up to date | Which documents must change with the code | Rules |
+| 13 | Running the product | The machine or operating system it needs; the commands that start and stop it, and how to tell it has started; how to reach each of its interfaces, such as a command, a web address or a port; how to put it in a given starting state, such as test data or a stand-in for an outside service; which services are safe to touch, such as stand-ins and local copies, and which are never to be touched, such as real accounts or anything shared. `/agentic:verify` relies on it | `running.md`, with the pointer "before starting or using the product: `docs/practices/running.md`" |
 
 Left out on purpose: anything for people only, such as how to report a bug, and ways of working that exist for people rather than agents, such as sprint length, estimates and pair programming.

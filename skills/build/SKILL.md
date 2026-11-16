@@ -224,7 +224,8 @@ reads them exactly as they were given; you write only your own sections, as Mark
 6. `## What each review found`: what you corrected for each review; the reviews' and the
    correction check's reports are added for you.
 7. `## Left for you to check`: each requirement left for the person to check, and a reminder to
-   verify the work, for example with Claude Code's `/verify`, before merging.
+   check the product itself before merging with `/agentic:verify <the plan's path>`, which uses
+   the running product against the plan's requirements.
 
 The script's own report goes under a heading of its own, which only the script writes. Give your
 sections to the script on standard input:
