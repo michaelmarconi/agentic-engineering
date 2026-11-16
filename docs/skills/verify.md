@@ -90,9 +90,13 @@ the list says why.
 
 ## How a run goes
 
-1. **What to check.** Claude agrees the list of requirements with you, as above. A script that
-   ships with the plugin then lists their examples, records the commit, and refuses uncommitted
-   changes. No AI is involved in that step.
+1. **What to check.** Claude agrees the list of requirements with you, as above. A small script
+   that ships with the plugin then copies those requirements and their examples out of the spec
+   files, word for word, to hand to the agents. A script does this rather than Claude, so the
+   agents get exactly what the spec says, not Claude's summary of it, which could carry what
+   Claude knows about the code. The script also notes the commit being checked, for the report,
+   and refuses to start while there are uncommitted changes, since the report could then not say
+   which version of the product was checked.
 2. **The verifier.** One fresh agent per spec, starting without your conversation. It is given the
    examples to check from that spec and the practices, and nothing else: not the code, the tests, the plan
    or any other document. It starts the product as the practice says, turns each example into
