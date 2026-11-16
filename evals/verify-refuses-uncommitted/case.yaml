@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: verify-refuses-uncommitted
+expected_outcome: |
+  With uncommitted changes, the verify script refuses, no agent starts, and the reply says why.
+context:
+  scaffold_script: place-files.sh

@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: practices-running-tries-it
+expected_outcome: |
+  /practices running the product runs the proposed start command before writing the topic file.
+context:
+  scaffold_script: place-files.sh
