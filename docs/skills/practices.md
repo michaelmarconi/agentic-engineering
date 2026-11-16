@@ -136,6 +136,21 @@ will use.
   decline, or the session cannot reach the web, it says its proposal comes from Claude's own
   knowledge.
 
+### Running the product
+
+One topic is recorded differently. **Running the product** says how to start and stop the product,
+what machine and services it needs, how to reach each of its interfaces, how to put it in a given
+starting state, such as by adding test data, and what is safe to touch. It is written to
+`docs/practices/running.md`, and [`/verify`](verify.md) relies on it to use the product from
+outside.
+
+A wrong command here fails only when someone tries it, so `/practices` tries it before writing
+anything down. Once you have answered its questions, it starts the product with the proposed
+commands and reaches each interface once. When something fails, it shows what failed, proposes a
+change and tries again, until the product runs and you agree the recipe is right. Only then does it
+record the topic, under the usual review. It touches nothing the proposal marks as not safe, and if
+the product needs a machine this session is not running on, it records nothing and says so.
+
 ### What it never does
 
 - **Require anything.** Running `/practices` is optional, and so is every topic. A question you

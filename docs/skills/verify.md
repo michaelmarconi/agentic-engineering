@@ -53,13 +53,9 @@ practice, **Running the product**: a topic of [`/practices`](practices.md), in
 
 **If Running the product is not recorded, `/verify` ends the run before checking anything.** Its
 reply says that it cannot check the product until it knows how to run it, and asks you to run
-`/agentic:practices running the product`. That run works like any other practice: `/practices`
-reads the repository and proposes how to start the product and what is safe to touch, one question
-at a time. It then does one thing it does for no other practice: before writing anything down, it
-tries the proposal, starting the product with the proposed commands and reaching each interface
-once. When something fails, it proposes a change and tries again, until the product runs and you
-agree the recipe is right. Only then does it record the practice, under its usual review. Once you
-have committed it, run `/verify` again.
+`/agentic:practices running the product`, which works out the recipe with you and tries it until
+the product runs (see [Running the product](practices.md#running-the-product) on the `/practices`
+page). Once you have committed the practice, run `/verify` again.
 
 `/verify` itself never writes a practice. If a later run finds the recipe no longer works, such as
 a start command that fails, it ends the run in the same way, says what failed, and asks you to
