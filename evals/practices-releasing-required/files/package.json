@@ -1,0 +1,9 @@
+{
+  "name": "tiny-notes",
+  "version": "1.4.0",
+  "private": false,
+  "scripts": {
+    "test": "node --test",
+    "release": "npm publish"
+  }
+}

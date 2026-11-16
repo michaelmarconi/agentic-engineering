@@ -49,7 +49,7 @@ When the person names no topic, give an overview and write nothing. Read
 [references/topics.md](references/topics.md), and read the practices and the repository afresh
 every time, even later in a conversation that has already read them, since either may have
 changed outside it. Then list each topic by name as
-recorded, not recorded yet, or out of step with the repository, with a few words on why, such as
+recorded, not recorded yet, or out of step with the repository or with the one-command rule below, with a few words on why, such as
 "tests exist, but no test command is recorded". When a recorded practice and the repository
 disagree, such as a test command that differs from the one the CI file runs, say what each says
 and ask which is right. Then suggest the one topic that matters most now, judged from the
@@ -107,12 +107,42 @@ not to ask anything does.
   the person, and try again, until it runs and they agree. Record only what ran, and never touch a
   service they marked as never to be touched, even to try it. Agents that verify the product, and
   that never read its code, rely on this topic alone to start it.
+- **Releasing and deploying.** `/agentic:release` and `/agentic:deploy` act on real systems from
+  these topics alone and never ask, so write each in the exact headings the topics file gives and
+  ask the required items first. A required item comes from the person or the repository, never a
+  default you propose; an optional one may be a default. Draft each environment's check from
+  Running the product when it is recorded, pointed at that environment's address. Try only what
+  is safe: read the current version, run each check against the address the person gave for its
+  environment, and run a publish or deploy command in its dry-run mode where it has one; never
+  publish, deploy or roll back. When a try fails, show what it printed and settle the step with
+  the person; if they said not to ask, record it as they gave it and name the failure in the
+  hand-over. Before the review, run
+  `python3 "${CLAUDE_PLUGIN_ROOT}/scripts/practice_complete.py" <the topic file's path>`, the same
+  test of complete those skills run, and name in the hand-over each item it lists as missing,
+  since they refuse until it is there.
 - **Disagreements.** When the repository, the core and a topic file disagree, such as two test
   commands, say what each says and ask which is right before changing either.
+- **One command per step.** Record each step as one command, as rubric check 3 defines it: one
+  line that calls one program, needs no answer from a person and exits non-zero on failure, so
+  every skill can run it and judge it the same way. Check the text of every command you will
+  record in one run before writing them, one per line in a quoted heredoc so no quote in a command
+  can break the call: `python3 "${CLAUDE_SKILL_DIR}/scripts/one_command.py" <<'EOF'`, the
+  commands, then `EOF`. When the agreed step is
+  several commands, write an entry in the project's command runner or scripts folder that runs them
+  in order and stops at the first failure, with no branching, retries or loops, passing on any
+  `{name}` value the step needs, such as `make deploy ENV={environment}`. Show it to the
+  person, try only the parts that are safe to run, such as a dry run or reading the current
+  version, never a real release, deploy or rollback, and record the one-line command that runs it.
+  When a step needs an entry and the project has neither a runner nor a scripts folder, ask which
+  the person wants, proposing the tool their language already provides, such as the scripts of
+  `package.json`, and create it the same way. A step that needs real logic is not yours to write:
+  name it in the hand-over as work for `/agentic:plan`. Once the project has a place for commands,
+  Check your work names it.
 
-Write only the core and the files under `docs/practices/`. Leave the rest of `AGENTS.md`
-unchanged, creating the file if the project has none, and touch no other file but `CLAUDE.md`'s
-import line. Never commit: the person looks at the change and commits it.
+Write only the core, the files under `docs/practices/` and the entries the bullet above lets you
+write in the project's runner or scripts folder. Leave the rest of `AGENTS.md` unchanged, creating
+the file if the project has none, and touch no other file but `CLAUDE.md`'s import line. Never
+commit: the person looks at the change and commits it.
 
 ## Review
 
@@ -140,7 +170,8 @@ since the core and a topic file must agree.
 2. **Correct, once.** Read the rubric and the Plain words rule again, then correct only what the
    reports list: each failed check and each item under Other findings in the review report, and
    each finding in the wording report. Skip any finding outside the Practices section of
-   `AGENTS.md`, which is the person's. A wording item under Needs a person, whose meaning only the
+   `AGENTS.md`, which is the person's. A command outside this run's topic that breaks the
+   one-command rule stays as written for the person to decide, since writing its entry needs them. A wording item under Needs a person, whose meaning only the
    person knows, is a decision like any other. Correct by making the practices accurate, never by
    dropping or hedging what the person said. A finding only the person can settle, such as a rule
    they asked for word for word, or anything under Needs a person, stays as written for them to
