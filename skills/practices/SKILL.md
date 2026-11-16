@@ -112,8 +112,11 @@ not to ask anything does.
   ask the required items first. A required item comes from the person or the repository, never a
   default you propose; an optional one may be a default. Draft each environment's check from
   Running the product when it is recorded, pointed at that environment's address. Try only what
-  is safe: read the current version, run each check, and run a publish or deploy command in its
-  dry-run mode where it has one; never publish, deploy or roll back. Before the review, run
+  is safe: read the current version, run each check against the address the person gave for its
+  environment, and run a publish or deploy command in its dry-run mode where it has one; never
+  publish, deploy or roll back. When a try fails, show what it printed and settle the step with
+  the person; if they said not to ask, record it as they gave it and name the failure in the
+  hand-over. Before the review, run
   `python3 "${CLAUDE_PLUGIN_ROOT}/scripts/practice_complete.py" <the topic file's path>`, the same
   test of complete those skills run, and name in the hand-over each item it lists as missing,
   since they refuse until it is there.

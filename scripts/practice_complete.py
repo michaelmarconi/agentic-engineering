@@ -11,9 +11,11 @@ complete means.
   such section needs four `###` headings with text under them: Releases allowed, Deploy, Check,
   Roll back.
 
-Headings match whatever their case. Any other heading is allowed and ignored. A required item
-whose text holds "(default)" fails, since a default Claude proposed must not run against real
-systems. Lines inside code blocks are never read as headings.
+Headings match whatever their case, and every copy of a repeated heading is checked. Any other
+heading is allowed and ignored. Only text counts as something under a heading: a heading below it,
+an empty code block or an HTML comment does not. A required item whose text holds "(default)"
+fails, since a default Claude proposed must not run against real systems. Lines inside code blocks
+and HTML comments are never read as headings.
 """
 
 import argparse
@@ -21,40 +23,61 @@ import os
 import re
 import sys
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import doc_references  # noqa: E402
+import status_check  # noqa: E402
+
 RELEASING = ("What may be released", "Version and its commit", "Publish")
 ENVIRONMENT_PARTS = ("Releases allowed", "Deploy", "Check", "Roll back")
 HEADING = re.compile(r"^(#{1,6})\s+(.*?)\s*#*\s*$")
-FENCE = re.compile(r"^\s*(```|~~~)")
 ENVIRONMENT = re.compile(r"^environment:\s*(.*)$", re.IGNORECASE)
 DEFAULT = "(default)"
 
 
-def sections(lines):
-    """Return (level, title, body lines) for each heading, the body running to the next heading
-    at the same or a higher level."""
-    headings = []
-    fenced = False
-    for i, line in enumerate(lines):
-        if FENCE.match(line):
-            fenced = not fenced
-            continue
-        match = None if fenced else HEADING.match(line)
-        if match:
-            headings.append((i, len(match.group(1)), match.group(2)))
+def without_comments(lines):
+    """The lines with every HTML comment cut out, as the status hook finds them."""
+    _, comments = status_check.scan(lines)
+    out = list(lines)
+    for (first, start), (last, end) in reversed(comments):
+        if first == last:
+            out[first] = out[first][:start] + out[first][end:]
+        else:
+            out[first] = out[first][:start]
+            for k in range(first + 1, last):
+                out[k] = ""
+            out[last] = out[last][end:]
+    return out
+
+
+def entries(lines):
+    """(heading level or 0, heading title or the line, fenced) for each line but fences and comments."""
     found = []
-    for n, (i, level, title) in enumerate(headings):
-        end = len(lines)
-        for j, other, _ in headings[n + 1:]:
-            if other <= level:
-                end = j
-                break
-        found.append((level, title, lines[i + 1:end]))
+    for _, line, fenced in doc_references.marked_lines("\n".join(without_comments(lines))):
+        match = None if fenced else HEADING.match(line)
+        found.append((len(match.group(1)), match.group(2), False) if match else (0, line, fenced))
     return found
 
 
+def sections(found):
+    """Return (level, title, body entries) for each heading, the body running to the next heading
+    at the same or a higher level."""
+    result = []
+    for n, (level, title, _) in enumerate(found):
+        if not level:
+            continue
+        end = len(found)
+        for j in range(n + 1, len(found)):
+            if found[j][0] and found[j][0] <= level:
+                end = j
+                break
+        result.append((level, title, found[n + 1:end]))
+    return result
+
+
 def judge(name, body, label):
-    """Return a problem with one required item's text, or None."""
-    text = "\n".join(line for line in body if line.strip())
+    """Return a problem with one required item's text, or None. Only text counts: a heading below
+    it, an empty code block or a comment does not."""
+    text = "\n".join(line for level, line, _ in body if not level and line.strip())
     if not text:
         return f"{label}{name} has nothing under it"
     if DEFAULT in text.lower():
@@ -64,29 +87,25 @@ def judge(name, body, label):
 
 def check_items(found, level, names, label, owner):
     problems = []
-    by_title = {}
-    for lvl, title, body in found:
-        if lvl == level:
-            by_title.setdefault(title.strip().lower(), body)
     for name in names:
-        body = by_title.get(name.lower())
-        if body is None:
+        copies = [body for lvl, title, body in found if lvl == level and title.strip().lower() == name.lower()]
+        if not copies:
             problems.append(f"{owner} has no {name}")
-        else:
+        for body in copies:
             problem = judge(name, body, label)
-            if problem:
+            if problem and problem not in problems:
                 problems.append(problem)
     return problems
 
 
 def check_releasing(lines):
-    return check_items(sections(lines), 2, RELEASING, "", "releasing.md")
+    return check_items(sections(entries(lines)), 2, RELEASING, "", "releasing.md")
 
 
 def check_deploying(lines):
     problems = []
     environments = 0
-    for level, title, body in sections(lines):
+    for level, title, body in sections(entries(lines)):
         match = ENVIRONMENT.match(title.strip()) if level == 2 else None
         if not match:
             continue
@@ -120,7 +139,7 @@ def main(argv=None):
     if not os.path.isfile(args.file):
         print(f"{base} is not recorded yet: record it with /agentic:practices {topic}")
         return 1
-    with open(args.file, encoding="utf-8") as f:
+    with open(args.file, encoding="utf-8-sig") as f:
         lines = f.read().splitlines()
     problems = checks[base](lines)
     if problems:

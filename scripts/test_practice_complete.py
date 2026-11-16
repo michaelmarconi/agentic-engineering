@@ -105,6 +105,38 @@ class PracticeComplete(unittest.TestCase):
         text = RELEASING.replace("`npm run release`", "`npm run release` (default)")
         self.assertMissing(self.put("releasing.md", text), "Publish is a default")
 
+
+    def test_only_a_heading_below_counts_as_nothing(self):
+        text = RELEASING.replace("`npm run release`\n", "### Notes\n")
+        self.assertMissing(self.put("releasing.md", text), "Publish has nothing under it")
+
+    def test_an_empty_code_block_counts_as_nothing(self):
+        text = RELEASING.replace("`npm run release`\n", "```\n```\n")
+        self.assertMissing(self.put("releasing.md", text), "Publish has nothing under it")
+
+    def test_a_command_in_a_code_block_counts(self):
+        text = RELEASING.replace("`npm run release`\n", "```\nnpm run release\n```\n")
+        self.assertComplete(self.put("releasing.md", text))
+
+    def test_a_comment_counts_as_nothing(self):
+        text = RELEASING.replace("`npm run release`\n", "<!-- fill in -->\n")
+        self.assertMissing(self.put("releasing.md", text), "Publish has nothing under it")
+
+    def test_a_heading_inside_a_comment_does_not_count(self):
+        text = RELEASING.replace("## Publish\n`npm run release`\n", "<!--\n## Publish\nnpm run release\n-->\n")
+        self.assertMissing(self.put("releasing.md", text), "releasing.md has no Publish")
+
+    def test_every_copy_of_a_heading_is_checked(self):
+        text = RELEASING + "\n## Publish\nnpm publish (default)\n"
+        self.assertMissing(self.put("releasing.md", text), "Publish is a default")
+
+    def test_a_fence_closes_only_on_its_own_kind(self):
+        text = DEPLOYING.replace("`make deploy ENV=staging`\n", "~~~\n```\n~~~\nmake deploy ENV=staging\n")
+        self.assertComplete(self.put("deploying.md", text))
+
+    def test_a_byte_order_mark_is_ignored(self):
+        self.assertComplete(self.put("releasing.md", "\ufeff" + RELEASING.replace("# Releasing\n\n", "")))
+
     # deploying.md
 
     def test_complete_deploying_passes(self):

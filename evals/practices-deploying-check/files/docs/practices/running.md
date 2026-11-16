@@ -6,4 +6,4 @@
 - Interfaces: the web service on `http://localhost:8000`.
 - Starting state: none; notes are kept in memory.
 - Safe to touch: the service started with `make run`.
-- Never to be touched: any other server or web address.
+- Never to be touched: the notes kept by anyone else's running copy.
