@@ -48,9 +48,6 @@ These hold from the first step to the last, however long the build runs.
   refuses a commit or push to the default branch while you build.
 - **Change no spec, ADR or brief, and the plan only through the hand-over script.**
 
-Before building, read [references/rubric.md](references/rubric.md): it is the list of checks the
-build reviewer will apply, so building to it leaves less to correct. Read it with the Read tool.
-
 ## Before starting
 
 Check each of these before changing anything, and stop with the reason if one fails:
@@ -129,6 +126,9 @@ When building anyway:
 
 ## Building
 
+Before building, read [references/rubric.md](references/rubric.md): it is the list of checks the
+build reviewer will apply, so building to it leaves less to correct. Read it with the Read tool.
+
 If the branch already holds work for this plan, first see whether its last build's correction
 check failed with nothing changed since:
 
@@ -179,14 +179,16 @@ suggests. For each requirement:
    and the test files you wrote or changed:
 
    ```
-   python3 "${CLAUDE_SKILL_DIR}/scripts/tests_fail.py" --command "<command with {file}>" <test files>
+   python3 "${CLAUDE_SKILL_DIR}/scripts/before_code.py" --command "<command with {file}>" <test files>
    ```
 
    Read each failure in its output: it must come from the behaviour not being there yet, not from
    a test file that cannot load or a mistake in the test. If it accepts them, commit them. If it
    refuses, correct what it names and run it again; but if the tests pass because their code is
    already committed, commit them anyway and note the refusal and why. Keep each requirement's
-   result, accepted or refused and why, for the review and the report.
+   result, accepted or refused and why, for the review and the report. Its output ends with the
+   project's `## Practices` sections and this skill's rules for the whole build, printed again at
+   every requirement: read them before writing the code.
 2. Write the code that makes them pass, following the Plan section, each line under Decisions
    (where a line says to leave its reason as a comment beside the code, write that comment),
    each ADR the plan lists, and any other `👍 Accepted` ADR whose How we'll check section (Confirmation in
@@ -266,7 +268,7 @@ reads them exactly as they were given; you write only your own sections, as Mark
 2. `## Built before sign-off`: for a build before sign-off, what was not signed off and the
    proposed answers built, with a suggestion to settle them and sign the plan off.
 3. `## Tests and lint`: the test and lint commands you ran, with their final output, any tests
-   that failed before you started, and each requirement's result from the tests-fail check.
+   that failed before you started, and each requirement's result from the before-code check.
 4. `## Choices`: each choice you made, with its reason, and each practice you had to work out from
    the repository, with a suggestion to record it with `/practices`.
 5. `## Defects corrected`: each defect you corrected that no spec mentions, so the person can add

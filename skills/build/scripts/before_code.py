@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""Check that a requirement's new tests fail, before any code makes them pass.
+"""Run before writing a requirement's code: check its new tests fail, then repeat the practices
+and the build's rules.
 
 `/build` runs this from the repository after writing each requirement's tests, before
 committing them. Give it the command that runs one test file, with `{file}` where the path goes,
@@ -11,7 +12,10 @@ It refuses when:
 - any file named passes when run: its tests already pass, so they cannot show the code works.
 
 Output: the last lines of each file's output, and, for each refusal, why. A failure must come
-from the behaviour not being there yet, not from a file that cannot load: read each one.
+from the behaviour not being there yet, not from a file that cannot load: read each one. Then,
+whatever the result, the `## Practices` sections of the repository's AGENTS.md and CLAUDE.md and
+the build skill's `## Rules that hold for the whole build`, so a long build has them fresh at
+every requirement: what was read at the start carries less weight as the conversation grows.
 
 Exit codes: 0 when every file named fails; 1 when they are refused; 2 on a usage error, when
 the command cannot run (exit 126 or 127), or when the folder is not in a git work tree.
@@ -19,6 +23,7 @@ the command cannot run (exit 126 or 127), or when the folder is not in a git wor
 
 import argparse
 import os
+import re
 import shlex
 import subprocess
 import sys
@@ -27,6 +32,47 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."
 import uncommitted  # noqa: E402
 
 TAIL = 15
+SKILL = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "SKILL.md")
+PRACTICES_FILES = ("AGENTS.md", "CLAUDE.md")
+
+
+def section(path, heading):
+    """The level-two section of a Markdown file headed `## <heading>`, up to the next heading of
+    level one or two outside a code block, or None when the file or the heading is missing."""
+    try:
+        with open(path, encoding="utf-8") as handle:
+            lines = handle.read().splitlines()
+    except OSError:
+        return None
+    found, fenced = [], False
+    for line in lines:
+        if line.lstrip().startswith(("```", "~~~")):
+            fenced = not fenced
+        elif not fenced and re.match(r"#{1,2} ", line):
+            if found:
+                break
+            if line.rstrip(" \t#") == "## " + heading:
+                found.append(line)
+                continue
+        if found:
+            found.append(line)
+    return "\n".join(found).strip() or None
+
+
+def reminders(root):
+    """The practices and the build's rules, to print after every result."""
+    parts, seen = [], set()
+    for name in PRACTICES_FILES:
+        practices = section(os.path.join(root, name), "Practices")
+        if practices and practices not in seen:
+            seen.add(practices)
+            parts.append(f"From {name}:\n\n{practices}")
+    rules = section(SKILL, "Rules that hold for the whole build")
+    if rules:
+        parts.append(f"From the build skill:\n\n{rules}")
+    if not parts:
+        return ""
+    return ("\nKeep to these while you build this requirement:\n\n" + "\n\n".join(parts))
 
 
 def run(command, path, root):
@@ -91,9 +137,12 @@ def main(argv=None):
         print("Refused:")
         for refusal in refusals:
             print("- " + refusal)
-        return 1
-    print("Accepted: every new test file fails.")
-    return 0
+    else:
+        print("Accepted: every new test file fails.")
+    reminder = reminders(root)
+    if reminder:
+        print(reminder)
+    return 1 if refusals else 0
 
 
 if __name__ == "__main__":
