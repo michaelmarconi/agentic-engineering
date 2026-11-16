@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-"""List what is uncommitted in a repository, so `/build` starts only when nothing is.
+"""List what is uncommitted in a repository, so `/build` and `/verify` start only when nothing is.
 
-`/build` runs this before it starts. It lists every entry `git status` reports: changed, staged
-and untracked files. It leaves out untracked entries that are stand-ins for the null device
-(`/dev/null`): on Linux, Claude Code's sandbox puts one in place of each file it protects, such
+`/build` runs this before it starts, and `/verify`'s script uses the same check. It lists every
+entry `git status` reports: changed, staged and untracked files. It leaves out untracked entries
+that are stand-ins for the null device (`/dev/null`): on Linux, Claude Code's sandbox puts one in place of each file it protects, such
 as `.bashrc`, `.gitconfig`, `.mcp.json` or `.claude/settings.json`, and git sees them as untracked
 files. A project's own files are never the null device, and a tracked file is always listed.
-hand_over.py uses the same check to keep the stand-ins out of the build's commit.
+/build's hand_over.py uses the same check to keep the stand-ins out of the build's commit.
 
 Output: "Nothing is uncommitted." or "Uncommitted:" followed by one line per entry, as
 `git status --short` writes it; when stand-ins were left out, a last line says how many.

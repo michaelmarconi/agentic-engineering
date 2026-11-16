@@ -48,8 +48,8 @@ in `AGENTS.md`, with longer topics in `docs/practices/`, and makes sure `CLAUDE.
 practices say, because each needs a person:
 
 - **Verifying:** starting the product and using it, the way a person would, to check it does
-  what was asked. A build may run on a machine that cannot run the product, so this is a
-  separate step. Claude Code's own `/verify` does it.[^verify]
+  what the specs say. A build may run on a machine that cannot run the product, so this is a
+  separate step: run [`/verify`](verify.md) where the product can run.
 - **Opening a pull request**, if you use them.
 - **Merging** the branch into the main branch.
 
@@ -223,7 +223,8 @@ instead, until you delete it. It holds:
 - what it corrected for each review;
 - each review's report and the correction check's report, and the hand-over script's own report,
   copied in by the script word for word, so you read them exactly as they were given;
-- what is left for you to check, and a reminder to verify the work before merging.
+- what is left for you to check, and [`/verify`](verify.md) on the plan: as a step before merging
+  if your practices say it must pass first, otherwise as an option.
 
 A build that refuses to start, such as on a plan that is already built, writes no file: its reply
 says why.
@@ -237,9 +238,9 @@ Claude directly, which is the usual way to tidy up after a large build.
 
 A spec's status does not change when it is built. It describes the document, not the software,
 because a status about the software would stop being true, without anyone noticing, as the code
-changes. To find out whether the software meets a spec, check the software against it.
+changes. To find out whether the software meets a spec, check the software against it with
+[`/verify`](verify.md).
 
-[^verify]: Claude Code documentation, [Run and verify your app](https://code.claude.com/docs/en/skills#run-and-verify-your-app).
 [^fresh]: Claude Code documentation, [Best practices: brainstorm with Claude first](https://code.claude.com/docs/en/best-practices#brainstorm-with-claude-first):
     "Once `SPEC.md` exists, start a fresh session to build from it, so the build begins with a
     clean context and a written definition of done."

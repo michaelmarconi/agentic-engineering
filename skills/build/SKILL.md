@@ -86,7 +86,7 @@ Check each of these before changing anything, and stop with the reason if one fa
    `origin`, ask the person to add one. If `origin/HEAD` is not set, ask them to run
    `git remote set-head origin -a`; never run it yourself, since it changes their repository.
    The security review and the hand-over both need it. Run
-   `python3 "${CLAUDE_SKILL_DIR}/scripts/uncommitted.py"`; if it lists anything, stop, so the
+   `python3 "${CLAUDE_PLUGIN_ROOT}/scripts/uncommitted.py"`; if it lists anything, stop, so the
    person's own work is never mixed into the build. It leaves out the stand-ins Claude Code's
    sandbox puts in place, so don't stop for those. If you are on the default branch, then once
    every check here has passed, create and switch to a branch named as the practices say, or else `build/<plan file name without its
@@ -260,8 +260,10 @@ reads them exactly as they were given; you write only your own sections, as Mark
    it to the spec.
 6. `## What each review found`: what you corrected for each review; the reviews' and the
    correction check's reports are added for you.
-7. `## Left for you to check`: each requirement left for the person to check, and a reminder to
-   verify the work, for example with Claude Code's `/verify`, before merging.
+7. `## Left for you to check`: each requirement left for the person to check, and how to check
+   the running product against the plan's requirements: `/agentic:verify <the plan's path>`. If
+   the practices say it must run and pass before merging, say to run it before merging; otherwise
+   offer it as optional. Nothing the plugin does blocks a merge.
 
 The script's own report goes under a heading of its own, which only the script writes. Give your
 sections to the script on standard input:

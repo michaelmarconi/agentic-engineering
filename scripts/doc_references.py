@@ -12,7 +12,8 @@ definitions, `[name]: target` (footnotes are not references), outside code spans
   folder.
 - A `#heading` part, on a Markdown file or on its own for the same file, must name a heading in
   that file, as GitHub names them: lowercase, punctuation dropped, spaces as hyphens, and `-1`,
-  `-2` added to repeats.
+  `-2` added to repeats. An HTML anchor, `<a id="name">`, such as one on a table row, counts as a
+  heading named `name`.
 
 Moving or renaming a file or a heading then fails a test instead of leaving a reference that
 quietly points at nothing.
@@ -28,6 +29,7 @@ ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
 FENCE = re.compile(r" {0,3}(`{3,}|~{3,})")
 HEADING = re.compile(r" {0,3}(#{1,6})\s+(.*?)\s*#*\s*$")
 CODE_SPAN = re.compile(r"(`+).*?\1")
+HTML_ANCHOR = re.compile(r"<a\b[^>]*?\s(?:id|name)\s*=\s*[\"']([^\"']+)[\"']", re.IGNORECASE)
 INLINE = re.compile(r"!?\[(?:[^\]\\]|\\.)*\]\(\s*([^)\s]*)(?:\s+(?:\"[^\"]*\"|'[^']*'))?\s*\)")
 DEFINITION = re.compile(r" {0,3}\[(?!\^)[^\]]+\]:\s*(\S+)")
 SCHEME = re.compile(r"[A-Za-z][A-Za-z0-9+.-]*:")
@@ -83,6 +85,7 @@ def anchors(path, cache):
         except (OSError, ValueError):
             text = ""
         for _, line in prose_lines(text):
+            found.update(name.lower() for name in HTML_ANCHOR.findall(CODE_SPAN.sub("", line)))
             match = HEADING.match(line)
             if match:
                 base = slug(match.group(2))

@@ -1,6 +1,6 @@
-"""Write the report file a build or an audit ends with (ADRs 0033 and 0034).
+"""Write the report file a build, an audit or a verify run ends with (ADRs 0033 and 0034).
 
-`hand_over.py` and `audit.py report` use this module; it has no command of its own. A report is
+`hand_over.py`, `audit.py report` and `verify.py report` use this module; it has no command of its own. A report is
 one Markdown file with one `##` heading per item the skill lists, in that order. Claude's own
 sections arrive as Markdown under those headings, and the reports of scripts and agents arrive as
 text that goes into the file word for word, as `###` subsections under the heading they belong to.
@@ -50,11 +50,22 @@ HEADINGS = {
         "Unfinished spike records",
         "Rejected findings",
     ],
+    "verify": [
+        "Commit checked",
+        "Overall result",
+        "Failed",
+        "Disputed",
+        "Not checked",
+        "Passed",
+        "What each agent reported",
+        "The repository after the run",
+    ],
 }
 # Headings only a script fills: Claude's text under one is refused.
 COPIED_ONLY = {
     "build": {"The hand-over script's report"},
     "audit": set(),
+    "verify": {"Commit checked", "What each agent reported", "The repository after the run"},
 }
 NOTHING = "Nothing to report."
 HEADING = re.compile(r"^## (?P<title>.+?)[ \t]*$")

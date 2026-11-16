@@ -101,6 +101,12 @@ not to ask anything does.
   Turn a vague aim such as "write clean code" into such a rule with the person, or leave it out
   and tell them why. If they want it recorded exactly as they said it, write it so: the wording
   is theirs, and the review will raise it for them to decide.
+- **Running the product.** Try it before writing it: once the person has said which services are
+  safe to touch and which never are, start the product with the proposed commands, reach each
+  interface it names, and stop it. When a step fails, show what it printed, correct the step with
+  the person, and try again, until it runs and they agree. Record only what ran, and never touch a
+  service they marked as never to be touched, even to try it. Agents that verify the product, and
+  that never read its code, rely on this topic alone to start it.
 - **Disagreements.** When the repository, the core and a topic file disagree, such as two test
   commands, say what each says and ask which is right before changing either.
 

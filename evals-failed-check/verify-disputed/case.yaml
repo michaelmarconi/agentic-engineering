@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: verify-disputed
+expected_outcome: |
+  With a stand-in verifier that reports a pass and a stand-in verify-checker that rejects it, the run reports the verdict as disputed, with both agents' evidence, for the person to decide.
+context:
+  scaffold_script: place-files.sh
