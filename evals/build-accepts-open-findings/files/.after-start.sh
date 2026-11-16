@@ -55,11 +55,11 @@ git push -q origin build/word-count
 # The last build's report, as the hand-over script writes it, in the private folder it falls back to
 # when the plugin's data folder can't be used, as in the eval's sandbox. Its correction check failed
 # with three open findings, and its Head is the branch as it now stands.
-folder="$(python3 -c 'import tempfile; print(tempfile.gettempdir())')/agentic-reports-$(id -u)"
-mkdir -p "$folder/$(basename "$PWD")"
-chmod 700 "$folder"
+# The sandbox may give Bash another temporary folder than this script's, so the report goes in
+# each place that folder can be.
 head="$(git rev-parse HEAD)"
-cat > "$folder/$(basename "$PWD")/2026-11-15-build-2026-11-03-word-count.md" <<MD
+report="$(mktemp)"
+cat > "$report" <<MD
 ## What was built
 
 Count words, with its tests. Missing file was not finished; see the correction check.
@@ -125,3 +125,10 @@ Head: $head
 
 Nothing to report.
 MD
+for temp in "$(python3 -c 'import tempfile; print(tempfile.gettempdir())')" /tmp /tmp/claude "/tmp/claude-$(id -u)"; do
+  folder="$temp/agentic-reports-$(id -u)"
+  mkdir -p "$folder/$(basename "$PWD")" 2>/dev/null || continue
+  chmod 700 "$folder"
+  cp "$report" "$folder/$(basename "$PWD")/2026-11-15-build-2026-11-03-word-count.md"
+done
+rm "$report"
