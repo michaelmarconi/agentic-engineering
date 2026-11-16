@@ -49,7 +49,7 @@ When the person names no topic, give an overview and write nothing. Read
 [references/topics.md](references/topics.md), and read the practices and the repository afresh
 every time, even later in a conversation that has already read them, since either may have
 changed outside it. Then list each topic by name as
-recorded, not recorded yet, or out of step with the repository, with a few words on why, such as
+recorded, not recorded yet, or out of step with the repository or with the one-command rule below, with a few words on why, such as
 "tests exist, but no test command is recorded". When a recorded practice and the repository
 disagree, such as a test command that differs from the one the CI file runs, say what each says
 and ask which is right. Then suggest the one topic that matters most now, judged from the
@@ -109,10 +109,26 @@ not to ask anything does.
   that never read its code, rely on this topic alone to start it.
 - **Disagreements.** When the repository, the core and a topic file disagree, such as two test
   commands, say what each says and ask which is right before changing either.
+- **One command per step.** Record each step as one command, as rubric check 3 defines it: one
+  line that calls one program, needs no answer from a person and exits non-zero on failure, so
+  every skill can run it and judge it the same way. Check the text of every command you will
+  record in one run before writing them:
+  `python3 "${CLAUDE_SKILL_DIR}/scripts/one_command.py" '<command>' '<command>' ...`. When the agreed step is
+  several commands, write an entry in the project's command runner or scripts folder that runs them
+  in order and stops at the first failure, with no branching, retries or loops, passing on any
+  `{name}` value the step needs, such as `make deploy ENV={environment}`. Show it to the
+  person, try only the parts that are safe to run, such as a dry run or reading the current
+  version, never a real release, deploy or rollback, and record the one-line command that runs it.
+  When a step needs an entry and the project has neither a runner nor a scripts folder, ask which
+  the person wants, proposing the tool their language already provides, such as the scripts of
+  `package.json`, and create it the same way. A step that needs real logic is not yours to write:
+  name it in the hand-over as work for `/agentic:plan`. Once the project has a place for commands,
+  Check your work names it.
 
-Write only the core and the files under `docs/practices/`. Leave the rest of `AGENTS.md`
-unchanged, creating the file if the project has none, and touch no other file but `CLAUDE.md`'s
-import line. Never commit: the person looks at the change and commits it.
+Write only the core, the files under `docs/practices/` and the entries the bullet above lets you
+write in the project's runner or scripts folder. Leave the rest of `AGENTS.md` unchanged, creating
+the file if the project has none, and touch no other file but `CLAUDE.md`'s import line. Never
+commit: the person looks at the change and commits it.
 
 ## Review
 
@@ -140,7 +156,8 @@ since the core and a topic file must agree.
 2. **Correct, once.** Read the rubric and the Plain words rule again, then correct only what the
    reports list: each failed check and each item under Other findings in the review report, and
    each finding in the wording report. Skip any finding outside the Practices section of
-   `AGENTS.md`, which is the person's. A wording item under Needs a person, whose meaning only the
+   `AGENTS.md`, which is the person's. A command outside this run's topic that breaks the
+   one-command rule stays as written for the person to decide, since writing its entry needs them. A wording item under Needs a person, whose meaning only the
    person knows, is a decision like any other. Correct by making the practices accurate, never by
    dropping or hedging what the person said. A finding only the person can settle, such as a rule
    they asked for word for word, or anything under Needs a person, stays as written for them to

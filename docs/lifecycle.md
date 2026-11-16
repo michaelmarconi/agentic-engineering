@@ -181,6 +181,10 @@ flowchart LR
   decision later work must follow is an ADR, one a user or caller relies on belongs in the spec,
   and one every piece of work follows is a practice. A reason someone changing the code later
   needs is left as a comment beside the code.
+- **Every practice step is one command.** A step the practices record, such as running the tests
+  or releasing, is one line that a skill runs as written, filling in any `{name}`, and judges by
+  its exit code. Anything longer is an entry in the project's one place for commands, a command
+  runner or a scripts folder, written only by `/practices` or a build.
 - **No document moves forward with open questions.** Anything only a person can settle is
   written into the document's Open questions, not left in the conversation. A spec or an ADR becomes
   `👍 Accepted`, a plan `🟢 Ready to build`, and a spike record `🟢 Ready to run`, `💡 Confirmed`,

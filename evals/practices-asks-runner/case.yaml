@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: practices-asks-runner
+expected_outcome: |
+  In a project with no command runner or scripts folder, asked to record a release made of three commands, /practices asks which place to create for the release command before writing anything.
+context:
+  scaffold_script: place-files.sh
