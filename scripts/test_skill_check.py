@@ -318,7 +318,7 @@ class SkillCheck(unittest.TestCase):
         self.assertFails("build/SKILL.md: build re-read rule missing")
 
     def test_reworded_reread_rule_fails(self):
-        rule = BUILD_REREAD_RULE.replace("only the `## Practices` section", "the whole of `AGENTS.md`")
+        rule = BUILD_REREAD_RULE.replace("only the `## Practices` sections", "the whole of `AGENTS.md`")
         self.assertNotEqual(rule, BUILD_REREAD_RULE)
         self.put("build", skill_md(name="build", body=f"# Build\n\n{BUILD_ASK_RULE}\n\n{BUILD_ACCEPT_RULE}\n\n{BUILD_PATH_RULE}\n\n{rule}\n\n{REPORT_RULE}\n"))
         self.assertFails("build/SKILL.md: build re-read rule missing")

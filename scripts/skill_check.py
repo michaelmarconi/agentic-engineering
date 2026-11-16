@@ -149,9 +149,9 @@ BUILD_ACCEPT_RULE = (
 # How /build keeps its practices and rules in mind however long it runs: what was read at the
 # start carries less weight as the conversation grows, so it re-reads both at each requirement.
 BUILD_REREAD_RULE = (
-    "Before writing its tests, re-read, with the Read tool, only the `## Practices` section you "
-    "found when starting and [Rules that hold for the whole "
-    "build](#rules-that-hold-for-the-whole-build)."
+    "First re-read only the `## Practices` sections you found when starting and `## Rules that "
+    "hold for the whole build` in `${CLAUDE_SKILL_DIR}/SKILL.md`, using the Read tool's offset and "
+    "limit."
 )
 # The sentences of the review sequence that every skill running it holds.
 CORRECT_RULES = (
