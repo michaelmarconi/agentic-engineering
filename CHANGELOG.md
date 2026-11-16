@@ -6,6 +6,20 @@ What changed in each version of the plugin, newest first. Versions follow
 past a major version: it says what you need to change in your documents. Until 1.0.0, any
 minor version may need such a change, and its entry says so.
 
+## [0.57.0] - 2026-11-16
+
+### Changed
+
+- Every step your practices record, such as running the tests or releasing, is now one command:
+  one line that calls one program and says by its exit code whether it worked, so every skill can
+  run it and judge it the same way. A step of several commands becomes an entry in your project's
+  one place for commands, a command runner such as Make or the scripts of `package.json`, or a
+  single scripts folder. `/agentic:practices` writes that entry when you agree the step, shows it,
+  tries only what is safe to run, and records the one-line command; with no runner or scripts
+  folder yet, it asks which you want first. A small script checks each command before it is
+  recorded. No other skill writes commands. Practices recorded earlier with chained commands, such
+  as `a && b`, are flagged in the overview and left for you to change.
+
 ## [0.56.0] - 2026-11-16
 
 ### Changed
