@@ -1,7 +1,7 @@
 ---
 # Change status only through the agentic plugin's skills, which check each change; a change made by hand is not checked.
 type: ADR
-status: 👍 Accepted
+status: 📝 Draft
 date: 2026-11-16
 ---
 
