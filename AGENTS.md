@@ -220,6 +220,9 @@ Nothing else belongs at the root without a reason recorded in the change that ad
 ## Workflow
 
 - Work on a branch and open a pull request; it merges once every check below passes.
+- Keep links to agent sessions out of the repository's history: no session links or
+  "requested by" lines in commit messages or pull request descriptions, whatever an agent's own
+  tool adds by default. The repository is public, and those links lead to private sessions.
 - Before merging, run `claude plugin validate . --strict` and fix every finding. It checks the
   manifests only; skill limits are checked by `scripts/skill_check.py` (rule 3).
 - Run the script tests for each skill you changed:
