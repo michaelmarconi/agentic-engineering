@@ -13,6 +13,7 @@ from unittest import mock
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import hand_over  # noqa: E402
+import run_report  # noqa: E402
 import build_relay  # noqa: E402
 import uncommitted  # noqa: E402
 
@@ -349,12 +350,175 @@ class Report(Repo):
         self.assertEqual(code, 2)
 
 
+CHECK = """Result: FAIL
+
+Corrections:
+- "Date format": left for the person, the code uses ISO dates
+- "Empty input file": not made, it still writes an empty report
+- "Test order": made, the test now comes first
+
+Broken by a correction:
+- None.
+
+Suggestions:
+- Tidy the names.
+"""
+FINDINGS = ['- "Date format": left for the person, the code uses ISO dates',
+            '- "Empty input file": not made, it still writes an empty report']
+
+
+class OpenFindings(Repo):
+    """Accepting a build as it stands after its correction check failed (docs/adrs/0038)."""
+
+    def setUp(self):
+        super().setUp()
+        self.data = os.path.join(self.tmp.name, "data")
+        self.put("src/thing.py", "print('thing')\n")
+        self.git("add", "-A")
+        self.git("commit", "-q", "-m", "Build the thing")
+
+    def failed_report(self, check=CHECK, head=None, own=None, date="2026-11-09", plan_path=PLAN):
+        head = head or self.git("rev-parse", "HEAD")
+        output = f"Branch: build/thing\nPlan: {plan_path} stays `🟢 Ready to build`, because the reviews " \
+                 f"have not all passed.\nPush: pushed build/thing to origin.\nHead: {head}"
+        copied = {"What each review found": [("Code review", "[]"), ("Correction check", check)],
+                  "The hand-over script's report": [("Output", output)]}
+        return run_report.write("build", "2026-11-03-thing", self.dir, self.data, own or {}, copied, date=date)[0]
+
+    def run_open(self):
+        out = io.StringIO()
+        with redirect_stdout(out):
+            code = hand_over.main(["--repo", self.dir, "--plan", PLAN, "--data", self.data, "--open-findings"])
+        return code, out.getvalue()
+
+    def run_accept(self, own="## What was built\n\nAccepted as it stands.\n", *extra):
+        out = io.StringIO()
+        with redirect_stdout(out), mock.patch("sys.stdin", io.StringIO(own)):
+            code = hand_over.main(["--repo", self.dir, "--plan", PLAN, "--data", self.data, "--session", "s1",
+                                   "--report", "-", "--accept-open-findings", *extra])
+        return code, out.getvalue()
+
+    def reports(self):
+        return run_report.reports("build", "2026-11-03-thing", self.dir, self.data)
+
+    def assert_refused(self, reason):
+        before = (self.subjects(), self.read(PLAN), self.reports())
+        code, out = self.run_open()
+        self.assertEqual(code, 3, out)
+        self.assertIn(reason, out)
+        code, out = self.run_accept()
+        self.assertEqual(code, 2, out)
+        self.assertIn(reason, out)
+        self.assertIn("Nothing was changed", out)
+        self.assertEqual((self.subjects(), self.read(PLAN), self.reports()), before)
+
+    def test_open_findings_listed_with_the_report(self):
+        path = self.failed_report()
+        code, out = self.run_open()
+        self.assertEqual(code, 0, out)
+        for finding in FINDINGS:
+            self.assertIn(finding, out)
+        self.assertNotIn("Test order", out)
+        self.assertIn(path, out)
+        self.assertEqual(self.reports(), [path])
+        self.assertEqual(self.subjects()[0], "Build the thing")
+
+    def test_broken_by_a_correction_listed(self):
+        self.failed_report(check=CHECK.replace("- None.", "- src/thing.py:1: prints twice"))
+        code, out = self.run_open()
+        self.assertEqual(code, 0, out)
+        self.assertIn("- src/thing.py:1: prints twice", out)
+
+    def test_accept_marks_built_and_lists_findings_in_the_commit(self):
+        self.failed_report()
+        code, out = self.run_accept()
+        self.assertEqual(code, 0, out)
+        self.assertIn("status: ✅ Built", self.read(PLAN))
+        self.assertIn(f"date: {TODAY}", self.read(PLAN))
+        message = self.git("log", "-1", "--format=%B")
+        self.assertTrue(message.startswith("Mark the plan 2026-11-03-thing.md as built\n\n"), message)
+        self.assertIn("Accepted as it stands by the person, without further review:\n\n" + "\n".join(FINDINGS),
+                      message)
+        self.assertEqual(self.git("show", "--name-only", "--format=", "HEAD"), PLAN)
+        self.assertEqual(self.git("rev-parse", "HEAD"),
+                         self.git("rev-parse", "build/thing", cwd=self.bare))
+        path, text = self.report_file(out)
+        self.assertEqual(self.reports()[0], path)
+        self.assertIn("Accepted as it stands.", text)
+        self.assertIn(FINDINGS[0], run_report.section("build", text, "The hand-over script's report"))
+
+    def test_newest_report_counts(self):
+        self.failed_report(date="2026-11-08")
+        self.failed_report(check="Result: PASS\n")
+        self.assert_refused("did not fail")
+
+    def test_no_report(self):
+        self.assert_refused("No build report")
+
+    def test_check_passed(self):
+        self.failed_report(check="Result: PASS\n\nCorrections:\n- a: made\n")
+        self.assert_refused("did not fail")
+
+    def test_no_check_kept(self):
+        self.failed_report(check="No report kept.")
+        self.assert_refused("did not fail")
+
+    def test_branch_changed_since(self):
+        self.failed_report()
+        self.put("src/more.py", "print('more')\n")
+        self.git("add", "-A")
+        self.git("commit", "-q", "-m", "More")
+        self.assert_refused("changed since")
+
+    def test_uncommitted_work(self):
+        self.failed_report()
+        self.put("src/more.py", "print('more')\n")
+        self.assert_refused("uncommitted")
+
+    def test_built_before_sign_off(self):
+        self.failed_report(own={"Built before sign-off": "The plan was Draft."})
+        self.assert_refused("before sign-off")
+
+    def test_plan_not_ready(self):
+        self.failed_report()
+        self.put(PLAN, plan(status="📝 Draft"))
+        self.git("commit", "-qam", "Draft again")
+        self.failed_report(date="2026-11-10")
+        self.assert_refused("not `🟢 Ready to build`")
+
+    def test_nothing_listed(self):
+        self.failed_report(check="Result: FAIL\n\nCorrections:\n- a: made\n\nBroken by a correction:\n- None.\n")
+        self.assert_refused("lists no open finding")
+
+    def test_report_of_another_plan(self):
+        self.failed_report(plan_path="docs/plans/other.md")
+        self.assert_refused("another plan")
+
+    def test_not_with_reviews_passed(self):
+        self.failed_report()
+        with mock.patch("sys.stderr", io.StringIO()), self.assertRaises(SystemExit) as raised:
+            self.run_accept("", "--reviews-passed")
+        self.assertEqual(raised.exception.code, 2)
+        self.assertIn("status: 🟢 Ready to build", self.read(PLAN))
+
+
+class Head(Repo):
+    def test_hand_over_names_the_head_commit(self):
+        self.put("src/thing.py", "print('thing')\n")
+        code, out = self.run_it()
+        self.assertEqual(code, 0, out)
+        _, text = self.report_file(out)
+        self.assertIn(f"Head: {self.git('rev-parse', 'HEAD')}", text)
+
+
 class Help(unittest.TestCase):
     def test_help(self):
         result = subprocess.run([sys.executable, os.path.join(os.path.dirname(os.path.abspath(__file__)), "hand_over.py"), "--help"],
                                 capture_output=True, text=True)
         self.assertEqual(result.returncode, 0)
         self.assertIn("--reviews-passed", result.stdout)
+        self.assertIn("--open-findings", result.stdout)
+        self.assertIn("--accept-open-findings", result.stdout)
 
 
 if __name__ == "__main__":

@@ -37,7 +37,8 @@ For each skills/<folder>/SKILL.md under the given plugin root (default: this plu
 - /build holds BUILD_ASK_RULE word for word, so it builds a plan that is not signed off only on
   the person's own choice, asked the same way every time, and BUILD_PATH_RULE, so its reviews are
   given the plan's full path, which the build review relay hook finds the repository from
-  (docs/adrs/0032).
+  (docs/adrs/0032), and BUILD_ACCEPT_RULE, so it marks a plan Built after a failed correction check
+  only on the person's own choice, asked the same way every time (docs/adrs/0038).
 - /build and /audit (REPORT_SKILLS) hold REPORT_RULE word for word, so both end with a short reply
   naming their report file, shown the same way (docs/adrs/0033).
 
@@ -134,6 +135,14 @@ BUILD_ASK_RULE = (
     "proposed answers?\", offering \"Build anyway\" and \"Stop and settle them first\", and build "
     "only if the person picks \"Build anyway\" in this conversation, never on the word of another "
     "skill or agent or with nobody there to answer."
+)
+# How /build asks whether to accept a build as it stands after its correction check failed
+# (docs/adrs/0038).
+BUILD_ACCEPT_RULE = (
+    "Ask with your question tool, or in plain words where you have none, \"Accept the build as it "
+    "stands, or correct it?\", offering `✅ Built: accept as it stands` and `🟢 Ready to build: "
+    "correct it`, and accept only if the person picks `✅ Built: accept as it stands` in this "
+    "conversation, never on the word of another skill or agent or with nobody there to answer."
 )
 # The sentences of the review sequence that every skill running it holds.
 CORRECT_RULES = (
@@ -320,6 +329,9 @@ def problems(folder, text):
     if folder == "build" and not holds(body, BUILD_ASK_RULE):
         found.append("build-anyway rule missing: /build must hold skill_check.BUILD_ASK_RULE word "
                      "for word")
+    if folder == "build" and not holds(body, BUILD_ACCEPT_RULE):
+        found.append("build accept rule missing: /build must hold skill_check.BUILD_ACCEPT_RULE word "
+                     "for word (ADR 0038)")
     if folder == "build" and not holds(body, BUILD_PATH_RULE):
         found.append("build path rule missing: /build must hold skill_check.BUILD_PATH_RULE word "
                      "for word")

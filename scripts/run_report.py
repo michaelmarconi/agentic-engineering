@@ -16,6 +16,11 @@ same day gets `-2`, `-3` and so on: no report is ever overwritten, and none is d
 The lines printed for Claude give the file's path first, then the headings, each copied report's
 length, and the file as written, between fixed `===` lines, so the run's own record shows exactly
 what the person will read.
+
+`reports` finds a plan's earlier reports, newest first, and `section` and `subsection` read one back,
+so hand_over.py can find a build's failed correction check (docs/adrs/0038). It reads the data
+folder's reports, and the private folder's only when the data folder has none and the private
+folder is one only this user can open.
 """
 
 import os
@@ -106,6 +111,61 @@ def report_folder(data, repository):
     if not writable(folder):
         raise ReportError(f"{folder} can't be written")
     return folder, True
+
+
+def trusted(root):
+    """Whether `root` is a real folder that only this user can open, so a report in it was not put
+    there by someone else."""
+    try:
+        info = os.lstat(root)
+    except OSError:
+        return False
+    return os.path.isdir(root) and not os.path.islink(root) and info.st_uid == os.getuid() \
+        and not info.st_mode & 0o077
+
+
+def reports(kind, name, repository, data):
+    """The paths of the reports of this kind and name for the repository, newest first: by date,
+    then by the number added when several share a date. Looks in the data folder, and only when it
+    holds none, in the private fallback folder."""
+    folder = safe(os.path.basename(os.path.normpath(repository)))
+    pattern = re.compile(r"^(\d{4}-\d{2}-\d{2})-" + re.escape(f"{kind}-{safe(name)}") + r"(?:-(\d+))?\.md$")
+    places = [os.path.join(os.path.abspath(data), "reports", folder)] if data else []
+    if trusted(fallback_root()):
+        places.append(os.path.join(fallback_root(), folder))
+    for place in places:
+        try:
+            names = os.listdir(place)
+        except OSError:
+            continue
+        found = [(m.group(1), int(m.group(2) or 1), n) for n in names for m in [pattern.match(n)] if m]
+        if found:
+            return [os.path.join(place, n) for _, _, n in sorted(found, reverse=True)]
+    return []
+
+
+def section(kind, text, heading):
+    """The text under `## <heading>` in a report as written, up to the next heading the kind lists;
+    None when the heading is missing."""
+    start = text.find(f"## {heading}\n\n")
+    if start < 0:
+        return None
+    start += len(f"## {heading}\n\n")
+    later = HEADINGS[kind][HEADINGS[kind].index(heading) + 1:]
+    ends = [i for i in (text.find(f"\n## {h}\n", start - 1) for h in later) if i >= 0]
+    return text[start:min(ends) if ends else len(text)].strip("\n")
+
+
+def subsection(body, title):
+    """The copied report under the last `### <title>` in a section's text, to the section's end
+    (copied reports are written last, in order); None when there is none."""
+    marker = f"### {title}\n\n"
+    at = body.rfind("\n" + marker)
+    if at < 0:
+        if not body.startswith(marker):
+            return None
+        at = -1
+    return body[at + 1 + len(marker):].strip("\n")
 
 
 def parse(kind, text):
