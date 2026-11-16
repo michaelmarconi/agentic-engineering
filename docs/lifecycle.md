@@ -15,10 +15,16 @@ never needs to. Every document except the brief also has a status, the `status:`
 how far along it is. Beside it, the `date:` field gives the day that status was set, written
 YYYY-MM-DD; a plugin hook refuses a status change that does not set it to that day.
 
+Each file is named by one rule: a number or a date, where its kind has one, then two to five
+lowercase words joined by hyphens, each a word of the document's title, so you know the file when
+you open it. A plugin hook refuses a new document whose name breaks the rule, and an edit that
+drops one of those words from the title, so a name never has to change, least of all while its
+review runs.
+
 - **Brief**, `docs/brief.md`: what the product is, who it is for and why. One per product,
   holding only what is true of the whole product. No status, since it is never built: it states
   the product's intent, is edited in place, and changes only when you change that intent.
-- **Spec**, `docs/specs/**/<capability>.spec.md`: what one capability of the product should do,
+- **Spec**, `docs/specs/**/<subject>.spec.md`: what one capability of the product should do,
   and how we will know it does. A product has many. Statuses: `📝 Draft` → `👍 Accepted`; any change returns it
   to `📝 Draft`. The status describes the document, not the software: whether the software meets
   a spec is found by checking the software against it.
@@ -27,11 +33,11 @@ YYYY-MM-DD; a plugin hook refuses a status change that does not set it to that d
   of at most 500 words, from the question to the open questions, leaving out any diagram of the
   chosen option, then the technical detail for agents and reviewers. Statuses: `📝 Draft` →
   `👍 Accepted` or `❌ Rejected`; `👍 Accepted` → `↪️ Superseded`.
-- **Plan**, `docs/plans/YYYY-MM-DD-<title>.md`, in one flat folder: a piece of work that builds
+- **Plan**, `docs/plans/YYYY-MM-DD-<subject>.md`, in one flat folder: a piece of work that builds
   part of a spec or an ADR. Statuses: `📝 Draft` → `🟢 Ready to build` → `✅ Built`; any change
   returns it to `📝 Draft`. A plan is temporary: once `✅ Built` it is frozen, never
   changed again, and may be deleted whenever nobody needs it.
-- **Spike record**, `docs/spikes/YYYY-MM-DD-<hypothesis>.md`, in one flat folder: one hypothesis
+- **Spike record**, `docs/spikes/YYYY-MM-DD-<subject>.md`, in one flat folder: one hypothesis
   tested by a throwaway experiment, with the finding, the experiment's code and what each run
   produced. It reads from plain to technical: a part for people, of at most 600 words for the design
   and 400 for the verdict written after the runs, then the experiment's detail for agents and

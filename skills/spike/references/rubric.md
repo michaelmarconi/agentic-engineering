@@ -11,8 +11,8 @@ now, so the verdict review reads it to judge the verdict but never fails it.
 A record reads from plain to technical. Its plain part, for people, runs from the title down to
 Experiment; its technical part, for agents and reviewers, is Experiment, Code and Runs.
 
-1. **Shape** (design). The file is `docs/spikes/YYYY-MM-DD-<a-few-words-naming-the-hypothesis>.md`, in lowercase with hyphens,
-   directly in that folder. Its frontmatter has `type: Spike` and `status:` set to `📝 Draft`, `🟢 Ready to run`,
+1. **Shape** (design). The file is directly in `docs/spikes/`; its name is checked by a plugin hook,
+   not here. Its frontmatter has `type: Spike` and `status:` set to `📝 Draft`, `🟢 Ready to run`,
    `💡 Confirmed`, `🚫 Refuted` or `❔ Not settled`, emoji included, and `date:` as YYYY-MM-DD if it has one (a missing date passes: a plugin hook requires it with the next
    status change). Under a `# ` title that is
    the hypothesis in plain words, the sections are Hypothesis, Finding, Next steps, How we'll know,

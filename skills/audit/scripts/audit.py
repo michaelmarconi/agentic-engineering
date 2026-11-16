@@ -103,7 +103,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."
 from status_check import (ACCEPTED, ADR_STATUSES, BUILT, DRAFT, FINISHED,  # noqa: E402
                           READY, READY_TO_RUN, REJECTED, SPEC_STATUSES, SPIKE_STATUSES, STATUSES, SUPERSEDED, TYPES, article,
                           field, frontmatter, has_open_questions, open_questions_problem, real_date, lifecycle_status, listed,
-                          OLD_LAYOUT, old_layout, reference_problem, requirements, status_of)
+                          OLD_LAYOUT, name_problem, old_layout, reference_problem, requirements, status_of)
 from doc_references import targets  # noqa: E402
 import audit_relay  # noqa: E402
 import run_report  # noqa: E402
@@ -379,6 +379,9 @@ def check_documents(project):
         if laid_out:
             add(relative, "question layout", laid_out)
         if kind != "brief":
+            badly_named = name_problem(relative, kind, text, new=False)
+            if badly_named:
+                add(relative, "name", badly_named.split(": ", 1)[1])
             wrong = status_problem(kind, text)
             if wrong:
                 add(relative, "status", wrong)

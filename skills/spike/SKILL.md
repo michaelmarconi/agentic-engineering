@@ -7,8 +7,10 @@ description: Settle one unknown by a throwaway experiment, written up as a spike
 
 A spike settles one unknown that thinking and reading can't, by testing one hypothesis with the
 smallest experiment that can confirm or refute it. Its write-up, the spike record, lives in
-`docs/spikes/YYYY-MM-DD-<hypothesis>.md`,
-dated the day it is started, in one flat folder. What a spike produces is knowledge, not code: the
+`docs/spikes/YYYY-MM-DD-<subject>.md`,
+dated the day it is started, in one flat folder, where the subject is two to five lowercase words
+of its title joined by hyphens; a plugin hook refuses a name that breaks this, and an edit that
+drops one of those words from the title. What a spike produces is knowledge, not code: the
 experiment's code lives only in the record and is never copied into the product.
 
 Before writing, read [references/rubric.md](references/rubric.md): it is the list of checks the
@@ -103,9 +105,10 @@ retried**"; the context it needs; a block quote holding a "**Proposed:**" line w
 line holding only `>`, and a "**Why:**" line with the reason; and the question itself, last, in one
 line.
 
-Write every new record as `📝 Draft`, named for today's date and a few words naming the hypothesis;
-then run the design review. Never rename a record once its review has started: the review is kept
-under the record's path, so a renamed record can't have its corrections checked.
+Write every new record as `📝 Draft`, named for today's date and two to five words of its title;
+then run the design review. Never rename a document once its review has started: the review hook keeps the review under the
+document's path, so a renamed document's corrections can't be checked. If the name no longer fits,
+say so to the person, who can rename it once the review has ended.
 
 ## Run
 

@@ -23,8 +23,12 @@ as "Spec:" or "ADR:" in front of it would: the frontmatter's `type:` already say
 
 ## Find the spec
 
-Specs live at `docs/specs/<capability>.spec.md`, named for the capability in lowercase with
-hyphens, possibly in subfolders. Search `docs/specs/` before creating one: if a spec already
+Specs live at `docs/specs/<capability>.spec.md`, possibly in subfolders, named for the capability
+in two to five lowercase words joined by hyphens, each a word of the spec's title; a plugin hook
+refuses a name that breaks this, and an edit that drops one of those words from the title.
+Never rename a document once its review has started: the review hook keeps the review under the
+document's path, so a renamed document's corrections can't be checked. If the name no longer fits,
+say so to the person, who can rename it once the review has ended. Search `docs/specs/` before creating one: if a spec already
 covers the capability, change it instead, because two specs for one capability will drift apart.
 If `docs/brief.md` exists, read it so the spec fits the product. A spec says far more than the
 brief, and detail the brief doesn't mention is never a reason to raise it. Only an outright

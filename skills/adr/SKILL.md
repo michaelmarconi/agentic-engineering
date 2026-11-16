@@ -45,9 +45,13 @@ or paragraph only as a suggestion.
 List `docs/adrs/` and read the frontmatter of each ADR. If a `📝 Draft` or `👍 Accepted` ADR
 already decides the same thing, say so: change the draft, or, for an accepted one, write a new ADR that
 supersedes it. A new file takes the number one above the highest in the folder, four digits,
-starting at `0001`, then a subject: three to five lowercase words joined by hyphens, naming what
-the decision is about rather than the decision, such as `0004-session-data-storage.md`. The
-title inside states the decision. An ADR that supersedes another may share its subject. If
+starting at `0001`, then a subject: two to five lowercase words joined by hyphens, each a word of
+the ADR's title, naming what the decision is about, such as `0004-session-data-redis.md` for "Keep
+session data in Redis". The title states the decision; a plugin hook refuses a name that breaks
+this, and an edit that drops one of the subject's words from the title. An ADR that supersedes
+another may share its subject. Never rename a document once its review has started: the review hook keeps the review under the
+document's path, so a renamed document's corrections can't be checked. If the name no longer fits,
+say so to the person, who can rename it once the review has ended. If
 `docs/specs/` exists, read the Open questions of its specs, so you can tell the person which ones
 the decision answers.
 
