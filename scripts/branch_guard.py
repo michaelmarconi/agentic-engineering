@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """While /build runs, refuse a git commit or push on the repository's default branch.
 
-Claude Code runs this as a PreToolUse hook on Bash. It acts only in a session where /build was
-allowed to start (recorded by build_session.py). There it refuses a shell command that runs
+Claude Code runs this as a PreToolUse hook on Bash. It acts only in a session where the build skill
+was started (recorded by build_session.py). There it refuses a shell command that runs
 `git commit` while the default branch is checked out, or `git push` while it is checked out or
 naming it as the branch to push to, such as `HEAD:main`, or pushing every branch with `--all` or
 `--mirror`. It follows a `git checkout` or `git switch` of a branch earlier in the same command,

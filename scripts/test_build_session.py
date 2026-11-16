@@ -24,6 +24,11 @@ def reply(tokens, sidechain=False, cached=True):
                         "usage": usage}}
 
 
+def compacted():
+    return {"type": "system", "subtype": "compact_boundary", "isSidechain": False,
+            "content": "Conversation compacted"}
+
+
 def person(text):
     return {"type": "user", "isSidechain": False, "message": {"role": "user", "content": text}}
 
@@ -97,19 +102,25 @@ class Growth(Hooks):
         self.record(reply(40000), reply(90000, sidechain=True), reply(45000))
         self.assertEqual(self.growth(), 5000)
 
-    def test_compacted_session_measured_as_it_now_stands(self):
-        self.record(reply(40000), reply(150000), reply(52000))
-        self.assertEqual(self.growth(), 12000)
+    def test_compacted_session_measured_from_its_first_reply_after_compaction(self):
+        # Code review: measured from the session's very first reply, conversation added after a
+        # compaction could hide below the limit.
+        self.record(reply(49000), reply(150000), compacted(), reply(35000), reply(65000))
+        self.assertEqual(self.growth(), 30000)
+
+    def test_compaction_with_no_reply_since_is_zero(self):
+        self.record(reply(49000), reply(150000), compacted())
+        self.assertEqual(self.growth(), 0)
 
     def test_smaller_than_at_the_start_is_zero(self):
         self.record(reply(40000), reply(30000))
         self.assertEqual(self.growth(), 0)
 
-    def test_missing_record_is_zero(self):
-        self.assertEqual(self.growth(), 0)
+    def test_missing_record_is_unknown(self):
+        self.assertIsNone(self.growth())
 
-    def test_no_path_is_zero(self):
-        self.assertEqual(build_session.growth(None), 0)
+    def test_no_path_is_unknown(self):
+        self.assertIsNone(build_session.growth(None))
 
     def test_broken_lines_skipped(self):
         self.record(reply(40000), reply(70000), raw="not json\n[1, 2]\n")
@@ -154,6 +165,11 @@ class Skill(Hooks):
         self.record(reply(50000), reply(90000))
         self.assertIsNone(self.skill("agentic:spec"))
         self.assertIsNone(self.skill("code-review"))
+
+    def test_unreadable_record_said_to_be_unknown(self):
+        text = self.context(self.skill(), "PreToolUse")
+        self.assertIn("could not be measured", text)
+        self.assertNotIn("0 tokens", text)
 
     def test_never_refused_without_a_data_folder(self):
         self.record(reply(50000), reply(90000))

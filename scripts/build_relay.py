@@ -8,7 +8,7 @@ could reword them, so this hook keeps them and adds them to the checker's reques
 review_relay.py does for documents.
 
 Claude Code runs it on PreToolUse for the Agent tool, on PostToolUse for the Agent tool and a
-subagent's SubagentHandback tool, and on SubagentStop. It acts only in a session where /build was allowed to start (recorded by
+subagent's SubagentHandback tool, and on SubagentStop. It acts only in a session where the build skill was started (recorded by
 build_session.py), and keeps:
 
 - the report of the agent that runs Claude Code's `/code-review`: an agent whose request's first

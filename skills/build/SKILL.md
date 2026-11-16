@@ -64,7 +64,7 @@ Check each of these before changing anything, and stop with the reason if one fa
    way to start a session for them: run `/clear`, then send `/agentic:build <the plan's path>`; in a
    Claude project thread, which has no `/clear`, open a new thread and send that command as its
    first message. Then wait. On "build here anyway", carry on; on "start clean", stop, changing
-   nothing, and never try to start a session yourself. Under the limit, or with no note, carry on
+   nothing, and never try to start a session yourself. Under the limit, or with no figure, carry on
    without asking.
 2. **The plan is a plan.** It is a file in `docs/plans/` that names something to build. A
    `✅ Built` plan is built once and never again: say so, and suggest a new plan for more work.

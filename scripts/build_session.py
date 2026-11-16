@@ -14,12 +14,13 @@ hook never refuses a build: a long session is only a reason to ask.
 The measure comes from the session's record, the file Claude Code names in `transcript_path`.
 Each reply from Claude in it carries the context it used: input_tokens, cache_read_input_tokens
 and cache_creation_input_tokens added up. Lines from sub-agents (`isSidechain`) are skipped. The
-growth is the latest reply's figure minus the first's. With no reply yet, or a record that cannot
-be read, it is 0; after compaction the latest figure is smaller, so the session is measured as it
-now stands. On PreToolUse, Claude Code has not yet written the reply holding the Skill call, so
+growth is the latest reply's figure minus the first's, counting from the first reply after the
+last compaction, if any, so conversation added since then is not hidden. With no reply yet it is 0;
+a record that cannot be read is reported as not measured. On PreToolUse, Claude Code has not yet written the reply holding the Skill call, so
 the figure may be one reply behind.
 
-A build that starts is recorded, so the branch guard knows a build is running. The record is
+Every start of the build skill is recorded, so the branch guard knows a build may be running; that
+includes one the person then chooses not to run here, which only keeps the guard on in that session. The record is
 kept when the session ends or is resumed, since a resumed session carries on, and is deleted once
 unchanged for 30 days (see saved_records.py). Records live in
 $CLAUDE_PLUGIN_DATA/sessions/<session id>.json; without $CLAUDE_PLUGIN_DATA nothing is recorded.
@@ -95,26 +96,36 @@ def context_used(line):
 
 
 def growth(transcript):
-    """Tokens of context the session has gained since Claude's first reply; 0 if unknown."""
+    """Tokens of context gained since Claude's first reply, or since the last compaction; None if
+    the session's record cannot be read."""
     if not transcript:
-        return 0
+        return None
     first = latest = None
     try:
         with open(transcript, encoding="utf-8") as f:
             for text in f:
+                if '"usage"' not in text and '"compact_boundary"' not in text:
+                    continue  # most lines are tool output, not worth parsing
                 try:
-                    used = context_used(json.loads(text))
+                    line = json.loads(text)
                 except ValueError:
                     continue
+                if isinstance(line, dict) and line.get("subtype") == "compact_boundary":
+                    first = latest = None
+                    continue
+                used = context_used(line)
                 if used is not None:
                     first = used if first is None else first
                     latest = used
     except OSError:
-        return 0
+        return None
     return max(latest - first, 0) if first is not None else 0
 
 
 def note(gained):
+    if gained is None:
+        return ("Build session check (agentic plugin): how much conversation this session has "
+                "gained could not be measured, since its record could not be read.")
     side = "over" if gained > LIMIT else "under"
     return (f"Build session check (agentic plugin): this session has gained {gained:,} tokens of "
             f"conversation since Claude's first reply, {side} the limit of {LIMIT:,}.")
