@@ -20,11 +20,20 @@ whether to accept the build as it stands or correct it; on "accept", the hand-ov
 script[^handover] marks the plan `✅ Built` and lists the open findings[^finding] in that commit.
 This ends a review loop that need not converge, and the pull request records what was accepted.
 
+```mermaid
+flowchart TD
+    Run["/build, run again on a branch"] --> Check{"Last correction check failed,<br>nothing changed since?"}
+    Check -->|no| Review["Review again"]
+    Check -->|yes| Ask["Explain what is still open,<br>ask once"]
+    Ask -->|accept| Built["Hand-over script marks the plan ✅ Built<br>and lists the open findings in that commit"]
+    Ask -->|correct| Ready["Plan stays 🟢 Ready to build"]
+```
+
 ## Background
 
 Today a plan becomes `✅ Built` only when every review, or the one correction check after them,
-passes ([ADR 0010](0010-correction-check.md)). When the check fails, the only way on is
-to settle every finding and build again, with three fresh reviews. Fresh reviewers
+passes ([ADR 0010](0010-correction-check.md)[^adr]). When the check fails, the only way to continue is
+to settle every finding and build again, with three new reviews. New reviewers
 raise new findings, so the loop need not end. So the person merges the work instead,
 leaving the plan `🟢 Ready to build` and no record of what was accepted.
 
@@ -32,10 +41,10 @@ leaving the plan `🟢 Ready to build` and no record of what was accepted.
 
 | Option | Outcome | Why |
 | --- | --- | --- |
-| Settle the findings and build again, as now | Rejected | Fresh reviews raise new findings each round |
+| Settle the findings and build again, as now | Rejected | New reviews raise new findings each round |
 | The person sets the status by hand | Rejected | Nothing checks it or records what was accepted |
-| Ask once whether to accept the build as it stands, recording the findings in the Built commit | Chosen | One decision ends the loop; the record travels with the pull request |
-| Accept or reject each finding, with a reason for each | Rejected | More questions add no safety |
+| Ask once whether to accept the build as it stands, recording the findings in the commit that marks it Built | Chosen | One decision ends the loop; the record is part of the pull request |
+| Accept or reject each finding, with reasons | Rejected | More questions add no safety |
 | Record the acceptance only in the build's report[^report] | Rejected | The report stays on one computer, outside the repository |
 
 ## Consequences
@@ -51,7 +60,7 @@ leaving the plan `🟢 Ready to build` and no record of what was accepted.
 - A build changed since its correction check.
 - A build that stopped before its correction check, such as on failing tests.
 - A plan the person told Claude to build before approving it.
-- Other documents, such as specs, which still need a passing review.
+- Other documents, such as specs[^spec], which still need a passing review.
 
 ## How we'll check
 
@@ -116,5 +125,7 @@ script prints a reason instead, `/build` resumes as before, reviewing again.
 [^plan]: A plan is the plugin's document that sets out one piece of work; `✅ Built` marks it done and frozen.
 [^person]: The person is whoever is working with Claude and the plugin on the project.
 [^handover]: The hand-over script is the program a build ends with: it commits the branch, sets the plan's status and pushes the branch.
+[^adr]: An ADR (architecture decision record) is a document that records one technical decision and why it was made.
+[^spec]: A spec is the plugin's document that says what one capability of a product should do.
 [^report]: The build's report is a file the hand-over script writes on the person's own computer, outside the repository, recording how the build went.
 [^finding]: An open finding is something a review raised that the correction check found not corrected, left for the person, or broken by a correction.
