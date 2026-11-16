@@ -5,8 +5,9 @@ type: Brief
 # Skills for Agentic Engineering: a plugin for Claude Code
 
 A software development lifecycle that brings engineering rigour to software built with artificial
-intelligence (AI) coding assistants, taking each piece of work from intent to verified code along
-one defined path, with the reasoning kept in a few short documents.
+intelligence (AI) coding assistants, taking each piece of work from intent to verified code, and
+on to a release running where it is used, along one defined path, with the reasoning kept in a few
+short documents.
 
 ## Problem
 
@@ -42,11 +43,14 @@ By version 1.0, on one real project:
   as the plugin's own tests show.
 - A person approves every change to a lifecycle document's status, such as from Draft to
   Accepted, as the project's pull requests show.
+- Every release and every deploy follows steps the project has recorded, and goes ahead only
+  after a person approves it, as the project's recorded practices and release notes show.
 
 ## Out of scope
 
-- Releasing software. How a project releases differs too much from one project to the next to
-  follow one path.
+- The steps a project takes to release and deploy its software, such as its commands and the
+  machines it runs on. They differ too much from one project to the next to prescribe, so each
+  project records its own, and the lifecycle follows them.
 - Small, self-contained changes, such as a one-line fix. They suit a short session with the
   assistant directly; the lifecycle is for larger pieces of work that need specs.
 
