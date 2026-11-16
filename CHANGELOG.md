@@ -6,6 +6,22 @@ What changed in each version of the plugin, newest first. Versions follow
 past a major version: it says what you need to change in your documents. Until 1.0.0, any
 minor version may need such a change, and its entry says so.
 
+## [0.54.0] - 2026-11-16
+
+### Added
+
+- You can accept a build as it stands when its correction check fails, instead of sitting through
+  another round of reviews that may well leave new findings open. Run `/build` again on the
+  unchanged branch: it starts no review, lists the open findings, explains what accepting means and
+  asks "Accept the build as it stands, or correct it?". If you accept, the plan is marked
+  `✅ Built` in a commit whose message lists the findings you accepted, so the pull request shows
+  them (ADR 0038, issue #93).
+- The hand-over script checks the conditions itself: the plan is `🟢 Ready to build` and was
+  signed off before the build, the newest build report for it on this computer shows the failed
+  check, and the branch hasn't changed since. Otherwise `/build` reviews again as before. Its new
+  options are `--open-findings` and `--accept-open-findings`, and its report now names the commit
+  the branch was at (`Head:`).
+
 ## [0.53.0] - 2026-11-16
 
 ### Changed

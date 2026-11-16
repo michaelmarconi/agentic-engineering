@@ -185,5 +185,83 @@ class Write(unittest.TestCase):
             self.write(copied={"Nowhere": [("x", "y")]})
 
 
+class Find(unittest.TestCase):
+    """Finding a plan's earlier reports, newest first, and reading their sections back."""
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.tmp.cleanup)
+        self.data = os.path.join(self.tmp.name, "data")
+        self.temp = os.path.join(self.tmp.name, "system-temp")
+        os.makedirs(self.temp)
+        patcher = mock.patch.object(run_report.tempfile, "gettempdir", return_value=self.temp)
+        patcher.start()
+        self.addCleanup(patcher.stop)
+
+    def write(self, date, name="add-numbers", data=None, own=None, copied=None):
+        return run_report.write("build", name, "/work/repo", self.data if data is None else data,
+                                own or {}, copied or {}, date=date)[0]
+
+    def test_newest_first_by_date_then_number(self):
+        older = self.write("2026-11-13")
+        same_day = [self.write("2026-11-14") for _ in range(10)]  # -2 to -10: 10 sorts after 9
+        found = run_report.reports("build", "add-numbers", "/work/repo", self.data)
+        self.assertEqual(found, list(reversed(same_day)) + [older])
+
+    def test_other_plans_and_kinds_left_out(self):
+        mine = self.write("2026-11-14")
+        self.write("2026-11-15", name="add-numbers-and-more")
+        run_report.write("audit", "add-numbers", "/work/repo", self.data, {}, {}, date="2026-11-16")
+        self.assertEqual(run_report.reports("build", "add-numbers", "/work/repo", self.data), [mine])
+
+    def test_nothing_found(self):
+        self.assertEqual(run_report.reports("build", "add-numbers", "/work/repo", self.data), [])
+
+    def test_fallback_read_when_the_data_folder_has_none(self):
+        fallen = self.write("2026-11-14", data="")
+        self.assertEqual(run_report.reports("build", "add-numbers", "/work/repo", self.data), [fallen])
+
+    def test_data_folder_wins_over_the_fallback(self):
+        self.write("2026-11-15", data="")
+        mine = self.write("2026-11-14")
+        self.assertEqual(run_report.reports("build", "add-numbers", "/work/repo", self.data), [mine])
+
+    def test_fallback_others_can_open_is_ignored(self):
+        self.write("2026-11-14", data="")
+        os.chmod(run_report.fallback_root(), 0o755)
+        self.assertEqual(run_report.reports("build", "add-numbers", "/work/repo", self.data), [])
+
+    def test_sections_read_back(self):
+        copied = {"What each review found": [("Build review", "Result: PASS\n"),
+                                             ("Correction check", "Result: FAIL\n\nCorrections:\n- a: not made")],
+                  "The hand-over script's report": [("Output", "Branch: b\nHead: abc")]}
+        path = self.write("2026-11-14", own={"Built before sign-off": "Built early.",
+                                             "What each review found": "Corrected 1."}, copied=copied)
+        with open(path, encoding="utf-8") as f:
+            text = f.read()
+        self.assertEqual(run_report.section("build", text, "Built before sign-off"), "Built early.")
+        self.assertEqual(run_report.section("build", text, "Choices"), "Nothing to report.")
+        reviews = run_report.section("build", text, "What each review found")
+        self.assertEqual(run_report.subsection(reviews, "Correction check"),
+                         "Result: FAIL\n\nCorrections:\n- a: not made")
+        output = run_report.section("build", text, "The hand-over script's report")
+        self.assertEqual(run_report.subsection(output, "Output"), "Branch: b\nHead: abc")
+        self.assertIsNone(run_report.subsection(output, "Missing"))
+
+    def test_heading_quoted_in_an_earlier_section_passed_over(self):
+        own = {"What was built": "```\n## The hand-over script's report\n\n### Output\n\nHead: fake\n```"}
+        copied = {"The hand-over script's report": [("Output", "Head: real")]}
+        with open(self.write("2026-11-14", own=own, copied=copied), encoding="utf-8") as f:
+            text = f.read()
+        output = run_report.section("build", text, "The hand-over script's report")
+        self.assertEqual(run_report.subsection(output, "Output"), "Head: real")
+
+    def test_subsection_after_another_and_first_of_its_title(self):
+        body = "### Build review\n\nResult: PASS\n\n### Correction check\n\n### Correction check\n\nResult: FAIL"
+        self.assertEqual(run_report.subsection(body, "Correction check", after="Build review"),
+                         "### Correction check\n\nResult: FAIL")
+        self.assertIsNone(run_report.subsection("### Correction check\n\nx", "Correction check", after="Build review"))
+
+
 if __name__ == "__main__":
     unittest.main()

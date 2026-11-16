@@ -295,5 +295,8 @@ rubric.
 `/build` follows the same sequence for code, with its own reviewers and its own correction
 checker, `agents/build-correction-checker.md`, and no language checker, since it writes code.
 `/build` corrects what the reviewers find once, and a correction check follows. A clean review or
-a passing correction check marks the plan `✅ Built`; a failing correction check stops and hands the branch back with its report. Either way
-the work stays on its branch until you merge it.
+a passing correction check marks the plan `✅ Built`; a failing correction check stops and hands the branch back with its report. You
+may then accept the build as it stands: run `/build` again on the unchanged branch, and it shows
+the open findings and asks once; if you accept, the plan is marked `✅ Built` and the commit that
+marks it lists the findings you accepted. Either way the work stays on its branch until you merge
+it.

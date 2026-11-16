@@ -26,6 +26,8 @@ flowchart LR
     Hand -.->|you| Verify[Verify, then merge]
     Hand -.->|you, if findings are open| Sort[Sort them out, then rerun /build]
     Sort -.-> Check
+    Hand -.->|you, if you accept them as they stand| Accept[Rerun /build and accept the build]
+    Accept -.-> Built
     Verify ~~~ Pad["#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;"]
     style Pad fill:none,stroke:none
 ```
@@ -193,6 +195,16 @@ or a choice needed raising, the plan keeps its status. Sort out what is open how
 you: with Claude directly, by changing a spec or ADR, or by deciding a finding is wrong. Then rerun
 `/build` on the branch. It resumes, reviews again, and marks the plan `✅ Built` once every review
 passes. If you think a finding is wrong, say so when you rerun it.
+
+If the correction check failed and you judge the open findings acceptable for now, run `/build`
+again on the branch without changing anything. It starts no review: it lists the open findings,
+explains that accepting marks the plan `✅ Built` with them left open and freezes it, and asks
+"Accept the build as it stands, or correct it?". If you accept, the hand-over script marks the plan
+`✅ Built` in a commit whose message lists the findings you accepted, so the pull request shows
+them, and pushes the branch. The script offers this only when the plan is `🟢 Ready to build`, it
+was signed off before the build, the last build's report shows the failed check, and the branch
+has not changed since; otherwise `/build` reviews again as above. The report has to be on the
+computer you run `/build` on.
 
 It ends with a short reply, under 150 words: the outcome, the branch and whether the plan was
 marked `✅ Built`, then at most five bullets of at most 15 words each, with the main findings and
