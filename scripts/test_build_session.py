@@ -116,7 +116,12 @@ class Growth(Hooks):
         self.record(reply(40000), reply(30000))
         self.assertEqual(self.growth(), 0)
 
-    def test_missing_record_is_unknown(self):
+    def test_record_not_written_yet_is_zero(self):
+        # Install trial: a typed /build as the first message comes before Claude Code writes the file.
+        self.assertEqual(self.growth(), 0)
+
+    def test_unreadable_record_is_unknown(self):
+        os.mkdir(self.transcript)
         self.assertIsNone(self.growth())
 
     def test_no_path_is_unknown(self):
@@ -167,6 +172,7 @@ class Skill(Hooks):
         self.assertIsNone(self.skill("code-review"))
 
     def test_unreadable_record_said_to_be_unknown(self):
+        os.mkdir(self.transcript)
         text = self.context(self.skill(), "PreToolUse")
         self.assertIn("could not be measured", text)
         self.assertNotIn("0 tokens", text)
@@ -183,6 +189,11 @@ class Typed(Hooks):
         text = self.context(self.say("/agentic:build docs/plans/x.md"), "UserPromptSubmit")
         self.assertIn("40,000 tokens", text)
         self.assertIn("over", text)
+
+    def test_first_message_typed_before_any_record_is_under(self):
+        text = self.context(self.say("/agentic:build docs/plans/x.md"), "UserPromptSubmit")
+        self.assertIn("0 tokens", text)
+        self.assertIn("under", text)
 
     def test_short_name_also_measured(self):
         self.record(reply(50000))

@@ -15,8 +15,8 @@ The measure comes from the session's record, the file Claude Code names in `tran
 Each reply from Claude in it carries the context it used: input_tokens, cache_read_input_tokens
 and cache_creation_input_tokens added up. Lines from sub-agents (`isSidechain`) are skipped. The
 growth is the latest reply's figure minus the first's, counting from the first reply after the
-last compaction, if any, so conversation added since then is not hidden. With no reply yet it is 0;
-a record that cannot be read is reported as not measured. On PreToolUse, Claude Code has not yet written the reply holding the Skill call, so
+last compaction, if any, so conversation added since then is not hidden. With no reply yet, or no record written yet, it
+is 0; a record that cannot be read is reported as not measured. On PreToolUse, Claude Code has not yet written the reply holding the Skill call, so
 the figure may be one reply behind.
 
 Every start of the build skill is recorded, so the branch guard knows a build may be running; that
@@ -117,6 +117,8 @@ def growth(transcript):
                 if used is not None:
                     first = used if first is None else first
                     latest = used
+    except FileNotFoundError:
+        return 0  # Claude Code writes the record with its first reply, so there is none yet
     except OSError:
         return None
     return max(latest - first, 0) if first is not None else 0
