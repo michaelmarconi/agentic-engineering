@@ -83,9 +83,6 @@ it shows the list it will check, each spec with its requirements and how many ex
 and checks nothing until you agree. A requirement whose spec is not `👍 Accepted` is left out, and
 the list says why.
 
-A run takes real time: in a trial, checking 7 requirements of a mail service took about 45 minutes
-of agent time. So the list is best kept to what you need checked now.
-
 `/verify` stops and says why, without checking anything, when:
 
 - the branch has changes that are not committed, since its report names the commit it checked;
