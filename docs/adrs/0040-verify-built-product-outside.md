@@ -96,7 +96,7 @@ The two agents are one method: the trial below relied on the second to find the 
 verdicts, so they are decided together.
 
 **Report.** Written the way the build and audit skills write theirs: a file in the plugin's data
-folder, `reports/<repository>/<date>-verify-<scope>.md`, holding every agent's report copied by
+folder, which is outside the repository, `reports/<repository>/<date>-verify-<scope>.md`, holding every agent's report copied by
 script, and a reply under 150 words. The skill sets no status and changes no file in the repository.
 
 **Evidence, from a trial on 2026-11-16.** On a mail service, 7 requirements built against an
