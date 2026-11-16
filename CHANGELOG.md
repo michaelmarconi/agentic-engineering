@@ -6,6 +6,21 @@ What changed in each version of the plugin, newest first. Versions follow
 past a major version: it says what you need to change in your documents. Until 1.0.0, any
 minor version may need such a change, and its entry says so.
 
+## [0.59.0] - 2026-11-16
+
+### Changed
+
+- `/agentic:practices` now records releasing and deploying as two topics, `releasing.md` and
+  `deploying.md`, in place of the single releasing topic. Each has a fixed set of headings: what
+  may be released, the version and how a release is tied to its commit, and the publish command;
+  and for each environment, which releases may go there and the commands that deploy, check and
+  roll back. Their required items come from you or your repository, never from a default Claude
+  proposes. While recording them, `/practices` tries only what is safe, such as reading the
+  version, running a deploy check or a dry run, and never publishes, deploys or rolls back. A small
+  script decides whether each topic is complete, so the coming release and deploy skills can stop
+  and name exactly what is missing. A `releasing.md` recorded earlier is left as it is: run
+  `/agentic:practices releasing` to bring it into the new layout (issue #87).
+
 ## [0.57.0] - 2026-11-16
 
 ### Changed
