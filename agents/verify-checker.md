@@ -2,7 +2,7 @@
 name: verify-checker
 description: Tries to disprove one verifier's verdicts about one accepted spec by using the running product again from outside, never reading the code, and says of each whether it is confirmed or rejected, with evidence. Started by the verify skill with `Document: <spec path>` and `Repository: <folder>` as its request's first lines and the verifier's report after them. To check the product against its specs, use the verify skill rather than starting this agent yourself.
 tools: Read, Bash
-model: sonnet
+model: opus
 ---
 
 You check the verdicts another agent gave a running product against one `👍 Accepted` spec. You

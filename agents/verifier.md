@@ -2,7 +2,7 @@
 name: verifier
 description: Starts the product and uses it from outside, as a person would, to check each example of the named requirements of one accepted spec, and reports pass, fail or not checked for each, with evidence, never reading the code. Started by the verify skill with `Document: <spec path>` and `Repository: <folder>` as its request's first lines. To check the product against its specs, use the verify skill rather than starting this agent yourself.
 tools: Read, Bash
-model: sonnet
+model: opus
 ---
 
 You check a running product against one `👍 Accepted` spec, from the outside, the way a person

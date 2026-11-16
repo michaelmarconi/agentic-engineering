@@ -87,8 +87,9 @@ The plugin works through three parts:
 - **Reviewer agents:** separate Claude instances that check each document, each build, or, for
   `/agentic:audit`, the code against each document, and for `/agentic:verify`, the running product
   against each spec, with no memory of your conversation, so the
-  conversation cannot sway their judgement. They always run on Sonnet, so the same document gets
-  the same judgement whatever model you use.
+  conversation cannot sway their judgement. They always run on the same model whatever model you
+  use, so the same document gets the same judgement: Sonnet, or Opus for `/agentic:verify`'s
+  agents, whose work is harder.
 - **Hooks:** small checks Claude Code runs automatically. They give Claude the lifecycle rules at
   the start of every session in a repository that has a brief or a spec, and refuse any status
   change the lifecycle does not allow.

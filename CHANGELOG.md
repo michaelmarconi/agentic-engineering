@@ -16,7 +16,8 @@ minor version may need such a change, and its entry says so.
   would and gives it pass, fail or not checked with evidence, never reading the code, and a second
   agent tries to disprove each verdict. A rejected verdict is shown as disputed, for you to decide.
   It ends with a short reply and a report file outside your repository, with every agent's report
-  copied in, and changes nothing in your repository (ADR 0040, issue #86).
+  copied in, and changes nothing in your repository. Its two agents run on Opus, since using a
+  product is harder work than reviewing a document (ADR 0040, issue #86).
 - `/practices` has a new topic, Running the product: how to start and stop the product, reach it,
   set up an example's starting state, and which services are safe to touch and which never are.
   `/practices` tries the commands before recording them. `/verify` needs this topic, and stops

@@ -18,7 +18,8 @@ Chosen: a skill[^skill] of the plugin's own, run separately from the build[^buil
 uses the running product through its interfaces, as a person would, and gives each example[^example]
 a verdict with evidence, and a second agent tries to disprove each verdict. Both are given only the
 accepted specs and the project's practices[^practices], and told never to read the code, so they
-must judge the product by what it does. Both run on Sonnet, like the plugin's other agents.
+must judge the product by what it does. Both run on Opus, since using a product to check it is
+harder work than reviewing a document.
 
 ## Background
 
@@ -82,7 +83,10 @@ and what is safe to touch. When it is missing or fails, the skill stops and name
 `/agentic:practices running the product`; the skill never writes it.
 
 **Agents.** Two plugin agents, neither of which has seen the conversation, set to always
-run on the Sonnet model, like the plugin's other agents, so cost and quality of judgement match theirs:
+run on the Opus model, unlike the plugin's reviewers, which run on Sonnet. Starting a product and
+working round what gets in the way is harder work than reviewing a document: in a trial run on
+Sonnet, both agents gave up on 5 of 7 examples at the first problem setting up an example, where
+an earlier run on Opus worked round the same kind of problem and found a real failure:
 
 - `verifier`: one per spec, run one after another; given the spec's path, the requirements to check in it, and the
   practices; may write temporary helper programs in a folder outside the repository. Verdicts:
