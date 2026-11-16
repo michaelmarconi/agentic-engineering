@@ -127,9 +127,6 @@ sequenceDiagram
     C->>S: Confirmed or rejected, with evidence
 ```
 
-In a trial run, the verify-checker confirmed both real failures, closed a gap in one pass by also
-trying interrupted runs, and flagged a pass that held only because of timing.
-
 ## What it never does
 
 - **Read the code.** Its agents are told never to read the code, tests, plans or other documents.
