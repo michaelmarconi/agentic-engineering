@@ -753,9 +753,12 @@ def name_problem(path, kind, text, new=True):
     held = title_words(text)
     missing = [word for word in subject.split("-") if word not in held]
     if missing:
-        listed_words = ", ".join(f"'{word}'" for word in missing)
-        return (f"{name}: the subject's {listed_words} {'is' if len(missing) == 1 else 'are'} not a word of "
-                f"the title; {form}. Choose the subject from the title's words.")
+        quoted = [f"'{word}'" for word in missing]
+        if len(quoted) == 1:
+            verdict = f"the subject word {quoted[0]} is not a word of the title"
+        else:
+            verdict = f"the subject words {', '.join(quoted[:-1])} and {quoted[-1]} are not words of the title"
+        return f"{name}: {verdict}; {form}. Choose the subject from the title's words."
     return None
 
 
