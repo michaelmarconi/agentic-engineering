@@ -132,10 +132,10 @@ Two rules hold throughout:
   third.[^twice]
 
 A long build can run for hundreds of thousands of tokens, and what Claude read at the start carries
-less weight the further back it sits in the conversation. So at the start of each requirement,
-`/build` re-reads your `## Practices` section and its own rules for the whole build, and only
+less weight the further back it sits in the conversation. So each time the tests script runs, once
+a requirement, it prints your `## Practices` sections and the build's own rules again, and only
 those: not the rest of `AGENTS.md`, nor the topic files under `docs/practices/`. That costs about
-1,500 tokens a requirement. It keeps the rules in mind, but can't guarantee they are followed, so
+1,500 tokens a requirement. It keeps the rules in view, but can't guarantee they are followed, so
 a rule that must hold, such as tests first, also has a script that checks it.
 
 If a build stops halfway, for whatever reason, start a new session on the same branch and run

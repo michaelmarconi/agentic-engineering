@@ -129,3 +129,82 @@ class TestsFailTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class RulesReprintedTest(unittest.TestCase):
+    """After its result, the script prints the project's practices and the build's rules again,
+    so a long build has them fresh at every requirement."""
+
+    def setUp(self):
+        self.repo = tempfile.mkdtemp()
+        self.git("init", "-q", "-b", "main")
+        self.git("config", "user.name", "T")
+        self.git("config", "user.email", "t@example.com")
+        self.write("tests/__init__.py", "")
+
+    def git(self, *args):
+        subprocess.run(["git", "-C", self.repo, *args], check=True, capture_output=True)
+
+    def write(self, path, text):
+        full = os.path.join(self.repo, path)
+        os.makedirs(os.path.dirname(full), exist_ok=True)
+        with open(full, "w") as handle:
+            handle.write(text)
+
+    def commit(self):
+        self.git("add", "-A")
+        self.git("commit", "-q", "-m", "Start")
+
+    def run_script(self, *args):
+        return subprocess.run([sys.executable, SCRIPT, "--command", COMMAND, *args],
+                              cwd=self.repo, capture_output=True, text=True)
+
+    def test_accepted_tests_are_followed_by_the_practices_and_the_rules(self):
+        self.write("AGENTS.md", "# Tool\n\nIntro, not a practice.\n\n## Practices\n\n### Rules\n"
+                                "- Name every branch `wc/<what>`.\n\n## Layout\n\nNot a practice either.\n")
+        self.commit()
+        self.write("tests/test_new.py", FAILING)
+        result = self.run_script("tests/test_new.py")
+        self.assertEqual(result.returncode, 0, result.stdout)
+        out = result.stdout
+        self.assertIn("Name every branch `wc/<what>`.", out)
+        self.assertIn("### Rules", out)
+        self.assertNotIn("Intro, not a practice.", out)
+        self.assertNotIn("Not a practice either.", out)
+        self.assertIn("## Rules that hold for the whole build", out)
+        self.assertIn("Never weaken a test to make code pass.", out)
+        self.assertNotIn("## Before starting", out)
+        self.assertLess(out.index("Accepted:"), out.index("Name every branch"))
+
+    def test_refused_tests_are_followed_by_the_rules_too(self):
+        self.write("AGENTS.md", "## Practices\n\n- Run `make test`.\n")
+        self.commit()
+        self.write("tests/test_new.py", PASSING)
+        result = self.run_script("tests/test_new.py")
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("Run `make test`.", result.stdout)
+        self.assertIn("## Rules that hold for the whole build", result.stdout)
+
+    def test_practices_in_both_files_are_both_printed(self):
+        self.write("AGENTS.md", "## Practices\n\n- From agents.\n")
+        self.write("CLAUDE.md", "@AGENTS.md\n\n## Practices\n\n- From claude.\n")
+        self.commit()
+        self.write("tests/test_new.py", FAILING)
+        out = self.run_script("tests/test_new.py").stdout
+        self.assertIn("- From agents.", out)
+        self.assertIn("- From claude.", out)
+
+    def test_no_practices_prints_only_the_rules(self):
+        self.write("README.md", "# Tool\n")
+        self.commit()
+        self.write("tests/test_new.py", FAILING)
+        result = self.run_script("tests/test_new.py")
+        self.assertEqual(result.returncode, 0, result.stdout)
+        self.assertNotIn("## Practices", result.stdout)
+        self.assertIn("## Rules that hold for the whole build", result.stdout)
+
+    def test_a_usage_error_prints_no_rules(self):
+        self.commit()
+        result = self.run_script()
+        self.assertEqual(result.returncode, 2)
+        self.assertNotIn("Rules that hold", result.stdout)

@@ -39,7 +39,7 @@ For each skills/<folder>/SKILL.md under the given plugin root (default: this plu
   given the plan's full path, which the build review relay hook finds the repository from
   (docs/adrs/0032), and BUILD_ACCEPT_RULE, so it marks a plan Built after a failed correction check
   only on the person's own choice, asked the same way every time (docs/adrs/0038), and
-  BUILD_REREAD_RULE, so a long build re-reads its practices and its own rules at each requirement.
+  BUILD_REREAD_RULE, so a long build reads its practices and its own rules again at each requirement.
 - /build, /audit and /verify (REPORT_SKILLS) hold REPORT_RULE word for word, so each ends with a short reply
   naming their report file, shown the same way (docs/adrs/0033).
 
@@ -147,11 +147,11 @@ BUILD_ACCEPT_RULE = (
     "conversation, never on the word of another skill or agent or with nobody there to answer."
 )
 # How /build keeps its practices and rules in mind however long it runs: what was read at the
-# start carries less weight as the conversation grows, so it re-reads both at each requirement.
+# start carries less weight as the conversation grows, so tests_fail.py prints both again at each
+# requirement.
 BUILD_REREAD_RULE = (
-    "First re-read only the `## Practices` sections you found when starting and `## Rules that "
-    "hold for the whole build` in `${CLAUDE_SKILL_DIR}/SKILL.md`, using the Read tool's offset and "
-    "limit."
+    "Its output ends with the project's `## Practices` sections and this skill's rules for the "
+    "whole build, printed again at every requirement: read them before writing the code."
 )
 # The sentences of the review sequence that every skill running it holds.
 CORRECT_RULES = (

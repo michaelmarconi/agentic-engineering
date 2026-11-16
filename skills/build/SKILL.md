@@ -173,9 +173,7 @@ which requirements are already built with passing tests, and carry on from there
 Work through the requirements the plan names, one at a time, in the order the Plan section
 suggests. For each requirement:
 
-1. First re-read only the `## Practices` sections you found when starting and `## Rules that
-   hold for the whole build` in `${CLAUDE_SKILL_DIR}/SKILL.md`, using the Read tool's offset and
-   limit. Then write the tests, one or more per example, setting up its Given, doing its When and
+1. Write the tests first, one or more per example, setting up its Given, doing its When and
    checking its Then and And rows with the example's own values. Before writing any of its code,
    check that they fail, with the command that runs one test file, `{file}` where its path goes,
    and the test files you wrote or changed:
@@ -188,7 +186,9 @@ suggests. For each requirement:
    a test file that cannot load or a mistake in the test. If it accepts them, commit them. If it
    refuses, correct what it names and run it again; but if the tests pass because their code is
    already committed, commit them anyway and note the refusal and why. Keep each requirement's
-   result, accepted or refused and why, for the review and the report.
+   result, accepted or refused and why, for the review and the report. Its output ends with the
+   project's `## Practices` sections and this skill's rules for the whole build, printed again at
+   every requirement: read them before writing the code.
 2. Write the code that makes them pass, following the Plan section, each line under Decisions
    (where a line says to leave its reason as a comment beside the code, write that comment),
    each ADR the plan lists, and any other `👍 Accepted` ADR whose How we'll check section (Confirmation in

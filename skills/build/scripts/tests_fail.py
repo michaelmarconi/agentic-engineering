@@ -11,7 +11,10 @@ It refuses when:
 - any file named passes when run: its tests already pass, so they cannot show the code works.
 
 Output: the last lines of each file's output, and, for each refusal, why. A failure must come
-from the behaviour not being there yet, not from a file that cannot load: read each one.
+from the behaviour not being there yet, not from a file that cannot load: read each one. Then,
+whatever the result, the `## Practices` sections of the repository's AGENTS.md and CLAUDE.md and
+the build skill's `## Rules that hold for the whole build`, so a long build has them fresh at
+every requirement: what was read at the start carries less weight as the conversation grows.
 
 Exit codes: 0 when every file named fails; 1 when they are refused; 2 on a usage error, when
 the command cannot run (exit 126 or 127), or when the folder is not in a git work tree.
@@ -19,6 +22,7 @@ the command cannot run (exit 126 or 127), or when the folder is not in a git wor
 
 import argparse
 import os
+import re
 import shlex
 import subprocess
 import sys
@@ -27,6 +31,38 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."
 import uncommitted  # noqa: E402
 
 TAIL = 15
+SKILL = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "SKILL.md")
+PRACTICES_FILES = ("AGENTS.md", "CLAUDE.md")
+
+
+def section(path, heading):
+    """The level-two section of a Markdown file headed `## <heading>`, up to the next level-two
+    heading, or None when the file or the heading is missing."""
+    try:
+        with open(path, encoding="utf-8") as handle:
+            text = handle.read()
+    except OSError:
+        return None
+    start = re.search(r"^## " + re.escape(heading) + r"[ \t]*$", text, re.M)
+    if not start:
+        return None
+    end = re.search(r"^## ", text[start.end():], re.M)
+    return text[start.start():start.end() + end.start() if end else len(text)].strip()
+
+
+def reminders(root):
+    """The practices and the build's rules, to print after every result."""
+    parts = []
+    for name in PRACTICES_FILES:
+        practices = section(os.path.join(root, name), "Practices")
+        if practices:
+            parts.append(f"From {name}:\n\n{practices}")
+    rules = section(SKILL, "Rules that hold for the whole build")
+    if rules:
+        parts.append(f"From the build skill:\n\n{rules}")
+    if not parts:
+        return ""
+    return ("\nKeep to these while you build this requirement:\n\n" + "\n\n".join(parts))
 
 
 def run(command, path, root):
@@ -91,9 +127,10 @@ def main(argv=None):
         print("Refused:")
         for refusal in refusals:
             print("- " + refusal)
-        return 1
-    print("Accepted: every new test file fails.")
-    return 0
+    else:
+        print("Accepted: every new test file fails.")
+    print(reminders(root))
+    return 1 if refusals else 0
 
 
 if __name__ == "__main__":
