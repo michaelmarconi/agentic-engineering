@@ -16,6 +16,11 @@ same day gets `-2`, `-3` and so on: no report is ever overwritten, and none is d
 The lines printed for Claude give the file's path first, then the headings, each copied report's
 length, and the file as written, between fixed `===` lines, so the run's own record shows exactly
 what the person will read.
+
+`reports` finds a plan's earlier reports, newest first, and `section` and `subsection` read one back,
+so hand_over.py can find a build's failed correction check (docs/adrs/0038). It reads the data
+folder's reports, and the private folder's only when the data folder has none and the private
+folder is one only this user can open.
 """
 
 import os
@@ -97,11 +102,9 @@ def fallback_root():
 def private(root):
     try:
         os.makedirs(root, mode=0o700, exist_ok=True)
-        info = os.lstat(root)
     except OSError as error:
         raise ReportError(f"neither the plugin's data folder nor {root} can be written ({error})")
-    if not os.path.isdir(root) or os.path.islink(root) or info.st_uid != os.getuid() \
-            or info.st_mode & 0o077:
+    if not trusted(root):
         raise ReportError(f"{root} is not a folder only you can open; delete it and run again")
     return root
 
@@ -117,6 +120,80 @@ def report_folder(data, repository):
     if not writable(folder):
         raise ReportError(f"{folder} can't be written")
     return folder, True
+
+
+def trusted(root):
+    """Whether `root` is a real folder that only this user can open, so a report in it was not put
+    there by someone else."""
+    try:
+        info = os.lstat(root)
+    except OSError:
+        return False
+    return os.path.isdir(root) and not os.path.islink(root) and info.st_uid == os.getuid() \
+        and not info.st_mode & 0o077
+
+
+def reports(kind, name, repository, data):
+    """The paths of the reports of this kind and name for the repository, newest first: by date,
+    then by the number added when several share a date. Looks in the data folder, and only when it
+    holds none, in the private fallback folder."""
+    folder = safe(os.path.basename(os.path.normpath(repository)))
+    pattern = re.compile(r"^(\d{4}-\d{2}-\d{2})-" + re.escape(f"{kind}-{safe(name)}") + r"(?:-(\d+))?\.md$")
+    places = [os.path.join(os.path.abspath(data), "reports", folder)] if data else []
+    if trusted(fallback_root()):
+        places.append(os.path.join(fallback_root(), folder))
+    for place in places:
+        try:
+            names = os.listdir(place)
+        except OSError:
+            continue
+        found = [(m.group(1), int(m.group(2) or 1), n) for n in names for m in [pattern.match(n)] if m]
+        if found:
+            return [os.path.join(place, n) for _, _, n in sorted(found, reverse=True)]
+    return []
+
+
+def heading_at(text, line, start=0):
+    """Where `line` next starts a line of `text`, at or after `start`; -1 when it doesn't."""
+    at = start
+    while True:
+        at = text.find(line, at)
+        if at <= 0 or text[at - 1] == "\n":
+            return at
+        at += 1
+
+
+def section(kind, text, heading):
+    """The text under `## <heading>` in a report as written, up to the next heading the kind lists;
+    None when the heading is missing. The headings are found in their written order, each after
+    the one before it, so a heading quoted inside an earlier section is passed over."""
+    at, bounds = 0, {}
+    for title in HEADINGS[kind]:
+        found = heading_at(text, f"## {title}\n\n", at)
+        if found < 0:
+            continue
+        bounds[title] = found
+        at = found + len(f"## {title}\n\n")
+    if heading not in bounds:
+        return None
+    start = bounds[heading] + len(f"## {heading}\n\n")
+    ends = [i for t, i in bounds.items() if i > bounds[heading]]
+    return text[start:min(ends) if ends else len(text)].strip("\n")
+
+
+def subsection(body, title, after=None):
+    """The copied report under the first `### <title>` in a section's text, to the section's end
+    (copied reports are written last, in order), looking only past the first `### <after>` when
+    given; None when there is none."""
+    start = 0
+    if after:
+        start = heading_at(body, f"### {after}\n\n")
+        if start < 0:
+            return None
+    at = heading_at(body, f"### {title}\n\n", start)
+    if at < 0:
+        return None
+    return body[at + len(f"### {title}\n\n"):].strip("\n")
 
 
 def parse(kind, text):

@@ -11,7 +11,7 @@
    `date:`, the day its status last changed, to today's date on this machine, adding the line under
    the status if the plan has none, changing nothing else in the file, and commits that on its own. It writes the file itself, so the
    status hook, which refuses `✅ Built` from Claude, never sees it;
-4. pushes the branch to `origin`;
+4. pushes the branch to `origin`, and names the commit the branch is then at, `Head: <commit>`;
 5. writes the build's report file (docs/adrs/0033 and 0034) with scripts/run_report.py, outside the
    repository, even when it refused to start: Claude's own sections, read from stdin under the
    report's `## ` headings, then the four reports build_relay.py kept for this plan in this session
@@ -21,10 +21,27 @@
 
 It prints what happened, one line per step, then the report file's path and the file as written.
 
-Exit codes: 0 when every step that applied succeeded; 1 when a commit, the push or the report
-file failed, or --reviews-passed was given for a plan that is not `🟢 Ready to build` (the plan is then left as it
-is, and the rest still runs); 2 when it refused to start or could not use Claude's sections,
-changing nothing in the repository.
+When a build's correction check failed, the person may accept the build as it stands
+(docs/adrs/0038). Two options serve that, each reading the newest build report for the plan
+(run_report.reports):
+
+- --open-findings prints the open findings the correction check listed, word for word, and the
+  report's path, or the one reason none can be accepted. It changes nothing and writes no report.
+- --accept-open-findings, after the person accepts, marks the plan `✅ Built` as --reviews-passed
+  does, commits it with the open findings in the commit message, pushes, and writes a new report.
+
+Both go ahead only when the plan is `🟢 Ready to build`; the report is of this plan, its correction
+check says `Result: FAIL`, and its "Built before sign-off" section is empty; the branch is still at
+the report's `Head:` commit, with nothing uncommitted; and the check lists at least one correction
+`not made` or `left for the person`, or something broken by a correction. An
+--accept-open-findings that refuses, or whose commit fails, writes no report, so the failed check
+stays the newest.
+
+Exit codes: 0 when every step that applied succeeded, or --open-findings found findings; 1 when a
+commit, the push or the report file failed, or --reviews-passed was given for a plan that is not
+`🟢 Ready to build` (the plan is then left as it is, and the rest still runs); 2 when it refused to
+start or could not use Claude's sections, changing nothing in the repository; 3 when
+--open-findings found nothing that can be accepted.
 """
 
 import argparse
@@ -42,6 +59,7 @@ import run_report  # noqa: E402
 REVIEWS = (("Code review", "code"), ("Security review", "security"), ("Build review", "plan"),
            ("Correction check", "check"))
 NO_REPORT = "No report kept."
+NOT_REVIEWED = "No review: the person accepted the build as it stands."
 
 READY, BUILT = "🟢 Ready to build", "✅ Built"
 STATUS_LINE = re.compile(r"^status:[ \t]*(?P<value>[^\n#]*?)[ \t]*$", re.M)
@@ -128,24 +146,32 @@ def commit(repo, message, lines):
     return True
 
 
-def hand_over(repo, plan, message, reviews_passed):
-    lines = []
+def preflight(repo, plan):
+    """The refusal, as a line to print, when the branch can't be handed over; else None."""
     if not has_origin(repo):
-        return 2, ["Refused: there is no remote named `origin` to push the branch to. Add one, then "
-                   "hand over again. Nothing was changed."]
+        return ("Refused: there is no remote named `origin` to push the branch to. Add one, then "
+                "hand over again. Nothing was changed.")
     default = default_branch(repo)
     if default is None:
-        return 2, ["Refused: the default branch of `origin` is not known. Run "
-                   "`git remote set-head origin -a`, then hand over again. Nothing was changed."]
+        return ("Refused: the default branch of `origin` is not known. Run "
+                "`git remote set-head origin -a`, then hand over again. Nothing was changed.")
     branch = current_branch(repo)
     if branch is None:
-        return 2, ["Refused: no branch is checked out, so there is nothing to hand over. Nothing was changed."]
+        return "Refused: no branch is checked out, so there is nothing to hand over. Nothing was changed."
     if branch == default:
-        return 2, [f"Refused: `{branch}` is the default branch, and a build never commits there. "
-                   "Nothing was changed."]
+        return f"Refused: `{branch}` is the default branch, and a build never commits there. Nothing was changed."
+    if not os.path.isfile(os.path.join(repo, plan)):
+        return f"Refused: the plan {plan} does not exist. Nothing was changed."
+    return None
+
+
+def hand_over(repo, plan, message, reviews_passed):
+    lines = []
+    refusal = preflight(repo, plan)
+    if refusal:
+        return 2, [refusal]
+    branch = current_branch(repo)
     plan_path = os.path.join(repo, plan)
-    if not os.path.isfile(plan_path):
-        return 2, [f"Refused: the plan {plan} does not exist. Nothing was changed."]
 
     code = 0
     lines.append(f"Branch: {branch}")
@@ -179,13 +205,127 @@ def hand_over(repo, plan, message, reviews_passed):
             reason = "the reviews have not all passed"
         lines.append(f"Plan: {plan} stays `{status}`, because {reason}.")
 
+    code = max(code, push(repo, branch, lines))
+    lines.append(f"Head: {head(repo)}")
+    return code, lines
+
+
+def head(repo):
+    return git(repo, "rev-parse", "HEAD").stdout.strip()
+
+
+class NotAcceptable(Exception):
+    """The build can't be accepted as it stands; the message says why."""
+
+
+OPEN = re.compile(r"\b(?:not made|left for the person)\b", re.I)
+BULLET = re.compile(r"^(?:[-*+]|\d+[.)])\s+")
+NONE_ITEM = re.compile(r"^(?:[-*+]|\d+[.)])\s+\**None\b", re.I)
+LABEL = re.compile(r"^\**[A-Z][^:]*:\**\s*$")
+
+
+def findings_in(check):
+    """The correction check's items for corrections not made or left for the person, and for
+    anything a correction broke, word for word, each with the lines that continue it. An item is a
+    line starting `-`, `*`, `+` or a number; a line such as `Suggestions:` starts another list."""
+    found, part, keep = [], None, False
+    for line in check.splitlines():
+        label = line.strip()
+        if LABEL.match(label):
+            part, keep = label.strip("*").strip(), False
+            continue
+        if not label:
+            keep = False
+            continue
+        if BULLET.match(label):
+            keep = part == "Corrections:" and bool(OPEN.search(label)) or \
+                part == "Broken by a correction:" and not NONE_ITEM.match(label)
+            if keep:
+                found.append(line)
+        elif keep:
+            found.append(line)
+    return found
+
+
+def newest_report(repo, plan, data):
+    """The path and text of the newest build report whose hand-over names this plan, since another
+    plan's name can end like a same-day report's number; raises NotAcceptable when there is none."""
+    for path in run_report.reports("build", os.path.splitext(os.path.basename(plan))[0], repo, data):
+        with open(path, encoding="utf-8") as f:
+            text = f.read()
+        output = run_report.subsection(run_report.section("build", text, "The hand-over script's report") or "",
+                                       "Output") or ""
+        if os.path.normpath(plan) in {os.path.normpath(p) for p in re.findall(r"^Plan: (\S+) ", output, re.M)}:
+            return path, text, output
+    raise NotAcceptable("No build report for this plan was found on this computer")
+
+
+def open_findings(repo, plan, data):
+    """(report path, open findings) for the plan's newest build report; raises NotAcceptable."""
+    with open(os.path.join(repo, plan), encoding="utf-8") as f:
+        match = frontmatter_status(f.read())
+    status = match.group("value") if match else "no status"
+    if not (match and is_ready(status)):
+        raise NotAcceptable(f"the plan {plan} is `{status}`, not `{READY}`")
+    path, text, output = newest_report(repo, plan, data)
+    check = run_report.subsection(run_report.section("build", text, "What each review found") or "",
+                                  "Correction check", after="Build review") or ""
+    result = re.search(r"^\**Result:?\**:?\s*\**(\w+)", check, re.M)
+    if not (result and result.group(1).upper() == "FAIL"):
+        raise NotAcceptable(f"the last build's correction check did not fail ({path})")
+    early = run_report.section("build", text, "Built before sign-off")
+    if early and early != run_report.NOTHING:
+        raise NotAcceptable("the last build ran before sign-off, so its plan can't be marked Built this way")
+    heads = re.findall(r"^Head: (\S+)$", output, re.M)
+    if not heads or heads[-1] != head(repo):
+        raise NotAcceptable("the branch has changed since the correction check, so the change needs a review")
+    try:
+        entries, _ = uncommitted.check(repo)
+    except uncommitted.NotARepository as error:
+        raise NotAcceptable(str(error))
+    if entries:
+        raise NotAcceptable("there is uncommitted work, which no review has seen")
+    findings = findings_in(check)
+    if not findings:
+        raise NotAcceptable(f"the correction check lists no open finding to accept ({path})")
+    return path, findings
+
+
+def accept(repo, plan, data):
+    """Mark the plan Built with the open findings in the commit, and push: (code, lines)."""
+    refusal = preflight(repo, plan)
+    if refusal:
+        return 2, [refusal]
+    try:
+        path, findings = open_findings(repo, plan, data)
+    except NotAcceptable as error:
+        return 2, [f"Refused: {error}. Nothing was changed."]
+    lines = [f"Branch: {current_branch(repo)}", f"Accepting the build as it stands, from {path}"]
+    plan_path = os.path.join(repo, plan)
+    with open(plan_path, encoding="utf-8") as f:
+        text = f.read()
+    with open(plan_path, "w", encoding="utf-8") as f:
+        f.write(built(text, frontmatter_status(text)))
+    body = "Accepted as it stands by the person, without further review:\n\n" + "\n".join(findings)
+    if not commit(repo, f"Mark the plan {os.path.basename(plan)} as built\n\n{body}", lines):
+        with open(plan_path, "w", encoding="utf-8") as f:
+            f.write(text)
+        lines.append(f"Plan: {plan} stays `{READY}`, because the commit failed; nothing was pushed.")
+        return 1, lines
+    lines += [f"Plan: {plan} is now `{BUILT}`.", body]
+    code = push(repo, current_branch(repo), lines)
+    lines.append(f"Head: {head(repo)}")
+    return code, lines
+
+
+def push(repo, branch, lines):
+    """Push the branch to origin, saying how it went; 0 when it was pushed, else 1."""
     result = git(repo, "push", "-q", "-u", "origin", branch)
     if result.returncode == 0:
         lines.append(f"Push: pushed {branch} to origin.")
-    else:
-        lines.append(f"Push: push failed: {(result.stderr or result.stdout).strip()}")
-        code = 1
-    return code, lines
+        return 0
+    lines.append(f"Push: push failed: {(result.stderr or result.stdout).strip()}")
+    return 1
 
 
 def main(argv=None):
@@ -194,26 +334,58 @@ def main(argv=None):
         epilog=__doc__.split("\n\n", 1)[1],
         formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--plan", required=True, help="the plan's path, relative to the repository")
-    parser.add_argument("--message", required=True, help="the commit message for the work not yet committed")
-    parser.add_argument("--reviews-passed", action="store_true",
-                        help="every review of the build passed, so mark the plan Built")
+    parser.add_argument("--message", help="the commit message for the work not yet committed (needed to hand over)")
+    mode = parser.add_mutually_exclusive_group()
+    mode.add_argument("--reviews-passed", action="store_true",
+                      help="every review of the build passed, so mark the plan Built")
+    mode.add_argument("--open-findings", action="store_true",
+                      help="print the open findings of the last build's failed correction check, or why "
+                           "none can be accepted; change nothing")
+    mode.add_argument("--accept-open-findings", action="store_true",
+                      help="the person accepted the build as it stands: mark the plan Built with the open "
+                           "findings in the commit message, and push")
     parser.add_argument("--repo", default=".", help="the repository (default: the current directory)")
-    parser.add_argument("--report", required=True, choices=["-"],
+    parser.add_argument("--report", choices=["-"],
                         help="`-`: read your own sections of the build's report from stdin, as Markdown "
-                             "under the report's `## ` headings")
+                             "under the report's `## ` headings (needed except with --open-findings)")
     parser.add_argument("--data", required=True, help='the plugin\'s data folder: "${CLAUDE_PLUGIN_DATA}"')
-    parser.add_argument("--session", required=True, help='the session\'s id: "${CLAUDE_SESSION_ID}"')
+    parser.add_argument("--session", help='the session\'s id: "${CLAUDE_SESSION_ID}" (needed except with --open-findings)')
     args = parser.parse_args(argv)
     repo = os.path.abspath(args.repo)
+    if args.open_findings:
+        if not os.path.isfile(os.path.join(repo, args.plan)):
+            print(f"No open findings can be accepted: the plan {args.plan} does not exist.")
+            return 3
+        try:
+            path, findings = open_findings(repo, args.plan, args.data)
+        except NotAcceptable as error:
+            print(f"No open findings can be accepted: {error}.")
+            return 3
+        print(f"Open findings, from the correction check in {path}:")
+        print("\n".join(findings))
+        return 0
+    missing = [flag for flag, value in (("--report", args.report), ("--session", args.session),
+                                        ("--message", args.message or args.accept_open_findings)) if not value]
+    if missing:
+        parser.error("these are needed to hand over: " + ", ".join(missing))
     try:
         own = run_report.parse("build", sys.stdin.read())
     except run_report.ReportError as error:
         print(f"Refused: your report's sections can't be used: {error}. Nothing was changed; correct "
               "them and hand over again.")
         return 2
-    code, lines = hand_over(repo, args.plan, args.message, args.reviews_passed)
+    if args.accept_open_findings:
+        code, lines = accept(repo, args.plan, args.data)
+        if not any(line.startswith(f"Plan: {args.plan} is now") for line in lines):
+            # No report while the plan is not Built: the failed check must stay the newest report,
+            # so the person can still accept it.
+            print("\n".join(lines))
+            return code
+    else:
+        code, lines = hand_over(repo, args.plan, args.message, args.reviews_passed)
     kept = build_relay.kept_reports(args.data, args.session, args.plan, cwd=repo) or {}
-    copied = {"What each review found": [(title, kept.get(part) or NO_REPORT) for title, part in REVIEWS],
+    none = NOT_REVIEWED if args.accept_open_findings else NO_REPORT
+    copied = {"What each review found": [(title, kept.get(part) or none) for title, part in REVIEWS],
               "The hand-over script's report": [("Output", "\n".join(lines))]}
     name = os.path.splitext(os.path.basename(args.plan))[0]
     try:
