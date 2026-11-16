@@ -50,6 +50,7 @@ does not show the product works.
 
 - Lasting tests that keep the product working: the build writes those.
 - Releasing or deploying the product.
+- Checking ADRs: how the code is built shows mostly in the code, which the audit skill reads.
 - Checking whether the specs ask for the right thing: that stays with the person.
 
 ## How we'll check

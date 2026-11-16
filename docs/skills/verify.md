@@ -135,6 +135,9 @@ sequenceDiagram
 - **Read the code.** Its agents are told never to read the code, tests, plans or other documents.
   An agent that can run commands could read them anyway, so this rests on its instructions; its
   evidence lists every command it ran, so a read would show.
+- **Check ADRs.** An ADR decides how the product is built, which mostly shows only in the code.
+  [`/build`](build.md)'s reviewer and [`/audit`](audit.md) check ADRs against the code, and
+  `/audit` lists any ADR check that needs something run.
 - **Touch what the practice forbids.** An example that could only be tried that way is not checked.
 - **Change your repository.** It writes no file, sets no status and makes no commit. If starting
   the product changes a tracked file, such as a lock file, the report says so.
