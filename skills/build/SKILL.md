@@ -260,9 +260,10 @@ reads them exactly as they were given; you write only your own sections, as Mark
    it to the spec.
 6. `## What each review found`: what you corrected for each review; the reviews' and the
    correction check's reports are added for you.
-7. `## Left for you to check`: each requirement left for the person to check, and a reminder to
-   check the product itself before merging with `/agentic:verify <the plan's path>`, which uses
-   the running product against the plan's requirements.
+7. `## Left for you to check`: each requirement left for the person to check, and how to check
+   the running product against the plan's requirements: `/agentic:verify <the plan's path>`. If
+   the practices say it must run and pass before merging, say to run it before merging; otherwise
+   offer it as optional. Nothing the plugin does blocks a merge.
 
 The script's own report goes under a heading of its own, which only the script writes. Give your
 sections to the script on standard input:

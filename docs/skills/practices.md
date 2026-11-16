@@ -104,7 +104,7 @@ other topic you ask for is recorded the same way.
 | Testing | Whether tests come first, what each change is tested with, coverage, end-to-end tests, test data, and flaky or slow tests |
 | Branches and commits | Branch names, commit message style, and how long a branch may live |
 | Delivering work | How work is split, how big one plan may be, and what done means beyond the merge checks |
-| Reviews and merging | Who reviews, how work is merged, and what must pass first |
+| Reviews and merging | Who reviews, how work is merged, what must pass first, and whether [`/verify`](verify.md) must run and pass before a build is merged |
 | CI/CD | What the pipeline runs and when, which checks are required, and what to do when a run fails |
 | Releasing and deploying | Version numbers, changelog, environments, and rolling back |
 | Database changes | How they are written and applied, and whether they must be reversible |

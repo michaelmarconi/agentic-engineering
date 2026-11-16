@@ -223,8 +223,8 @@ instead, until you delete it. It holds:
 - what it corrected for each review;
 - each review's report and the correction check's report, and the hand-over script's own report,
   copied in by the script word for word, so you read them exactly as they were given;
-- what is left for you to check, and a reminder to run [`/verify`](verify.md) on the plan before
-  merging.
+- what is left for you to check, and [`/verify`](verify.md) on the plan: as a step before merging
+  if your practices say it must pass first, otherwise as an option.
 
 A build that refuses to start, such as on a plan that is already built, writes no file: its reply
 says why.
