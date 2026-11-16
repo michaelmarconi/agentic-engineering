@@ -2,8 +2,8 @@
 
 `/verify` is the skill for checking the product against its specs from the outside: it starts the
 product, uses it the way a person would, and says for each example in the specs whether the product
-does what the example says. It begins by agreeing with you what to check, as requirements of one or
-more accepted specs: what a build has just delivered, or what was built long ago. Its usual place
+does what the example says. It begins by agreeing with you what to check: requirements of one or more
+accepted specs, whenever they were built. Its usual place
 in [the lifecycle](../../README.md) is after [`/build`](build.md) and before you merge, but you can
 run it at any time. Read that page first for the documents, skills and agents it mentions.
 
@@ -103,9 +103,6 @@ the plan this branch marked `✅ Built`, and asks you to confirm or change it. W
 it shows the list it will check, each spec with its requirements and how many examples they hold,
 and checks nothing until you agree. A requirement whose spec is not `👍 Accepted` is left out, and
 the list says why.
-
-So the same skill checks what a build has just delivered, or goes back to requirements built long
-ago, such as after a change elsewhere that might have broken them.
 
 A run takes real time: in a trial, checking 7 requirements of a mail service took about 45 minutes
 of agent time. So the list is best kept to what you need checked now.
