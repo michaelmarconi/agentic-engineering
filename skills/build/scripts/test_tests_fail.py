@@ -87,6 +87,39 @@ class TestsFailTest(unittest.TestCase):
         self.write("tests/test_new.py", FAILING)
         self.assertEqual(self.run_script("tests/test_new.py", command="true").returncode, 2)
 
+    def test_a_failing_file_shows_its_output(self):
+        self.write("tests/test_new.py", FAILING)
+        result = self.run_script("tests/test_new.py")
+        self.assertIn("AssertionError", result.stdout)
+
+    def test_a_command_that_cannot_run_is_a_usage_error(self):
+        self.write("tests/test_new.py", FAILING)
+        result = self.run_script("tests/test_new.py", command="no-such-runner-xyz {file}")
+        self.assertEqual(result.returncode, 2, result.stdout)
+
+    def test_a_path_with_a_space_is_passed_whole(self):
+        self.write("tests/test new.py", FAILING)
+        command = sys.executable + " -c 'import sys; sys.exit(0 if sys.argv[1].endswith(\"test new.py\") else 3)' {file}"
+        result = self.run_script("tests/test new.py", command=command)
+        self.assertEqual(result.returncode, 1, result.stdout)
+        self.assertIn("already pass", result.stdout)
+
+    def test_an_absolute_path_is_accepted(self):
+        self.write("tests/test_new.py", FAILING)
+        path = os.path.join(os.path.realpath(self.repo), "tests", "test_new.py")
+        self.assertEqual(self.run_script(path).returncode, 0)
+
+    def test_a_path_relative_to_a_subfolder_is_accepted(self):
+        self.write("tests/test_new.py", FAILING)
+        result = subprocess.run([sys.executable, SCRIPT, "--command", COMMAND, "test_new.py"],
+                                cwd=os.path.join(self.repo, "tests"), capture_output=True, text=True)
+        self.assertEqual(result.returncode, 0, result.stdout)
+
+    def test_output_that_is_not_utf8_does_not_crash(self):
+        self.write("tests/test_new.py", FAILING)
+        command = sys.executable + " -c 'import sys; sys.stdout.buffer.write(bytes([255, 254])); sys.exit(1)' {file}"
+        self.assertEqual(self.run_script("tests/test_new.py", command=command).returncode, 0)
+
     def test_folder_outside_a_git_work_tree_is_a_usage_error(self):
         outside = tempfile.mkdtemp()
         result = subprocess.run([sys.executable, SCRIPT, "--command", COMMAND, "tests/test_x.py"],

@@ -10,15 +10,16 @@ It refuses when:
 - anything else is uncommitted, such as code written before its tests;
 - any file named passes when run: its tests already pass, so they cannot show the code works.
 
-Output: what it checked and, for each refusal, why, with the last lines of a passing file's
-output.
+Output: the last lines of each file's output, and, for each refusal, why. A failure must come
+from the behaviour not being there yet, not from a file that cannot load: read each one.
 
-Exit codes: 0 when every file named fails; 1 when they are refused; 2 on a usage error,
-or when the folder is not in a git work tree.
+Exit codes: 0 when every file named fails; 1 when they are refused; 2 on a usage error, when
+the command cannot run (exit 126 or 127), or when the folder is not in a git work tree.
 """
 
 import argparse
 import os
+import shlex
 import subprocess
 import sys
 
@@ -28,15 +29,15 @@ import uncommitted  # noqa: E402
 TAIL = 15
 
 
-def changed_paths(repo):
-    entries, _ = uncommitted.check(repo)
-    return [entry[3:] for entry in entries]
-
-
 def run(command, path, root):
-    result = subprocess.run(command.replace("{file}", path), shell=True, cwd=root,
-                            capture_output=True, text=True)
+    """Run the command on one file, from the top of the repository: (exit code, last lines)."""
+    result = subprocess.run(command.replace("{file}", shlex.quote(path)), shell=True, cwd=root,
+                            capture_output=True, encoding="utf-8", errors="replace")
     return result.returncode, (result.stdout + result.stderr).strip().splitlines()[-TAIL:]
+
+
+def indented(lines):
+    return "\n".join("    " + line for line in lines)
 
 
 def main(argv=None):
@@ -46,7 +47,9 @@ def main(argv=None):
         formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--command", required=True,
                         help="command that runs one test file, with {file} for its path")
-    parser.add_argument("files", nargs="*", help="the new or changed test files, from the top of the repository")
+    parser.add_argument("files", nargs="*",
+                        help="the new or changed test files, from the top of the repository, "
+                             "from the current folder, or absolute")
     args = parser.parse_args(argv)
     if not args.files:
         print("Name the new or changed test files.")
@@ -55,32 +58,35 @@ def main(argv=None):
         print("The command needs {file} where the test file's path goes.")
         return 2
     try:
-        top = uncommitted.git(".", "rev-parse", "--show-toplevel")
-        if top.returncode != 0:
-            raise uncommitted.NotARepository("not in a git work tree")
-        root = top.stdout.strip()
-        changed = changed_paths(root)
+        entries, _ = uncommitted.check(".")
+        root = uncommitted.git(".", "rev-parse", "--show-toplevel").stdout.strip()
     except uncommitted.NotARepository as error:
         print(error)
         return 2
-    files = [os.path.normpath(path) for path in args.files]
-    refusals = []
-    for path in files:
-        if path not in changed:
-            refusals.append(f"{path} is not a new or changed file: hand over only tests written now.")
-    others = [path for path in changed if path not in files]
+    changed = {entry[3:] for entry in entries}
+    files = []
+    for path in args.files:
+        relative = os.path.relpath(os.path.realpath(path), os.path.realpath(root))
+        if relative not in changed and os.path.normpath(path) in changed:
+            relative = os.path.normpath(path)
+        files.append(relative)
+    refusals = [f"{path} is not a new or changed file: name only tests written now."
+                for path in files if path not in changed]
+    others = sorted(changed - set(files))
     if others:
         refusals.append("Uncommitted besides the tests: " + ", ".join(others)
                         + ". Code must wait until its tests are committed.")
-    for path in files:
-        if path not in changed:
-            continue
+    for path in (path for path in files if path in changed):
         status, tail = run(args.command, path, root)
+        if status in (126, 127):
+            print(f"The command could not run on {path} (exit {status}):\n{indented(tail)}")
+            return 2
         if status == 0:
             refusals.append(f"{path}: its tests already pass, so they cannot show the code works.\n"
-                            + "\n".join("    " + line for line in tail))
+                            + indented(tail))
         else:
-            print(f"{path} fails, as it should.")
+            print(f"{path} fails. Check the failure comes from the missing behaviour:\n"
+                  + indented(tail))
     if refusals:
         print("Refused:")
         for refusal in refusals:

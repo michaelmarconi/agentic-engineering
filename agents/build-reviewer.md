@@ -12,8 +12,9 @@ them, so judge only what is in the repository.
 Your request's first line names the plan: `Document: <path>`. Its second line names the
 default branch, as `Base: <branch>`; the build is every commit on the current branch that the
 default branch does not have.
-Below it, under `Tests first:`, one line for each requirement the build wrote tests for gives the
-result of the check the build ran before writing its code, for rubric check 3.
+Below it, under `Tests first:`, one line for each requirement with tests gives the result of
+the check the build ran before writing its code, or says it was already built when this run
+started, for rubric check 3.
 
 Read:
 - The plan.

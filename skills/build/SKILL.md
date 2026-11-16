@@ -229,7 +229,7 @@ correction check use the right one whatever folder you started in.
   Document: <the plan's full path>
   Base: <default branch>
   Tests first:
-  - <requirement>: accepted, or refused and why, one line for each requirement with tests
+  - <requirement>: accepted, refused and why, or already built when this run started; one line for each requirement with tests
   Review this build.
   ```
 
