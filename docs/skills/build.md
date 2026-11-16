@@ -131,6 +131,13 @@ Two rules hold throughout:
   Anthropic gives the same advice: after two failed corrections, start again rather than try a
   third.[^twice]
 
+A long build can run for hundreds of thousands of tokens, and what Claude read at the start carries
+less weight the further back it sits in the conversation. So at the start of each requirement,
+`/build` re-reads your `## Practices` section and its own rules for the whole build, and only
+those: not the rest of `AGENTS.md`, nor the topic files under `docs/practices/`. That costs about
+1,500 tokens a requirement. It keeps the rules in mind, but can't guarantee they are followed, so
+a rule that must hold, such as tests first, also has a script that checks it.
+
 If a build stops halfway, for whatever reason, start a new session on the same branch and run
 `/build` with the same plan again. It reads what the branch already holds, compares it with the
 plan and carries on.

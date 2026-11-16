@@ -173,8 +173,11 @@ which requirements are already built with passing tests, and carry on from there
 Work through the requirements the plan names, one at a time, in the order the Plan section
 suggests. For each requirement:
 
-1. Write the tests first, one or more per example, setting up its Given, doing its When and
-   checking its Then and And rows with the example's own values. Before writing any of its code,
+1. Before writing its tests, re-read, with the Read tool, only the `## Practices` section you
+   found when starting and [Rules that hold for the whole
+   build](#rules-that-hold-for-the-whole-build). Then write the tests, one or more per
+   example, setting up its Given, doing its When and checking its Then and And rows with the
+   example's own values. Before writing any of its code,
    check that they fail, with the command that runs one test file, `{file}` where its path goes,
    and the test files you wrote or changed:
 

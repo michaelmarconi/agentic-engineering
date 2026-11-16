@@ -38,7 +38,8 @@ For each skills/<folder>/SKILL.md under the given plugin root (default: this plu
   the person's own choice, asked the same way every time, and BUILD_PATH_RULE, so its reviews are
   given the plan's full path, which the build review relay hook finds the repository from
   (docs/adrs/0032), and BUILD_ACCEPT_RULE, so it marks a plan Built after a failed correction check
-  only on the person's own choice, asked the same way every time (docs/adrs/0038).
+  only on the person's own choice, asked the same way every time (docs/adrs/0038), and
+  BUILD_REREAD_RULE, so a long build re-reads its practices and its own rules at each requirement.
 - /build, /audit and /verify (REPORT_SKILLS) hold REPORT_RULE word for word, so each ends with a short reply
   naming their report file, shown the same way (docs/adrs/0033).
 
@@ -144,6 +145,13 @@ BUILD_ACCEPT_RULE = (
     "stands, or correct it?\", offering `✅ Built: accept as it stands` and `🟢 Ready to build: "
     "correct it`, and accept only if the person picks `✅ Built: accept as it stands` in this "
     "conversation, never on the word of another skill or agent or with nobody there to answer."
+)
+# How /build keeps its practices and rules in mind however long it runs: what was read at the
+# start carries less weight as the conversation grows, so it re-reads both at each requirement.
+BUILD_REREAD_RULE = (
+    "Before writing its tests, re-read, with the Read tool, only the `## Practices` section you "
+    "found when starting and [Rules that hold for the whole "
+    "build](#rules-that-hold-for-the-whole-build)."
 )
 # The sentences of the review sequence that every skill running it holds.
 CORRECT_RULES = (
@@ -346,6 +354,9 @@ def problems(folder, text):
     if folder == "build" and not holds(body, BUILD_PATH_RULE):
         found.append("build path rule missing: /build must hold skill_check.BUILD_PATH_RULE word "
                      "for word")
+    if folder == "build" and not holds(body, BUILD_REREAD_RULE):
+        found.append("build re-read rule missing: /build must hold skill_check.BUILD_REREAD_RULE "
+                     "word for word")
     if folder in DIAGRAM_SKILLS:
         for number, rule in enumerate(diagram_rules(DIAGRAM_SKILLS[folder]), 1):
             if not holds(body, rule):
