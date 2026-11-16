@@ -8,6 +8,7 @@ import sys
 import tempfile
 import unittest
 from contextlib import redirect_stderr, redirect_stdout
+from unittest import mock
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import verify  # noqa: E402
@@ -154,6 +155,19 @@ class Start(Repo):
         self.assertEqual((code, out), (1, ""))
         self.assertIn("docs/specs/nope.spec.md", err)
 
+    def test_a_plan_refused_with_what_to_do(self):
+        self.put("docs/plans/2026-11-12-word-count.md", "---\ntype: Plan\n---\n")
+        self.commit()
+        code, _, err = self.start("docs/plans/2026-11-12-word-count.md")
+        self.assertEqual(code, 1)
+        self.assertIn("Specs section", err)
+
+    def test_missing_git_refused_with_a_reason(self):
+        with mock.patch.object(verify.subprocess, "run", side_effect=FileNotFoundError("git")):
+            code, out, err = self.start()
+        self.assertEqual((code, out), (1, ""))
+        self.assertIn("git", err)
+
     def test_a_file_that_is_not_a_spec_refused(self):
         code, _, err = self.start("src/app.py")
         self.assertEqual(code, 1)
@@ -235,7 +249,7 @@ class Report(Repo):
         _, out, _ = self.report("## Overall result\n\nAll passed.\n")
         _, text = self.written(out)
         after = text.split("## The repository after the run\n", 1)[1]
-        self.assertIn("No file in the repository changed during the run.", after)
+        self.assertIn("No tracked file changed and no new file appeared during the run", after)
         self.assertIn("still checked out", after)
 
     def test_file_changed_during_the_run_listed(self):
@@ -257,6 +271,15 @@ class Report(Repo):
         after = text.split("## The repository after the run\n", 1)[1]
         self.assertIn(self.git("rev-parse", "HEAD"), after)
         self.assertNotIn("still checked out", after)
+
+    def test_change_committed_during_the_run_listed(self):
+        _, started, _ = self.start("docs/specs/mail-pull.spec.md")
+        self.put("src/app.py", "print('committed')\n")
+        self.commit()
+        _, out, _ = self.report("## Overall result\n\nAll passed.\n", commit=json.loads(started)["commit"])
+        _, text = self.written(out)
+        after = text.split("## The repository after the run\n", 1)[1]
+        self.assertIn("src/app.py", after)
 
     def test_claude_cannot_write_the_scripts_sections(self):
         self.start("docs/specs/mail-pull.spec.md")

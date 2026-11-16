@@ -373,10 +373,10 @@ def agent_problems(name, text):
     told of one, must hold AGENT_RULE."""
     found = []
     held = REPOSITORY_LINE in text and "`Document: <path>`" in text
-    rule = SHELL_AGENT_RULE if name in SHELL_AGENTS else AGENT_RULE
+    rule_name, rule = ("SHELL_AGENT_RULE", SHELL_AGENT_RULE) if name in SHELL_AGENTS else ("AGENT_RULE", AGENT_RULE)
     if (name in REPOSITORY_AGENTS or name in SHELL_AGENTS or held) and not holds(text, rule):
         found.append("repository rule missing: an agent given a `Repository:` line must hold "
-                     f"skill_check.{'SHELL_AGENT_RULE' if name in SHELL_AGENTS else 'AGENT_RULE'} word for word")
+                     f"skill_check.{rule_name} word for word")
     if name in review_relay.REVIEWERS:
         for number, rule in enumerate(REPORT_RULES, 1):
             if not holds(text, rule):

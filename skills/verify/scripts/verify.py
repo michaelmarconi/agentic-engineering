@@ -13,7 +13,8 @@ start [<spec path> ...] --data <folder> --session <id> [--project <folder>]
     when none is: its path, its status as the status hook reads it (scripts/status_check.py),
     whether it is `👍 Accepted`, and its numbered requirements, each with how many examples it holds
     (its `| Example | ... |` tables). A path may be relative to the repository or full. It refuses a
-    path that is missing or is not a *.spec.md under docs/specs/. Prints JSON: root (the
+    path that is missing or is not a *.spec.md under docs/specs/, and a plan, saying to give
+    the specs it names instead. Prints JSON: root (the
     repository's full path), commit, and specs [{path, status, accepted, requirements [{number,
     name, examples}]}].
 
@@ -23,8 +24,9 @@ report --scope <what was checked> --commit <commit> --data <folder> --session <i
     under the report's `## ` headings. The script fills the rest: "Commit checked", the commit
     `start` printed, given as --commit; "What each agent reported", each verifier's and verify-checker's report word for
     word, by spec; and "The repository after the run", which says whether that commit is still
-    checked out and lists every file changed, added or deleted since `start`, such as a lock file
-    the product rewrote or a helper an agent left behind. Prints the file's path first, then each heading and each copied report with its
+    checked out and lists every file that differs from the commit, such as a lock file the product
+    rewrote, a change committed during the run or a helper an agent left behind; files .gitignore
+    names are left out. Prints the file's path first, then each heading and each copied report with its
     length, and the file as written. It refuses a commit the repository does not have.
 
 Exit codes: 0 done; 1 refused or failed, with the reason on stderr and nothing on stdout.
@@ -55,8 +57,11 @@ class Refused(Exception):
 
 
 def git(project, *args):
-    return subprocess.run(["git", "-C", project, *args], capture_output=True, encoding="utf-8",
-                          errors="surrogateescape")
+    try:
+        return subprocess.run(["git", "-C", project, *args], capture_output=True, encoding="utf-8",
+                              errors="surrogateescape")
+    except OSError as error:
+        raise Refused(f"git could not be run ({error})")
 
 
 def root_of(project):
@@ -110,6 +115,10 @@ def all_specs(root):
 
 
 def describe(root, path):
+    parts = path.split("/")
+    if [p.lower() for p in parts[:2]] == ["docs", "plans"]:
+        raise Refused(f"{path} is a plan: give the specs its Specs section names, and check only the "
+                      "requirements it lists under them")
     if not is_spec(path):
         raise Refused(f"{path} is not a spec: a spec is a *.spec.md file under docs/specs/")
     try:
@@ -143,18 +152,28 @@ def shown(root, path):
 
 
 def after_the_run(root, commit):
+    """Whether `commit` is still checked out, and every file that differs from it now: tracked files
+    changed, added or deleted, in the working tree or by commits made during the run, and new files
+    git does not ignore."""
     now = head(root)
     lines = [f"The commit checked, {commit}, is still checked out." if now == commit else
              f"The commit checked out now is {now}, not {commit}: the verdicts are for {commit}."]
+    changed = git(root, "diff", "--name-status", "--no-renames", commit)
+    if changed.returncode != 0:
+        raise Refused(f"git diff failed ({changed.stderr.strip()})")
     try:
         entries, _ = uncommitted.check(root)
     except uncommitted.NotARepository as error:
         raise Refused(str(error))
-    if entries:
-        lines += ["", "These files changed during the run, as `git status --short` writes them:", ""]
-        lines += [f"- `{entry}`" for entry in entries]
+    found = [line.replace("\t", " ", 1) for line in changed.stdout.splitlines() if line.strip()]
+    found += [entry for entry in entries if entry.startswith("??")]
+    if found:
+        lines += ["", f"These files differ from {commit}, with git's letter for each change "
+                      "(M changed, A added, D deleted, ?? new and not ignored):", ""]
+        lines += [f"- `{entry}`" for entry in found]
     else:
-        lines += ["", "No file in the repository changed during the run."]
+        lines += ["", "No tracked file changed and no new file appeared during the run, leaving out "
+                      "files the repository's .gitignore names."]
     return "\n".join(lines) + "\n"
 
 

@@ -79,6 +79,10 @@ class DocReferences(unittest.TestCase):
                            "[r](#running-the-product)\n")
         self.assertPasses()
 
+    def test_an_html_anchor_with_other_attributes_counts(self):
+        self.write("a.md", "<a class=\"row\" id='later'></a>\n\n[r](#later)\n")
+        self.assertPasses()
+
     def test_web_and_mail_references_are_not_checked(self):
         self.write("README.md", "[w](https://example.com/x.md) [m](mailto:a@b.c) "
                                 "[h](http://example.com)\n")

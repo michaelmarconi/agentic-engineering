@@ -104,7 +104,7 @@ everything else is judgement.
    time, as with the status rules, or when evals show Claude getting the job wrong or wasting
    effort on it. Otherwise leave it to Claude and the reviewer, whose judgement copes with cases
    a script can't foresee. A script lives in the skill's `scripts/`, or the plugin's `scripts/`
-   when a hook runs it. Scripts are
+   when a hook or more than one skill runs it. Scripts are
    self-contained: standard-library Python (3.7 or later) or POSIX shell, no install step, no
    network unless the task needs it, and runnable on macOS, Linux and in Claude Code on the web.
    - **Test-driven.** Write a failing test before each behaviour. Tests use the standard-library
