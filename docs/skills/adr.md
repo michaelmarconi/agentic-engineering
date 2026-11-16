@@ -24,20 +24,22 @@ document to drift out of date.
 ## Where ADRs live
 
 ADRs live in one flat folder, `docs/adrs/`, numbered in the order they were made and named by
-what each decision is about, in three to five words:
+what each decision is about, in two to five words taken from its title:
 
 ```
 docs/adrs/
-  0001-session-data-storage.md       ↪️ Superseded
-  0002-sending-email-to-customers.md 👍 Accepted
-  0003-session-data-storage.md       👍 Accepted
-  0004-caching-search-results.md     📝 Draft
+  0001-store-sessions-files.md       ↪️ Superseded
+  0002-customer-email-provider.md    👍 Accepted
+  0003-store-sessions-redis.md       👍 Accepted
+  0004-cache-search-results.md       📝 Draft
 ```
 
 Nothing is moved or deleted once decided, so each file's status says whether it still holds. A
-replacement can share its subject with the ADR it replaces, as 0003 does, so the listing shows
-where a decision changed. The title inside each file states the decision itself, such as "Store
-sessions in Redis". ADRs refer to each other by number, each number a link to the other ADR's
+replacement can reuse words of the ADR it replaces, as 0003 does, so the listing shows where a
+decision changed. The title inside each file states the decision itself, such as "Store sessions
+in Redis", and the name's words come from it, so the file is easy to recognise. A plugin hook
+refuses a name that breaks this, and an edit that drops one of the name's words from the title,
+so a name never has to change once the ADR is written. ADRs refer to each other by number, each number a link to the other ADR's
 file, never to specs, the brief or plans: those change while an ADR does not, so a reference to
 them would go stale. Nor does an ADR refer to material you handed over, such as a requirements
 document or notes, or to anything outside the lifecycle's documents except a web page: it states

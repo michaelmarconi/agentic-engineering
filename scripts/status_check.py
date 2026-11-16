@@ -126,6 +126,17 @@ lines, while any entry breaks the layout, naming the entry and what is wrong. A 
 before the layout may be edited elsewhere as before; the first edit to its Open questions lays them
 all out again.
 
+Every spec, ADR, plan and spike record is named by one rule (docs/adrs/0035): an ADR's name is
+`NNNN-<subject>.md`, a plan's and a spike record's `YYYY-MM-DD-<subject>.md`, and a spec's
+`<subject>.spec.md`, where the subject is two to five lowercase words of letters and digits joined by
+single hyphens, each a word of the document's `# ` title, compared in lowercase with the title split
+at every character that is not a letter or a digit. For a new document, one with no file at the path
+and a lifecycle status or `type:` in what is written, it refuses a name that breaks the rule, an ADR
+number another file in the folder starts with, and a plan's or spike record's date that is not
+today's. For an existing document with a lifecycle status before or after the edit, it refuses an
+edit that drops from the title a subject word the title held, so a name from before the rule never
+stops an edit. A rename is never seen, so a file is never refused for its name alone.
+
 Whether a person really accepted an ADR or signed off a plan is beyond a hook; the skill asks them.
 
 Apart from the brief, a file that has no lifecycle status before or after the edit, nor one named
@@ -661,18 +672,110 @@ def check(payload):
 
     written = status_of(after)
     new = canonical(written, statuses)
+    if before is None and (new is not None or field(after, "type") is not None):
+        reason = name_problem(path, kind, after)
+        if reason:
+            return reason
     # A status missing its emoji is judged as the one it names first, so a move the lifecycle
     # refuses anyway is refused for that, not with advice that only leads to that refusal.
     reason = lifecycle_problem(path, kind, statuses, rules, before, after, old, new, written)
     if not reason and (old in statuses or new in statuses):
         reason = (type_problem(name, kind, before, after) or date_problem(name, kind, before, after, old, new)
-                  or layout_problem(name, before, after))
+                  or layout_problem(name, before, after)
+                  or (title_problem(path, kind, before, after) if before is not None else None))
     if reason or new == written:
         return reason
     return (
         f"{name}: write the status with its emoji, as `{new}` (found {written!r}). The {kind} "
         f"statuses are {listed(statuses)}."
     )
+
+
+SUBJECT = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+){1,4}$")
+PREFIXED = {"ADR": re.compile(r"^(\d{4})-(.*)\.md$"), "plan": re.compile(r"^(\d{4}-\d{2}-\d{2})-(.*)\.md$"),
+            "spike record": re.compile(r"^(\d{4}-\d{2}-\d{2})-(.*)\.md$")}
+FORMS = {"spec": "`<subject>.spec.md`", "ADR": "`NNNN-<subject>.md`, with a four-digit number",
+         "plan": "`YYYY-MM-DD-<subject>.md`, dated the day it is written",
+         "spike record": "`YYYY-MM-DD-<subject>.md`, dated the day it is written"}
+RULE = ("the subject is two to five lowercase words of letters and digits joined by single hyphens, "
+        "each a word of the document's `# ` title")
+
+
+def name_parts(kind, name):
+    """The (prefix, subject) of a document's file name, or None when it lacks its kind's prefix."""
+    if kind == "spec":
+        return ("", name[:-len(".spec.md")]) if name.lower().endswith(".spec.md") else None
+    found = PREFIXED[kind].match(name)
+    return found.groups() if found else None
+
+
+def title_words(text):
+    """The words of a document's `# ` title: lowercased, accents dropped, and split at every
+    character that is not a letter or a digit, so "user's" holds "user" and "Gérer" is "gerer"."""
+    title = unicodedata.normalize("NFKD", title_of(text or "") or "")
+    title = "".join(c for c in title if not unicodedata.combining(c)).lower()
+    return {word for word in re.split(r"[\W_]+", title) if word}
+
+
+def name_problem(path, kind, text, new=True):
+    """Why a spec's, ADR's, plan's or spike record's file name breaks the naming rule, or None
+    (docs/adrs/0035). For a new document (`new`) the subject's words must be words of the title, an
+    ADR's number must be one no other file in its folder starts with, and a plan's or spike record's
+    date must be today's. For an existing one, as the audit checks it, only the form counts: the
+    prefix and a subject of two to five lowercase words."""
+    name = os.path.basename(path)
+    dated = f", such as {today()}-<subject>.md for one written today" if kind in ("plan", "spike record") else ""
+    form = f"{article(kind)} {kind} is named {FORMS[kind]}{dated}, where {RULE}"
+    parts = name_parts(kind, name)
+    if parts is None:
+        return f"{name}: {form}."
+    prefix, subject = parts
+    if not SUBJECT.match(subject):
+        words = len([word for word in re.split(r"[-_\s]+", subject) if word])
+        shaped = subject and re.fullmatch(r"[a-z0-9-]+", subject) and "--" not in subject \
+            and subject.strip("-") == subject
+        why = f"has {words} word{'s' if words != 1 else ''}, not two to five" if shaped or not subject \
+            else "has uppercase letters or characters other than lowercase letters, digits and single hyphens"
+        return f"{name}: the subject '{subject}' {why}; {form}."
+    if not new:
+        return None
+    if kind in ("plan", "spike record") and prefix != today():
+        return f"{name}: a new {kind}'s name starts with the day it is written, {today()}; {form}."
+    if kind == "ADR":
+        folder = os.path.dirname(path)
+        try:
+            others = sorted(entry for entry in os.listdir(folder) if entry != name and entry.startswith(f"{prefix}-"))
+        except OSError:
+            others = []
+        if others:
+            return (f"{name}: {others[0]} already uses the number {prefix}; give the new ADR the next free "
+                    "four-digit number.")
+    held = title_words(text)
+    missing = [word for word in subject.split("-") if word not in held]
+    if missing:
+        quoted = [f"'{word}'" for word in missing]
+        if len(quoted) == 1:
+            verdict = f"the subject word {quoted[0]} is not a word of the title"
+        else:
+            verdict = f"the subject words {', '.join(quoted[:-1])} and {quoted[-1]} are not words of the title"
+        return f"{name}: {verdict}; {form}. Choose the subject from the title's words."
+    return None
+
+
+def title_problem(path, kind, before, after):
+    """Why an edit to an existing document drops one of its name's subject words from its title, or
+    None. A word the title never held, as in a name from before the rule, is not asked for."""
+    name = os.path.basename(path)
+    parts = name_parts(kind, name)
+    if not parts:
+        return None
+    held, kept = title_words(before), title_words(after)
+    dropped = [word for word in parts[1].split("-") if word in held and word not in kept]
+    if dropped:
+        listed_words = ", ".join(f"'{word}'" for word in dropped)
+        return (f"{name}: the title must keep the words of the file name's subject, and this edit drops "
+                f"{listed_words}. Reword the title around them; the name stays as it is during a review.")
+    return None
 
 
 def lifecycle_problem(path, kind, statuses, rules, before, after, old, new, written):
