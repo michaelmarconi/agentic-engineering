@@ -66,6 +66,27 @@ class ProblemTest(unittest.TestCase):
     def test_shell_running_a_script_passes(self):
         self.assertOne("sh script/setup")
 
+    def test_separator_joined_to_other_punctuation_fails(self):
+        self.assertNotOne("make a;(make b)", ";")
+        self.assertNotOne("make a&&(make b)", "&&")
+        self.assertNotOne("make a;>log", ";")
+        self.assertNotOne("make a |& tee log", "|")
+
+    def test_hash_is_not_a_comment(self):
+        self.assertNotOne("curl http://x/#a;make b", ";")
+        self.assertNotOne("# setup", "comment")
+
+    def test_shell_behind_a_prefix_fails(self):
+        self.assertNotOne('FOO=1 sh -c "a && b"', "shell")
+        self.assertNotOne('env bash -c "a; b"', "shell")
+        self.assertNotOne("sudo sh -c 'make a'", "shell")
+
+    def test_option_after_the_script_is_the_script_s(self):
+        self.assertOne("sh script/run -c cfg")
+
+    def test_angle_bracket_placeholder_fails(self):
+        self.assertNotOne("bin/wordcount <file>", "{name}")
+
     def test_unclosed_quote_fails(self):
         self.assertNotOne('pytest -k "parse', "quote")
 
@@ -91,8 +112,15 @@ class CommandLineTest(unittest.TestCase):
         self.assertIn("not one command", result.stdout)
         self.assertIn("npm ci && npm run build", result.stdout)
 
-    def test_no_argument_is_a_usage_error(self):
-        self.assertEqual(self.run_script().returncode, 2)
+    def test_commands_read_from_standard_input(self):
+        result = subprocess.run([sys.executable, SCRIPT], input="make test\npytest -k 'not slow'\n\n",
+                                capture_output=True, text=True)
+        self.assertEqual(result.returncode, 0, result.stdout)
+        self.assertEqual(len(result.stdout.splitlines()), 2)
+
+    def test_no_command_at_all_is_a_usage_error(self):
+        result = subprocess.run([sys.executable, SCRIPT], input="", capture_output=True, text=True)
+        self.assertEqual(result.returncode, 2)
 
     def test_help_describes_exit_codes(self):
         result = self.run_script("--help")

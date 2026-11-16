@@ -112,8 +112,9 @@ not to ask anything does.
 - **One command per step.** Record each step as one command, as rubric check 3 defines it: one
   line that calls one program, needs no answer from a person and exits non-zero on failure, so
   every skill can run it and judge it the same way. Check the text of every command you will
-  record in one run before writing them:
-  `python3 "${CLAUDE_SKILL_DIR}/scripts/one_command.py" '<command>' '<command>' ...`. When the agreed step is
+  record in one run before writing them, one per line in a quoted heredoc so no quote in a command
+  can break the call: `python3 "${CLAUDE_SKILL_DIR}/scripts/one_command.py" <<'EOF'`, the
+  commands, then `EOF`. When the agreed step is
   several commands, write an entry in the project's command runner or scripts folder that runs them
   in order and stops at the first failure, with no branching, retries or loops, passing on any
   `{name}` value the step needs, such as `make deploy ENV={environment}`. Show it to the

@@ -43,8 +43,7 @@ import, so the reviewer does not count lines or look for imports in the section 
     its interfaces, how to put it in a starting state, and both the services safe to touch and
     those never to be touched. A topic that leaves either list out fails, since an agent using the
     product could not tell what it may touch.
-14. **Commands live in one place.** A command that runs a script kept in the repository, such as
-    `tools/release.sh`, passes only when the script is in the scripts folder that Check your work
-    names as the project's place for commands. Commands that call a tool, including a runner
-    entry such as `make release` or `npm run setup` and a tool's own wrapper such as `./gradlew`,
-    pass.
+14. **Commands live in one place.** When the project has a command runner or scripts folder,
+    Check your work names it as the project's place for commands, and every runner entry or
+    scripts-folder script a command runs is in that one place. A one-line command that needs no
+    entry, such as `npm test` or `bin/wordcount {file}`, passes.
