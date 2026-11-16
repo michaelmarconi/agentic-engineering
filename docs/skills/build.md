@@ -109,7 +109,13 @@ Finally, it runs your tests once. Any test that already fails is noted for the r
 ## Building
 
 `/build` works through the requirements the plan names. For each one, it first writes tests from
-the spec's examples and sees them fail, then writes the code that makes them pass. It then runs
+the spec's examples, then writes the code that makes them pass. Before writing any of the code, it
+runs a small script on the new tests, which accepts them only if each new or changed test file
+fails and nothing else is uncommitted. Tests that already pass can't show the new code works, and
+code written before its tests shows up as uncommitted work or as tests that already pass. If the
+code was already committed, such as by an earlier build that stopped, `/build` keeps the tests and
+reports the refusal, and the review names that requirement so you can decide whether to accept it
+([ADR 0039](../adrs/0039-tests-fail-without-code.md)). It then runs
 your whole test suite and your linters, as your practices say, before moving on, so it notices at
 once if the new code breaks something already built. It follows every `👍 Accepted` ADR the plan
 names, and any other whose How we'll check section says it applies to the code being changed. It

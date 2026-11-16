@@ -12,8 +12,12 @@ failure. "The build" is every commit on the branch that the default branch does 
    no error is raised, fails. For a requirement verified by inspection or analysis, the code
    shows what How we'll check says it checks. A requirement verified by demonstration needs no test:
    it is left for the person to check after the build, and is not a failure.
-3. **Tests first.** For each requirement, its tests were committed before the code that makes
-   them pass, or in the same commit; no commit adds code for a requirement whose tests come later.
+3. **Tests first.** The `Tests first:` lines of the review request give a result of the
+   tests-fail check for each requirement this build wrote tests for, and the log agrees: each
+   requirement's tests are committed before its code. Each result is accepted, or refused for a
+   reason that holds. Code committed before its tests is no such reason: it fails, naming the
+   requirement, so the person can decide whether to accept it. A requirement with tests and no
+   result fails too.
 4. **No test weakened.** No test that existed before the build, or that an earlier commit of the
    build added, was changed to check less: no assertion removed or loosened, no expected value
    changed to match the code, no test skipped, disabled or deleted. Changing a test to check its
