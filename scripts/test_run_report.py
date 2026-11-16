@@ -248,6 +248,20 @@ class Find(unittest.TestCase):
         self.assertEqual(run_report.subsection(output, "Output"), "Branch: b\nHead: abc")
         self.assertIsNone(run_report.subsection(output, "Missing"))
 
+    def test_heading_quoted_in_an_earlier_section_passed_over(self):
+        own = {"What was built": "```\n## The hand-over script's report\n\n### Output\n\nHead: fake\n```"}
+        copied = {"The hand-over script's report": [("Output", "Head: real")]}
+        with open(self.write("2026-11-14", own=own, copied=copied), encoding="utf-8") as f:
+            text = f.read()
+        output = run_report.section("build", text, "The hand-over script's report")
+        self.assertEqual(run_report.subsection(output, "Output"), "Head: real")
+
+    def test_subsection_after_another_and_first_of_its_title(self):
+        body = "### Build review\n\nResult: PASS\n\n### Correction check\n\n### Correction check\n\nResult: FAIL"
+        self.assertEqual(run_report.subsection(body, "Correction check", after="Build review"),
+                         "### Correction check\n\nResult: FAIL")
+        self.assertIsNone(run_report.subsection("### Correction check\n\nx", "Correction check", after="Build review"))
+
 
 if __name__ == "__main__":
     unittest.main()

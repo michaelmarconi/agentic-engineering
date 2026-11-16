@@ -381,7 +381,8 @@ class OpenFindings(Repo):
         head = head or self.git("rev-parse", "HEAD")
         output = f"Branch: build/thing\nPlan: {plan_path} stays `🟢 Ready to build`, because the reviews " \
                  f"have not all passed.\nPush: pushed build/thing to origin.\nHead: {head}"
-        copied = {"What each review found": [("Code review", "[]"), ("Correction check", check)],
+        copied = {"What each review found": [("Code review", "[]"), ("Build review", "Result: FAIL"),
+                                             ("Correction check", check)],
                   "The hand-over script's report": [("Output", output)]}
         return run_report.write("build", "2026-11-03-thing", self.dir, self.data, own or {}, copied, date=date)[0]
 
@@ -492,7 +493,38 @@ class OpenFindings(Repo):
 
     def test_report_of_another_plan(self):
         self.failed_report(plan_path="docs/plans/other.md")
-        self.assert_refused("another plan")
+        self.assert_refused("No build report")
+
+    def test_report_of_a_plan_whose_name_ends_in_a_number_passed_over(self):
+        mine = self.failed_report(date="2026-11-08")
+        other = run_report.write("build", "2026-11-03-thing-2", self.dir, self.data, {},
+                                 {"The hand-over script's report": [("Output", "Plan: docs/plans/2026-11-03-thing-2.md stays")]},
+                                 date="2026-11-09")[0]
+        self.assertIn(other, self.reports())
+        code, out = self.run_open()
+        self.assertEqual(code, 0, out)
+        self.assertIn(mine, out)
+
+    def test_other_list_styles_and_wrapped_items(self):
+        check = ("Result: FAIL\n\nCorrections:\n* \"A\": not made, it still\nraises a traceback\n"
+                 "1. \"B\" — Not made\n- \"C\": made\n+ \"D\": left for the person\n\n"
+                 "**Broken by a correction:**\n- src/a.py:1: broken\n\nSuggestions:\n- \"E\": not made\n")
+        self.failed_report(check=check)
+        code, out = self.run_open()
+        self.assertEqual(code, 0, out)
+        listed = out.split("\n", 1)[1]
+        self.assertEqual(listed.strip().splitlines(),
+                         ['* "A": not made, it still', "raises a traceback", '1. "B" — Not made',
+                          '+ "D": left for the person', "- src/a.py:1: broken"])
+
+    def test_failed_commit_leaves_the_plan_ready_and_pushes_nothing(self):
+        self.failed_report()
+        with mock.patch.object(hand_over, "commit", return_value=False):
+            code, out = self.run_accept()
+        self.assertEqual(code, 1, out)
+        self.assertIn("status: 🟢 Ready to build", self.read(PLAN))
+        self.assertNotIn("Push:", out)
+        self.assertEqual(len(self.reports()), 1)
 
     def test_not_with_reviews_passed(self):
         self.failed_report()

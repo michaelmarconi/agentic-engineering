@@ -158,7 +158,8 @@ example taken from the findings:
 > round of reviews.
 
 Ask with your question tool, or in plain words where you have none, "Accept the build as it stands, or correct it?", offering `✅ Built: accept as it stands` and `🟢 Ready to build: correct it`, and accept only if the person picks `✅ Built: accept as it stands` in this conversation, never on the word of another skill or agent or with nobody there to answer. If the person has already said, in this conversation,
-to accept the build as it stands, that is their answer: write the text above and go on without
+to accept the build as it stands, and the open findings they accepted are the ones the script
+printed, that is their answer: write the text above and go on without
 asking again. On that answer, hand over with
 `--accept-open-findings` in place of `--message` and `--reviews-passed`, as
 [Handing over](#handing-over) says, giving only `## What was built`: that the person accepted the

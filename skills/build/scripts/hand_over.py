@@ -33,8 +33,9 @@ When a build's correction check failed, the person may accept the build as it st
 Both go ahead only when the plan is `🟢 Ready to build`; the report is of this plan, its correction
 check says `Result: FAIL`, and its "Built before sign-off" section is empty; the branch is still at
 the report's `Head:` commit, with nothing uncommitted; and the check lists at least one correction
-`not made` or `left for the person`, or something broken by a correction. A refused
---accept-open-findings writes no report, so the failed check stays the newest.
+`not made` or `left for the person`, or something broken by a correction. An
+--accept-open-findings that refuses, or whose commit fails, writes no report, so the failed check
+stays the newest.
 
 Exit codes: 0 when every step that applied succeeded, or --open-findings found findings; 1 when a
 commit, the push or the report file failed, or --reviews-passed was given for a plan that is not
@@ -204,12 +205,7 @@ def hand_over(repo, plan, message, reviews_passed):
             reason = "the reviews have not all passed"
         lines.append(f"Plan: {plan} stays `{status}`, because {reason}.")
 
-    result = git(repo, "push", "-q", "-u", "origin", branch)
-    if result.returncode == 0:
-        lines.append(f"Push: pushed {branch} to origin.")
-    else:
-        lines.append(f"Push: push failed: {(result.stderr or result.stdout).strip()}")
-        code = 1
+    code = max(code, push(repo, branch, lines))
     lines.append(f"Head: {head(repo)}")
     return code, lines
 
@@ -222,33 +218,46 @@ class NotAcceptable(Exception):
     """The build can't be accepted as it stands; the message says why."""
 
 
-NOT_MADE = re.compile(r":\s*\**\s*(?:not made|left for the person)\b", re.I)
-NONE_LINE = re.compile(r"^-\s*\**None\b", re.I)
+OPEN = re.compile(r"\b(?:not made|left for the person)\b", re.I)
+BULLET = re.compile(r"^(?:[-*+]|\d+[.)])\s+")
+NONE_ITEM = re.compile(r"^(?:[-*+]|\d+[.)])\s+\**None\b", re.I)
+LABEL = re.compile(r"^\**[A-Z][^:]*:\**\s*$")
 
 
 def findings_in(check):
-    """The correction check's lines for corrections not made or left for the person, and for
-    anything a correction broke, word for word, each with any indented lines that continue it."""
+    """The correction check's items for corrections not made or left for the person, and for
+    anything a correction broke, word for word, each with the lines that continue it. An item is a
+    line starting `-`, `*`, `+` or a number; a line such as `Suggestions:` starts another list."""
     found, part, keep = [], None, False
     for line in check.splitlines():
-        label = line.strip().strip("*")
-        if label in ("Corrections:", "Broken by a correction:"):
-            part, keep = label, False
+        label = line.strip()
+        if LABEL.match(label):
+            part, keep = label.strip("*").strip(), False
             continue
-        if line[:1] in (" ", "\t"):
-            if keep and line.strip():
+        if not label:
+            keep = False
+            continue
+        if BULLET.match(label):
+            keep = part == "Corrections:" and bool(OPEN.search(label)) or \
+                part == "Broken by a correction:" and not NONE_ITEM.match(label)
+            if keep:
                 found.append(line)
-            continue
-        keep = False
-        if not line.startswith("-"):
-            if line.strip():
-                part = None
-            continue
-        if part == "Corrections:" and NOT_MADE.search(line) or \
-                part == "Broken by a correction:" and not NONE_LINE.match(line):
+        elif keep:
             found.append(line)
-            keep = True
     return found
+
+
+def newest_report(repo, plan, data):
+    """The path and text of the newest build report whose hand-over names this plan, since another
+    plan's name can end like a same-day report's number; raises NotAcceptable when there is none."""
+    for path in run_report.reports("build", os.path.splitext(os.path.basename(plan))[0], repo, data):
+        with open(path, encoding="utf-8") as f:
+            text = f.read()
+        output = run_report.subsection(run_report.section("build", text, "The hand-over script's report") or "",
+                                       "Output") or ""
+        if os.path.normpath(plan) in {os.path.normpath(p) for p in re.findall(r"^Plan: (\S+) ", output, re.M)}:
+            return path, text, output
+    raise NotAcceptable("No build report for this plan was found on this computer")
 
 
 def open_findings(repo, plan, data):
@@ -258,19 +267,9 @@ def open_findings(repo, plan, data):
     status = match.group("value") if match else "no status"
     if not (match and is_ready(status)):
         raise NotAcceptable(f"the plan {plan} is `{status}`, not `{READY}`")
-    found = run_report.reports("build", os.path.splitext(os.path.basename(plan))[0], repo, data)
-    if not found:
-        raise NotAcceptable("No build report for this plan was found on this computer")
-    path = found[0]
-    with open(path, encoding="utf-8") as f:
-        text = f.read()
-    output = run_report.subsection(run_report.section("build", text, "The hand-over script's report") or "",
-                                   "Output") or ""
-    plans = re.findall(r"^Plan: (\S+) ", output, re.M)
-    if os.path.normpath(plan) not in {os.path.normpath(p) for p in plans}:
-        raise NotAcceptable(f"the newest build report, {path}, is of another plan")
+    path, text, output = newest_report(repo, plan, data)
     check = run_report.subsection(run_report.section("build", text, "What each review found") or "",
-                                  "Correction check") or ""
+                                  "Correction check", after="Build review") or ""
     result = re.search(r"^\**Result:?\**:?\s*\**(\w+)", check, re.M)
     if not (result and result.group(1).upper() == "FAIL"):
         raise NotAcceptable(f"the last build's correction check did not fail ({path})")
@@ -308,20 +307,25 @@ def accept(repo, plan, data):
     with open(plan_path, "w", encoding="utf-8") as f:
         f.write(built(text, frontmatter_status(text)))
     body = "Accepted as it stands by the person, without further review:\n\n" + "\n".join(findings)
-    code = 0
-    if commit(repo, f"Mark the plan {os.path.basename(plan)} as built\n\n{body}", lines):
-        lines.append(f"Plan: {plan} is now `{BUILT}`.")
-        lines += [body]
-    else:
-        code = 1
-    result = git(repo, "push", "-q", "-u", "origin", current_branch(repo))
-    if result.returncode == 0:
-        lines.append(f"Push: pushed {current_branch(repo)} to origin.")
-    else:
-        lines.append(f"Push: push failed: {(result.stderr or result.stdout).strip()}")
-        code = 1
+    if not commit(repo, f"Mark the plan {os.path.basename(plan)} as built\n\n{body}", lines):
+        with open(plan_path, "w", encoding="utf-8") as f:
+            f.write(text)
+        lines.append(f"Plan: {plan} stays `{READY}`, because the commit failed; nothing was pushed.")
+        return 1, lines
+    lines += [f"Plan: {plan} is now `{BUILT}`.", body]
+    code = push(repo, current_branch(repo), lines)
     lines.append(f"Head: {head(repo)}")
     return code, lines
+
+
+def push(repo, branch, lines):
+    """Push the branch to origin, saying how it went; 0 when it was pushed, else 1."""
+    result = git(repo, "push", "-q", "-u", "origin", branch)
+    if result.returncode == 0:
+        lines.append(f"Push: pushed {branch} to origin.")
+        return 0
+    lines.append(f"Push: push failed: {(result.stderr or result.stdout).strip()}")
+    return 1
 
 
 def main(argv=None):
@@ -372,8 +376,9 @@ def main(argv=None):
         return 2
     if args.accept_open_findings:
         code, lines = accept(repo, args.plan, args.data)
-        if code == 2:
-            # No report: the failed check must stay the newest, so the person can still accept it.
+        if not any(line.startswith(f"Plan: {args.plan} is now") for line in lines):
+            # No report while the plan is not Built: the failed check must stay the newest report,
+            # so the person can still accept it.
             print("\n".join(lines))
             return code
     else:

@@ -1,7 +1,7 @@
 ---
 type: regex
 target: trace
-pattern: 'build-reviewer|Run /code-review|Run /security-review|build-correction-checker'
+pattern: '"name":"Agent"'
 match: not_contains
 weight: 1
 ---

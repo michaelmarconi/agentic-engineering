@@ -91,11 +91,9 @@ def fallback_root():
 def private(root):
     try:
         os.makedirs(root, mode=0o700, exist_ok=True)
-        info = os.lstat(root)
     except OSError as error:
         raise ReportError(f"neither the plugin's data folder nor {root} can be written ({error})")
-    if not os.path.isdir(root) or os.path.islink(root) or info.st_uid != os.getuid() \
-            or info.st_mode & 0o077:
+    if not trusted(root):
         raise ReportError(f"{root} is not a folder only you can open; delete it and run again")
     return root
 
@@ -144,28 +142,47 @@ def reports(kind, name, repository, data):
     return []
 
 
+def heading_at(text, line, start=0):
+    """Where `line` next starts a line of `text`, at or after `start`; -1 when it doesn't."""
+    at = start
+    while True:
+        at = text.find(line, at)
+        if at <= 0 or text[at - 1] == "\n":
+            return at
+        at += 1
+
+
 def section(kind, text, heading):
     """The text under `## <heading>` in a report as written, up to the next heading the kind lists;
-    None when the heading is missing."""
-    start = text.find(f"## {heading}\n\n")
-    if start < 0:
+    None when the heading is missing. The headings are found in their written order, each after
+    the one before it, so a heading quoted inside an earlier section is passed over."""
+    at, bounds = 0, {}
+    for title in HEADINGS[kind]:
+        found = heading_at(text, f"## {title}\n\n", at)
+        if found < 0:
+            continue
+        bounds[title] = found
+        at = found + len(f"## {title}\n\n")
+    if heading not in bounds:
         return None
-    start += len(f"## {heading}\n\n")
-    later = HEADINGS[kind][HEADINGS[kind].index(heading) + 1:]
-    ends = [i for i in (text.find(f"\n## {h}\n", start - 1) for h in later) if i >= 0]
+    start = bounds[heading] + len(f"## {heading}\n\n")
+    ends = [i for t, i in bounds.items() if i > bounds[heading]]
     return text[start:min(ends) if ends else len(text)].strip("\n")
 
 
-def subsection(body, title):
-    """The copied report under the last `### <title>` in a section's text, to the section's end
-    (copied reports are written last, in order); None when there is none."""
-    marker = f"### {title}\n\n"
-    at = body.rfind("\n" + marker)
-    if at < 0:
-        if not body.startswith(marker):
+def subsection(body, title, after=None):
+    """The copied report under the first `### <title>` in a section's text, to the section's end
+    (copied reports are written last, in order), looking only past the first `### <after>` when
+    given; None when there is none."""
+    start = 0
+    if after:
+        start = heading_at(body, f"### {after}\n\n")
+        if start < 0:
             return None
-        at = -1
-    return body[at + 1 + len(marker):].strip("\n")
+    at = heading_at(body, f"### {title}\n\n", start)
+    if at < 0:
+        return None
+    return body[at + len(f"### {title}\n\n"):].strip("\n")
 
 
 def parse(kind, text):
