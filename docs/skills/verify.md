@@ -39,27 +39,12 @@ It is a sanity check, not a lasting test suite. Its agents write
 throwaway tools to drive the product and leave them behind; nothing they write joins your tests.
 Tests that keep the product working stay `/build`'s job.
 
-## Running the product
+## Before it starts: Running the product
 
-`/verify` can only check a product it knows how to start and use, so it relies on one recorded
-practice, **Running the product**: a topic of [`/practices`](practices.md), in
-`docs/practices/running.md` with a line for it in the core. It says:
-
-- what machine and services the product needs, and the commands that start and stop it;
-- how to reach each of its interfaces, such as a web address, a command, or a tool to call;
-- how to put it in the state an example starts from, such as adding test data;
-- what is safe to touch, and what must never be touched, such as real customer data, a live
-  payment service or a shared database.
-
-**If Running the product is not recorded, `/verify` ends the run before checking anything.** Its
-reply says that it cannot check the product until it knows how to run it, and asks you to run
-`/agentic:practices running the product`, which works out the recipe with you and tries it until
-the product runs (see [Running the product](practices.md#running-the-product) on the `/practices`
-page). Once you have committed the practice, run `/verify` again.
-
-`/verify` itself never writes a practice. If a later run finds the recipe no longer works, such as
-a start command that fails, it ends the run in the same way, says what failed, and asks you to
-correct the practice with `/practices`.
+`/verify` needs to know how to start the product and what is safe to touch, so it relies on the
+[Running the product](practices.md#running-the-product) practice. If that practice is not recorded,
+or no longer works, `/verify` checks nothing: it says so and asks you to record or correct it with
+`/agentic:practices running the product`, then run `/verify` again.
 
 ## What it checks
 
@@ -104,7 +89,6 @@ of agent time. So the list is best kept to what you need checked now.
 `/verify` stops and says why, without checking anything, when:
 
 - the branch has changes that are not committed, since its report names the commit it checked;
-- Running the product is not recorded, or no longer works;
 - the practice says the product needs a machine this session is not running on, such as a Mac.
 
 ## How a run goes
