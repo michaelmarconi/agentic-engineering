@@ -1,0 +1,9 @@
+---
+type: regex
+target: last_message
+pattern: '(?:^(?:[-*+]|\d+[.)])[ \t]+\S[\s\S]*?){6}'
+flags: m
+match: not_contains
+weight: 1
+---
+The reply has at most five bullets, not counting any nested under them.
