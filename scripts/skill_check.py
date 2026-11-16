@@ -39,7 +39,7 @@ For each skills/<folder>/SKILL.md under the given plugin root (default: this plu
   given the plan's full path, which the build review relay hook finds the repository from
   (docs/adrs/0032), and BUILD_ACCEPT_RULE, so it marks a plan Built after a failed correction check
   only on the person's own choice, asked the same way every time (docs/adrs/0038).
-- /build and /audit (REPORT_SKILLS) hold REPORT_RULE word for word, so both end with a short reply
+- /build, /audit and /verify (REPORT_SKILLS) hold REPORT_RULE word for word, so each ends with a short reply
   naming their report file, shown the same way (docs/adrs/0033).
 
 For each skills/<folder>/references/rubric.md and each agents/<name>.md, no check counts
@@ -49,7 +49,8 @@ guidance in SKILL.md, and brevity is held by the script-checked word budgets ins
 
 For each agents/<name>.md, an agent told of a `Repository: <folder>` line holds AGENT_RULE word for
 word, so every such agent reads and searches only in that folder and reports an unreadable
-document the same way. Every document reviewer the review relay hook knows holds each of
+document the same way. /verify's agents (SHELL_AGENTS), which run commands and have no Glob or
+Grep, hold SHELL_AGENT_RULE instead. Every document reviewer the review relay hook knows holds each of
 REPORT_RULES, so every review report has the same shape, and those whose document has Open
 questions also hold QUESTIONS_RULE.
 
@@ -211,7 +212,7 @@ REPORT_RULE = (
     "viewer, show the report file there; never paste the report or its sections into the reply, "
     "since the file holds them."
 )
-REPORT_SKILLS = ("audit", "build")
+REPORT_SKILLS = ("audit", "build", "verify")
 SHOW_RULE = (
     "Show the person each document you wrote or changed: if the app you run in can show them a "
     "file in a viewer, use it, and show a fresh copy after each change if what it shows is a copy; "
@@ -229,6 +230,16 @@ AGENT_RULE = (
     "folder as the path of every Glob and Grep, so you never search anywhere else. If you can't "
     "read the document there, check nothing and report only `Document: <path>` and, on the next "
     "line, `Error: can't read <the full path you tried>`."
+)
+# The agents that run commands instead of searching with Glob and Grep: /verify's two, which use
+# the running product and never read the code.
+SHELL_AGENTS = ("verifier", "verify-checker")
+SHELL_AGENT_RULE = (
+    "Your request's second line names the repository, `Repository: <folder>`, which may not be "
+    "the folder you start in; a request without that line means the folder you start in. Every "
+    "relative path, in your request and on this page, is inside it: read each there, and run "
+    "each command from that folder. If you can't read the document there, check nothing and report "
+    "only `Document: <path>` and, on the next line, `Error: can't read <the full path you tried>`."
 )
 # The shape every document reviewer's report shares.
 REPORT_RULES = (
@@ -374,9 +385,10 @@ def agent_problems(name, text):
     told of one, must hold AGENT_RULE."""
     found = []
     held = REPOSITORY_LINE in text and "`Document: <path>`" in text
-    if (name in REPOSITORY_AGENTS or held) and not holds(text, AGENT_RULE):
+    rule_name, rule = ("SHELL_AGENT_RULE", SHELL_AGENT_RULE) if name in SHELL_AGENTS else ("AGENT_RULE", AGENT_RULE)
+    if (name in REPOSITORY_AGENTS or name in SHELL_AGENTS or held) and not holds(text, rule):
         found.append("repository rule missing: an agent given a `Repository:` line must hold "
-                     "skill_check.AGENT_RULE word for word")
+                     f"skill_check.{rule_name} word for word")
     if name in review_relay.REVIEWERS:
         for number, rule in enumerate(REPORT_RULES, 1):
             if not holds(text, rule):

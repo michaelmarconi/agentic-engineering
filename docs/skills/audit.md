@@ -88,7 +88,7 @@ small.
   listed apart as needing a run, with what to run; it is not reported as drift.
 - Agents read the code and its tests; they run nothing. Whether the tests pass is the job of your
   continuous integration, the service that builds and tests every change; running the software
-  itself and trying it from outside is [`/verify`](build.md#after-a-build)'s, and yours.
+  itself and trying it from outside is [`/verify`](verify.md)'s.
 
 Every finding quotes the requirement or decision and the code that breaks it, with its file and
 line, so you can judge it yourself.

@@ -104,7 +104,7 @@ everything else is judgement.
    time, as with the status rules, or when evals show Claude getting the job wrong or wasting
    effort on it. Otherwise leave it to Claude and the reviewer, whose judgement copes with cases
    a script can't foresee. A script lives in the skill's `scripts/`, or the plugin's `scripts/`
-   when a hook runs it. Scripts are
+   when a hook or more than one skill runs it. Scripts are
    self-contained: standard-library Python (3.7 or later) or POSIX shell, no install step, no
    network unless the task needs it, and runnable on macOS, Linux and in Claude Code on the web.
    - **Test-driven.** Write a failing test before each behaviour. Tests use the standard-library
@@ -200,8 +200,10 @@ agents/
   audit-checker.md     # /audit: tries to disprove one auditor's drift findings, or the brief checker's
   brief-checker.md     # /audit: checks accepted specs and ADRs against the brief
   audit-picker.md      # /audit: picks the documents a window of commits could affect
+  verifier.md          # /verify: starts the product and checks one spec's examples from outside
+  verify-checker.md    # /verify: tries to disprove one verifier's verdicts
 hooks/
-  hooks.json           # session map, status checks, the review relay, reads of the plugin's own files, the session check for /build, the build branch guard, the build review relay, the audit report hook, the practices limits
+  hooks.json           # session map, status checks, the review relay, reads of the plugin's own files, the session check for /build, the build branch guard, the build review relay, the audit and verify report hooks, the practices limits
 scripts/               # scripts the hooks run, the skill, version, reference and status-name checks, and their tests
 docs/
   adrs/                # this plugin's own architecture decision records

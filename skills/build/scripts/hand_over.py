@@ -51,10 +51,9 @@ import re
 import subprocess
 import sys
 
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-import uncommitted  # noqa: E402
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "..", "scripts"))
 import build_relay  # noqa: E402
+import uncommitted  # noqa: E402
 import run_report  # noqa: E402
 
 REVIEWS = (("Code review", "code"), ("Security review", "security"), ("Build review", "plan"),

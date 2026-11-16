@@ -36,3 +36,8 @@ import, so the reviewer does not count lines or look for imports in the section 
 12. **CLAUDE.md imports AGENTS.md.** `CLAUDE.md` exists and has a line that is exactly
     `@AGENTS.md`. A `CLAUDE.md` that holds more but lacks the line goes under Needs a person
     instead, since the file is the person's and only they may agree to the line.
+13. **Running the product is complete.** A Running the product topic names the machine or
+    operating system the product needs, the commands that start and stop it, how to reach each of
+    its interfaces, how to put it in a starting state, and both the services safe to touch and
+    those never to be touched. A topic that leaves either list out fails, since an agent using the
+    product could not tell what it may touch.

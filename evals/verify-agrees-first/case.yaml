@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: verify-agrees-first
+expected_outcome: |
+  Run with nothing named, the skill proposes the requirements of the plan the branch marked Built and asks the person to confirm before any agent starts.
+context:
+  scaffold_script: place-files.sh

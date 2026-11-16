@@ -81,8 +81,12 @@ the `agentic:` prefix.
 - `/adr` records one technical decision.
 - `/plan` scopes a piece of work against the specs and ADRs it delivers.
 - `/build` builds a plan on a branch of its own, has it reviewed, and pushes the branch to your
-  remote.
-  Verifying the software, opening a pull request and merging stay with you.
+  remote. It never starts the product, so it can run on any machine.
+  Opening a pull request and merging stay with you.
+- `/verify` checks the running product against accepted specs from the outside, usually after
+  `/build` and before you merge: agents that never read the code start the product, try each
+  example of the requirements you agree, and give each a verdict with evidence. It changes
+  nothing: you decide what follows.
 - `/audit` finds drift, where the code and its documents disagree, and any spec or ADR that
   contradicts the brief, at any time. It changes nothing: you choose each correction.
 - `/practices` records how the project does things, such as the commands that check the work and
@@ -117,8 +121,9 @@ flowchart LR
     Spec --> Plan
     ADR --> Plan
     Plan --> Build
-    Build --> Branch[A branch, for you to verify]
-    Branch -->|you merge| Code[Code on the main branch]
+    Build --> Branch[A reviewed branch]
+    Branch --> Verify
+    Verify -->|you merge| Code[Code on the main branch]
     Code ~~~ Pad["#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;"]
     style Pad fill:none,stroke:none
 ```

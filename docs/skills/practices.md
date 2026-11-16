@@ -92,6 +92,27 @@ same way; only the commands change.
 - before releasing or deploying: `docs/practices/releasing.md`
 ```
 
+## Topics
+
+These are the topics `/practices` suggests. They are a starting point, not a complete list: any
+other topic you ask for is recorded the same way.
+
+| Topic | What it records |
+|---|---|
+| Setting up | What a fresh copy needs: tools, services, local settings, where secrets live, and the setup command |
+| Checking work | The exact commands for all tests, one test file, lint and format, and type check, and which run before every commit |
+| Testing | Whether tests come first, what each change is tested with, coverage, end-to-end tests, test data, and flaky or slow tests |
+| Branches and commits | Branch names, commit message style, and how long a branch may live |
+| Delivering work | How work is split, how big one plan may be, and what done means beyond the merge checks |
+| Reviews and merging | Who reviews, how work is merged, what must pass first, and whether [`/verify`](verify.md) must run and pass before a build is merged |
+| CI/CD | What the pipeline runs and when, which checks are required, and what to do when a run fails |
+| Releasing and deploying | Version numbers, changelog, environments, and rolling back |
+| Database changes | How they are written and applied, and whether they must be reversible |
+| Security and dependencies | What to check before adding a dependency, scanning, updates, and handling a security hole |
+| Hands off | Files an agent must never edit, and actions it must never take |
+| Documents to keep up to date | Which documents must change with the code |
+| <a id="running-the-product"></a>Running the product | How to start and stop the product, reach each of its interfaces, put it in a given starting state, and what is safe to touch; [`/verify`](verify.md) relies on it. Before recording it, `/practices` starts the product with the proposed commands and reaches each interface, correcting and trying again until it runs and you agree |
+
 ## Using `/practices`
 
 You don't set all your practices up front. You add them one topic at a time, whenever you need
@@ -112,9 +133,8 @@ will use.
 - **`/practices <topic>` goes straight to one topic**, such as `/practices testing`. It covers that
   topic alone and stops, so a run is a short conversation. Run it on the same topic later to
   improve it: it starts from what is recorded and proposes changes.
-- **Its topics are suggestions, not a complete list.** The plugin offers common topics, such as
-  testing, how work is delivered, continuous integration, security and releasing, each with the questions to ask and
-  the choices most teams make. Any other topic works the same way: ask for one, such as "I want
+- **Its topics are suggestions, not a complete list.** The plugin offers the common topics listed
+  under [Topics](#topics), each with the questions to ask and the choices most teams make. Any other topic works the same way: ask for one, such as "I want
   to define how decisions are approved", and `/practices` gives it a topic file and a line in the
   core. It says so as it
   goes: the overview ends by inviting a topic of your own, and within a topic it asks whether

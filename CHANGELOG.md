@@ -6,6 +6,31 @@ What changed in each version of the plugin, newest first. Versions follow
 past a major version: it says what you need to change in your documents. Until 1.0.0, any
 minor version may need such a change, and its entry says so.
 
+## [0.55.0] - 2026-11-16
+
+### Added
+
+- `/agentic:verify` checks the running product against its accepted specs from the outside. It
+  agrees with you which requirements to check, refuses to start while anything is uncommitted,
+  then, one spec at a time, a fresh agent starts the product, tries each example the way a person
+  would and gives it pass, fail or not checked with evidence, never reading the code, and a second
+  agent tries to disprove each verdict. A rejected verdict is shown as disputed, for you to decide.
+  It ends with a short reply and a report file outside your repository, with every agent's report
+  copied in, and changes nothing in your repository. Its two agents run on Opus, since using a
+  product is harder work than reviewing a document (ADR 0040, issue #86).
+- `/practices` has a new topic, Running the product: how to start and stop the product, reach it,
+  set up an example's starting state, and which services are safe to touch and which never are.
+  `/practices` tries the commands before recording them. `/verify` needs this topic, and stops
+  and points to `/agentic:practices running the product` when it is missing.
+- The Reviews and merging topic asks whether `/verify` must run and pass before a build is merged.
+
+### Changed
+
+- `/build`'s closing reminder now suggests `/agentic:verify <the plan>` instead of Claude Code's
+  own `/verify`: as a step before merging if your practices require it, otherwise as an option.
+- The Setting up topic no longer asks for the command that runs the product; Running the product
+  holds it now.
+
 ## [0.54.0] - 2026-11-16
 
 ### Added

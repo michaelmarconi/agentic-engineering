@@ -58,6 +58,9 @@ anywhere else Claude names the file's path.
 5. `/agentic:plan` plans a piece of work against the spec and its decisions.
 6. `/agentic:build` builds the plan on a branch, tests first, and has the result reviewed. Start it
    in a new session, or after `/clear`; in a long session it asks first.
+7. `/agentic:verify` starts the product where it can run and checks it against the plan's
+   requirements from the outside, before you merge. It needs the Running the product practice,
+   which `/agentic:practices running the product` records.
 
 You can also ask in your own words, such as "write a spec for invoice reminders". Claude picks
 the matching skill.
@@ -82,9 +85,11 @@ The plugin works through three parts:
 
 - **Skills:** the steps above, each run as a `/agentic:<name>` command.
 - **Reviewer agents:** separate Claude instances that check each document, each build, or, for
-  `/agentic:audit`, the code against each document, with no memory of your conversation, so the
-  conversation cannot sway their judgement. They always run on Sonnet, so the same document gets
-  the same judgement whatever model you use.
+  `/agentic:audit`, the code against each document, and for `/agentic:verify`, the running product
+  against each spec, with no memory of your conversation, so the
+  conversation cannot sway their judgement. They always run on the same model whatever model you
+  use, so the same document gets the same judgement: Sonnet, or Opus for `/agentic:verify`'s
+  agents, whose work is harder.
 - **Hooks:** small checks Claude Code runs automatically. They give Claude the lifecycle rules at
   the start of every session in a repository that has a brief or a spec, and refuse any status
   change the lifecycle does not allow.
@@ -103,6 +108,7 @@ documents by hand.
 | [`/agentic:plan`](docs/skills/plan.md) | Plans a piece of work against its specs and ADRs |
 | [`/agentic:build`](docs/skills/build.md) | Builds a plan on a branch, has it reviewed and hands it back |
 | [`/agentic:practices`](docs/skills/practices.md) | Records how the project does things, one topic at a time |
+| [`/agentic:verify`](docs/skills/verify.md) | Starts the product and checks it against its specs from the outside, never reading the code, and changes nothing |
 | [`/agentic:audit`](docs/skills/audit.md) | Finds where the code and its documents no longer agree, and where a spec or ADR contradicts the brief, and changes nothing |
 | [`/agentic:feedback`](docs/skills/feedback.md) | Drafts a GitHub issue about the plugin itself |
 
@@ -118,7 +124,8 @@ flowchart LR
     ADR --> Plan
     Plan --> Build
     Build --> Branch[A reviewed branch]
-    Branch -->|you merge| Code[Code on the main branch]
+    Branch --> Verify
+    Verify -->|you merge| Code[Code on the main branch]
 ```
 
 ## What it changes in your repository
@@ -127,7 +134,7 @@ flowchart LR
   run a skill or ask for one.
 - `/agentic:build` commits to a branch of its own and pushes it. It never commits to the main
   branch, never opens a pull request and never merges: those steps stay with you.
-- Review reports, and the report files `/agentic:build` and `/agentic:audit` end with, are kept in the
+- Review reports, and the report files `/agentic:build`, `/agentic:audit` and `/agentic:verify` end with, are kept in the
   plugin's own data folder, outside your repository.
 - Nothing else is added, unless you install the plugin with `--scope project`.
 
