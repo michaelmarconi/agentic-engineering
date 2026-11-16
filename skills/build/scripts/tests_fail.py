@@ -36,26 +36,35 @@ PRACTICES_FILES = ("AGENTS.md", "CLAUDE.md")
 
 
 def section(path, heading):
-    """The level-two section of a Markdown file headed `## <heading>`, up to the next level-two
-    heading, or None when the file or the heading is missing."""
+    """The level-two section of a Markdown file headed `## <heading>`, up to the next heading of
+    level one or two outside a code block, or None when the file or the heading is missing."""
     try:
         with open(path, encoding="utf-8") as handle:
-            text = handle.read()
+            lines = handle.read().splitlines()
     except OSError:
         return None
-    start = re.search(r"^## " + re.escape(heading) + r"[ \t]*$", text, re.M)
-    if not start:
-        return None
-    end = re.search(r"^## ", text[start.end():], re.M)
-    return text[start.start():start.end() + end.start() if end else len(text)].strip()
+    found, fenced = [], False
+    for line in lines:
+        if line.lstrip().startswith(("```", "~~~")):
+            fenced = not fenced
+        elif not fenced and re.match(r"#{1,2} ", line):
+            if found:
+                break
+            if line.rstrip(" \t#") == "## " + heading:
+                found.append(line)
+                continue
+        if found:
+            found.append(line)
+    return "\n".join(found).strip() or None
 
 
 def reminders(root):
     """The practices and the build's rules, to print after every result."""
-    parts = []
+    parts, seen = [], set()
     for name in PRACTICES_FILES:
         practices = section(os.path.join(root, name), "Practices")
-        if practices:
+        if practices and practices not in seen:
+            seen.add(practices)
             parts.append(f"From {name}:\n\n{practices}")
     rules = section(SKILL, "Rules that hold for the whole build")
     if rules:
@@ -129,7 +138,9 @@ def main(argv=None):
             print("- " + refusal)
     else:
         print("Accepted: every new test file fails.")
-    print(reminders(root))
+    reminder = reminders(root)
+    if reminder:
+        print(reminder)
     return 1 if refusals else 0
 
 

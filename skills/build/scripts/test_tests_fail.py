@@ -127,10 +127,6 @@ class TestsFailTest(unittest.TestCase):
         self.assertEqual(result.returncode, 2)
 
 
-if __name__ == "__main__":
-    unittest.main()
-
-
 class RulesReprintedTest(unittest.TestCase):
     """After its result, the script prints the project's practices and the build's rules again,
     so a long build has them fresh at every requirement."""
@@ -203,8 +199,39 @@ class RulesReprintedTest(unittest.TestCase):
         self.assertNotIn("## Practices", result.stdout)
         self.assertIn("## Rules that hold for the whole build", result.stdout)
 
+    def test_windows_line_endings_are_read(self):
+        with open(os.path.join(self.repo, "AGENTS.md"), "w", newline="") as handle:
+            handle.write("## Practices\r\n\r\n- Run `make test`.\r\n")
+        self.commit()
+        self.write("tests/test_new.py", FAILING)
+        self.assertIn("Run `make test`.", self.run_script("tests/test_new.py").stdout)
+
+    def test_a_heading_inside_a_code_block_does_not_end_the_practices(self):
+        self.write("AGENTS.md", "## Practices\n\n```\n## not a heading\n```\n\n- Last practice.\n\n# Appendix\n\nNot a practice.\n")
+        self.commit()
+        self.write("tests/test_new.py", FAILING)
+        out = self.run_script("tests/test_new.py").stdout
+        self.assertIn("- Last practice.", out)
+        self.assertNotIn("Not a practice.", out)
+
+    def test_the_same_practices_in_both_files_are_printed_once(self):
+        self.write("AGENTS.md", "## Practices\n\n- Only once.\n")
+        os.symlink("AGENTS.md", os.path.join(self.repo, "CLAUDE.md"))
+        self.commit()
+        self.write("tests/test_new.py", FAILING)
+        self.assertEqual(self.run_script("tests/test_new.py").stdout.count("- Only once."), 1)
+
+    def test_the_printed_rules_do_not_send_the_build_to_other_files(self):
+        self.commit()
+        self.write("tests/test_new.py", FAILING)
+        self.assertNotIn("rubric.md", self.run_script("tests/test_new.py").stdout)
+
     def test_a_usage_error_prints_no_rules(self):
         self.commit()
         result = self.run_script()
         self.assertEqual(result.returncode, 2)
         self.assertNotIn("Rules that hold", result.stdout)
+
+
+if __name__ == "__main__":
+    unittest.main()

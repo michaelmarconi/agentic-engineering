@@ -48,9 +48,6 @@ These hold from the first step to the last, however long the build runs.
   refuses a commit or push to the default branch while you build.
 - **Change no spec, ADR or brief, and the plan only through the hand-over script.**
 
-Before building, read [references/rubric.md](references/rubric.md): it is the list of checks the
-build reviewer will apply, so building to it leaves less to correct. Read it with the Read tool.
-
 ## Before starting
 
 Check each of these before changing anything, and stop with the reason if one fails:
@@ -128,6 +125,9 @@ When building anyway:
   script, so no plan is marked `✅ Built` before it is signed off.
 
 ## Building
+
+Before building, read [references/rubric.md](references/rubric.md): it is the list of checks the
+build reviewer will apply, so building to it leaves less to correct. Read it with the Read tool.
 
 If the branch already holds work for this plan, first see whether its last build's correction
 check failed with nothing changed since:
