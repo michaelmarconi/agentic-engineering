@@ -70,6 +70,28 @@ class SessionMap(unittest.TestCase):
         open(os.path.join(self.tmp.name, "docs", "brief.md"), "w").close()
         self.assertIn("/agentic:", self.output()["hookSpecificOutput"]["additionalContext"])
 
+    # A Claude project thread: the session folder holds each repository one level down (ADR 0032).
+
+    def repository(self, name):
+        subprocess.run(["git", "init", "-q", os.path.join(self.tmp.name, name)], check=True)
+
+    def test_prints_map_when_a_repository_inside_the_session_folder_has_a_brief(self):
+        self.repository("other")
+        self.repository("app")
+        self.put("app/docs/brief.md")
+        self.assertIn("/agentic:", self.output()["hookSpecificOutput"]["additionalContext"])
+
+    def test_prints_map_when_a_repository_inside_has_a_spec_with_a_lifecycle_status(self):
+        self.repository("app")
+        self.put("app/docs/specs/invoice.spec.md", "---\nstatus: 📝 Draft\n---\n# Invoice\n")
+        self.assertIn("hookSpecificOutput", self.output())
+
+    def test_silent_when_no_repository_inside_uses_the_lifecycle(self):
+        self.repository("app")
+        self.put("app/README.md", "# App\n")
+        self.put("notes/docs/brief.md")  # not a repository, so not looked in
+        self.assertEqual(self.run_map().stdout, "")
+
     def test_help(self):
         done = self.run_map("--help")
         self.assertEqual(done.returncode, 0)

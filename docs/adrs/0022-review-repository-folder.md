@@ -1,8 +1,9 @@
 ---
 # Change status only through the sdlc plugin's skills, which check each change; a change made by hand is not checked.
 type: ADR
-status: 👍 Accepted
-date: 2026-11-05
+status: ↪️ Superseded
+date: 2026-11-14
+superseded-by: 0032
 ---
 
 # Find each review's repository from the document's full path

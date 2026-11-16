@@ -20,6 +20,8 @@ class PracticesCheck(unittest.TestCase):
         self.tmp = tempfile.TemporaryDirectory()
         self.addCleanup(self.tmp.cleanup)
         self.project = self.tmp.name
+        self.session = self.project
+        self.cwd = self.project
 
     def put(self, path, text):
         full = os.path.join(self.project, path)
@@ -28,9 +30,9 @@ class PracticesCheck(unittest.TestCase):
             f.write(text)
 
     def run_hook(self, tool, tool_input, raw=None):
-        event = {"hook_event_name": "PreToolUse", "session_id": "s", "cwd": self.project,
+        event = {"hook_event_name": "PreToolUse", "session_id": "s", "cwd": self.cwd,
                  "tool_name": tool, "tool_input": tool_input}
-        env = dict(os.environ, CLAUDE_PROJECT_DIR=self.project)
+        env = dict(os.environ, CLAUDE_PROJECT_DIR=self.session)
         done = subprocess.run([sys.executable, SCRIPT], input=raw if raw is not None else json.dumps(event),
                               capture_output=True, text=True, env=env)
         self.assertEqual(done.returncode, 0, done.stderr)
@@ -171,6 +173,25 @@ class PracticesCheck(unittest.TestCase):
         self.assertEqual(done.returncode, 0)
         self.assertIn("50", done.stdout)
         self.assertIn("200", done.stdout)
+
+
+class PracticesCheckInSubfolder(PracticesCheck):
+    """The same checks with the session folder above the repository, as in a Claude project
+    thread: the session folder holds `app/`, a git repository (ADR 0032)."""
+
+    def setUp(self):
+        super().setUp()
+        self.session = os.path.realpath(self.tmp.name)
+        self.project = os.path.join(self.session, "app")
+        os.makedirs(self.project)
+        subprocess.run(["git", "init", "-q", self.project], check=True)
+        self.cwd = self.project
+
+    def test_a_relative_path_from_the_session_folder_is_checked(self):
+        self.cwd = self.session
+        out = self.run_hook("Write", {"file_path": "app/AGENTS.md",
+                                      "content": "# Agents\n\n" + section(51) + "\n## Other\n"})
+        self.assertRefused(out, "50")
 
 
 if __name__ == "__main__":

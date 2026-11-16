@@ -3,7 +3,9 @@
 
 Claude Code runs this as a SessionStart hook. It gives Claude the plugin's docs/lifecycle.md only
 when the project uses the lifecycle, that is, when it has docs/brief.md or a spec under
-docs/specs/ whose frontmatter has a lifecycle status.
+docs/specs/ whose frontmatter has a lifecycle status. It looks in the session folder and in each
+git repository directly inside it, as in a Claude project thread, whose session folder holds each
+repository one level down (docs/adrs/0032).
 
 In any other project it prints nothing, so installing the plugin costs other projects nothing.
 
@@ -16,6 +18,7 @@ import json
 import os
 import sys
 
+import repository
 from status_check import SPEC_STATUSES, STATUSES, lifecycle_status
 
 # A spec counts with a status specs had before, too, so its project still gets the rules that say
@@ -58,7 +61,8 @@ def main(argv=None):
         description=__doc__,
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog=(
-            "The project is $CLAUDE_PROJECT_DIR, or the current directory if that is unset. "
+            "It looks in the session folder ($CLAUDE_PROJECT_DIR, or the current directory if that is "
+            "unset) and in each git repository directly inside it (docs/adrs/0032). "
             "Output: nothing, or a SessionStart JSON object on stdout whose additionalContext "
             "holds the map and any warning about the Python version, which also goes in "
             "systemMessage. Exit code: always 0, so a session never fails to start because of "
@@ -66,10 +70,9 @@ def main(argv=None):
         ),
     )
     parser.parse_args(argv)
-    project = os.environ.get("CLAUDE_PROJECT_DIR") or os.getcwd()
     warning = version_warning()
     parts = [warning] if warning else []
-    if uses_lifecycle(project):
+    if any(uses_lifecycle(folder) for folder in repository.session_folders()):
         try:
             with open(MAP, encoding="utf-8") as f:
                 parts.append(f.read())

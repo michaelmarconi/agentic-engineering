@@ -16,7 +16,7 @@ For each skills/<folder>/SKILL.md under the given plugin root (default: this plu
   /build, whose checker is `agentic:build-correction-checker`, reviews code and is not held to it.
 - such a skill that names a document by its path, as `Document: <...>`, holds PATH_RULE word for
   word, so every review is given the full path the review relay hook finds the repository from
-  (docs/adrs/0022). A draft never saved as a file, `Document: feedback draft`, is not held to it.
+  (docs/adrs/0032). A draft never saved as a file, `Document: feedback draft`, is not held to it.
 - such a skill also holds SHOW_RULE word for word, so every document is shown to the person the
   same way, in the app's file viewer where there is one and by its path always (docs/adrs/0025).
 
@@ -34,7 +34,9 @@ For each skills/<folder>/SKILL.md under the given plugin root (default: this plu
   document moves forward on the same terms, and DATE_RULE, so every one keeps its `date:` the same
   way (docs/adrs/0027).
 - /build holds BUILD_ASK_RULE word for word, so it builds a plan that is not signed off only on
-  the person's own choice, asked the same way every time.
+  the person's own choice, asked the same way every time, and BUILD_PATH_RULE, so its reviews are
+  given the plan's full path, which the build review relay hook finds the repository from
+  (docs/adrs/0032).
 
 For each skills/<folder>/references/rubric.md and each agents/<name>.md, no check counts
 sentences or the words in a sentence, such as "sentences under 25 words" or "at most three
@@ -178,6 +180,11 @@ PATH_RULE = (
     "works out the document's repository from it, so the review reads the right one whatever "
     "folder you started in. If it refuses to start them, do what its reason says."
 )
+BUILD_PATH_RULE = (
+    "Give the plan's full path on every `Document:` line: the hook works out the plan's "
+    "repository from it, so the reviews and the correction check use the right one whatever "
+    "folder you started in."
+)
 SHOW_RULE = (
     "Show the person each document you wrote or changed: if the app you run in can show them a "
     "file in a viewer, use it, and show a fresh copy after each change if what it shows is a copy; "
@@ -288,6 +295,9 @@ def problems(folder, text):
                      "skill_check.DATE_RULE word for word")
     if folder == "build" and not holds(body, BUILD_ASK_RULE):
         found.append("build-anyway rule missing: /build must hold skill_check.BUILD_ASK_RULE word "
+                     "for word")
+    if folder == "build" and not holds(body, BUILD_PATH_RULE):
+        found.append("build path rule missing: /build must hold skill_check.BUILD_PATH_RULE word "
                      "for word")
     if folder in DIAGRAM_SKILLS:
         for number, rule in enumerate(diagram_rules(DIAGRAM_SKILLS[folder]), 1):

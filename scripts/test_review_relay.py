@@ -1012,7 +1012,7 @@ class Relay(unittest.TestCase):
         prompt = self.assertAllowed(self.check())["prompt"]
         self.assertNotIn("=== FILE:", prompt)
 
-    # Finding the repository (ADR 0022)
+    # Finding the repository (ADR 0032)
 
     def repository(self, name="invoice-tool"):
         """A git repository inside the folder Claude Code was started in."""
@@ -1054,6 +1054,26 @@ class Relay(unittest.TestCase):
         prompt = self.assertStarted(self.check(prompt=rewritten), project=top)
         self.assertEqual(prompt.count("Repository:"), 1)
         self.assertIn(f"=== DOCUMENT AS REVIEWED: {SPEC} ===\nv1\n", prompt)
+
+    def start_from(self, cwd, prompt, agent="agentic:spec-reviewer"):
+        """Start an agent with the hook event's `cwd`, the folder Claude's shell is in."""
+        return self.run_hook({"hook_event_name": "PreToolUse", "session_id": self.session, "cwd": cwd,
+                              "tool_name": "Agent", "tool_use_id": "from-" + cwd,
+                              "tool_input": {"subagent_type": agent, "prompt": prompt, "description": "a task"}})
+
+    def test_a_relative_path_is_read_from_the_shell_s_folder(self):
+        # ADR 0032: a relative path is read from the folder Claude's shell is in, else the session folder.
+        top = self.repository()
+        self.put_in(top, SPEC, "v1\n")
+        self.assertStarted(self.start_from(top, f"Document: {SPEC}\nReview this spec."), project=top)
+
+    def test_the_repository_line_wins_over_the_shell_s_folder(self):
+        top = self.repository()
+        other = self.repository("other-tool")
+        self.put_in(top, SPEC, "v1\n")
+        self.put_in(other, SPEC, "other\n")
+        out = self.start_from(other, f"Document: {SPEC}\nRepository: {top}\nReview this spec.")
+        self.assertStarted(out, project=top)
 
     def test_the_review_and_the_check_name_the_same_document_however_it_is_given(self):
         self.put(SPEC, "v1\n")

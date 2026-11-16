@@ -6,6 +6,26 @@ What changed in each version of the plugin, newest first. Versions follow
 past a major version: it says what you need to change in your documents. Until 1.0.0, any
 minor version may need such a change, and its entry says so.
 
+## [0.50.0] - 2026-11-14
+
+### Fixed
+
+- The plugin's hooks now find the git repository from the file they act on, so they work when
+  Claude Code starts in a folder above the repository, as in a Claude project thread
+  ([#84](https://github.com/michaelmarconi/agentic-engineering/issues/84), ADR 0032). Before,
+  `/build`'s correction check was always refused there, because the commit the reviews saw
+  could not be recorded; the hooks that check document statuses, references between documents
+  and the size of recorded practices let changes through unchecked; and the lifecycle rules were
+  not given to Claude at the start of the session.
+
+### Changed
+
+- `/build` gives the plan's full path on every review request, so the reviews and the
+  correction check use the plan's repository whatever folder you started in.
+- When no git repository holds the plan, the correction check is refused with that reason,
+  instead of a reason about a commit.
+- ADR 0032 supersedes ADR 0022: one shared rule, in `scripts/repository.py`, for every hook.
+
 ## [0.49.0] - 2026-11-12
 
 ### Changed

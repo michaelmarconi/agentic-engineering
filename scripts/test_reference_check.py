@@ -280,5 +280,38 @@ class CommandLine(Workspace):
         self.assertIn("Exit codes", result.stdout)
 
 
+class InSubfolder:
+    """Runs a test class with the session folder above the repository, as in a Claude project
+    thread: the session folder holds `repo/`, a git repository (ADR 0032)."""
+
+    def setUp(self):
+        super().setUp()
+        subprocess.run(["git", "init", "-q", self.project], check=True)
+        patcher = mock.patch.dict(os.environ, {"CLAUDE_PROJECT_DIR": self.tmp.name})
+        patcher.start()
+        self.addCleanup(patcher.stop)
+
+
+class AllowedReferencesInSubfolder(InSubfolder, AllowedReferences):
+    pass
+
+
+class RefusedReferencesInSubfolder(InSubfolder, RefusedReferences):
+    pass
+
+
+class MissingADRsInSubfolder(InSubfolder, MissingADRs):
+    pass
+
+
+class AnotherRepository(InSubfolder, Workspace):
+    def test_a_link_into_another_repository_beside_it_leaves_the_repository(self):
+        other = os.path.join(self.tmp.name, "other")
+        subprocess.run(["git", "init", "-q", other], check=True)
+        self.put(os.path.join(other, "docs", "brief.md"))
+        refusal = self.write("[b](../../other/docs/brief.md)\n")
+        self.assertIn("outside the repository", refusal)
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -1910,5 +1910,68 @@ class Anchors(unittest.TestCase):
             self.assertEqual(status_check.anchor_of(heading), anchor, heading)
 
 
+class _Folder:
+    """Stands in for a TemporaryDirectory whose folder another one already holds."""
+
+    def __init__(self, name):
+        self.name = name
+
+    def cleanup(self):
+        pass
+
+
+class InSubfolder:
+    """Runs a test class with the session folder above the repository, as in a Claude project
+    thread: the session folder is not a repository and holds `app/`, which is (ADR 0032)."""
+
+    def setUp(self):
+        outer = tempfile.TemporaryDirectory()
+        self.addCleanup(outer.cleanup)
+        session = os.path.realpath(outer.name)
+        app = os.path.join(session, "app")
+        os.makedirs(app)
+        subprocess.run(["git", "init", "-q", app], check=True)
+        with mock.patch("tempfile.TemporaryDirectory", return_value=_Folder(app)):
+            super().setUp()
+        patcher = mock.patch.dict(os.environ, {"CLAUDE_PROJECT_DIR": session})
+        patcher.start()
+        self.addCleanup(patcher.stop)
+
+
+class NewSpecInSubfolder(InSubfolder, NewSpec):
+    pass
+
+
+class TransitionsInSubfolder(InSubfolder, Transitions):
+    pass
+
+
+class AdrInSubfolder(InSubfolder, Adr):
+    pass
+
+
+class PlanInSubfolder(InSubfolder, Plan):
+    pass
+
+
+class SpikeInSubfolder(InSubfolder, Spike):
+    pass
+
+
+class DocumentTypeInSubfolder(InSubfolder, DocumentType):
+    pass
+
+
+class WorktreeRepository(InSubfolder, NewSpec):
+    """A repository whose `.git` is a file, as in a git worktree."""
+
+    def setUp(self):
+        super().setUp()
+        git = os.path.join(self.tmp.name, ".git")
+        subprocess.run(["rm", "-rf", git], check=True)
+        with open(git, "w") as f:
+            f.write("gitdir: elsewhere\n")
+
+
 if __name__ == "__main__":
     unittest.main()

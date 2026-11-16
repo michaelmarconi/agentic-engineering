@@ -48,7 +48,7 @@ everything else is judgement.
      relay hook (`scripts/review_relay.py`, [ADR 0011](docs/adrs/0011-review-relay-hook.md))
      reads that line to save the document before the review and both reports after it, and
      attaches them to the checker's request, so the skill never copies them. It also finds the
-     document's repository ([ADR 0022](docs/adrs/0022-review-repository-folder.md)), names the
+     document's repository ([ADR 0032](docs/adrs/0032-hook-repository-folder.md)), names the
      document relative to it and adds a `Repository: <folder>` second line, so a review started
      from another folder still reads the right one. The skill holds `PATH_RULE`, and each agent
      `AGENT_RULE`, from `scripts/skill_check.py` word for word; the script checks both. Add the new
