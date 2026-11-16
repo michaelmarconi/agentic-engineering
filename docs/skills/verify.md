@@ -10,7 +10,7 @@ run it at any time. Read that page first for the documents, skills and agents it
 ```mermaid
 flowchart TD
     Start["Run /agentic:verify"] --> Agree[Agree with you which requirements<br/>of which specs to check]
-    Agree --> Scope[Script lists their examples<br/>and records the commit]
+    Agree --> Scope[Note the commit checked]
     Scope -->|uncommitted changes,<br/>or a spec not Accepted| Stop[Stop and say why]
     Scope --> Practice{Running the product<br/>recorded and working?}
     Practice -->|no| Practices[Stop: run /agentic:practices<br/>running the product]
@@ -90,15 +90,11 @@ the list says why.
 
 ## How a run goes
 
-1. **What to check.** Claude agrees the list of requirements with you, as above. A small script
-   that ships with the plugin then copies those requirements and their examples out of the spec
-   files, word for word, to hand to the agents. A script does this rather than Claude, so the
-   agents get exactly what the spec says, not Claude's summary of it, which could carry what
-   Claude knows about the code. The script also notes the commit being checked, for the report,
-   and refuses to start while there are uncommitted changes, since the report could then not say
-   which version of the product was checked.
+1. **What to check.** Claude agrees the list of requirements with you, as above, notes the commit
+   being checked, for the report, and refuses to start while there are uncommitted changes, since
+   the report could then not say which version of the product was checked.
 2. **The verifier.** One fresh agent per spec, starting without your conversation. It is given the
-   examples to check from that spec and the practices, and nothing else: not the code, the tests, the plan
+   path to that spec, the requirements to check in it, and the practices, and nothing else: not the code, the tests, the plan
    or any other document. It starts the product as the practice says, turns each example into
    steps, carries them out against the product's real interfaces, and records a verdict and its
    evidence. It may write throwaway tools to do so, in a temporary folder outside your repository.

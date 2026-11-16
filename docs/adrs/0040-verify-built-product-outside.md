@@ -56,7 +56,7 @@ does not show the product works.
 
 Applies to: the verify skill, its agents, and whether the build step starts the product.
 
-1. Test: the script that picks the examples to check lists the right ones, and refuses uncommitted changes.
+1. Test: the skill agrees the requirements with the person before checking, and refuses uncommitted changes.
 2. Test: with no recorded way to run the product, the skill checks nothing and names the practices topic to record.
 3. Test: on a sample product with one broken requirement, that requirement's example fails, with evidence.
 4. Test: on a sample where the agent's own helper program crashes, the example is reported not checked, never failed.
@@ -72,9 +72,9 @@ Applies to: the verify skill, its agents, and whether the build step starts the 
 **Which examples.** Each run first agrees with the person a list of requirements from accepted
 specs: named one by one, whole specs, every accepted spec, or a plan standing for the requirements
 it names. Run with nothing named, the skill proposes the requirements of the plan the branch marked
-Built, if there is one. Nothing is checked until the person agrees the list. A script then lists
-the examples, records the commit, and refuses uncommitted changes; a requirement whose spec is not
-Accepted is left out, with the reason.
+Built, if there is one. Nothing is checked until the person agrees the list. The skill then records
+the commit and refuses uncommitted changes; a requirement whose spec is not Accepted is left out,
+with the reason.
 
 **Running the product.** The agents read the practices topic on running the product: machine,
 start and stop commands, how to reach each interface, how to set up an example's starting state,
@@ -84,7 +84,7 @@ and what is safe to touch. When it is missing or fails, the skill stops and name
 **Agents.** Two plugin agents, neither of which has seen the conversation, using the session's
 Claude model:
 
-- `verifier`: one per spec, run one after another; given the spec's examples in scope and the
+- `verifier`: one per spec, run one after another; given the spec's path, the requirements to check in it, and the
   practices; may write temporary helper programs in a folder outside the repository. Verdicts:
   pass, fail, or not checked with the reason; a failure of its own helpers or setup is not checked.
 - `verify-checker`: one per spec, after its verifier; repeats each pass and tries unusual inputs
