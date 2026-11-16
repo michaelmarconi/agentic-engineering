@@ -174,8 +174,19 @@ Work through the requirements the plan names, one at a time, in the order the Pl
 suggests. For each requirement:
 
 1. Write the tests first, one or more per example, setting up its Given, doing its When and
-   checking its Then and And rows with the example's own values. Run them and see them fail, so you know
-   they test something. Commit them.
+   checking its Then and And rows with the example's own values. Before writing any of its code,
+   check that they fail, with the command that runs one test file, `{file}` where its path goes,
+   and the test files you wrote or changed:
+
+   ```
+   python3 "${CLAUDE_SKILL_DIR}/scripts/tests_fail.py" --command "<command with {file}>" <test files>
+   ```
+
+   Read each failure in its output: it must come from the behaviour not being there yet, not from
+   a test file that cannot load or a mistake in the test. If it accepts them, commit them. If it
+   refuses, correct what it names and run it again; but if the tests pass because their code is
+   already committed, commit them anyway and note the refusal and why. Keep each requirement's
+   result, accepted or refused and why, for the review and the report.
 2. Write the code that makes them pass, following the Plan section, each line under Decisions
    (where a line says to leave its reason as a comment beside the code, write that comment),
    each ADR the plan lists, and any other `👍 Accepted` ADR whose How we'll check section (Confirmation in
@@ -217,6 +228,8 @@ correction check use the right one whatever folder you started in.
   ```
   Document: <the plan's full path>
   Base: <default branch>
+  Tests first:
+  - <requirement>: accepted, refused and why, or already built when this run started; one line for each requirement with tests
   Review this build.
   ```
 
@@ -252,8 +265,8 @@ reads them exactly as they were given; you write only your own sections, as Mark
    question to raise asked plainly.
 2. `## Built before sign-off`: for a build before sign-off, what was not signed off and the
    proposed answers built, with a suggestion to settle them and sign the plan off.
-3. `## Tests and lint`: the test and lint commands you ran, with their final output, and any tests
-   that failed before you started.
+3. `## Tests and lint`: the test and lint commands you ran, with their final output, any tests
+   that failed before you started, and each requirement's result from the tests-fail check.
 4. `## Choices`: each choice you made, with its reason, and each practice you had to work out from
    the repository, with a suggestion to record it with `/practices`.
 5. `## Defects corrected`: each defect you corrected that no spec mentions, so the person can add

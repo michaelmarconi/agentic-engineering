@@ -6,6 +6,20 @@ What changed in each version of the plugin, newest first. Versions follow
 past a major version: it says what you need to change in your documents. Until 1.0.0, any
 minor version may need such a change, and its entry says so.
 
+## [0.56.0] - 2026-11-16
+
+### Changed
+
+- `/agentic:build` now checks each requirement's tests before writing its code. A small script
+  runs the new or changed test files and accepts them only if each one fails and nothing else is
+  uncommitted, so tests that already pass, or code written before its tests, are refused at the
+  requirement where it happens. The build reads why each test failed, and lists every
+  requirement's result in its report and in the build reviewer's request. The reviewer's
+  tests-first check reads those results instead of judging the commit order. Tests refused because
+  their code was already committed, such as by an earlier build that stopped, are kept, and the
+  reviewer raises that requirement for you to accept or not, since commits are never rewritten
+  (ADR 0039, issue #94).
+
 ## [0.55.0] - 2026-11-16
 
 ### Added
