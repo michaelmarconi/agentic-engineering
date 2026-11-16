@@ -238,4 +238,4 @@ off, `/build` on the branch can mark it `✅ Built`.
 The script prints what happened, then the report file's path and the file as written. If it refuses
 your sections, correct them and run it again. Never write or edit the file yourself.
 
-End with a reply of a few lines, under 150 words: the outcome in a sentence or two, any question for the person and the report file's full path; if the app you run in can show them a file in a viewer, show the report file there; never paste the report into the reply or list its findings there, since the file holds them. Name the branch, and say whether the plan was marked `✅ Built`.
+End with a short reply, under 150 words: the outcome in a sentence, then at most five bullets with the main findings and any question or action for the person, then the report file's full path; if the app you run in can show them a file in a viewer, show the report file there; never paste the report or its sections into the reply, since the file holds them. Name the branch, and say whether the plan was marked `✅ Built`.

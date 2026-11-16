@@ -193,8 +193,9 @@ you: with Claude directly, by changing a spec or ADR, or by deciding a finding i
 `/build` on the branch. It resumes, reviews again, and marks the plan `✅ Built` once every review
 passes. If you think a finding is wrong, say so when you rerun it.
 
-It ends with a short reply: the outcome, the branch, whether the plan was marked `✅ Built`, any
-question for you, and the full path of the build's report file. Where the app you run Claude Code
+It ends with a short reply, under 150 words: the outcome, the branch and whether the plan was
+marked `✅ Built`, then at most five bullets with the main findings and any question or action
+for you, then the full path of the build's report file. Where the app you run Claude Code
 in can show you a file, the report opens there. The file is Markdown, kept outside your repository
 in the plugin's data folder, under `reports/<repository>/`, named by date and plan; where that
 folder can't be written, it goes in a private folder in your system's temporary folder

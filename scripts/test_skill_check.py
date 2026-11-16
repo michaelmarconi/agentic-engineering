@@ -286,6 +286,12 @@ class SkillCheck(unittest.TestCase):
         self.put("audit", skill_md(name="audit", body=f"# Audit\n\n{rule}\n"))
         self.assertFails("audit/SKILL.md: report rule missing")
 
+    def test_report_rule_keeps_the_reply_short(self):
+        # ADR 0033: a short note under 150 words, with the main findings in at most five bullets.
+        self.assertIn("under 150 words", REPORT_RULE)
+        self.assertIn("at most five bullets", REPORT_RULE)
+        self.assertIn("never paste the report", REPORT_RULE)
+
     def test_other_skills_need_no_report_rule(self):
         self.put("feedback", skill_md(name="feedback"))
         done = self.check()
