@@ -40,7 +40,7 @@ does not show the product works.
 ## Consequences
 
 - Good: each requirement verified is tried on the running product.
-- Good: every verdict carries what was done and what came back, so a person can judge it.
+- Good: every verdict carries its evidence, so a person can judge it.
 - Bad: each run costs agent time and tokens.
 - Bad: verdicts can differ between runs.
 - Bad: only the agents' own instructions stop them reading the code.
@@ -50,7 +50,7 @@ does not show the product works.
 
 - Lasting tests that keep the product working: the build writes those.
 - Releasing or deploying the product.
-- Checking ADRs: how the code is built shows mostly in the code, which the audit skill reads.
+- Checking ADRs: the audit skill checks them against the code.
 - Checking whether the specs ask for the right thing: that stays with the person.
 
 ## How we'll check
