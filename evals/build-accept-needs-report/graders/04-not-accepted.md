@@ -1,7 +1,7 @@
 ---
 type: regex
 target: trace
-pattern: '--accept-open-findings'
+pattern: '"command":"(?:[^"\\]|\\.)*--accept-open-findings'
 match: not_contains
 weight: 1
 ---
