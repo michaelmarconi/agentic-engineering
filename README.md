@@ -57,7 +57,7 @@ anywhere else Claude names the file's path.
 4. `/agentic:adr` records any technical decision the spec needs.
 5. `/agentic:plan` plans a piece of work against the spec and its decisions.
 6. `/agentic:build` builds the plan on a branch, tests first, and has the result reviewed. Start it
-   in a fresh session, or after `/clear`.
+   in a new session, or after `/clear`; in a long session it asks first.
 
 You can also ask in your own words, such as "write a spec for invoice reminders". Claude picks
 the matching skill.

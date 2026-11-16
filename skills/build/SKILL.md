@@ -55,8 +55,17 @@ build reviewer will apply, so building to it leaves less to correct. Read it wit
 
 Check each of these before changing anything, and stop with the reason if one fails:
 
-1. **The session is fresh.** A plugin hook lets `/build` start only in answer to the person's first
-   message in a session, or the first after `/clear`. If it refuses, pass its reason on.
+1. **The session is clean enough.** When the build starts, a plugin hook adds a note, "Build session
+   check", saying how much conversation the session has gained since your first reply and whether
+   that is over the limit. Over it, the earlier conversation could steer the build away from the
+   written plan, so before anything else ask the person one question, with your question tool where
+   you have one: build here anyway, or start clean. Say how much the session holds, and that
+   starting clean means two steps, with the plan's path filled in, since the plugin has no reliable
+   way to start a session for them: run `/clear`, then send `/agentic:build <the plan's path>`; in a
+   Claude project thread, which has no `/clear`, open a new thread and send that command as its
+   first message. Then wait. On "build here anyway", carry on; on "start clean", stop, changing
+   nothing, and never try to start a session yourself. Under the limit, or with no note, carry on
+   without asking.
 2. **The plan is a plan.** It is a file in `docs/plans/` that names something to build. A
    `✅ Built` plan is built once and never again: say so, and suggest a new plan for more work.
 3. **What it relies on exists.** Every spec it lists exists and still has a numbered requirement
