@@ -446,6 +446,7 @@ class OpenFindings(Repo):
         path, text = self.report_file(out)
         self.assertEqual(self.reports()[0], path)
         self.assertIn("Accepted as it stands.", text)
+        self.assertIn("### Correction check\n\nNo review: the person accepted the build as it stands.", text)
         self.assertIn(FINDINGS[0], run_report.section("build", text, "The hand-over script's report"))
 
     def test_newest_report_counts(self):

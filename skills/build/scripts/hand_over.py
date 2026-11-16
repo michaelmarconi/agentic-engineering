@@ -60,6 +60,7 @@ import run_report  # noqa: E402
 REVIEWS = (("Code review", "code"), ("Security review", "security"), ("Build review", "plan"),
            ("Correction check", "check"))
 NO_REPORT = "No report kept."
+NOT_REVIEWED = "No review: the person accepted the build as it stands."
 
 READY, BUILT = "🟢 Ready to build", "✅ Built"
 STATUS_LINE = re.compile(r"^status:[ \t]*(?P<value>[^\n#]*?)[ \t]*$", re.M)
@@ -384,7 +385,8 @@ def main(argv=None):
     else:
         code, lines = hand_over(repo, args.plan, args.message, args.reviews_passed)
     kept = build_relay.kept_reports(args.data, args.session, args.plan, cwd=repo) or {}
-    copied = {"What each review found": [(title, kept.get(part) or NO_REPORT) for title, part in REVIEWS],
+    none = NOT_REVIEWED if args.accept_open_findings else NO_REPORT
+    copied = {"What each review found": [(title, kept.get(part) or none) for title, part in REVIEWS],
               "The hand-over script's report": [("Output", "\n".join(lines))]}
     name = os.path.splitext(os.path.basename(args.plan))[0]
     try:

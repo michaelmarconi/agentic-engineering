@@ -137,9 +137,10 @@ python3 "${CLAUDE_SKILL_DIR}/scripts/hand_over.py" --plan <the plan's path> --op
 ```
 
 If it prints a reason instead of open findings, carry on as below. If it prints open findings, the
-person may accept the build as it stands, so start no review and change nothing yet. Write this,
-filled in, with each open finding as a bold short name and one plain sentence, and the follow-up
-example taken from the findings:
+person may accept the build as it stands, so start no review and change nothing yet. Write this
+word for word, keeping its paragraphs, with only the angle-bracketed parts filled in: each open
+finding as a bold short name and one plain sentence, and the follow-up example taken from the
+findings. Add anything else, such as a requirement the findings leave unbuilt, after it:
 
 > The build of `<the plan's path>` is complete, but its correction check failed, so the plan is
 > still `🟢 Ready to build`. The correction check left <N> open findings:
