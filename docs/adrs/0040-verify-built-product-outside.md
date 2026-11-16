@@ -10,11 +10,11 @@ supersedes: 0016
 
 ## Question
 
-After a build[^build], who checks that the product does what its accepted specs[^spec] say, and how?
+Who checks that the built product does what its accepted specs[^spec] say, and how?
 
 ## Decision
 
-Chosen: a skill[^skill] of the plugin's own, run separately from the build, in which one agent[^agent]
+Chosen: a skill[^skill] of the plugin's own, run separately from the build[^build], in which one agent[^agent]
 uses the running product from outside and gives each example[^example] a verdict with evidence,
 and a second agent tries to disprove each verdict; both see only the accepted specs and the
 project's practices[^practices], never the code. Only an agent that cannot read
@@ -69,10 +69,12 @@ Applies to: the verify skill, its agents, and whether the build step starts the 
 
 ## Technical detail
 
-**Which examples.** `/agentic:verify` with no argument takes the plan this branch marked Built;
-with a plan, that plan's requirements; with a spec, all its requirements; with `all`, every
-accepted spec. A script lists the examples, records the commit, and refuses uncommitted changes or
-a spec in scope that is not Accepted.
+**Which examples.** Each run first agrees with the person a list of requirements from accepted
+specs: named one by one, whole specs, every accepted spec, or a plan standing for the requirements
+it names. Run with nothing named, the skill proposes the requirements of the plan the branch marked
+Built, if there is one. Nothing is checked until the person agrees the list. A script then lists
+the examples, records the commit, and refuses uncommitted changes; a requirement whose spec is not
+Accepted is left out, with the reason.
 
 **Running the product.** The agents read the practices topic on running the product: machine,
 start and stop commands, how to reach each interface, how to set up an example's starting state,

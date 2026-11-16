@@ -1,14 +1,16 @@
 # `/verify`
 
-`/verify` is the skill for checking what was just built, from the outside: it starts the product,
-uses it the way a person would, and says for each example in the accepted specs whether the
-product does what the example says. It comes after [`/build`](build.md) and before you merge, in
-[the lifecycle](../../README.md), though you can run it at any time. Read that page first for the
-documents, skills and agents it mentions.
+`/verify` is the skill for checking the product against its specs from the outside: it starts the
+product, uses it the way a person would, and says for each example in the specs whether the product
+does what the example says. It begins by agreeing with you what to check, as requirements of one or
+more accepted specs: what a build has just delivered, or what was built long ago. Its usual place
+in [the lifecycle](../../README.md) is after [`/build`](build.md) and before you merge, but you can
+run it at any time. Read that page first for the documents, skills and agents it mentions.
 
 ```mermaid
 flowchart TD
-    Start["Run /agentic:verify"] --> Scope[Script lists the examples in scope<br/>and records the commit]
+    Start["Run /agentic:verify"] --> Agree[Agree with you which requirements<br/>of which specs to check]
+    Agree --> Scope[Script lists their examples<br/>and records the commit]
     Scope -->|uncommitted changes,<br/>or a spec not Accepted| Stop[Stop and say why]
     Scope --> Practice{Running the product<br/>recorded and working?}
     Practice -->|no| Practices[Stop: run /agentic:practices<br/>running the product]
@@ -33,7 +35,7 @@ the product, so the only way they can judge is by what the product does. This is
 its usual sense: does the product match its specs?[^boehm] Whether the specs ask for the right
 thing is a different question, and stays with you.
 
-It is a sanity check for whoever just built the work, not a lasting test suite. Its agents write
+It is a sanity check, not a lasting test suite. Its agents write
 throwaway tools to drive the product and leave them behind; nothing they write joins your tests.
 Tests that keep the product working stay `/build`'s job.
 
@@ -86,30 +88,41 @@ yourself without trusting the agent.
 The examples are judged against the specs as they stand now, which must be `👍 Accepted`. A plan
 only says which requirements to check; its text is never read, since it is about the code.
 
-## How much a run checks
+## Choosing what to check
 
-- `/agentic:verify` checks the requirements of the plan that this branch marked `✅ Built`. If the
-  branch built more than one plan, or none, it asks which plan, spec or scope you mean.
-- `/agentic:verify <plan>` checks the requirements that plan names.
-- `/agentic:verify <spec>` checks every requirement of one accepted spec.
-- `/agentic:verify all` checks every accepted spec.
+Every run starts by agreeing with you what it will check: a list of requirements, each from an
+accepted spec. Say it however is natural, after the command or when asked:
+
+- a requirement, or several, such as "requirements 2 and 7 of the mail pull spec";
+- a whole spec, or several;
+- every accepted spec;
+- a plan, which stands for the requirements it names, such as the one a build just delivered.
+
+Run on its own, `/agentic:verify` proposes a list from what it can see, such as the requirements of
+the plan this branch marked `✅ Built`, and asks you to confirm or change it. Whatever you named,
+it shows the list it will check, each spec with its requirements and how many examples they hold,
+and checks nothing until you agree. A requirement whose spec is not `👍 Accepted` is left out, and
+the list says why.
+
+So the same skill checks what a build has just delivered, or goes back to requirements built long
+ago, such as after a change elsewhere that might have broken them.
 
 A run takes real time: in a trial, checking 7 requirements of a mail service took about 45 minutes
-of agent time. That is why the usual scope is the requirements one build delivered.
+of agent time. So the list is best kept to what you need checked now.
 
 `/verify` stops and says why, without checking anything, when:
 
 - the branch has changes that are not committed, since its report names the commit it checked;
-- the plan or spec you named doesn't exist, or a spec in scope isn't `👍 Accepted`;
 - Running the product is not recorded, or no longer works;
 - the practice says the product needs a machine this session is not running on, such as a Mac.
 
 ## How a run goes
 
-1. **Scope.** A script that ships with the plugin lists the requirements and examples in scope,
-   records the commit, and refuses uncommitted changes. No AI is involved.
-2. **The verifier.** One fresh agent per spec, starting without your conversation. It is given that
-   spec's examples in scope and the practices, and nothing else: not the code, the tests, the plan
+1. **What to check.** Claude agrees the list of requirements with you, as above. A script that
+   ships with the plugin then lists their examples, records the commit, and refuses uncommitted
+   changes. No AI is involved in that step.
+2. **The verifier.** One fresh agent per spec, starting without your conversation. It is given the
+   examples to check from that spec and the practices, and nothing else: not the code, the tests, the plan
    or any other document. It starts the product as the practice says, turns each example into
    steps, carries them out against the product's real interfaces, and records a verdict and its
    evidence. It may write throwaway tools to do so, in a temporary folder outside your repository.
@@ -132,7 +145,7 @@ sequenceDiagram
     participant P as The running product
     participant C as Verify-checker
     Note over V,C: See the spec's examples and the practices.<br/>Never the code, tests, plan or other documents.
-    S->>V: Examples in scope and the practices
+    S->>V: Examples to check and the practices
     V->>P: Start it, then carry out each example
     P-->>V: What came back
     V->>S: Verdict and evidence per example
@@ -174,7 +187,7 @@ As with `/build` and `/audit`, the full report goes in a Markdown file and Claud
 under 150 words: the outcome, at most five bullets of at most 15 words each, then the file's full
 path. The file holds the commit checked and every agent's report copied in word for word by the
 plugin's script. It is kept in the plugin's own data folder, outside your repository, at
-`reports/<repository>/<date>-verify-<scope>.md`, until you delete it.
+`reports/<repository>/<date>-verify-<what was checked>.md`, until you delete it.
 
 You then decide what to do: merge, correct the code through a new plan, or change the spec.
 
