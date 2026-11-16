@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: practices-deploying-check
+expected_outcome: |
+  /practices deploying writes deploying.md with one environment section holding Releases allowed, Deploy, Check and Roll back, drafts the check from running.md's health address pointed at the environment, checks it with the completeness script, and never runs a real deploy or rollback.
+context:
+  scaffold_script: place-files.sh
