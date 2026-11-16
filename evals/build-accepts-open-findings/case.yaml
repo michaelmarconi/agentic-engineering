@@ -1,6 +1,0 @@
-schema_version: "1.1"
-name: build-accepts-open-findings
-expected_outcome: |
-  The branch build/word-count holds a build whose correction check failed with three open findings, and nothing has changed since. The person accepts the build as it stands. The build starts no review, explains what accepting means, and marks the plan Built in a commit that lists the open findings.
-context:
-  scaffold_script: place-files.sh
