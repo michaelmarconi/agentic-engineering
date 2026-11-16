@@ -1,7 +1,7 @@
 ---
 type: regex
 target: last_message
-pattern: '^#{1,3} |=== THE REPORT AS WRITTEN ==='
+pattern: '^#{1,6} |=== THE REPORT AS WRITTEN ==='
 flags: m
 match: not_contains
 weight: 1
