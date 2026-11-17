@@ -6,6 +6,18 @@ What changed in each version of the plugin, newest first. Versions follow
 past a major version: it says what you need to change in your documents. Until 1.0.0, any
 minor version may need such a change, and its entry says so.
 
+## [0.66.0] - 2026-11-17
+
+### Added
+
+- `/agentic:practices logging` records how the product writes its logs (the library or helper,
+  the levels and when each applies, the format) and where an agent reads them when working out
+  why something failed: where they end up, locally and in each environment, and the command that
+  shows them. It usually goes in `docs/practices/logging.md`, read before adding or reading logs.
+  No skill depends on it.
+- The Security and dependencies topic also asks what must never be written to logs, such as
+  secrets, tokens and personal data.
+
 ## [0.65.0] - 2026-11-17
 
 ### Added
