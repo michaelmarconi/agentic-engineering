@@ -6,6 +6,18 @@ What changed in each version of the plugin, newest first. Versions follow
 past a major version: it says what you need to change in your documents. Until 1.0.0, any
 minor version may need such a change, and its entry says so.
 
+## [0.64.0] - 2026-11-17
+
+### Added
+
+- `/agentic:practices reviews and merging` gives every pull request description the same
+  sections: a plain Summary, what the work was built from (its plan, specs and ADRs), what
+  changes, how it was checked, and optional notes, each saying which part of the `/agentic:build`
+  report to draw from ([ADR 0047](docs/adrs/0047-practices-pull-request-template.md)). On GitHub
+  it shows you the default template and writes `.github/pull_request_template.md` only if you say
+  yes, leaving any template you already have alone. The practice gains a rule that descriptions
+  follow the template; with no template, the rule lists the sections instead.
+
 ## [0.63.0] - 2026-11-17
 
 ### Changed

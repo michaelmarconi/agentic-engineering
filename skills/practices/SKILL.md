@@ -121,13 +121,16 @@ not to ask anything does.
   test of complete those skills run, and name in the hand-over each item it lists as missing,
   since they refuse until it is there.
 - **Pull request template.** Only in Reviews and merging, once the person says the project uses
-  pull requests. The project is on GitHub when `.git/config` names a `github.com` remote or a
-  `.github/` folder exists; otherwise ask. On GitHub, if a template already exists, in `.github/`,
-  the root, `docs/` or `.github/PULL_REQUEST_TEMPLATE/`, leave it exactly as it is. Otherwise show
+  pull requests. The project is on GitHub when the `origin` remote in `.git/config` names
+  `github.com` or a `.github/` folder exists; otherwise ask, or take it as not on GitHub if the
+  person said not to ask. On GitHub, if a template already exists, named `pull_request_template.md`
+  in any letter case, in `.github/`, the root or `docs/`, or in a `.github/PULL_REQUEST_TEMPLATE/`
+  folder, leave it exactly as it is. Otherwise show
   [assets/pull_request_template.md](assets/pull_request_template.md) and, only on yes, write it to
   `.github/pull_request_template.md`. Then record the rule "Pull request descriptions follow
   `<the template's path>`." With no template, off GitHub or declined, the rule lists the default's
   sections instead, in one or two lines, saying that Built from names the plan, specs and ADRs.
+  The rule goes in the core's Rules, since a topic file names no further file.
 - **Disagreements.** When the repository, the core and a topic file disagree, such as two test
   commands, say what each says and ask which is right before changing either.
 - **One command per step.** Record a step as it stands only when it is one command, as rubric
