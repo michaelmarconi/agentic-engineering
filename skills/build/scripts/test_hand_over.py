@@ -579,6 +579,40 @@ class ReleaseNotes(Repo):
         self.assertEqual(self.git("show", "--name-only", "--format=", "HEAD"), "")
         self.assertEqual(self.git("rev-parse", "HEAD"), self.git("rev-parse", "build/thing", cwd=self.bare))
 
+    def test_reviews_passed_on_a_plan_not_ready_with_nothing_to_commit_keeps_the_notes(self):
+        self.put(PLAN, plan("📝 Draft"))
+        self.git("commit", "-qam", "Draft plan")
+        code, out = self.run_it("--reviews-passed")
+        self.assertEqual(code, 1, out)
+        self.assertEqual(self.message(), f"Record the release notes of the plan 2026-11-03-thing.md\n\n"
+                                         f"Release-note: {NOTE}")
+
+    def test_notes_kept_when_the_built_commit_fails(self):
+        self.put("src/thing.py", "print('thing')\n")
+        real = hand_over.commit
+        calls = []
+
+        def failing_built(repo, message, lines, allow_empty=False):
+            calls.append(message)
+            if message.startswith("Mark the plan"):
+                lines.append("Commit failed: stand-in")
+                return False
+            return real(repo, message, lines, allow_empty)
+
+        with mock.patch.object(hand_over, "commit", failing_built):
+            code, out = self.run_it("--reviews-passed")
+        self.assertEqual(code, 1, out)
+        self.assertIn(f"Release-note: {NOTE}", self.message())
+
+    def test_same_notes_already_on_the_branch_not_recorded_again(self):
+        code, out = self.run_it()
+        self.assertEqual(code, 0, out)
+        first = self.git("rev-parse", "HEAD")
+        code, out = self.run_it()
+        self.assertEqual(code, 0, out)
+        self.assertEqual(self.git("rev-parse", "HEAD"), first)
+        self.assertIn("already on the branch", out)
+
     def test_missing_note_refused_before_anything_changes(self):
         self.put("src/thing.py", "print('thing')\n")
         with mock.patch("sys.stderr", io.StringIO()), self.assertRaises(SystemExit) as raised:

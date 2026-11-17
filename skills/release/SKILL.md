@@ -38,8 +38,11 @@ last commit that changed the version files, and say which commit it is. With non
 first commit. Then run, from the repository:
 
 ```
-python3 "${CLAUDE_SKILL_DIR}/scripts/release.py" notes [--since <last release commit>]
+python3 "${CLAUDE_SKILL_DIR}/scripts/release.py" notes [--since <last release commit>] --to <commit>
 ```
+
+The commit is the one being released: `HEAD` for a project that releases with each merge, otherwise
+`origin/<the branch it releases from>`.
 
 It prints the build notes since then and the commits that changed files with no note. For each
 of those, draft one item from its subject and the files it changed, mark it as drawn from history,
@@ -139,4 +142,4 @@ looked at by a person. Credentials are the command's business: never read, print
 Under 150 words: the version and the commit the release came from, whether it was published,
 whether that commit is on the default branch, any assumption you made, and what is left for the
 person, such as merging the release branch. Name "Undoing a release", if recorded, as the way
-back; never run it. Deploying is a separate step, `/agentic:deploy`.
+back; never run it. Deploying, running the release on machines, is a separate step.

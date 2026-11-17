@@ -21,8 +21,9 @@
 
 Every hand-over commit run carries the build's release notes (docs/adrs/0043): each --release-note
 is added to the message of the last commit the script makes, as a `Release-note: <note>` line at
-its end, so the release skill can gather them later. When the script would make no commit at all,
-it makes one that holds only the notes. A note must be one non-empty line.
+its end, so the release skill can gather them later. When no commit it makes carries them, as when
+there is nothing to commit or a commit failed, it makes one that holds only the notes, unless the
+same notes are already on the branch since the default branch. A note must be one non-empty line.
 
 It prints what happened, one line per step, then the report file's path and the file as written.
 
@@ -199,6 +200,17 @@ def preflight(repo, plan):
     return None
 
 
+def notes_on_branch(repo, notes):
+    """Whether every note is already a `Release-note:` line of a commit on the branch since the
+    default branch, as when a build hands over again with nothing new."""
+    default = default_branch(repo)
+    logged = git(repo, "log", "--format=%B", f"origin/{default}..HEAD") if default else None
+    if not logged or logged.returncode != 0:
+        return False
+    held = {line.strip() for line in logged.stdout.splitlines()}
+    return all(f"{NOTE_LABEL} {clean_note(n)}" in held for n in notes)
+
+
 def hand_over(repo, plan, message, reviews_passed, notes=()):
     lines = []
     refusal = preflight(repo, plan)
@@ -214,6 +226,7 @@ def hand_over(repo, plan, message, reviews_passed, notes=()):
     code = 0
     lines.append(f"Branch: {branch}")
     done = commit(repo, message if to_built else with_notes(message, notes), lines)
+    carried = done is True and not to_built
     if done is None:
         lines.append("Work: nothing new to commit.")
     elif done is False:
@@ -228,6 +241,7 @@ def hand_over(repo, plan, message, reviews_passed, notes=()):
             with open(plan_path, "w", encoding="utf-8") as f:
                 f.write(built(text, match))
             if commit(repo, with_notes(f"Mark the plan {os.path.basename(plan)} as built", notes), lines):
+                carried = True
                 lines.append(f"Plan: {plan} is now `{BUILT}`.")
             else:
                 code = 1
@@ -242,11 +256,14 @@ def hand_over(repo, plan, message, reviews_passed, notes=()):
         else:
             reason = "the reviews have not all passed"
         lines.append(f"Plan: {plan} stays `{status}`, because {reason}.")
-        if done is None and notes:
-            name = os.path.basename(plan)
-            if commit(repo, with_notes(f"Record the release notes of the plan {name}", notes), lines,
-                      allow_empty=True) is False:
-                code = 1
+
+    # No commit carried the notes: record them in a commit of their own, unless the branch holds them.
+    if notes and not carried:
+        if notes_on_branch(repo, notes):
+            lines.append("Release notes: already on the branch, so not recorded again.")
+        elif commit(repo, with_notes(f"Record the release notes of the plan {os.path.basename(plan)}", notes),
+                    lines, allow_empty=True) is not True:
+            code = 1
 
     code = max(code, push(repo, branch, lines))
     lines.append(f"Head: {head(repo)}")

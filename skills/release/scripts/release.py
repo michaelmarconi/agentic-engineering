@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Gather a release's notes from git, and check a commit may be published, for /release.
 
-notes [--since <commit>] [--to <commit>] [--repo <folder>]
+[--repo <folder>] notes [--since <commit>] [--to <commit>]
     Lists the commits reachable from --to (default HEAD) and not from --since, the last release's
     commit; with no --since, every commit up to --to. Each build leaves its release notes in a
     commit message as lines starting `Release-note:` (docs/adrs/0043). The script reads every such
@@ -12,7 +12,7 @@ notes [--since <commit>] [--to <commit>] [--repo <folder>]
     their branch's commits are listed themselves. Prints JSON: since, to, notes [{commit, note}]
     oldest first, without_notes [{commit, subject}] oldest first.
 
-publish-check --commit <commit> --branch <branch> [--repo <folder>]
+[--repo <folder>] publish-check --commit <commit> --branch <branch>
     Checks, by git alone, that the commit may be published from the branch the practice releases
     from: nothing is uncommitted (scripts/uncommitted.py), and the commit is on `origin/<branch>`
     as this repository last fetched it. It fetches nothing, so fetch first. Prints one line per
