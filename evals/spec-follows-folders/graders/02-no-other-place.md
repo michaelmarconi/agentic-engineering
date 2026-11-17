@@ -2,6 +2,7 @@
 type: tool_used
 tool: Write
 input_match: "file_path[^,]*(docs/specs/[a-z0-9-]+\\.spec\\.md|apps/[a-z]+/docs/|docs/specs/(web|rate[a-z-]*)/)"
+min: 0
 max: 0
 weight: 1
 ---

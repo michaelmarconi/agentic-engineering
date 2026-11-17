@@ -2,5 +2,7 @@ schema_version: "1.1"
 name: spec-follows-folders
 expected_outcome: |
   In a monorepo whose specs are already grouped into docs/specs/web/ and docs/specs/api/, the new spec for an API rate limit is written under docs/specs/api/, not flat in docs/specs/ and not in a docs/ folder of its own inside apps/.
+  A guard case: Claude follows existing spec folders unaided, so it passes without the plugin too;
+  it is here to catch a change to the spec skill or the lifecycle page that breaks it.
 context:
   scaffold_script: place-files.sh
