@@ -47,7 +47,8 @@ review runs.
   be deleted whenever nobody needs it.
 
 A repository is one product, so every `docs/` path on this page is counted from the top of the git
-repository, wherever in it the session started. A monorepo, several related apps or packages in one
+repository, wherever in it the session started, or from the session's folder in a project without
+git. A monorepo, several related apps or packages in one
 repository, keeps one `docs/` folder at its top; its specs may be grouped into folders, such as one
 per app, which carry no meaning.
 

@@ -1,7 +1,7 @@
 ---
 type: tool_used
 tool: Write
-input_match: "docs/specs/api/[a-z0-9-]+\\.spec\\.md"
+input_match: "file_path[^,]*docs/specs/api/[a-z0-9-]+\\.spec\\.md"
 min: 1
 weight: 1
 ---
