@@ -16,7 +16,8 @@ For each skills/<folder>/SKILL.md under the given plugin root (default: this plu
   /build, whose checker is `agentic:build-correction-checker`, reviews code and is not held to it.
 - such a skill that names a document by its path, as `Document: <...>`, holds PATH_RULE word for
   word, so every review is given the full path the review relay hook finds the repository from
-  (docs/adrs/0032). A draft never saved as a file, `Document: feedback draft`, is not held to it.
+  (docs/adrs/0032). A draft never saved as a file, `Document: feedback draft` or `Document: release notes`, is not
+  held to it.
 - such a skill also holds SHOW_RULE word for word, so every document is shown to the person the
   same way, in the app's file viewer where there is one and by its path always (docs/adrs/0025).
 
@@ -228,8 +229,9 @@ SHOW_RULE = (
 )
 REPOSITORY_LINE = "`Repository: <folder>`"
 # Every agent given a `Repository:` line: the document reviewers the review relay hook knows (all
-# but /feedback's, whose draft is never a file), its two checkers, and the audit's three.
-REPOSITORY_AGENTS = sorted({name for name in review_relay.REVIEWERS if name != "feedback-reviewer"}
+# but /feedback's and /release's, whose drafts are never files), its two checkers, and the audit's three.
+REPOSITORY_AGENTS = sorted({name for name in review_relay.REVIEWERS
+                            if name not in ("feedback-reviewer", "release-reviewer")}
                            | {review_relay.LANGUAGE, review_relay.CHECKER, "auditor", "audit-checker", "brief-checker"})
 AGENT_RULE = (
     "Your request's second line names the repository, `Repository: <folder>`, which may not be "

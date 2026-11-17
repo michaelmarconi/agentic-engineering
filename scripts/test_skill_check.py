@@ -239,7 +239,7 @@ class SkillCheck(unittest.TestCase):
                     text = f.read()
                 if all(holds(text, rule) for rule in CORRECT_RULES):
                     holding.add(name)
-        self.assertEqual(holding, {"brief", "spec", "adr", "plan", "spike", "practices", "feedback"})
+        self.assertEqual(holding, {"brief", "spec", "adr", "plan", "spike", "practices", "feedback", "release"})
 
     def test_document_skill_without_proposed_rule_fails(self):
         self.put("brief", skill_md(name="brief", body=f"# Brief\n\n{TYPE_RULE}\n"))

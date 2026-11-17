@@ -200,6 +200,15 @@ However the build ends, a small script commits the branch and pushes it to `orig
 this, not Claude, and reports exactly what happened, including the branch name and any failure
 to push. `/build` never opens a pull request and never merges.
 
+Every hand-over also leaves a draft release note for the people who use the product: a line
+starting `Release-note:` at the end of the last commit's message, one per thing they would
+notice, such as `Release-note: You can now export your mail as CSV.` Claude drafts each from the
+plan's requirements as the specs state them, while they are in hand. [`/release`](release.md)
+gathers these lines from every commit since the last release, so its notes don't depend on the
+plan still existing or on its status, and your repository needs no extra file
+([ADR 0043](../adrs/0043-build-commit-carries-release-note.md)). If there is nothing left to
+commit, the script makes a commit that holds only the notes.
+
 The plan is set to `✅ Built` only when it was `🟢 Ready to build` and every review has passed. A
 plan built before sign-off keeps its status: settle it and sign it off, then rerun `/build` on the
 branch to mark it `✅ Built`. If the build stopped instead,

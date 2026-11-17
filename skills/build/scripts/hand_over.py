@@ -19,6 +19,12 @@
    there is none) and this script's own lines, word for word. Sections it can't use, such as one
    under a heading the report doesn't have, stop it before any step, changing nothing.
 
+Every hand-over commit run carries the build's release notes (docs/adrs/0043): each --release-note
+is added to the message of the last commit the script makes, as a `Release-note: <note>` line at
+its end, so the release skill can gather them later. When no commit it makes carries them, as when
+there is nothing to commit or a commit failed, it makes one that holds only the notes, unless the
+same notes are already on the branch since the default branch. A note must be one non-empty line.
+
 It prints what happened, one line per step, then the report file's path and the file as written.
 
 When a build's correction check failed, the person may accept the build as it stands
@@ -40,7 +46,8 @@ stays the newest.
 Exit codes: 0 when every step that applied succeeded, or --open-findings found findings; 1 when a
 commit, the push or the report file failed, or --reviews-passed was given for a plan that is not
 `🟢 Ready to build` (the plan is then left as it is, and the rest still runs); 2 when it refused to
-start or could not use Claude's sections, changing nothing in the repository; 3 when
+start, could not use Claude's sections or was given an unusable release note, changing nothing in
+the repository; 3 when
 --open-findings found nothing that can be accepted.
 """
 
@@ -87,6 +94,34 @@ def built(text, match):
     return text
 
 
+NOTE_LABEL = "Release-note:"
+
+
+def notes_problem(notes):
+    """Why the release notes can't be used, or None. Each must be one line with some text."""
+    for note in notes:
+        if "\n" in note or "\r" in note:
+            return "a release note must be one line"
+        if not clean_note(note):
+            return "a release note must hold some text"
+    return None
+
+
+def clean_note(note):
+    """The note's text without any `Release-note:` label it was given with."""
+    note = note.strip()
+    if note.lower().startswith(NOTE_LABEL.lower()):
+        note = note[len(NOTE_LABEL):].strip()
+    return note
+
+
+def with_notes(message, notes):
+    """The commit message with a `Release-note:` line for each note at its end."""
+    if not notes:
+        return message
+    return message.rstrip("\n") + "\n\n" + "\n".join(f"{NOTE_LABEL} {clean_note(n)}" for n in notes)
+
+
 def git(repo, *args):
     return subprocess.run(["git", "-C", repo, *args], capture_output=True, text=True)
 
@@ -123,7 +158,7 @@ def is_ready(value):
     return words == "Ready to build"
 
 
-def commit(repo, message, lines):
+def commit(repo, message, lines, allow_empty=False):
     # Leave out the stand-ins Claude Code's sandbox puts in place on Linux: git can't add them,
     # and one it can't add stops `git add -A` from adding anything.
     try:
@@ -135,14 +170,14 @@ def commit(repo, message, lines):
     if added.returncode != 0:
         lines.append(f"Commit failed: {(added.stderr or added.stdout).strip()}")
         return False
-    if git(repo, "diff", "--cached", "--quiet").returncode == 0:
+    if git(repo, "diff", "--cached", "--quiet").returncode == 0 and not allow_empty:
         return None
-    result = git(repo, "commit", "-q", "-m", message)
+    result = git(repo, "commit", "-q", *(["--allow-empty"] if allow_empty else []), "-m", message)
     if result.returncode != 0:
         lines.append(f"Commit failed: {(result.stderr or result.stdout).strip()}")
         return False
     sha = git(repo, "rev-parse", "--short", "HEAD").stdout.strip()
-    lines.append(f"Committed {sha}: {message}")
+    lines.append(f"Committed {sha}: {message.splitlines()[0]}")
     return True
 
 
@@ -165,17 +200,33 @@ def preflight(repo, plan):
     return None
 
 
-def hand_over(repo, plan, message, reviews_passed):
+def notes_on_branch(repo, notes):
+    """Whether every note is already a `Release-note:` line of a commit on the branch since the
+    default branch, as when a build hands over again with nothing new."""
+    default = default_branch(repo)
+    logged = git(repo, "log", "--format=%B", f"origin/{default}..HEAD") if default else None
+    if not logged or logged.returncode != 0:
+        return False
+    held = {line.strip() for line in logged.stdout.splitlines()}
+    return all(f"{NOTE_LABEL} {clean_note(n)}" in held for n in notes)
+
+
+def hand_over(repo, plan, message, reviews_passed, notes=()):
     lines = []
     refusal = preflight(repo, plan)
     if refusal:
         return 2, [refusal]
     branch = current_branch(repo)
     plan_path = os.path.join(repo, plan)
+    with open(plan_path, encoding="utf-8") as f:
+        match = frontmatter_status(f.read())
+    # The notes go on the last commit made: the Built commit when there will be one.
+    to_built = reviews_passed and bool(match) and is_ready(match.group("value"))
 
     code = 0
     lines.append(f"Branch: {branch}")
-    done = commit(repo, message, lines)
+    done = commit(repo, message if to_built else with_notes(message, notes), lines)
+    carried = done is True and not to_built
     if done is None:
         lines.append("Work: nothing new to commit.")
     elif done is False:
@@ -189,7 +240,8 @@ def hand_over(repo, plan, message, reviews_passed):
         if match and is_ready(status):
             with open(plan_path, "w", encoding="utf-8") as f:
                 f.write(built(text, match))
-            if commit(repo, f"Mark the plan {os.path.basename(plan)} as built", lines):
+            if commit(repo, with_notes(f"Mark the plan {os.path.basename(plan)} as built", notes), lines):
+                carried = True
                 lines.append(f"Plan: {plan} is now `{BUILT}`.")
             else:
                 code = 1
@@ -204,6 +256,14 @@ def hand_over(repo, plan, message, reviews_passed):
         else:
             reason = "the reviews have not all passed"
         lines.append(f"Plan: {plan} stays `{status}`, because {reason}.")
+
+    # No commit carried the notes: record them in a commit of their own, unless the branch holds them.
+    if notes and not carried:
+        if notes_on_branch(repo, notes):
+            lines.append("Release notes: already on the branch, so not recorded again.")
+        elif commit(repo, with_notes(f"Record the release notes of the plan {os.path.basename(plan)}", notes),
+                    lines, allow_empty=True) is not True:
+            code = 1
 
     code = max(code, push(repo, branch, lines))
     lines.append(f"Head: {head(repo)}")
@@ -291,7 +351,7 @@ def open_findings(repo, plan, data):
     return path, findings
 
 
-def accept(repo, plan, data):
+def accept(repo, plan, data, notes=()):
     """Mark the plan Built with the open findings in the commit, and push: (code, lines)."""
     refusal = preflight(repo, plan)
     if refusal:
@@ -307,7 +367,7 @@ def accept(repo, plan, data):
     with open(plan_path, "w", encoding="utf-8") as f:
         f.write(built(text, frontmatter_status(text)))
     body = "Accepted as it stands by the person, without further review:\n\n" + "\n".join(findings)
-    if not commit(repo, f"Mark the plan {os.path.basename(plan)} as built\n\n{body}", lines):
+    if not commit(repo, with_notes(f"Mark the plan {os.path.basename(plan)} as built\n\n{body}", notes), lines):
         with open(plan_path, "w", encoding="utf-8") as f:
             f.write(text)
         lines.append(f"Plan: {plan} stays `{READY}`, because the commit failed; nothing was pushed.")
@@ -344,6 +404,10 @@ def main(argv=None):
     mode.add_argument("--accept-open-findings", action="store_true",
                       help="the person accepted the build as it stands: mark the plan Built with the open "
                            "findings in the commit message, and push")
+    parser.add_argument("--release-note", action="append", default=[], metavar="NOTE",
+                        help="one sentence for the product's users about what this build gives them, added to "
+                             "the last commit's message as a `Release-note:` line; give one per thing they would "
+                             "notice (at least one is needed to hand over)")
     parser.add_argument("--repo", default=".", help="the repository (default: the current directory)")
     parser.add_argument("--report", choices=["-"],
                         help="`-`: read your own sections of the build's report from stdin, as Markdown "
@@ -365,9 +429,14 @@ def main(argv=None):
         print("\n".join(findings))
         return 0
     missing = [flag for flag, value in (("--report", args.report), ("--session", args.session),
-                                        ("--message", args.message or args.accept_open_findings)) if not value]
+                                        ("--message", args.message or args.accept_open_findings),
+                                        ("--release-note", args.release_note)) if not value]
     if missing:
         parser.error("these are needed to hand over: " + ", ".join(missing))
+    problem = notes_problem(args.release_note)
+    if problem:
+        print(f"Refused: {problem}. Nothing was changed; correct the release note and hand over again.")
+        return 2
     try:
         own = run_report.parse("build", sys.stdin.read())
     except run_report.ReportError as error:
@@ -375,14 +444,14 @@ def main(argv=None):
               "them and hand over again.")
         return 2
     if args.accept_open_findings:
-        code, lines = accept(repo, args.plan, args.data)
+        code, lines = accept(repo, args.plan, args.data, args.release_note)
         if not any(line.startswith(f"Plan: {args.plan} is now") for line in lines):
             # No report while the plan is not Built: the failed check must stay the newest report,
             # so the person can still accept it.
             print("\n".join(lines))
             return code
     else:
-        code, lines = hand_over(repo, args.plan, args.message, args.reviews_passed)
+        code, lines = hand_over(repo, args.plan, args.message, args.reviews_passed, args.release_note)
     kept = build_relay.kept_reports(args.data, args.session, args.plan, cwd=repo) or {}
     none = NOT_REVIEWED if args.accept_open_findings else NO_REPORT
     copied = {"What each review found": [(title, kept.get(part) or none) for title, part in REVIEWS],

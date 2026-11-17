@@ -31,6 +31,10 @@ TOPIC = "docs/practices/testing.md"
 PAIR = f"AGENTS.md, {TOPIC}"
 
 
+def release_request(draft):
+    return f"Document: release notes\nVersion: 1.4.0\n=== DRAFT ===\n{draft}=== END DRAFT ===\n"
+
+
 def feedback_request(draft, kind="bug"):
     return f"Document: feedback draft\nKind: {kind}\n=== DRAFT ===\n{draft}=== END DRAFT ===\n"
 
@@ -73,7 +77,7 @@ class Relay(unittest.TestCase):
                report=REPORT, session=None, wording=WORDING):
         """Run the skill's reviewer, then the language checker unless wording is None."""
         out = self.agent("PreToolUse", agent, prompt, session=session)
-        if "feedback draft" in prompt:
+        if "feedback draft" in prompt or "release notes" in prompt:
             self.assertIsNone(out)
         else:
             self.assertAllowed(out)
@@ -83,7 +87,7 @@ class Relay(unittest.TestCase):
 
     def language(self, prompt=f"Document: {SPEC}\nCheck the wording.", wording=WORDING, session=None):
         out = self.agent("PreToolUse", LANGUAGE, prompt, session=session)
-        if "feedback draft" in prompt:
+        if "feedback draft" in prompt or "release notes" in prompt:
             self.assertIsNone(out)
         else:
             self.assertAllowed(out)
@@ -874,6 +878,24 @@ class Relay(unittest.TestCase):
     def test_feedback_review_without_a_draft_saves_nothing(self):
         self.review(agent="agentic:feedback-reviewer", prompt="Document: feedback draft\nKind: bug\n")
         self.assertEqual(self.saved(), [])
+
+    # /release: its notes are reviewed as a draft too, whether or not they end up in a file
+
+    def test_release_notes_draft_is_taken_from_the_requests(self):
+        self.review(agent="agentic:release-reviewer", prompt=release_request(DRAFT))
+        corrected = DRAFT.replace("line two", "line 2")
+        prompt = self.assertAllowed(self.check(prompt=release_request(corrected)))["prompt"]
+        self.assertIn("=== DOCUMENT AS REVIEWED: release notes ===\n" + DRAFT, prompt)
+        self.assertIn("=== DRAFT ===\n" + corrected, prompt)
+        self.assertIn(os.path.join(ROOT, "skills", "release", "references", "rubric.md"), prompt)
+
+    def test_unchanged_release_notes_refused(self):
+        self.review(agent="agentic:release-reviewer", prompt=release_request(DRAFT))
+        self.assertRefused(self.check(prompt=release_request(DRAFT)), "unchanged")
+
+    def test_release_notes_and_a_feedback_draft_kept_apart(self):
+        self.review(agent="agentic:release-reviewer", prompt=release_request(DRAFT))
+        self.assertRefused(self.check(prompt=feedback_request(DRAFT.replace("line two", "line 2"))), "No review")
 
     # When the checker is refused
 

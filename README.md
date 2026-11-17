@@ -61,6 +61,9 @@ anywhere else Claude names the file's path.
 7. `/agentic:verify` starts the product where it can run and checks it against the plan's
    requirements from the outside, before you merge. It needs the Running the product practice,
    which `/agentic:practices running the product` records.
+8. `/agentic:release`, once enough is merged, makes a numbered version with release notes drafted
+   from what each build left behind, and publishes it if your project publishes. It follows the
+   releasing practice, which `/agentic:practices releasing` records.
 
 You can also ask in your own words, such as "write a spec for invoice reminders". Claude picks
 the matching skill.
@@ -108,6 +111,7 @@ documents by hand.
 | [`/agentic:plan`](docs/skills/plan.md) | Plans a piece of work against its specs and ADRs |
 | [`/agentic:build`](docs/skills/build.md) | Builds a plan on a branch, has it reviewed and hands it back |
 | [`/agentic:practices`](docs/skills/practices.md) | Records how the project does things, one topic at a time |
+| [`/agentic:release`](docs/skills/release.md) | Makes a numbered release with reviewed release notes, and publishes it where the project does, by its recorded steps |
 | [`/agentic:verify`](docs/skills/verify.md) | Starts the product and checks it against its specs from the outside, never reading the code, and changes nothing |
 | [`/agentic:audit`](docs/skills/audit.md) | Finds where the code and its documents no longer agree, and where a spec or ADR contradicts the brief, and changes nothing |
 | [`/agentic:feedback`](docs/skills/feedback.md) | Drafts a GitHub issue about the plugin itself |

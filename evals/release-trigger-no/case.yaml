@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: release-trigger-no
+expected_outcome: |
+  Asked to write down how the project releases, Claude does not use the release skill.
+context:
+  scaffold_script: place-files.sh
