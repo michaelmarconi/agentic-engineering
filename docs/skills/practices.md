@@ -158,10 +158,11 @@ other topic you ask for is recorded the same way.
 | <a id="releasing"></a>Releasing | Which code may be released, how the version is set and tied to one commit, and the command that publishes it; [`/release`](#releasing-and-deploying) relies on it |
 | <a id="deploying"></a>Deploying | For each environment: which releases may go there, and the commands that deploy, check and roll back; [`/deploy`](#releasing-and-deploying) relies on it |
 | Database changes | How they are written and applied, and whether they must be reversible |
-| Security and dependencies | What to check before adding a dependency, scanning, updates, and handling a security hole |
+| Security and dependencies | What to check before adding a dependency, scanning, updates, what must never be logged, and handling a security hole |
 | Hands off | Files an agent must never edit, and actions it must never take |
 | Documents to keep up to date | Which documents must change with the code |
 | <a id="running-the-product"></a>Running the product | How to start and stop the product, reach each of its interfaces, put it in a given starting state, and what is safe to touch; [`/verify`](verify.md) relies on it. Before recording it, `/practices` starts the product with the proposed commands and reaches each interface, correcting and trying again until it runs and you agree |
+| Logging | How the product writes its logs, and where to read them, locally and in each environment, when working out why something failed |
 
 ### Pull request template
 
