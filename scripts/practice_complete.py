@@ -16,6 +16,10 @@ heading is allowed and ignored. Only text counts as something under a heading: a
 an empty code block or an HTML comment does not. A required item whose text holds "(default)"
 fails, since a default Claude proposed must not run against real systems. Lines inside code blocks
 and HTML comments are never read as headings.
+
+For deploying.md, `--environment <name>` judges only that environment, so a gap in another one
+never blocks a deploy, while problems of the whole file are still shown. Without it, the script
+also lists the environments recorded, so the deploy skill can tell when there is only one.
 """
 
 import argparse
@@ -102,8 +106,11 @@ def check_releasing(lines):
     return check_items(sections(entries(lines)), 2, RELEASING, "", "releasing.md")
 
 
-def check_deploying(lines):
+def check_deploying(lines, only=None):
+    """Return (problems, environment names). With `only`, judge that environment's section and
+    the file-wide problems, and name the environment when it has no section."""
     problems = []
+    names = []
     environments = 0
     for level, title, body in sections(entries(lines)):
         match = ENVIRONMENT.match(title.strip()) if level == 2 else None
@@ -114,26 +121,41 @@ def check_deploying(lines):
         if not name:
             problems.append("an Environment heading has no name")
             continue
+        if name.lower() not in (n.lower() for n in names):
+            names.append(name)
+        if only is not None and name.lower() != only.lower():
+            continue
         owner = f"Environment: {name}"
         problems += check_items(sections(body), 3, ENVIRONMENT_PARTS, owner + ": ", owner)
     if not environments:
         problems.append("deploying.md has no environment: add a `## Environment: <name>` section")
-    return problems
+    elif only is not None and only.lower() not in (n.lower() for n in names):
+        problems.append(f"deploying.md has no environment named {only}")
+    return problems, names
 
 
 def main(argv=None):
     parser = argparse.ArgumentParser(
         description=__doc__.split("\n\n")[0],
-        epilog="Prints 'complete' and exits 0 when every required item is there; otherwise prints "
-               "one line per missing item and exits 1, including when the file does not exist. "
-               "Exits 2 for a file not named releasing.md or deploying.md.")
+        epilog="Prints that the file is complete and exits 0 when every required item is there; "
+               "otherwise prints one line per missing item and exits 1, including when the file "
+               "does not exist. For deploying.md it also prints 'Environments recorded:' and the "
+               "names, unless --environment names one that is there. Exits 2 for a file not named "
+               "releasing.md or deploying.md, or --environment given with releasing.md.")
     parser.add_argument("file", help="path to docs/practices/releasing.md or docs/practices/deploying.md")
+    parser.add_argument("--environment", metavar="NAME",
+                        help="deploying.md only: judge only this environment's section, plus the "
+                             "problems of the whole file (not recorded, no environment, an "
+                             "Environment heading with no name); a gap in another environment "
+                             "is ignored, and a name with no section is a problem")
     args = parser.parse_args(argv)
 
     base = os.path.basename(args.file)
-    checks = {"releasing.md": check_releasing, "deploying.md": check_deploying}
-    if base not in checks:
+    if base not in ("releasing.md", "deploying.md"):
         print(f"{args.file}: expected releasing.md or deploying.md", file=sys.stderr)
+        return 2
+    if args.environment is not None and base != "deploying.md":
+        print("--environment is for deploying.md only", file=sys.stderr)
         return 2
     topic = base[:-3]
     if not os.path.isfile(args.file):
@@ -141,12 +163,22 @@ def main(argv=None):
         return 1
     with open(args.file, encoding="utf-8-sig") as f:
         lines = f.read().splitlines()
-    problems = checks[base](lines)
+    names = []
+    if base == "releasing.md":
+        problems = check_releasing(lines)
+    else:
+        problems, names = check_deploying(lines, args.environment)
+    for problem in problems:
+        print(problem)
+    known = args.environment is not None and args.environment.lower() in (n.lower() for n in names)
+    if names and not known:
+        print("Environments recorded: " + ", ".join(names))
     if problems:
-        for problem in problems:
-            print(problem)
         return 1
-    print(f"{base} is complete")
+    if known:
+        print(f"Environment: {args.environment} is complete")
+    else:
+        print(f"{base} is complete")
     return 0
 
 

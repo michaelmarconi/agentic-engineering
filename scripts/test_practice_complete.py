@@ -155,7 +155,7 @@ class PracticeComplete(unittest.TestCase):
             "### Roll back\n`make rollback ENV=production`\n", "")
         out = self.assertMissing(self.put("deploying.md", DEPLOYING + "\n" + production),
                                  "Environment: production has no Roll back")
-        self.assertNotIn("staging", out)
+        self.assertNotIn("Environment: staging", out)
 
     def test_part_under_the_next_environment_does_not_count_for_the_one_before(self):
         staging = ENVIRONMENT.format(name="staging").replace("### Check\n`make check ENV=staging` exits 0 within 2 minutes.\n", "")
@@ -173,6 +173,73 @@ class PracticeComplete(unittest.TestCase):
     def test_deploy_part_may_not_be_a_default(self):
         text = DEPLOYING.replace("`make deploy ENV=staging`", "`make deploy ENV=staging` (default)")
         self.assertMissing(self.put("deploying.md", text), "Environment: staging: Deploy is a default")
+
+    # one environment
+
+    def two_environments(self, production_tail=""):
+        production = ENVIRONMENT.format(name="production") + production_tail
+        staging = ENVIRONMENT.format(name="staging").replace(
+            "### Roll back\n`make rollback ENV=staging`\n", "")
+        return self.put("deploying.md", "# Deploying\n\n" + staging + "\n" + production)
+
+    def test_one_environment_is_judged_alone(self):
+        done = self.run_script(self.two_environments(), "--environment", "production")
+        self.assertEqual(done.returncode, 0, done.stdout + done.stderr)
+        self.assertIn("Environment: production is complete", done.stdout)
+        self.assertNotIn("staging", done.stdout)
+
+    def test_the_named_environment_gap_is_shown(self):
+        done = self.run_script(self.two_environments(), "--environment", "staging")
+        self.assertEqual(done.returncode, 1, done.stdout + done.stderr)
+        self.assertIn("Environment: staging has no Roll back", done.stdout)
+
+    def test_environment_name_matches_whatever_the_case(self):
+        done = self.run_script(self.two_environments(), "--environment", "Production")
+        self.assertEqual(done.returncode, 0, done.stdout + done.stderr)
+
+    def test_file_wide_problems_still_shown_for_one_environment(self):
+        path = self.put("deploying.md", DEPLOYING + "\n## Environment:\n### Deploy\nx\n")
+        done = self.run_script(path, "--environment", "staging")
+        self.assertEqual(done.returncode, 1, done.stdout + done.stderr)
+        self.assertIn("has no name", done.stdout)
+
+    def test_missing_file_is_named_for_one_environment(self):
+        path = os.path.join(self.tmp.name, "docs", "practices", "deploying.md")
+        done = self.run_script(path, "--environment", "staging")
+        self.assertEqual(done.returncode, 1)
+        self.assertIn("not recorded yet", done.stdout)
+
+    def test_no_environment_is_named_for_one_environment(self):
+        path = self.put("deploying.md", "# Deploying\n")
+        done = self.run_script(path, "--environment", "staging")
+        self.assertEqual(done.returncode, 1)
+        self.assertIn("no environment", done.stdout)
+
+    def test_unknown_environment_is_named_with_the_list(self):
+        done = self.run_script(self.two_environments(), "--environment", "qa")
+        self.assertEqual(done.returncode, 1, done.stdout + done.stderr)
+        self.assertIn("no environment named qa", done.stdout)
+        self.assertIn("Environments recorded: staging, production", done.stdout)
+        self.assertNotIn("Roll back", done.stdout)
+
+    def test_environments_listed_without_the_option(self):
+        out = self.assertMissing(self.two_environments(), "Environments recorded: staging, production")
+        self.assertIn("Environment: staging has no Roll back", out)
+
+    def test_environments_listed_when_complete(self):
+        text = DEPLOYING + "\n" + ENVIRONMENT.format(name="production")
+        done = self.run_script(self.put("deploying.md", text))
+        self.assertEqual(done.returncode, 0)
+        self.assertIn("Environments recorded: staging, production", done.stdout)
+
+    def test_environment_option_refused_for_releasing(self):
+        done = self.run_script(self.put("releasing.md", RELEASING), "--environment", "staging")
+        self.assertEqual(done.returncode, 2)
+        self.assertIn("deploying.md", done.stderr)
+
+    def test_help_names_the_environment_option(self):
+        done = self.run_script("--help")
+        self.assertIn("--environment", done.stdout)
 
     # files and arguments
 
