@@ -47,7 +47,9 @@ name and how many examples each holds, as `start` printed them. Leave out every 
 spec is not `👍 Accepted`, and say so with its status: a spec that is not accepted states no
 settled intent to check against. Leave out, too, a spec `start` marks `old_layout`, whose
 requirements it cannot list, and say it must be brought to the current layout with `/spec` and
-accepted again. Ask the person to confirm or change the list, and check nothing
+accepted again. Tell them the second agent re-challenges every verdict, passes included, so
+each spec takes about twice as long as one agent alone, and that the requirements a change
+touches are usually enough. Ask the person to confirm or change the list, and check nothing
 until they agree. When their request already named what to check and said to go ahead, that is
 their agreement: show the list and carry on. If they change the list, run `start` again with its
 specs.

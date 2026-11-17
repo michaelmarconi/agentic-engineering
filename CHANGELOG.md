@@ -6,6 +6,16 @@ What changed in each version of the plugin, newest first. Versions follow
 past a major version: it says what you need to change in your documents. Until 1.0.0, any
 minor version may need such a change, and its entry says so.
 
+## [0.67.0] - 2026-11-17
+
+### Changed
+
+- `/agentic:verify` now says, when it shows the requirements it will check, that its second
+  agent re-challenges every verdict, passes included, so each spec takes about twice as long as
+  one agent alone, and that the requirements a change touches are usually enough. Its page says
+  the same, and suggests recording helpers in the Running the product practice, such as a reset
+  command or a quick way to make a connection fail, to save each agent time.
+
 ## [0.66.0] - 2026-11-17
 
 ### Added
