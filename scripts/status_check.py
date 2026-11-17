@@ -51,8 +51,8 @@ For a plan it refuses:
 - a plan that had a lifecycle status losing it, and a new plan with any status but `Draft 📝`;
 - setting `Built ✅`: only `/build`'s hand-over script may, writing the file itself, so this hook
   never sees it;
-- any change to a `Built ✅` plan, which is frozen once built (it may be deleted), apart from adding
-  the emoji to its status line;
+- any change to a `Built ✅` plan, which is frozen once built (it may be deleted), apart from writing
+  its status line in the exact form, adding its emoji or moving it after the word;
 - `Ready to build 🟢` to anything but `Draft 📝`;
 - `Ready to build 🟢` in the same edit as any other change, or while the Open questions section is
   missing or not empty or "None.";
@@ -731,6 +731,11 @@ def check(payload):
                   or (title_problem(path, kind, before, after) if before is not None else None))
     if reason or new == written:
         return reason
+    if emoji_first(written) == new:
+        return (
+            f"{name}: move the status emoji after its word, as `{new}` (found {written!r}), the form "
+            f"earlier versions of the plugin wrote. The {kind} statuses are {listed(statuses)}."
+        )
     return (
         f"{name}: write the status with its emoji, as `{new}` (found {written!r}). The {kind} "
         f"statuses are {listed(statuses)}."

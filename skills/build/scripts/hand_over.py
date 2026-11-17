@@ -62,13 +62,13 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."
 import build_relay  # noqa: E402
 import uncommitted  # noqa: E402
 import run_report  # noqa: E402
+from status_check import BUILT, READY, STATUSES, meant  # noqa: E402
 
 REVIEWS = (("Code review", "code"), ("Security review", "security"), ("Build review", "plan"),
            ("Correction check", "check"))
 NO_REPORT = "No report kept."
 NOT_REVIEWED = "No review: the person accepted the build as it stands."
 
-READY, BUILT = "Ready to build 🟢", "Built ✅"
 STATUS_LINE = re.compile(r"^status:[ \t]*(?P<value>[^\n#]*?)[ \t]*$", re.M)
 # The key in any case and with a space before its colon, as the status hook reads it.
 DATE_LINE = re.compile(r"^date[ \t]*:[ \t]*(?P<value>[^\n#]*?)[ \t]*(?:#[^\n]*)?$", re.M | re.I)
@@ -153,11 +153,9 @@ def frontmatter_status(text):
 
 
 def is_ready(value):
-    # A plan written before the emoji holds the status by its words alone, and one written before
-    # the emoji moved after the words holds it in front: either names the status.
-    value = value.replace("\ufe0f", "")
-    return any(re.fullmatch(form, value) for form in (r"Ready to build(?: ?[^\x00-\x7f]+)?",
-                                                       r"(?:[^\x00-\x7f]+ ?)?Ready to build"))
+    # Read as the status hook reads it: a plan written before the emoji, or with it in front, as
+    # earlier versions of the plugin wrote it, counts as the status its words name.
+    return meant(value, STATUSES) == READY
 
 
 def commit(repo, message, lines, allow_empty=False):

@@ -745,7 +745,10 @@ class EmojiFirst(Workspace):
 
     def test_other_edit_must_move_it_over(self):
         self.put(spec("📝 Draft"))
-        self.assertIn("`Draft 📝`", self.edit("do X", "do Y"))
+        refusal = self.edit("do X", "do Y")
+        self.assertIn("`Draft 📝`", refusal)
+        self.assertIn("after its word", refusal)
+        self.assertNotIn("with its emoji", refusal)
         self.assertIsNone(self.write(spec(rule="The system SHALL do Y.")))
 
     def test_accepted_spec_keeps_its_rules(self):

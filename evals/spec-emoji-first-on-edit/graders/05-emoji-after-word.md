@@ -1,7 +1,7 @@
 ---
 type: regex
 target: { source: file, path: docs/specs/password-reset.spec.md }
-pattern: '^status: (📝|👍)'
+pattern: '^status: [^\x00-\x7F]'
 flags: m
 match: not_contains
 weight: 1

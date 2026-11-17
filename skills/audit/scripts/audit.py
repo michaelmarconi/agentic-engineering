@@ -18,7 +18,9 @@ documents
       the emoji is optional), or a spec, ADR, plan or spike record has none;
     - status form: one problem naming how many documents write their status with its emoji in
       front, as earlier versions of the plugin did, such as `👍 Accepted`, and listing them. Each
-      still counts as its status; a skill moves the emoji after the word when it next edits one;
+      still counts as its status, and moving the emoji after the word is an edit to the status
+      line alone that the plugin allows on any document, decided ones included; a status written
+      with its emoji in front that its kind of document does not have is a status problem;
     - type: the frontmatter's `type:` is not the one for the document's kind (`Brief`, `Spec`,
       `ADR`, `Plan` or `Spike`). A document without `type:` is not a problem: those written before
       types gain one on their next edit, and decided ones may never be edited again;
@@ -406,7 +408,7 @@ def check_documents(project):
             badly_named = name_problem(relative, kind, text, new=False)
             if badly_named:
                 add(relative, "name", badly_named.split(": ", 1)[1])
-            if emoji_first(status_of(text)):
+            if emoji_first(status_of(text)) in KINDS[kind]:
                 emoji_first_documents.append(relative)
             else:
                 wrong = status_problem(kind, text)
@@ -453,7 +455,8 @@ def check_documents(project):
         count = len(emoji_first_documents)
         add(f"{count} document{'s' if count > 1 else ''}", "status form",
             f"the status emoji comes before the word, as it did in earlier versions of the plugin; move "
-            f"it after the word, as in `{ACCEPTED}`: {', '.join(emoji_first_documents)}")
+            f"it after the word, as in `{ACCEPTED}`, an edit to the status line alone that the plugin "
+            f"allows on any document, decided ones included: {', '.join(emoji_first_documents)}")
     for document, detail in supersede_problems(documents):
         add(document, "supersede", detail)
     for document, detail in overlap_problems(project, documents):

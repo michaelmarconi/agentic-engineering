@@ -187,6 +187,11 @@ class Documents(Project):
         self.assertEqual([p["document"] for p in self.problems("status")], ["docs/spikes/2026-11-01-can-it.md"])
         self.assertNotIn("docs/spikes/2026-11-01-can-it.md", detail)
 
+    def test_an_emoji_first_status_its_kind_does_not_have_is_a_status_problem(self):
+        self.put("docs/specs/statement-import.spec.md", spec(status="🟢 Ready to build"))
+        self.assertEqual(self.problems("status form"), [])
+        self.assertEqual([p["document"] for p in self.problems("status")], ["docs/specs/statement-import.spec.md"])
+
     def test_one_status_written_emoji_first_is_one_document(self):
         self.put("docs/specs/statement-import.spec.md", spec(status="📝 Draft"))
         self.assertEqual([p["document"] for p in self.problems("status form")], ["1 document"])
