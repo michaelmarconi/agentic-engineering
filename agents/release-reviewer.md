@@ -15,6 +15,8 @@ request, laid out like this:
 - the notes the builds left, between `=== NOTES GATHERED ===` and `=== END NOTES GATHERED ===`;
 - items drawn from commits with no note, each with what the person said to keep, between
   `=== FROM HISTORY ===` and `=== END FROM HISTORY ===`;
+- the notes and items the person said to leave out, between `=== LEFT OUT ===` and
+  `=== END LEFT OUT ===`;
 - the form the project records for its notes, or "None recorded", between `=== FORM ===` and
   `=== END FORM ===`;
 - the draft, between `=== DRAFT ===` and `=== END DRAFT ===`.

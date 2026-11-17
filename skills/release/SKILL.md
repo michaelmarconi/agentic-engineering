@@ -46,7 +46,8 @@ The commit is the one being released: `HEAD` for a project that releases with ea
 
 It prints the build notes since then and the commits that changed files with no note. For each
 of those, draft one item from its subject and the files it changed, mark it as drawn from history,
-and show the list to the person: they keep, reword or drop each. Never add one unasked.
+and show the list to the person: they keep, reword or drop each, and you propose dropping one that
+changes nothing users see, such as a code comment. Never add one unasked.
 
 ## Draft
 
@@ -68,8 +69,8 @@ copy of the notes as reviewed.
 1. **Review.** Start two agents in the foreground, not in the background, both in one message so
    they run side by side: the `agentic:release-reviewer` agent and the `agentic:language-checker`
    agent, which checks the wording. Give each this request, laid out exactly as shown, with the
-   gathered notes and kept history items copied from the script's output and the person's
-   answers, and the `## Release notes` section, or "None recorded":
+   gathered notes, kept history items and left-out items copied from the script's output and
+   the person's answers, and the `## Release notes` section, or "None recorded":
 
    ```
    Document: release notes
@@ -80,6 +81,9 @@ copy of the notes as reviewed.
    === FROM HISTORY ===
    <one kept item per line, or None>
    === END FROM HISTORY ===
+   === LEFT OUT ===
+   <each note or item the person said to leave out, or None>
+   === END LEFT OUT ===
    === FORM ===
    <the recorded form, or None recorded>
    === END FORM ===
@@ -97,7 +101,8 @@ copy of the notes as reviewed.
    nothing else, since an edit beyond the reports is the likeliest way to break something. If
    nothing was yours to correct, go straight to sign-off.
 3. **Check the corrections.** Start the `agentic:correction-checker` agent in the foreground with
-   the same layout, holding the corrected notes, and nothing more: the hook attaches both reports
+   the same layout, holding the corrected notes, with any item the person dropped while you corrected
+   moved under `=== LEFT OUT ===`, and nothing more: the hook attaches both reports
    and the notes as reviewed, word for word. If the hook refuses to start it, do what its reason
    says. If the check fails, stop: change the notes no further, and show the person the notes and
    the check's report. Do not review or correct again; what happens next is their call.
