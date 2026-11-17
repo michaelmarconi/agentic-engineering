@@ -15,7 +15,8 @@ How does the plugin help a project's pull requests read well and follow the same
 
 Chosen: when a project's practices[^practices] say it uses pull requests on GitHub, the practices
 skill[^skill] offers a pull request template from a default the plugin ships. It writes it only on
-yes, leaves an existing template alone, and asks when it cannot tell the host. Elsewhere the same
+yes, leaves an existing template alone, and asks when it cannot tell the host. The practice
+then says descriptions follow the template, so agents opening pull requests through tools use it too. Elsewhere the same
 sections become a practice. This is chosen because GitHub shows the template to everyone opening a
 pull request on its web page, with nothing new to run.
 
@@ -59,15 +60,7 @@ Applies to: the practices skill's topic on reviews and merging.
 
 ## Open questions
 
-### 1. Whether the practice also tells agents to use the template
-
-GitHub's web page fills in a template; an agent's tool opening a pull request may not.
-
-> **Proposed:** the reviews and merging practice also says descriptions follow the template.
->
-> **Why:** agents read the practices, so one line reaches them without a spike.
-
-### 2. Whether projects not on GitHub belong in this ADR
+### 1. Whether projects not on GitHub belong in this ADR
 
 Recording the sections as a practice elsewhere could be read as a second decision.
 
@@ -84,7 +77,8 @@ has a `.github/` folder; otherwise the skill asks.
 **What it writes.** `.github/pull_request_template.md`, copied from the default in the practices
 skill's `assets/`, shown to the person before it is written. Any existing template, at that path,
 at the root, in `docs/`, or in a `.github/PULL_REQUEST_TEMPLATE/` folder, is left alone and noted
-in the practice.
+in the practice. Either way, the reviews and merging practice gains one rule: pull request
+descriptions follow the template, naming its path.
 
 **The default's sections**, in order: Summary, two to four plain sentences on the problem, what
 changes for the people who use the product and what the reviewer should look at; Built from, a link
