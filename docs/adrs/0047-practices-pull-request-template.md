@@ -1,0 +1,100 @@
+---
+# Change status only through the agentic plugin's skills, which check each change; a change made by hand is not checked.
+type: ADR
+status: 📝 Draft
+date: 2026-11-17
+---
+
+# The practices skill offers a pull request template
+
+## Question
+
+How does the plugin help a project's pull requests read well and follow the same sections every time?
+
+## Decision
+
+Chosen: when a project's practices[^practices] say it uses pull requests on GitHub, the practices
+skill[^skill] offers a pull request template from a default the plugin ships. It writes it only on
+yes, leaves an existing template alone, and asks when it cannot tell the host. Elsewhere the same
+sections become a practice. This is chosen because GitHub shows the template to everyone opening a
+pull request on its web page, with nothing new to run.
+
+## Background
+
+Pull request descriptions without set sections open with detail, hiding what they are for and
+which plan[^plan], specs[^spec] and ADRs they carry out. The plugin changes nothing in a project
+beyond the practices the person chooses. [ADR 0042](0042-practices-skill-writes-commands.md) and
+[ADR 0045](0045-practices-skill-writes-scripts.md) let the practices skill write command runner
+entries and scripts; this ADR adds a pull request template.
+
+## Options
+
+| Option | Outcome | Why |
+| --- | --- | --- |
+| A new skill that writes pull request descriptions | Rejected | Covers only pull requests opened through it |
+| A reviewer that checks each description against a list of checks | Rejected | More to set up and run |
+| A practice that lists the sections, with no template | Rejected | Only agents that read the practices see it |
+| The practices skill offers a template from a shipped default | Chosen | Authors see it where they write |
+
+## Consequences
+
+- Good: every pull request opened from the template starts from the same sections.
+- Good: a reviewer sees which plan, specs and ADRs a pull request carries out.
+- Bad: the practices skill writes one more file outside the practices themselves.
+- Bad: a template only suggests sections; nothing stops an author deleting them.
+
+## Out of scope
+
+- The template's sections and wording: content of the shipped default, changed without a new ADR.
+- Opening, reviewing or merging pull requests: the plugin still does none of these.
+
+## How we'll check
+
+Applies to: the practices skill's topic on reviews and merging.
+
+1. Test: on GitHub, the skill offers the template and writes it only on yes.
+2. Test: an existing template is left as it is.
+3. Test: off GitHub, the sections go in the reviews and merging practice, with no template.
+4. Inspection: the default opens with a plain summary, then what the work carries out.
+
+## Open questions
+
+### 1. Whether the practice also tells agents to use the template
+
+GitHub's web page fills in a template; an agent's tool opening a pull request may not.
+
+> **Proposed:** the reviews and merging practice also says descriptions follow the template.
+>
+> **Why:** agents read the practices, so one line reaches them without a spike.
+
+### 2. Whether projects not on GitHub belong in this ADR
+
+Recording the sections as a practice elsewhere could be read as a second decision.
+
+> **Proposed:** keep it here, as one decision.
+>
+> **Why:** both halves serve one need and would change together.
+
+## Technical detail
+
+**Where it is offered.** In the Reviews and merging topic, once the person says the project uses
+pull requests. The project is on GitHub when its `origin` remote names `github.com` or it already
+has a `.github/` folder; otherwise the skill asks.
+
+**What it writes.** `.github/pull_request_template.md`, copied from the default in the practices
+skill's `assets/`, shown to the person before it is written. Any existing template, at that path,
+at the root, in `docs/`, or in a `.github/PULL_REQUEST_TEMPLATE/` folder, is left alone and noted
+in the practice.
+
+**The default's sections**, in order: Summary, two to four plain sentences on the problem, what
+changes for the people who use the product and what the reviewer should look at; Built from, a link
+to the plan the work followed, then the specs and requirements it delivers and the ADRs it follows,
+laid out as the plan lays them out, or "No plan"; What changes; How it was checked; Left open.
+
+**Not on GitHub.** The skill records the same sections as a rule in the reviews and merging
+practice: its `merging.md` topic file when there is one, otherwise the Practices section.
+
+[^skill]: A skill is a set of instructions Claude follows for one step, started as a slash command such as `/agentic:practices`.
+[^practices]: Practices are the project's recorded ways of doing things, one topic at a time, in a short section of `AGENTS.md` and files under `docs/practices/`.
+[^plan]: A plan is the lifecycle's document for one piece of work: it names the specs and ADRs the work delivers and says how it will be done.
+[^spec]: A spec says what one capability of the product should do, as numbered requirements.
