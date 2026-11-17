@@ -21,7 +21,7 @@ uses `Document: feedback draft` or `Document: release notes` and carries the dra
 `=== END DRAFT ===` lines in the request.
 
 Before any of these agents starts, the hook finds the repository the document is in (see
-docs/adrs/0032): the top folder of the git repository holding its files, or the session folder
+docs/adrs/0046): the top folder of the git repository holding its files, or the session folder
 when they are in none. It rewrites the request's first line to name each file relative to that folder, and
 puts `Repository: <the folder's full path>` on the second line, so an agent started from a folder
 above the project still reads and searches the right one. Everything it saves is keyed by those
@@ -149,7 +149,7 @@ class Unreadable(Exception):
 
 
 def locate(name, prompt, cwd=None):
-    """The document's repository and its files relative to it, sorted (ADR 0018 and 0032).
+    """The document's repository and its files relative to it, sorted (ADR 0018 and 0046).
 
     A line that names an existing file is that one file, even if its name holds a comma, so the
     order of the names on the line never matters. Raises Unreadable when no named file exists, or

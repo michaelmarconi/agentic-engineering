@@ -16,7 +16,7 @@ For each skills/<folder>/SKILL.md under the given plugin root (default: this plu
   /build, whose checker is `agentic:build-correction-checker`, reviews code and is not held to it.
 - such a skill that names a document by its path, as `Document: <...>`, holds PATH_RULE word for
   word, so every review is given the full path the review relay hook finds the repository from
-  (docs/adrs/0032). A draft never saved as a file, `Document: feedback draft` or `Document: release notes`, is not
+  (docs/adrs/0046). A draft never saved as a file, `Document: feedback draft` or `Document: release notes`, is not
   held to it.
 - such a skill also holds SHOW_RULE word for word, so every document is shown to the person the
   same way, in the app's file viewer where there is one and by its path always (docs/adrs/0025).
@@ -38,7 +38,7 @@ For each skills/<folder>/SKILL.md under the given plugin root (default: this plu
 - /build holds BUILD_ASK_RULE word for word, so it builds a plan that is not signed off only on
   the person's own choice, asked the same way every time, and BUILD_PATH_RULE, so its reviews are
   given the plan's full path, which the build review relay hook finds the repository from
-  (docs/adrs/0032), and BUILD_ACCEPT_RULE, so it marks a plan Built after a failed correction check
+  (docs/adrs/0046), and BUILD_ACCEPT_RULE, so it marks a plan Built after a failed correction check
   only on the person's own choice, asked the same way every time (docs/adrs/0038), and
   BUILD_REREAD_RULE, so a long build reads its practices and its own rules again at each requirement.
 - /build, /audit and /verify (REPORT_SKILLS) hold REPORT_RULE word for word, so each ends with a short reply

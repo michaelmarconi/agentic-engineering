@@ -86,6 +86,15 @@ class SessionMap(unittest.TestCase):
         self.put("app/docs/specs/invoice.spec.md", "---\nstatus: 📝 Draft\n---\n# Invoice\n")
         self.assertIn("hookSpecificOutput", self.output())
 
+    def test_prints_map_when_started_in_a_subfolder_of_a_repository_with_a_brief(self):
+        # One app of a monorepo, with the session started in the app (ADR 0046).
+        self.repository("mono")
+        self.put("mono/docs/brief.md")
+        os.makedirs(os.path.join(self.tmp.name, "mono", "apps", "web"))
+        env = dict(os.environ, CLAUDE_PROJECT_DIR=os.path.join(self.tmp.name, "mono", "apps", "web"))
+        done = subprocess.run([sys.executable, SCRIPT], capture_output=True, text=True, env=env)
+        self.assertIn("/agentic:", json.loads(done.stdout)["hookSpecificOutput"]["additionalContext"])
+
     def test_silent_when_no_repository_inside_uses_the_lifecycle(self):
         self.repository("app")
         self.put("app/README.md", "# App\n")

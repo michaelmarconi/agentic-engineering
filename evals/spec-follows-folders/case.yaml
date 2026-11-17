@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: spec-follows-folders
+expected_outcome: |
+  In a monorepo whose specs are already grouped into docs/specs/web/ and docs/specs/api/, the new spec for an API rate limit is written under docs/specs/api/, not flat in docs/specs/ and not in a docs/ folder of its own inside apps/.
+context:
+  scaffold_script: place-files.sh
