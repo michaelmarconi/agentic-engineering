@@ -13,8 +13,8 @@ flowchart TD
     Start["Run /agentic:deploy"] --> Practice[Check deploying.md]
     Practice -->|incomplete| Stop[Stop: run /agentic:practices deploying]
     Practice -->|merging deploys it| Merged[Say so and stop]
-    Practice --> Plan[Show what goes where, the check<br/>and the way back]
-    Plan --> Yes[Your yes]
+    Practice --> Plan[Show what goes where, the check<br/>and how it will roll back]
+    Plan --> Yes[You say yes]
     Yes --> Deploy[Deploy, then run the check]
     Deploy -->|passes| Reply[Reply: release, environment,<br/>commit and check]
     Deploy -->|fails| Back[Roll back and check again]
@@ -52,7 +52,7 @@ has one section per environment, each with:
   record of its own.
 
 Two optional items sit at the top: **Where it runs**, the machine and where its credentials live,
-and **How deploys start**. Where one is missing, `/deploy` assumes it runs on this machine with
+and **How deploys start**: by hand or by the pipeline, and by whom. Where one is missing, `/deploy` assumes it runs on this machine with
 the credentials already set up there, and its reply says so.
 
 Every step it runs is one command, as [the lifecycle rules](../lifecycle.md#principles) require,
@@ -72,9 +72,9 @@ changes nothing, shows those lines, and asks you to run `/agentic:practices depl
 3. **Check what it can.** It checks what Releases allowed asks of the branch, the version and the
    commit. A rule it can't check, such as "only releases already on staging", becomes a question
    for you on the next screen, such as "Has 1.4.0 passed on staging? I can't check this."
-4. **Your yes.** It shows the release, its commit, the environment, the exact deploy command, the
-   check and the way back if the check fails, with any questions from step 3, and waits for your
-   yes. Your yes covers the roll back too.
+4. **Ask for your yes.** It shows the release, its commit, the environment, the exact deploy command, the
+   check, and how it will roll back if the check fails, with any questions from step 3, and waits for your
+   yes. Saying yes also agrees to the roll back.
 5. **Deploy and check.** It runs the deploy command. If that fails, it stops and shows what it
    printed. Otherwise it runs the check, again until it passes or the recorded time runs out.
 6. **Roll back if the check fails.** It runs the roll back command at once, without asking, then
@@ -87,7 +87,7 @@ changes nothing, shows those lines, and asks you to run `/agentic:practices depl
 
 ## What it never does
 
-- **Choose a method.** Environments, commands, the check and the way back all come from your
+- **Choose a method.** Environments, commands, the check and the roll back all come from your
   practice.
 - **Write or change a command,** or run a step that has none.
 - **Deploy without your yes,** or to more than one environment in one run: each environment is
