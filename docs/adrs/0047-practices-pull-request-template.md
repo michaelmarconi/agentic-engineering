@@ -80,7 +80,9 @@ descriptions follow the template, naming its path.
 **The default's sections**, in order: Summary, two to four plain sentences on the problem, what
 changes for the people who use the product and what the reviewer should look at; Built from, a link
 to the plan the work followed, then the specs and requirements it delivers and the ADRs it follows,
-laid out as the plan lays them out, or "No plan"; What changes; How it was checked; Left open.
+laid out as the plan lays them out, or "No plan"; What changes; How it was checked; Notes, optional, for choices, defects fixed and
+anything left to check. Each section's guidance names the section of the report that
+`/agentic:build` writes when it finishes, from which that content is taken.
 
 **No template.** Not on GitHub, or when the person declines one, the skill records the same sections as a rule in the reviews and merging
 practice: its `merging.md` topic file when there is one, otherwise the Practices section.
