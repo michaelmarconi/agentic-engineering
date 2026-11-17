@@ -11,20 +11,22 @@
 ## Built from
 
 <!-- Link the plan this work followed, then copy its Specs list and ADRs table across unchanged.
-     For a change with no plan, such as tidying or an upgrade, write "No plan." and delete the rest. -->
+     For a change with no plan, such as tidying or an upgrade, write "No plan." and delete the rest.
+     Make every link a full web address to the file at the commit you are proposing, since the
+     pull request page reads a link like docs/adrs/0001-x.md as a page of its own. -->
 
-Plan: [<Plan title>](<path to the plan>)
+Plan: [<Plan title>](<link to the plan>)
 
 ### Specs
 
-- [<Spec title>](<path to the spec>)
-  - [<Requirement name, as in the spec>](<path to the spec>#<heading-anchor>)
+- [<Spec title>](<link to the spec>)
+  - [<Requirement name, as in the spec>](<link to the spec>#<heading-anchor>)
 
 ### ADRs
 
 | ADR | Decision |
 | --- | --- |
-| [<NNNN>](<path to the ADR>) | <The ADR's title> |
+| [<NNNN>](<link to the ADR>) | <The ADR's title> |
 
 ## What changes
 
