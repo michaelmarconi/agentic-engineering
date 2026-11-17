@@ -3,7 +3,7 @@
 
 Claude Code runs this as a PreToolUse hook on Write, Edit and MultiEdit. It reads the hook's
 JSON from stdin and works out what the file would hold after the edit. It checks two kinds of
-file, relative to the git repository holding it (docs/adrs/0032; a relative path is read from the
+file, relative to the git repository holding it (docs/adrs/0046; a relative path is read from the
 folder Claude's shell is in, and a file in no repository counts from the session folder):
 
 - `AGENTS.md` at the project's root: its `## Practices` section, from that heading to the next

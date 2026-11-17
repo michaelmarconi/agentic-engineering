@@ -46,6 +46,12 @@ review runs.
   fixed, and only the run script adds runs. A finished spike record is never changed again, and may
   be deleted whenever nobody needs it.
 
+A repository is one product, so every `docs/` path on this page is counted from the top of the git
+repository, wherever in it the session started, or from the session's folder in a project without
+git. A monorepo, several related apps or packages in one
+repository, keeps one `docs/` folder at its top; its specs may be grouped into folders, such as one
+per app, which carry no meaning.
+
 Every document has an Open questions section, holding what only you can settle, or "None." when
 nothing is open. Each open question is laid out the same way, so you can find the proposal at a
 glance: a numbered heading saying what is to be settled, the context it needs, then a quote holding
