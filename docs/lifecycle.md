@@ -87,6 +87,11 @@ the `agentic:` prefix.
   `/build` and before you merge: agents that never read the code start the product, try each
   example of the requirements you agree, and give each a verdict with evidence. It changes
   nothing: you decide what follows.
+- `/release` makes a release once enough work is merged: a version number, release notes for the
+  product's users and the one commit they describe, by the steps the releasing practice records.
+  It drafts the notes from the `Release-note:` line each build leaves in its last commit, has them
+  reviewed and asks you to sign them off. It publishes only where the practice records a publish
+  command, and only on your yes. It never merges.
 - `/audit` finds drift, where the code and its documents disagree, and any spec or ADR that
   contradicts the brief, at any time. It changes nothing: you choose each correction.
 - `/practices` records how the project does things, such as the commands that check the work and
