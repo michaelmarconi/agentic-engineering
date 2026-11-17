@@ -45,8 +45,8 @@ that already reads clearly just to meet them. The review checks that a newcomer 
 sentence in one reading, and lists a long sentence or paragraph only as a suggestion.
 
 A spike runs in four steps: design, review the design, run, review the verdict. Work out from the
-record's status where to start: no record or `📝 Draft` is design, `🟢 Ready to run` is running or
-the verdict, and a `💡 Confirmed`, `🚫 Refuted` or `❔ Not settled` record is finished and never
+record's status where to start: no record or `Draft 📝` is design, `Ready to run 🟢` is running or
+the verdict, and a `Confirmed 💡`, `Refuted 🚫` or `Not settled ❔` record is finished and never
 changed again; another try at its hypothesis is a new record.
 
 ## Design
@@ -105,7 +105,7 @@ retried**"; the context it needs; a block quote holding a "**Proposed:**" line w
 line holding only `>`, and a "**Why:**" line with the reason; and the question itself, last, in one
 line.
 
-Write every new record as `📝 Draft`, named for today's date and two to five words of its title; then
+Write every new record as `Draft 📝`, named for today's date and two to five words of its title; then
 run the design review.
 
 Never rename a document once its review has started: the review hook keeps the review under the
@@ -114,9 +114,9 @@ say so to the person, who can rename it once the review has ended.
 
 ## Run
 
-Asked to run a `📝 Draft` record, run its design review instead, even when the person asks to
+Asked to run a `Draft 📝` record, run its design review instead, even when the person asks to
 skip it, and say the experiment runs once they sign off the reviewed design: the sign-off rests on
-the review, and running first would let the results shape the hypothesis. Only a `🟢 Ready to run`
+the review, and running first would let the results shape the hypothesis. Only a `Ready to run 🟢`
 record runs, and only through the run script, which writes each run into
 Runs word for word, so the record shows exactly what the experiment produced. Never run the
 experiment's code any other way, never retype or summarise a result into the record, and never
@@ -141,11 +141,11 @@ it, and make sure each edit succeeded before the next run.
 - **A step only the person can do:** ask them to do it, then pass their answer unchanged:
   `python3 "${CLAUDE_SKILL_DIR}/scripts/spike.py" run <path> --data "${CLAUDE_PLUGIN_DATA}" --observation "<their words>"`.
 - **A secret is not set:** the script records that it did not run. Tell the person how to set it
-  in Claude Code's environment, and that otherwise the spike ends `❔ Not settled`.
+  in Claude Code's environment, and that otherwise the spike ends `Not settled ❔`.
 - **The experiment can't run or settles nothing:** stop running; the verdict says so.
 
-Changing a design section of a `🟢 Ready to run` record, its Hypothesis, How we'll know, Out of
-scope, How the test works, Risks and safeguards or Experiment, returns it to `📝 Draft` in the same
+Changing a design section of a `Ready to run 🟢` record, its Hypothesis, How we'll know, Out of
+scope, How the test works, Risks and safeguards or Experiment, returns it to `Draft 📝` in the same
 edit, for a new design review and sign-off; that is possible only before the first run. After it
 they can't change: a different hypothesis or experiment is a new record.
 
@@ -158,7 +158,7 @@ Once the runs are done, write:
   the bank's file as sent." Never a bare status word. Then up to three sentences comparing the
   runs of the latest code, by run number, with How we'll know, and pointing to Out of scope for
   its limits. Nothing but the runs is evidence. If the runs settled nothing, say what was learned
-  and what is still unknown: the spike is `❔ Not settled`.
+  and what is still unknown: the spike is `Not settled ❔`.
 - **Next steps:** a fact goes to the spec, a choice between ways of building something to an
   ADR, and a finding that settles an ADR's open question to that ADR, each named by its title if
   one exists in `docs/specs/` or `docs/adrs/`, or "Nothing".
@@ -174,8 +174,8 @@ a verdict over its limit shortens its own sections, not the design's.
 
 ## Status
 
-The `status:` frontmatter is `📝 Draft`, `🟢 Ready to run`, `💡 Confirmed`, `🚫 Refuted` or `❔ Not
-settled`, written exactly so, emoji first. Only the person moves a record forward: `🟢 Ready to run`
+The `status:` frontmatter is `Draft 📝`, `Ready to run 🟢`, `Confirmed 💡`, `Refuted 🚫` or `Not
+settled ❔`, written exactly so, word first, then its emoji; one with its emoji in front, as earlier versions of the plugin wrote it, is written so in your next edit. Only the person moves a record forward: `Ready to run 🟢`
 when they sign off the design, and the status the Finding starts with when they confirm the verdict.
 Move the document forward only when the person explicitly says so about its text as it now stands,
 once the review below has ended with a pass on that text, from the review itself or from the
@@ -195,7 +195,7 @@ change, which adds it; a plugin hook refuses a status change without it.
 ## Review
 
 A record is reviewed twice, each time once, corrected once, and then the corrections are checked:
-the design before `🟢 Ready to run`, the verdict before it is finished. The sequence is fixed so it
+the design before `Ready to run 🟢`, the verdict before it is finished. The sequence is fixed so it
 always ends with a clear result: further rounds of review find little more, and each round of
 corrections brings new mistakes.
 

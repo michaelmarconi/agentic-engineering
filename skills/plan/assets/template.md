@@ -1,7 +1,7 @@
 ---
 # Change status only through the agentic plugin's skills, which check each change; a change made by hand is not checked.
 type: Plan
-status: 📝 Draft
+status: Draft 📝
 date: <YYYY-MM-DD>
 ---
 
@@ -48,5 +48,5 @@ date: <YYYY-MM-DD>
      it needs; then a block quote, last, holding `> **Proposed:** <the answer you would choose, or,
      if only the person can know, what would settle it>`, `>` alone on the next line,
      then `> **Why:** <the reason>`.
-     "None." before `🟢 Ready to build`. -->
+     "None." before `Ready to build 🟢`. -->
 None.

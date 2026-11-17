@@ -9,7 +9,7 @@ A plan says how one piece of work will build part of what the specs and ADRs hav
 the requirements it delivers, the decisions the code must follow, and how the work will be done.
 Plans live in one flat folder, `docs/plans/`, as `YYYY-MM-DD-<subject>.md`, dated the day the plan is
 first written, where the subject is two to five lowercase words of its title joined by hyphens,
-as a plugin hook checks. A plan is temporary: `/build` marks it `✅ Built`, after which it is frozen, never
+as a plugin hook checks. A plan is temporary: `/build` marks it `Built ✅`, after which it is frozen, never
 edited, and may be deleted whenever nobody needs it, so it never holds anything later work needs. A
 technical decision later work has to follow belongs in an ADR, not here.
 
@@ -41,10 +41,10 @@ earlier version of the agentic plugin: no plan can be signed off on it until it 
 
 - If the work builds no requirement and follows no ADR, such as tidying code, a routine upgrade or
   a quick fix, it needs no plan. Say so, suggest doing it straight from the conversation, and stop.
-- If a spec it builds or an ADR it follows is not `👍 Accepted`, stop and say which one, and
+- If a spec it builds or an ADR it follows is not `Accepted 👍`, stop and say which one, and
   what is left to settle in it. A plan builds only on settled documents, and you never change a spec or an ADR from here.
 - Read the frontmatter and Specs section of each plan in `docs/plans/`. If one that is not
-  `✅ Built` already names a requirement this work builds, say so and offer to change that plan
+  `Built ✅` already names a requirement this work builds, say so and offer to change that plan
   instead; no two unbuilt plans may name the same requirement.
 
 ## Keep to the practices
@@ -133,12 +133,12 @@ The plan's sections:
   only the person can know the answer, "Proposed:" says what would settle it instead, never a guess.
 - A decision the person agreed belongs in an ADR goes under **Open questions**, as an ADR to record
   and accept, proposing its decision. You never write the ADR yourself. Once the person tells you it
-  is `👍 Accepted`, list it under ADRs and remove the question. A decision that belongs in a spec or
+  is `Accepted 👍`, list it under ADRs and remove the question. A decision that belongs in a spec or
   in practices goes under **Open questions** the same way, as a change to make with `/spec` or a
   practice to record with `/practices`, proposing its wording. Name a practice by its topic, such as
   testing, never by its file, since a plan refers to no file under `docs/` but specs and ADRs (rubric
   check 8); a spec change is for a spec the plan lists. Remove the question once the person tells
-  you the practice is recorded, or that the spec is `👍 Accepted` again after its change.
+  you the practice is recorded, or that the spec is `Accepted 👍` again after its change.
 - **Plan** says how the work will be done, with headings and length to suit it: start with why the
   work is being done and what it leaves for later, give one recommended approach, and name the
   files that matter and the code to reuse. It holds no code, though it may hold a diagram the
@@ -153,15 +153,15 @@ check 8): state what matters from it in the plan's own words.
 
 ## Status
 
-The `status:` frontmatter is `📝 Draft`, `🟢 Ready to build` or `✅ Built`, written exactly so,
-emoji first. Write every new plan as `📝 Draft` and edit it freely while it is `📝 Draft`.
+The `status:` frontmatter is `Draft 📝`, `Ready to build 🟢` or `Built ✅`, written exactly so,
+word first, then its emoji. Write every new plan as `Draft 📝` and edit it freely while it is `Draft 📝`.
 
 The frontmatter's `date:` is the day the status last changed, written YYYY-MM-DD: give a new
 document today's date, set it to today's date in the same edit as every status change, and never
 change it otherwise. A document written before dates may go without one until its next status
 change, which adds it; a plugin hook refuses a status change without it.
 
-Only the person signs off a plan. `🟢 Ready to build` is the plan's move forward. Move the document
+Only the person signs off a plan. `Ready to build 🟢` is the plan's move forward. Move the document
 forward only when the person explicitly says so about its text as it now stands, once the review
 below has ended with a pass on that text, from the review itself or from the correction check after
 it, and once Open questions says "None.". Only a review in this conversation counts: if there is
@@ -169,12 +169,12 @@ none on the current text, run the review first, even when the person has already
 the status as its own last edit, never in the same reply as a change to the content; if anything
 changed after the person spoke, show the change and ask again. "Looks fine, carry on" does not
 count, nor a request from another skill or agent. Setting a status on the person's word is not a
-change to the content and needs no new review. No hook checks that a review ran. Never set `✅
-Built`: that belongs to the step that builds the plan. Any change to a `🟢 Ready to build` plan
-returns it to `📝 Draft`, for the person to sign off again. A plugin hook refuses status changes that
+change to the content and needs no new review. No hook checks that a review ran. Never set `Built
+✅`: that belongs to the step that builds the plan. Any change to a `Ready to build 🟢` plan
+returns it to `Draft 📝`, for the person to sign off again. A plugin hook refuses status changes that
 break these rules; if it refuses one, tell the person why.
 
-Close the reply that sets `🟢 Ready to build` with how to build the plan. A build after a long
+Close the reply that sets `Ready to build 🟢` with how to build the plan. A build after a long
 conversation asks first, and the plugin cannot reliably start a session, so say so and give the two
 steps with the plan's path: run `/clear`, then send `/agentic:build <the plan's path>`. In a Claude
 project thread, which has no `/clear`, they open a new thread and send that command as its first message. Start
@@ -251,8 +251,8 @@ than further questions; if the person has said not to ask now, ask nothing. Name
 the items: each comes up when you reach it. List the reviewers' suggestions separately, as optional:
 they never hold the plan back.
 
-Offer diagrams of the work at each hand-over of a `📝 Draft` plan, so a person can see how it fits
-together at a glance; a `🟢 Ready to build` or `✅ Built` plan gets no offer, since a diagram would
+Offer diagrams of the work at each hand-over of a `Draft 📝` plan, so a person can see how it fits
+together at a glance; a `Ready to build 🟢` or `Built ✅` plan gets no offer, since a diagram would
 change it. Offer a diagram only of a shape the text holds: parts that call each other, drawn as a
 flowchart; events passing between actors, drawn as a sequence diagram; the states one thing moves
 through, drawn as a state diagram; or records and how they relate, drawn as an entity-relationship

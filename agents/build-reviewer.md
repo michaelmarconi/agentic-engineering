@@ -20,7 +20,7 @@ Read:
 - The plan.
 - The rubric at `${CLAUDE_PLUGIN_ROOT}/skills/build/references/rubric.md`.
 - Each spec and ADR the plan lists, and the How we'll check section (Confirmation in an
-  older ADR) of every other ADR under `docs/adrs/` whose status is `👍 Accepted`, for rubric check 6.
+  older ADR) of every other ADR under `docs/adrs/` whose status is `Accepted 👍`, for rubric check 6.
 - The `## Practices` section of `AGENTS.md` and of `CLAUDE.md`, whichever have one, and any file
   under `docs/practices/` they name that bears on building, testing or committing, for rubric
   check 8.

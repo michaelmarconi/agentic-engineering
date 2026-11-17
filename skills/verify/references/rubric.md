@@ -8,7 +8,7 @@ check. "The run" is one `/verify` from the person's request to its reply.
    with its reason and nothing checked.
 2. **Agreed first.** Before any agent starts, the run shows the list it will check: each spec
    with its requirements and how many examples they hold, as `start` lists them, and any
-   requirement left out because its spec is not `👍 Accepted`, with that reason. No agent starts
+   requirement left out because its spec is not `Accepted 👍`, with that reason. No agent starts
    until the person agrees in this conversation. A request that names the requirements, whole
    specs, every accepted spec or a plan, and says to go ahead, is that agreement.
 3. **Practice first.** Before any agent starts, the run reads the Running the product practice.
@@ -29,7 +29,7 @@ check. "The run" is one `/verify` from the person's request to its reply.
    reported as disputed, with both agents' evidence, for the person to decide. A spec whose
    verifier or checker reported an `Error:` is reported as not checked, never as passed.
 7. **Each failure names its next step.** Each failed verdict names one: correct the code, through
-   `/plan` and `/build` or directly when small; or return the spec to `📝 Draft` and change it,
+   `/plan` and `/build` or directly when small; or return the spec to `Draft 📝` and change it,
    through `/spec`, when the product is right and the spec is not.
 8. **The report holds it all.** The report file is written by the script's `report` command, with
    the commit `start` printed and the overall result, then the failed, disputed, not checked and

@@ -2,8 +2,8 @@
 
 Each check passes or fails. `/spike` reads this while writing; the spike reviewer reads it while
 checking, and quotes the record as evidence for every failure. A spike record is reviewed twice:
-the design review, before `🟢 Ready to run`, applies the checks marked *design*; the verdict
-review, before `💡 Confirmed`, `🚫 Refuted` or `❔ Not settled`, applies the checks marked
+the design review, before `Ready to run 🟢`, applies the checks marked *design*; the verdict
+review, before `Confirmed 💡`, `Refuted 🚫` or `Not settled ❔`, applies the checks marked
 *verdict*, and the design checks only to what can still change after the runs: the title, Code and
 Open questions. The rest of the design was reviewed and signed off before the runs and is fixed
 now, so the verdict review reads it to judge the verdict but never fails it.
@@ -12,8 +12,8 @@ A record reads from plain to technical. Its plain part, for people, runs from th
 Experiment; its technical part, for agents and reviewers, is Experiment, Code and Runs.
 
 1. **Shape** (design). The file is directly in `docs/spikes/`; its name is checked by a plugin hook,
-   not here. Its frontmatter has `type: Spike` and `status:` set to `📝 Draft`, `🟢 Ready to run`,
-   `💡 Confirmed`, `🚫 Refuted` or `❔ Not settled`, emoji included, and `date:` as YYYY-MM-DD if it has one (a missing date passes: a plugin hook requires it with the next
+   not here. Its frontmatter has `type: Spike` and `status:` set to `Draft 📝`, `Ready to run 🟢`,
+   `Confirmed 💡`, `Refuted 🚫` or `Not settled ❔`, emoji included, and `date:` as YYYY-MM-DD if it has one (a missing date passes: a plugin hook requires it with the next
    status change). Under a `# ` title that is
    the hypothesis in plain words, the sections are Hypothesis, Finding, Next steps, How we'll know,
    Out of scope, How the test works, Risks and safeguards, Results, Surprises, Open questions,
@@ -71,14 +71,14 @@ Experiment; its technical part, for agents and reviewers, is Experiment, Code an
 14. **Every run recorded** (verdict). Each result the Finding uses is in Runs, as a `### Run N`
     entry the run script wrote. The runs of the latest code, those whose code hash matches the
     last run's, number at least `- Runs:`, or the last of them shows the result named under
-    `- Stop early if:`. A record that is `❔ Not settled` may have fewer, when Runs shows why it
+    `- Stop early if:`. A record that is `Not settled ❔` may have fewer, when Runs shows why it
     could not run. A run marked as the person's observation is for a step only a person can do.
 15. **Finding follows** (verdict). The Finding's first sentence is Confirmed, Refuted or Not
     settled, then what was found, in full, so that it makes sense with the rest of the record
     hidden; a bare status word fails. It compares the runs of the latest code, by run number,
     with How we'll know, and rests on nothing but those runs: documentation, other people's
     reports and reasoning are not evidence. A spike that settled nothing says what was learned
-    and what is still unknown, and is `❔ Not settled`.
+    and what is still unknown, and is `Not settled ❔`.
 16. **Results agree** (verdict). Results is a table with the columns Run, Date, Outcome and
     Note, with a row for every run in Runs, by its number, with the same outcome, and says which
     runs count.
@@ -89,8 +89,8 @@ Experiment; its technical part, for agents and reviewers, is Experiment, Code an
     settles an ADR's open question to that ADR, and each line
     says what should change or only "Nothing". A spec or ADR named by title exists under
     `docs/specs/` or `docs/adrs/`. It never asks a document to refer to this record.
-19. **Ready means ready** (design). A record that is `🟢 Ready to run`, `💡 Confirmed`,
-    `🚫 Refuted` or `❔ Not settled` has an Open questions section that says only "None."
+19. **Ready means ready** (design). A record that is `Ready to run 🟢`, `Confirmed 💡`,
+    `Refuted 🚫` or `Not settled ❔` has an Open questions section that says only "None."
 20. **Proposed answers** (design). Each open question's "**Proposed:**" line makes one proposal, a
     single decision the person can accept in a word or replace, and its "**Why:**" line gives the
     reason, which the proposal does not repeat; a second proposal hidden in either line fails, since
@@ -103,7 +103,7 @@ Experiment; its technical part, for agents and reviewers, is Experiment, Code an
 The plain part's size, at most 600 words for the design and 400 for the verdict (Finding, Next
 steps, Results and Surprises), tables included, is checked by the run script's `words`
 command and by the status hook, not by the reviewer. So is a finishing status that the Finding
-does not open with, such as `💡 Confirmed` for a Finding that opens "Refuted:".
+does not open with, such as `Confirmed 💡` for a Finding that opens "Refuted:".
 
 Sentence and paragraph lengths are guidance in the skill, not checks: a reviewer may list a long
 one under Suggestions, which never fail the review, but never as a failed check.

@@ -83,7 +83,7 @@ The lifecycle keeps five kinds of document:
 | Plan | `docs/plans/` | One piece of work that builds part of a spec or an ADR. It is temporary: frozen once built, and deleted whenever nobody needs it. |
 | Spike record | `docs/spikes/` | One hypothesis tested by a throwaway experiment: the experiment, what it produced and the finding, written to read plain first. |
 
-Each document except the brief has a status, such as `📝 Draft` or `🟢 Ready to build`. A
+Each document except the brief has a status, such as `Draft 📝` or `Ready to build 🟢`. A
 project can also record its **practices**, such as how it is built, tested and released, in
 `AGENTS.md` and `docs/practices/`, for Claude and other coding tools to follow.
 

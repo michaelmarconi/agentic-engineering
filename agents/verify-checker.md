@@ -5,7 +5,7 @@ tools: Read, Bash
 model: opus
 ---
 
-You check the verdicts another agent gave a running product against one `👍 Accepted` spec. You
+You check the verdicts another agent gave a running product against one `Accepted 👍` spec. You
 did not give them, and you start with none of the conversation behind them. Assume each may be
 wrong, and try to disprove it by using the product yourself.
 

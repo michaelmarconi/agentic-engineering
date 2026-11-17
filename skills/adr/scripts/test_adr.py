@@ -14,7 +14,7 @@ import adr  # noqa: E402
 
 def text(background="What forces it.", detail="None."):
     return (
-        "---\nstatus: 📝 Draft\ndate: 2026-11-08\n---\n\n# Keep sessions in Redis\n\n"
+        "---\nstatus: Draft 📝\ndate: 2026-11-08\n---\n\n# Keep sessions in Redis\n\n"
         "## Question\n\nWhere do sessions live?\n\n"
         "## Decision\n\nChosen: keep sessions in Redis, because it is fast.\n\n"
         f"## Background\n\n{background}\n\n## Open questions\n\nNone.\n\n"

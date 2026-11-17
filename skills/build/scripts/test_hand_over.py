@@ -26,7 +26,7 @@ ENV = dict(os.environ, GIT_AUTHOR_NAME="Test", GIT_AUTHOR_EMAIL="test@example.co
            GIT_CONFIG_GLOBAL=os.devnull, GIT_CONFIG_NOSYSTEM="1")
 
 
-def plan(status="🟢 Ready to build", date="2026-11-04"):
+def plan(status="Ready to build 🟢", date="2026-11-04"):
     dated = f"date: {date}\n" if date else ""
     return f"---\nstatus: {status}\n{dated}---\n\n# Thing\n\n## Plan\n\nDo the thing.\n"
 
@@ -161,52 +161,59 @@ class Built(Repo):
         self.put("src/thing.py", "print('thing')\n")
         code, out = self.run_it("--reviews-passed")
         self.assertEqual(code, 0)
-        self.assertIn("status: ✅ Built\n", self.read(PLAN))
+        self.assertIn("status: Built ✅\n", self.read(PLAN))
         self.assertEqual(self.subjects()[:2], ["Mark the plan 2026-11-03-thing.md as built", "Build the thing"])
-        self.assertIn("✅ Built", out)
+        self.assertIn("Built ✅", out)
 
     def test_plan_left_ready_without_passing_reviews(self):
         code, out = self.run_it()
         self.assertEqual(code, 0)
-        self.assertIn("status: 🟢 Ready to build\n", self.read(PLAN))
-        self.assertIn("🟢 Ready to build", out)
+        self.assertIn("status: Ready to build 🟢\n", self.read(PLAN))
+        self.assertIn("Ready to build 🟢", out)
 
     def test_draft_plan_without_passing_reviews_says_it_is_not_ready(self):
-        self.put(PLAN, plan("📝 Draft"))
+        self.put(PLAN, plan("Draft 📝"))
         code, out = self.run_it()
         self.assertEqual(code, 0)
-        self.assertIn("status: 📝 Draft\n", self.read(PLAN))
-        self.assertIn("stays `📝 Draft`, because it is not `🟢 Ready to build`", out)
+        self.assertIn("status: Draft 📝\n", self.read(PLAN))
+        self.assertIn("stays `Draft 📝`, because it is not `Ready to build 🟢`", out)
         self.assertNotIn("reviews have not all passed", out)
 
     def test_only_a_ready_plan_is_marked_built(self):
-        self.put(PLAN, plan("📝 Draft"))
+        self.put(PLAN, plan("Draft 📝"))
         code, out = self.run_it("--reviews-passed")
         self.assertEqual(code, 1)
-        self.assertIn("status: 📝 Draft\n", self.read(PLAN))
-        self.assertIn("📝 Draft", out)
+        self.assertIn("status: Draft 📝\n", self.read(PLAN))
+        self.assertIn("Draft 📝", out)
 
     def test_ready_written_before_the_emoji_counts(self):
         self.put(PLAN, plan("Ready to build"))
         code, _ = self.run_it("--reviews-passed")
         self.assertEqual(code, 0)
-        self.assertIn("status: ✅ Built\n", self.read(PLAN))
+        self.assertIn("status: Built ✅\n", self.read(PLAN))
+
+    def test_ready_written_with_the_emoji_first_counts(self):
+        for old in ("🟢 Ready to build", "🟢\ufe0f Ready to build"):
+            self.put(PLAN, plan(old))
+            code, _ = self.run_it("--reviews-passed")
+            self.assertEqual(code, 0, old)
+            self.assertIn("status: Built ✅\n", self.read(PLAN))
 
     def test_only_the_status_and_date_lines_change(self):
         before = self.read(PLAN)
         self.run_it("--reviews-passed")
-        self.assertEqual(self.read(PLAN), before.replace("🟢 Ready to build", "✅ Built").replace(
+        self.assertEqual(self.read(PLAN), before.replace("Ready to build 🟢", "Built ✅").replace(
             "date: 2026-11-04", f"date: {TODAY}"))
 
     def test_built_plan_dated_today(self):
         self.run_it("--reviews-passed")
-        self.assertIn(f"status: ✅ Built\ndate: {TODAY}\n", self.read(PLAN))
+        self.assertIn(f"status: Built ✅\ndate: {TODAY}\n", self.read(PLAN))
 
     def test_plan_from_before_dates_gains_todays_date_under_its_status(self):
         self.put(PLAN, plan(date=None))
         code, _ = self.run_it("--reviews-passed")
         self.assertEqual(code, 0)
-        self.assertEqual(self.read(PLAN), plan("✅ Built", date=TODAY))
+        self.assertEqual(self.read(PLAN), plan("Built ✅", date=TODAY))
 
     def test_date_with_a_comment_keeps_it(self):
         self.put(PLAN, plan(date="2026-11-04  # status day"))
@@ -236,7 +243,7 @@ class Built(Repo):
         self.put(PLAN, plan(date=None) + "\ndate: 2026-01-01\n")
         self.run_it("--reviews-passed")
         text = self.read(PLAN)
-        self.assertIn(f"status: ✅ Built\ndate: {TODAY}\n", text)
+        self.assertIn(f"status: Built ✅\ndate: {TODAY}\n", text)
         self.assertTrue(text.endswith("\ndate: 2026-01-01\n"))
 
     def test_missing_plan_refused(self):
@@ -261,7 +268,7 @@ class Push(Repo):
         code, out = self.run_it("--reviews-passed")
         self.assertEqual(code, 2)
         self.assertEqual(self.subjects(), ["Start"])
-        self.assertIn("status: 🟢 Ready to build\n", self.read(PLAN))
+        self.assertIn("status: Ready to build 🟢\n", self.read(PLAN))
         self.assertIn("no remote named `origin`", out)
 
     def test_refused_without_the_remote_default_branch(self):
@@ -382,7 +389,7 @@ class OpenFindings(Repo):
 
     def failed_report(self, check=CHECK, head=None, own=None, date="2026-11-09", plan_path=PLAN):
         head = head or self.git("rev-parse", "HEAD")
-        output = f"Branch: build/thing\nPlan: {plan_path} stays `🟢 Ready to build`, because the reviews " \
+        output = f"Branch: build/thing\nPlan: {plan_path} stays `Ready to build 🟢`, because the reviews " \
                  f"have not all passed.\nPush: pushed build/thing to origin.\nHead: {head}"
         copied = {"What each review found": [("Code review", "[]"), ("Build review", "Result: FAIL"),
                                              ("Correction check", check)],
@@ -437,7 +444,7 @@ class OpenFindings(Repo):
         self.failed_report()
         code, out = self.run_accept()
         self.assertEqual(code, 0, out)
-        self.assertIn("status: ✅ Built", self.read(PLAN))
+        self.assertIn("status: Built ✅", self.read(PLAN))
         self.assertIn(f"date: {TODAY}", self.read(PLAN))
         message = self.git("log", "-1", "--format=%B")
         self.assertTrue(message.startswith("Mark the plan 2026-11-03-thing.md as built\n\n"), message)
@@ -487,10 +494,10 @@ class OpenFindings(Repo):
 
     def test_plan_not_ready(self):
         self.failed_report()
-        self.put(PLAN, plan(status="📝 Draft"))
+        self.put(PLAN, plan(status="Draft 📝"))
         self.git("commit", "-qam", "Draft again")
         self.failed_report(date="2026-11-10")
-        self.assert_refused("not `🟢 Ready to build`")
+        self.assert_refused("not `Ready to build 🟢`")
 
     def test_nothing_listed(self):
         self.failed_report(check="Result: FAIL\n\nCorrections:\n- a: made\n\nBroken by a correction:\n- None.\n")
@@ -527,7 +534,7 @@ class OpenFindings(Repo):
         with mock.patch.object(hand_over, "commit", return_value=False):
             code, out = self.run_accept()
         self.assertEqual(code, 1, out)
-        self.assertIn("status: 🟢 Ready to build", self.read(PLAN))
+        self.assertIn("status: Ready to build 🟢", self.read(PLAN))
         self.assertNotIn("Push:", out)
         self.assertEqual(len(self.reports()), 1)
 
@@ -536,7 +543,7 @@ class OpenFindings(Repo):
         with mock.patch("sys.stderr", io.StringIO()), self.assertRaises(SystemExit) as raised:
             self.run_accept("", "--reviews-passed")
         self.assertEqual(raised.exception.code, 2)
-        self.assertIn("status: 🟢 Ready to build", self.read(PLAN))
+        self.assertIn("status: Ready to build 🟢", self.read(PLAN))
 
 
 class ReleaseNotes(Repo):
@@ -580,7 +587,7 @@ class ReleaseNotes(Repo):
         self.assertEqual(self.git("rev-parse", "HEAD"), self.git("rev-parse", "build/thing", cwd=self.bare))
 
     def test_reviews_passed_on_a_plan_not_ready_with_nothing_to_commit_keeps_the_notes(self):
-        self.put(PLAN, plan("📝 Draft"))
+        self.put(PLAN, plan("Draft 📝"))
         self.git("commit", "-qam", "Draft plan")
         code, out = self.run_it("--reviews-passed")
         self.assertEqual(code, 1, out)

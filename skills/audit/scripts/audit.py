@@ -9,13 +9,16 @@ JSON on stdout.
 
 documents
     Checks every lifecycle document under docs/ as it stands, whatever its status, and lists the
-    `👍 Accepted` specs and ADRs. The documents are docs/brief.md, *.spec.md files under
+    `Accepted 👍` specs and ADRs. The documents are docs/brief.md, *.spec.md files under
     docs/specs/, NNNN-*.md files under docs/adrs/, and *.md files directly in docs/plans/ and
     docs/spikes/; any other file there with no `status:` is not a lifecycle document and is left
     alone. Each problem names its document, its check and what is wrong:
 
     - status: the status is not one its kind of document has, written with its emoji (U+FE0F after
       the emoji is optional), or a spec, ADR, plan or spike record has none;
+    - status form: one problem naming how many documents write their status with its emoji in
+      front, as earlier versions of the plugin did, such as `👍 Accepted`, and listing them. Each
+      still counts as its status; a skill moves the emoji after the word when it next edits one;
     - type: the frontmatter's `type:` is not the one for the document's kind (`Brief`, `Spec`,
       `ADR`, `Plan` or `Spike`). A document without `type:` is not a problem: those written before
       types gain one on their next edit, and decided ones may never be edited again;
@@ -25,36 +28,36 @@ documents
     - number field: an ADR has no `number:`, or one that is not the four digits its file name starts with
       (docs/adrs/0048). Those written before the field are listed here so they can be given one by
       hand, which any edit may add;
-    - open questions: a `👍 Accepted` spec or ADR, a `🟢 Ready to build` plan or a `🟢 Ready to run`
+    - open questions: a `Accepted 👍` spec or ADR, a `Ready to build 🟢` plan or a `Ready to run 🟢`
       spike record whose Open questions section is missing or holds anything but "None.";
     - question layout: an open question is not laid out as ADR 0030 says, a heading
       `### N. <what is to be settled>`, its context, then a block quote holding one
       `> **Proposed:**` line and one `> **Why:**` line with a line holding only `>` between them,
       so they show as two lines, as documents written before that layout
       are; they are listed here so they can be laid out again, which their next change to Open
-      questions must do anyway. A decided ADR, a `✅ Built` plan and a finished spike record are
+      questions must do anyway. A decided ADR, a `Built ✅` plan and a finished spike record are
       never edited, so they are not listed, nor is a document the open questions check above
       already lists;
     - references: a document links to another lifecycle document, or names its file, where the
       lifecycle's references rule does not allow it. Plans and spike records may name specs and
       ADRs; an ADR may name another ADR; nothing may name a plan or spike record; otherwise the
       brief, specs and ADRs name no other document. The frontmatter is not read;
-    - supersede: an `👍 Accepted` or `↪️ Superseded` ADR's `supersedes:` names an ADR whose
+    - supersede: an `Accepted 👍` or `Superseded ↪️` ADR's `supersedes:` names an ADR whose
       `superseded-by:` does not name it back, a `superseded-by:` names an ADR whose `supersedes:`
-      does not name this one, or a `↪️ Superseded` ADR has no `superseded-by:`. A Draft or
+      does not name this one, or a `Superseded ↪️` ADR has no `superseded-by:`. A Draft or
       Rejected ADR naming the one it would supersede is not checked;
     - layout: a spec still heads its requirements `### Requirement: <name>`, as specs written for an
       earlier version of the plugin did. Nothing breaks while it is left alone, but no plan naming
       it can be signed off until it is reworked with /spec and accepted again;
-    - ready plan: a `🟢 Ready to build` plan names a spec or ADR that is missing or not
-      `👍 Accepted`, or a requirement its spec no longer has;
-    - overlap: two plans that are not `✅ Built` name the same requirement of the same spec. Plans
+    - ready plan: a `Ready to build 🟢` plan names a spec or ADR that is missing or not
+      `Accepted 👍`, or a requirement its spec no longer has;
+    - overlap: two plans that are not `Built ✅` name the same requirement of the same spec. Plans
       are read from the working tree and from every local and remote branch git already knows,
       with `git show`; nothing is fetched. A plan is known by its file name, so the same plan on
-      several branches is one plan, and a plan `✅ Built` on any of them is built.
+      several branches is one plan, and a plan `Built ✅` on any of them is built.
 
-    It also lists the `✅ Built` plans, the finished spike records (`💡 Confirmed`,
-    `🚫 Refuted` or `❔ Not settled`) and the unfinished ones with the date their name starts with. `lifecycle`
+    It also lists the `Built ✅` plans, the finished spike records (`Confirmed 💡`,
+    `Refuted 🚫` or `Not settled ❔`) and the unfinished ones with the date their name starts with. `lifecycle`
     is false when the project has no lifecycle document at all. `brief` is the brief's path, or null
     when the project has none. Every path is relative to `root`,
     the project's full path, which both commands print, so an agent started from another folder
@@ -64,7 +67,7 @@ window <words>
     Reads `last N days` (commits whose commit date falls in the N days before now) or
     `since <commit>` (the commits after that commit, not including it) on the checked-out branch,
     and lists the files those commits added (A), changed (M), renamed (R, with the old name) or
-    deleted (D), the `👍 Accepted` specs and ADRs whose own text changed, and `brief_changed`, true
+    deleted (D), the `Accepted 👍` specs and ADRs whose own text changed, and `brief_changed`, true
     when the window added, changed, renamed or deleted docs/brief.md. A merge commit counts
     as its change from its first parent, so work merged in the window counts even when its own
     commits are older. It also lists the window's commits, oldest first, with their dates and
@@ -105,7 +108,7 @@ import sys
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "..", "scripts"))
 from status_check import (ACCEPTED, ADR_STATUSES, BUILT, DRAFT, FINISHED,  # noqa: E402
                           READY, READY_TO_RUN, REJECTED, SPEC_STATUSES, SPIKE_STATUSES, STATUSES, SUPERSEDED, TYPES, article,
-                          field, frontmatter, has_open_questions, open_questions_problem, real_date, lifecycle_status, listed,
+                          field, frontmatter, has_open_questions, open_questions_problem, real_date, lifecycle_status, listed, emoji_first,
                           OLD_LAYOUT, name_problem, old_layout, reference_problem, requirements, status_of)
 from doc_references import targets  # noqa: E402
 import audit_relay  # noqa: E402
@@ -190,7 +193,8 @@ def lifecycle_documents(project):
 
 def status(kind, text):
     """The document's status as the status hook reads it: a status written by its word alone, as
-    documents written before the emoji were, counts as the status it names."""
+    documents written before the emoji were, or one with its emoji in front, as documents written
+    before the emoji moved after the word were, counts as the status it names."""
     return lifecycle_status(text, KINDS[kind])
 
 
@@ -387,7 +391,7 @@ def check_documents(project):
         problems.append({"document": document, "check": check, "detail": detail})
 
     accepted = {"specs": [], "adrs": []}
-    built, finished, unfinished = [], [], []
+    built, finished, unfinished, emoji_first_documents = [], [], [], []
     for relative, (kind, text) in sorted(documents.items()):
         written = field(text, "type")
         if written is not None and written != TYPES[kind]:
@@ -402,9 +406,12 @@ def check_documents(project):
             badly_named = name_problem(relative, kind, text, new=False)
             if badly_named:
                 add(relative, "name", badly_named.split(": ", 1)[1])
-            wrong = status_problem(kind, text)
-            if wrong:
-                add(relative, "status", wrong)
+            if emoji_first(status_of(text)):
+                emoji_first_documents.append(relative)
+            else:
+                wrong = status_problem(kind, text)
+                if wrong:
+                    add(relative, "status", wrong)
             written_date = field(text, "date")
             if written_date is None:
                 add(relative, "date", "it has no `date:`, the day its status last changed")
@@ -442,6 +449,11 @@ def check_documents(project):
                 unfinished.append({"document": relative, "status": current, "date": date.group(1) if date else None})
         for wrong in reference_problems(relative, kind, text, documents, project):
             add(relative, "references", wrong)
+    if emoji_first_documents:
+        count = len(emoji_first_documents)
+        add(f"{count} document{'s' if count > 1 else ''}", "status form",
+            f"the status emoji comes before the word, as it did in earlier versions of the plugin; move "
+            f"it after the word, as in `{ACCEPTED}`: {', '.join(emoji_first_documents)}")
     for document, detail in supersede_problems(documents):
         add(document, "supersede", detail)
     for document, detail in overlap_problems(project, documents):

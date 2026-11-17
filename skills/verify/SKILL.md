@@ -5,7 +5,7 @@ description: Check the running product against its accepted specs from the outsi
 
 # Verify
 
-A verify run checks the product against its `👍 Accepted` specs from the outside: agents start the
+A verify run checks the product against its `Accepted 👍` specs from the outside: agents start the
 product, use it through its real interfaces, and give each example of the agreed requirements a
 verdict with evidence. They never read the code, so they can only judge what the product does.
 The run changes nothing in the repository and sets no status, so the person decides what follows.
@@ -38,13 +38,13 @@ Read what they asked for:
 - a plan, which stands for the requirements its Specs section names. Read only that section: the
   rest of a plan is about the code.
 
-When they named nothing, propose the requirements of the plan this branch marked `✅ Built`, the
+When they named nothing, propose the requirements of the plan this branch marked `Built ✅`, the
 one whose status the branch's own commits changed, if there is one; otherwise ask what to check.
 
 Run `start` with the specs those requirements come from, or with none for every spec. Then show
 the person the list you will check: each spec by its path, with its requirements by number and
 name and how many examples each holds, as `start` printed them. Leave out every requirement whose
-spec is not `👍 Accepted`, and say so with its status: a spec that is not accepted states no
+spec is not `Accepted 👍`, and say so with its status: a spec that is not accepted states no
 settled intent to check against. Leave out, too, a spec `start` marks `old_layout`, whose
 requirements it cannot list, and say it must be brought to the current layout with `/spec` and
 accepted again. Tell them the second agent re-challenges every verdict, passes included, so
@@ -116,7 +116,7 @@ you have nothing for:
 1. `## Overall result`: every example passed, or how many failed, are disputed or were not checked.
 2. `## Failed`: each confirmed fail, by requirement and example, with the evidence and its
    suggested next step: **correct the code**, through `/plan` and `/build` or directly when small;
-   or **return the spec to `📝 Draft`** and change it, through `/spec`, when the product is right
+   or **return the spec to `Draft 📝`** and change it, through `/spec`, when the product is right
    and the spec is not.
 3. `## Disputed`: each rejected verdict, with both agents' evidence.
 4. `## Not checked`: each example not checked, with its reason and what would make it checkable,

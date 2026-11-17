@@ -69,12 +69,12 @@ changes anything, `/build` checks:
   project, a new session is a new thread: open one and send that command as its first message. A
   thread that Claude opened for you can build straight away, as long as it hasn't done much else
   first ([ADR 0037](../adrs/0037-build-session-check.md)).
-- **The plan exists and can be built.** A `✅ Built` plan is refused: a plan is built once. Every
+- **The plan exists and can be built.** A `Built ✅` plan is refused: a plan is built once. Every
   spec and ADR the plan names must exist, with a heading for each requirement it names, and none
-  may be `❌ Rejected` or `↪️ Superseded`. These can't be overridden, since there would be nothing
+  may be `Rejected ❌` or `Superseded ↪️`. These can't be overridden, since there would be nothing
   to build against.
 - **The plan is signed off, or you choose to build anyway.** If the plan, or a spec or ADR it
-  names, is `📝 Draft`, `/build` doesn't refuse. This is its last check, so a build you choose to
+  names, is `Draft 📝`, `/build` doesn't refuse. This is its last check, so a build you choose to
   go on with isn't then stopped by another. It lists what
   isn't signed off, including the plan's open questions, and asks "Build anyway, on the proposed
   answers?". Building before sign-off is your call: pick "Build anyway" and it builds each open
@@ -117,7 +117,7 @@ code was already committed, such as by an earlier build that stopped, `/build` k
 reports the refusal, and the review names that requirement so you can decide whether to accept it
 ([ADR 0039](../adrs/0039-tests-fail-without-code.md)). It then runs
 your whole test suite and your linters, as your practices say, before moving on, so it notices at
-once if the new code breaks something already built. It follows every `👍 Accepted` ADR the plan
+once if the new code breaks something already built. It follows every `Accepted 👍` ADR the plan
 names, and any other whose How we'll check section says it applies to the code being changed. It
 commits as it goes, so the branch always holds the work so far.
 
@@ -188,7 +188,7 @@ seen the conversation:
 
 A reviewer asked to find problems will always find something, so the reviews pass once every bug
 or security hole they report has been corrected. Findings about tidiness or style are listed in the
-report but do not stop the plan being marked `✅ Built`.[^specreview]
+report but do not stop the plan being marked `Built ✅`.[^specreview]
 
 `/build` corrects what the reviews find, once, and has the corrections checked, the same way
 documents are reviewed (see [Review process](../lifecycle.md#review-process)). It then runs your
@@ -209,27 +209,27 @@ plan still existing or on its status, and your repository needs no extra file
 ([ADR 0043](../adrs/0043-build-commit-carries-release-note.md)). If there is nothing left to
 commit, the script makes a commit that holds only the notes.
 
-The plan is set to `✅ Built` only when it was `🟢 Ready to build` and every review has passed. A
+The plan is set to `Built ✅` only when it was `Ready to build 🟢` and every review has passed. A
 plan built before sign-off keeps its status: settle it and sign it off, then rerun `/build` on the
-branch to mark it `✅ Built`. If the build stopped instead,
+branch to mark it `Built ✅`. If the build stopped instead,
 because the corrections failed their check, a requirement's tests still failed after two attempts,
 or a choice needed raising, the plan keeps its status. Sort out what is open however suits
 you: with Claude directly, by changing a spec or ADR, or by deciding a finding is wrong. Then rerun
-`/build` on the branch. It resumes, reviews again, and marks the plan `✅ Built` once every review
+`/build` on the branch. It resumes, reviews again, and marks the plan `Built ✅` once every review
 passes. If you think a finding is wrong, say so when you rerun it.
 
 If the correction check failed and you judge the open findings acceptable for now, run `/build`
 again on the branch without changing anything. It starts no review: it lists the open findings,
-explains that accepting marks the plan `✅ Built` with them left open and freezes it, and asks
+explains that accepting marks the plan `Built ✅` with them left open and freezes it, and asks
 "Accept the build as it stands, or correct it?". If you accept, the hand-over script marks the plan
-`✅ Built` in a commit whose message lists the findings you accepted, so the pull request shows
-them, and pushes the branch. The script offers this only when the plan is `🟢 Ready to build`, it
+`Built ✅` in a commit whose message lists the findings you accepted, so the pull request shows
+them, and pushes the branch. The script offers this only when the plan is `Ready to build 🟢`, it
 was signed off before the build, the last build's report shows the failed check, and the branch
 has not changed since; otherwise `/build` reviews again as above. The report has to be on the
 computer you run `/build` on.
 
 It ends with a short reply, under 150 words: the outcome, the branch and whether the plan was
-marked `✅ Built`, then at most five bullets of at most 15 words each, with the main findings and
+marked `Built ✅`, then at most five bullets of at most 15 words each, with the main findings and
 any question or action for you, then the full path of the build's report file. Where the app
 you run Claude Code in can show you a file, the report opens there. The file is Markdown, kept outside your repository
 in the plugin's data folder, under `reports/<repository>/`, named by date and plan; where that
@@ -253,7 +253,7 @@ says why.
 
 ## After a build
 
-A `✅ Built` plan is frozen: it is never edited again, and you may delete it whenever nobody needs
+A `Built ✅` plan is frozen: it is never edited again, and you may delete it whenever nobody needs
 it, since nothing refers to a plan. [`/audit`](audit.md) lists built plans you might delete. For
 more work on the same requirements, write a new plan, or make small corrections by working with
 Claude directly, which is the usual way to tidy up after a large build.

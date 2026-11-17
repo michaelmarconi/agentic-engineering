@@ -20,19 +20,19 @@ spec's title. Specs start flat; when there are
 enough to need it, group them into folders of your choosing. The plugin finds specs anywhere
 under `docs/specs/` and gives folders no meaning, and `/agentic:spec` puts a new spec in the
 folder it fits, asking you only when none clearly does. Move a spec with `git mv`, which keeps its
-status; the hook would see a spec written in a new place as a new spec and require `📝 Draft`.
+status; the hook would see a spec written in a new place as a new spec and require `Draft 📝`.
 
 ## Anatomy
 
 | Section | Holds |
 |---|---|
-| `status:` and `date:` | `📝 Draft` or `👍 Accepted`, and the day the status last changed |
+| `status:` and `date:` | `Draft 📝` or `Accepted 👍`, and the day the status last changed |
 | Story | One sentence: when the capability is needed, who wants it, what they want to do and the outcome they want[^story] |
 | In scope | What the capability covers |
 | Out of scope | What it explicitly does not do[^shapeup] |
 | Requirements | The behaviour, one numbered requirement at a time, the first stating the story's outcome |
 | Constraints | Hard limits the behaviour must respect |
-| Open questions | Unknowns still to answer, each with a proposed answer; empty before the spec can be `👍 Accepted` |
+| Open questions | Unknowns still to answer, each with a proposed answer; empty before the spec can be `Accepted 👍` |
 
 These sections are the minimum. A spec can have more, such as "Security" or "Privacy", when you
 ask `/spec` for them; they go before Open questions and are held to the same checks, and
@@ -88,40 +88,40 @@ met, it asks in Open questions, with the answer it would choose, so you can acce
 ```mermaid
 stateDiagram-v2
     direction LR
-    state "📝 Draft" as Draft
-    state "👍 Accepted" as Accepted
+    state "Draft 📝" as Draft
+    state "Accepted 👍" as Accepted
     [*] --> Draft
     Draft --> Accepted: accept
     Accepted --> Draft: change
 ```
 
-- `📝 Draft`: being shaped.
-- `👍 Accepted`: you have accepted the text. You have said it is done, Open questions is empty,
+- `Draft 📝`: being shaped.
+- `Accepted 👍`: you have accepted the text. You have said it is done, Open questions is empty,
   the review (below) has passed with no decision left for you, and you have seen the text as it
   stands. If `/spec` changes anything after you asked, even a small fix you allowed in advance, it
-  shows you the change and waits for your reply before setting `👍 Accepted`.
+  shows you the change and waits for your reply before setting `Accepted 👍`.
 
 The status describes the document, not the software, so building the software the spec describes does not change it: a
 status about the software would stop being true, without anyone noticing, as the code changes. To
 find out whether the software meets a spec, check the software against it.
 
-Changing a `👍 Accepted` spec returns it to `📝 Draft`. An older spec whose status is
-`🟢 Ready to build` or `✅ Built`, which specs no longer use, must be set back to `📝 Draft` before
+Changing a `Accepted 👍` spec returns it to `Draft 📝`. An older spec whose status is
+`Ready to build 🟢` or `Built ✅`, which specs no longer use, must be set back to `Draft 📝` before
 it can be accepted. A spec written for an earlier version of the plugin, with Problem, Goal and
 Scope sections and `### Requirement:` headings, breaks nothing while left alone, but no plan
 naming it can be signed off, and `/build` will not start on such a plan, until the spec is
 reworked: the next time `/spec` edits it, it brings it to this layout and these checks, keeping
 what it says and asking about anything the new checks need. That edit returns an accepted spec
-to `📝 Draft`, so accept it again, then sign the plan off again. [`/audit`](audit.md) lists the
+to `Draft 📝`, so accept it again, then sign the plan off again. [`/audit`](audit.md) lists the
 specs still in the old layout. A capability that is no longer wanted has
 its spec deleted; git keeps the history.[^openspec]
 
 Two more things keep specs in this shape:
 
 - **Status.** A hook checks each edit Claude makes to a spec with its file-editing tools and
-  refuses one the lifecycle does not allow: a new spec that is not `📝 Draft`,
-  `👍 Accepted` while Open questions is not empty or in the same edit as a change to the text, a
-  change to a `👍 Accepted` spec that does not return it to `📝 Draft`, any other status, or a
+  refuses one the lifecycle does not allow: a new spec that is not `Draft 📝`,
+  `Accepted 👍` while Open questions is not empty or in the same edit as a change to the text, a
+  change to a `Accepted 👍` spec that does not return it to `Draft 📝`, any other status, or a
   status without its emoji. ADRs, plans and spike records get the same kind of check; see
   [`/adr`](adr.md), [`/plan`](plan.md) and [`/spike`](spike.md).
 - **Audit.** [`/audit`](audit.md) finds specs and code that no longer agree, and specs left
@@ -136,7 +136,7 @@ Run `/spec` and tell it what you want to do:
 - **Change:** edit a spec in place, including answering an open question, for example with the
   finding of a finished [spike record](spike.md). The spec states the spike's evidence in its own
   words and never refers to the record, which may be deleted.
-- **Accept:** mark a spec `👍 Accepted`.
+- **Accept:** mark a spec `Accepted 👍`.
 
 When the spec has open questions, `/spec` tells you how many there are and asks them one at a
 time, each with its proposal and the reason set apart in a quote, as

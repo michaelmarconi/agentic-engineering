@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Check that this repository's Markdown names document statuses by their exact value.
 
-A status is its emoji and its word, such as `🟢 Ready to build`, and outside a status line it is
+A status is its word, then its emoji, such as `Ready to build 🟢`, and outside a status line it is
 named in backticks, exactly as the status line has it. Reads every `.md` file under the root,
 skipping hidden folders other than `.github`, and skipping `CHANGELOG.md`, whose past entries
 stay as written, `evals/` and `evals-failed-check/`, whose prompts quote what a person types and
@@ -10,7 +10,7 @@ value bare, is skipped. It reports:
 
 - a code span naming a status by its word with no emoji or the wrong one, such as `Accepted`
   or `status: Accepted`;
-- "Ready to build" or "Ready to run" without its emoji in front, anywhere, since those phrases
+- "Ready to build" or "Ready to run" without its emoji after it, anywhere, since those phrases
   only ever mean the status, and outside a code span or fenced code block even with it;
 - a status with its emoji outside a code span or fenced code block, since emojis never sit in
   running prose.
@@ -31,7 +31,7 @@ from status_check import READY, READY_TO_RUN, VARIATION, WITHOUT_VARIATION, WORD
 
 SKIPPED = {("CHANGELOG.md",), ("evals",), ("evals-failed-check",), ("docs", "adrs")}
 # Phrases that only ever mean a status, with the full value each stands for.
-PHRASES = {value.split(" ", 1)[1]: value for value in (READY, READY_TO_RUN)}
+PHRASES = {value.rsplit(" ", 1)[0]: value for value in (READY, READY_TO_RUN)}
 # Statuses compare without U+FE0F, which is optional after an emoji.
 EMOJI_VALUE = re.compile("|".join(re.escape(value) for value in WITHOUT_VARIATION))
 STATUS_KEY = re.compile(r"status\s*:\s*", re.IGNORECASE)
@@ -46,7 +46,7 @@ def skipped(relative):
 
 
 def loose_phrases(text):
-    """The status phrases in `text`, without U+FE0F, with no emoji in front, once per appearance."""
+    """The status phrases in `text`, without U+FE0F, with no emoji after them, once per appearance."""
     bare = EMOJI_VALUE.sub("", text)
     return [phrase for phrase in PHRASES for _ in range(bare.count(phrase))]
 

@@ -14,7 +14,7 @@ anywhere else. If no listed document can be read there, pick nothing and report 
 After that line come three parts: under `Commits:`,
 the commits of a window, one per line with its date and subject; under `Changed:`, the files they
 added (A), changed (M), renamed (R, with the old name) or deleted (D), one per line; and under
-`Documents:`, the `👍 Accepted` specs and ADRs, one path per line.
+`Documents:`, the `Accepted 👍` specs and ADRs, one path per line.
 
 Read each changed file that still exists, then each listed document. A deleted file can't be
 read: judge it by its path and the commit subjects. A spec is affected when a change could alter

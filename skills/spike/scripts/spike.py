@@ -5,7 +5,7 @@ This script is the only way /spike runs an experiment, so a record's runs are ex
 experiment produced and never retyped (ADR 0020). It writes the record itself, so the status hook,
 which refuses every other change to Runs, never sees it.
 
-Each call is one run. It refuses unless the record is `🟢 Ready to run`. It builds a fresh working
+Each call is one run. It refuses unless the record is `Ready to run 🟢`. It builds a fresh working
 folder at <data>/spikes/<hash of the project path>-<record name>/, outside the repository, or, when
 the data folder can't be written, as in a sandbox, in a folder only this user can open in the
 system's temporary folder, agentic-spikes-<user id>/:

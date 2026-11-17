@@ -25,7 +25,7 @@ flowchart TD
 
 ## Why it exists
 
-A `✅ Built` plan says the code was written, tested and reviewed. It does not say the product works.
+A `Built ✅` plan says the code was written, tested and reviewed. It does not say the product works.
 `/build`'s reviewers read the code and its tests, and a reviewer that reads the code tends to judge
 it as the code means it, not as it behaves. [`/audit`](audit.md) is the same: it reads the code and
 runs nothing. Neither stands the product up and tries it.
@@ -68,7 +68,7 @@ Every verdict carries its **evidence**: what was done to the product and what ca
 the command run and its output, or the request sent and the response. You can judge every verdict
 yourself without trusting the agent.
 
-The examples are judged against the specs as they stand now, which must be `👍 Accepted`. A plan
+The examples are judged against the specs as they stand now, which must be `Accepted 👍`. A plan
 only says which requirements to check; its text is never read, since it is about the code.
 
 ## Choosing what to check
@@ -82,9 +82,9 @@ accepted spec. Say it however is natural, after the command or when asked:
 - a plan, which stands for the requirements it names, such as the one a build just delivered.
 
 Run on its own, `/agentic:verify` proposes a list from what it can see, such as the requirements of
-the plan this branch marked `✅ Built`, and asks you to confirm or change it. Whatever you named,
+the plan this branch marked `Built ✅`, and asks you to confirm or change it. Whatever you named,
 it shows the list it will check, each spec with its requirements and how many examples they hold,
-and checks nothing until you agree. A requirement whose spec is not `👍 Accepted` is left out, and
+and checks nothing until you agree. A requirement whose spec is not `Accepted 👍` is left out, and
 the list says why.
 
 `/verify` stops and says why, without checking anything, when:
@@ -158,7 +158,7 @@ and why, and last the passes, each with its evidence. Each failure names its sug
 
 - **Correct the code**, when the spec is right: through [`/plan`](plan.md) and `/build`, or
   directly for a small correction;
-- **Return the spec to `📝 Draft`** and change it, through [`/spec`](spec.md), when the product is
+- **Return the spec to `Draft 📝`** and change it, through [`/spec`](spec.md), when the product is
   right and the spec is not.
 
 Each example not checked says what would make it checkable, such as a way to set the product's

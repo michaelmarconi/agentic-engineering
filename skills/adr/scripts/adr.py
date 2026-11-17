@@ -5,8 +5,8 @@ Usage: python3 adr.py words <path to the ADR>
 
 An ADR reads from plain to technical. Its plain part is everything between the frontmatter and `##
 Technical detail`, apart from HTML comments and the `mermaid` diagrams in Decision; words are
-counted exactly as the plugin's status hook counts them (scripts/status_check.py), which refuses `👍
-Accepted` for an ADR whose plain part holds more than 500 words. The count and the limit go to
+counted exactly as the plugin's status hook counts them (scripts/status_check.py), which refuses `Accepted
+👍` for an ADR whose plain part holds more than 500 words. The count and the limit go to
 stdout; exit code 0 means within the limit, 1 over it or unreadable. """
 
 import argparse

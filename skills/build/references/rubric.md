@@ -27,7 +27,7 @@ failure. "The build" is every commit on the branch that the default branch does 
    Plan section, nor what those need to work, asks for. Correcting an obvious defect that no spec
    mentions, such as a crash, an unhandled error or bad input that is not refused plainly, is not
    new behaviour.
-6. **ADRs followed.** The code follows each ADR the plan lists, and each other `👍 Accepted` ADR
+6. **ADRs followed.** The code follows each ADR the plan lists, and each other `Accepted 👍` ADR
    whose How we'll check section (Confirmation in an older ADR) says it applies to the
    code the build changes.
 7. **Plan followed.** The code follows the Plan section and each line under Decisions, and where
@@ -50,11 +50,11 @@ failure. "The build" is every commit on the branch that the default branch does 
    summary lists it.
 9. **Documents untouched.** The build changes no spec, ADR or brief, and changes the plan only to
    set its status.
-10. **Building before sign-off recorded.** If the plan is `📝 Draft`, or a spec or ADR it lists
-    is `📝 Draft`, a commit of the build, made before any code built on it, holds a paragraph
+10. **Building before sign-off recorded.** If the plan is `Draft 📝`, or a spec or ADR it lists
+    is `Draft 📝`, a commit of the build, made before any code built on it, holds a paragraph
     saying what is not signed off as the documents now stand: the plan's status, each open
     question and whether it was built on its proposed answer or on the person's answer, given
-    there, and each spec or ADR that is `📝 Draft`. The plan is not marked `✅ Built`. A build of a
+    there, and each spec or ADR that is `Draft 📝`. The plan is not marked `Built ✅`. A build of a
     plan that is signed off passes this check.
 
 A finding about tidiness or style is a suggestion, never a failure.

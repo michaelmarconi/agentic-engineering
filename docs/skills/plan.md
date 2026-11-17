@@ -12,7 +12,7 @@ decisions the code must follow, and how the work will be done. It is the bridge 
 documents that say what and why and the code that carries them out.
 
 A plan is built once: when [`/build`](build.md) has built it and every review has passed, it is
-marked `✅ Built` and frozen: it is never changed again, and you may delete it whenever nobody needs
+marked `Built ✅` and frozen: it is never changed again, and you may delete it whenever nobody needs
 it. A plan is temporary. Later work gets a new plan. So a plan must never hold anything later work
 has to follow, such as a technical decision. That belongs in an ADR.
 
@@ -28,13 +28,13 @@ its title:
 
 ```
 docs/plans/
-  2026-10-21-customs-hold-alerts.md          🟢 Ready to build
-  2026-10-28-customs-hold-release.md         📝 Draft
+  2026-10-21-customs-hold-alerts.md          Ready to build 🟢
+  2026-10-28-customs-hold-release.md         Draft 📝
 ```
 
 The date shows when each plan was first written, so an old plan nobody built is easy to spot.
 Several plans can be open at once, for work going on in parallel, but no two plans that are not
-`✅ Built` may name the same requirement: if a plan already covers it, `/plan` offers to change that
+`Built ✅` may name the same requirement: if a plan already covers it, `/plan` offers to change that
 plan instead.
 
 A plan is the one document that refers to specs and ADRs, because once built it is frozen, so
@@ -44,13 +44,13 @@ its references show how those documents stood and cannot go stale. Nothing refer
 
 | Part | Holds |
 |---|---|
-| `status:` and `date:` | `📝 Draft`, `🟢 Ready to build` or `✅ Built`, and the day the status last changed |
+| `status:` and `date:` | `Draft 📝`, `Ready to build 🟢` or `Built ✅`, and the day the status last changed |
 | Title | The piece of work, in plain words |
 | Specs | Each spec the work builds, as a link, with the requirements it delivers nested beneath it, each a link to its heading in the spec |
 | ADRs | A table of each decision the code must follow: its number as a link, and its title; or "None." |
 | Decisions | Each technical decision agreed with you whose reason nobody needs once the work is built, or only someone changing that code later, in which case `/build` leaves the reason as a comment: what was decided and why, or "None." |
 | Plan | How the work will be done, with headings and length to suit it, and any diagram of it you asked for |
-| Open questions | What is still unsettled, each with a proposed answer; "None." before `🟢 Ready to build` |
+| Open questions | What is still unsettled, each with a proposed answer; "None." before `Ready to build 🟢` |
 
 Everything except the Plan section has a fixed form, because it is checked: the Specs and ADRs
 against the documents they name, and Decisions by you at sign-off. The Plan section is free in
@@ -68,7 +68,7 @@ An example, for one requirement of a customs-holds spec:
 ```markdown
 ---
 type: Plan
-status: 🟢 Ready to build
+status: Ready to build 🟢
 date: 2026-11-10
 ---
 
@@ -112,27 +112,27 @@ for later; the spec doesn't ask for it.
 ```mermaid
 stateDiagram-v2
     direction LR
-    state "📝 Draft" as Draft
-    state "🟢 Ready to build" as Ready
-    state "✅ Built" as Built
+    state "Draft 📝" as Draft
+    state "Ready to build 🟢" as Ready
+    state "Built ✅" as Built
     [*] --> Draft
     Draft --> Ready: you sign off
     Ready --> Draft: any change
     Ready --> Built: the work is built
 ```
 
-- `📝 Draft`: being explored, discussed and written.
-- `🟢 Ready to build`: you have signed off the plan as it stands. Any later change returns it to
-  `📝 Draft`, for you to sign off again. The reply that sets it ends with the two steps to build
+- `Draft 📝`: being explored, discussed and written.
+- `Ready to build 🟢`: you have signed off the plan as it stands. Any later change returns it to
+  `Draft 📝`, for you to sign off again. The reply that sets it ends with the two steps to build
   the plan in a new session, which is the best start for a build: run `/clear`, then send
   `/agentic:build` with the plan's path. A build asked for in the same session as a long planning
   conversation asks you first whether to build there anyway.
-- `✅ Built`: `/build` built the work and every review passed. Only `/build`'s hand-over script
-  sets it, and the hook refuses any change to a `✅ Built` plan.
+- `Built ✅`: `/build` built the work and every review passed. Only `/build`'s hand-over script
+  sets it, and the hook refuses any change to a `Built ✅` plan.
 
-A plugin hook refuses `🟢 Ready to build` unless Open questions is empty, every spec it names is
-`👍 Accepted` and has each named requirement, every ADR it names is
-`👍 Accepted`, and no other plan that is not `✅ Built` names the same requirement. If a
+A plugin hook refuses `Ready to build 🟢` unless Open questions is empty, every spec it names is
+`Accepted 👍` and has each named requirement, every ADR it names is
+`Accepted 👍`, and no other plan that is not `Built ✅` names the same requirement. If a
 spec or ADR it names changes after you sign off, the plan is no longer settled: update it, and
 sign it off again.
 
@@ -173,7 +173,7 @@ status.
 
 ## Diagrams
 
-Each hand-over of a `📝 Draft` plan offers to draw the work, until you pick or decline, for each plan. While questions
+Each hand-over of a `Draft 📝` plan offers to draw the work, until you pick or decline, for each plan. While questions
 are open, the offers sit with the reviewers' optional suggestions and a picked diagram is drawn once
 the questions are settled; after that, the offer is the one question asked before "ready to build?".
 It offers only what the text already describes in enough detail to be worth a picture: at least
@@ -204,8 +204,8 @@ flowchart LR
 
 Before you see a plan, `/plan` has its reviewer agent check it against a short list of pass-or-fail
 checks: the fixed sections are there; every named requirement exists in its spec; the specs and
-ADRs are settled; no other plan that is not `✅ Built` names the same requirement; a plan that
-is `🟢 Ready to build` has no open questions; only specs and ADRs are referred to; the Plan section holds
+ADRs are settled; no other plan that is not `Built ✅` names the same requirement; a plan that
+is `Ready to build 🟢` has no open questions; only specs and ADRs are referred to; the Plan section holds
 no code, and any diagram in it draws only what the text says; no decision is made in the Plan section that is missing from Decisions or ADRs; and the plan
 keeps to any size or way of splitting work your practices record, or says why not. The
 reviewer may suggest how to improve the Plan section itself, but those suggestions never hold a

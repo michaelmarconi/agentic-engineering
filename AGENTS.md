@@ -138,13 +138,13 @@ everything else is judgement.
     the pages under `docs/`, commit messages, pull request descriptions and Claude's replies while
     working here. Files written for Claude, such as a `SKILL.md`, a rubric or an agent, may use
     the lifecycle's own terms, since Claude reads them with the lifecycle page in hand.
-14. **Statuses by their exact value.** A document status is its emoji and its word: `📝 Draft`,
-    `🟢 Ready to build`, `✅ Built`, `👍 Accepted`, `❌ Rejected`, `↪️ Superseded`, `🟢 Ready to run`,
-    `💡 Confirmed`, `🚫 Refuted` and `❔ Not settled`. The
+14. **Statuses by their exact value.** A document status is its word, then its emoji: `Draft 📝`,
+    `Ready to build 🟢`, `Built ✅`, `Accepted 👍`, `Rejected ❌`, `Superseded ↪️`, `Ready to run 🟢`,
+    `Confirmed 💡`, `Refuted 🚫` and `Not settled ❔`. The
     status line holds that value bare. Everywhere else, name a status in backticks with its emoji,
     exactly as the status line has it, so a reader can find it and copy it; never put an emoji in
     running prose. `scripts/test_status_names.py` catches a backticked status that is wrong, and
-    the words of `🟢 Ready to build` and `🟢 Ready to run` left unformatted; the other words are
+    the words of `Ready to build 🟢` and `Ready to run 🟢` left unformatted; the other words are
     ordinary English too,
     so those are yours to catch.
 
