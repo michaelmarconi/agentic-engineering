@@ -6,6 +6,20 @@ What changed in each version of the plugin, newest first. Versions follow
 past a major version: it says what you need to change in your documents. Until 1.0.0, any
 minor version may need such a change, and its entry says so.
 
+## [0.70.0] - 2026-11-17
+
+### Changed
+
+- Every document status is now written word first, then its emoji, such as `Accepted 👍` and
+  `Ready to build 🟢`, so the values line up when a document's frontmatter is shown as a table.
+  This holds in the status line and wherever the plugin names a status.
+- Documents written by earlier versions, with the emoji in front, such as `👍 Accepted`, keep
+  working and count as their status. You don't need to change them: a skill rewrites the status
+  line the next time it edits a document, and the status hook allows an edit that only moves the
+  emoji on any document, decided ADRs and built plans included.
+- `/agentic:audit` lists the documents whose status still puts the emoji in front, together as
+  one problem.
+
 ## [0.69.0] - 2026-11-17
 
 ### Changed
