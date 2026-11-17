@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: practices-logging
+expected_outcome: |
+  Asked to record the logging practice in a Python project that already sets up structlog, the skill reads the repository, records the library and where the logs end up, and points to the result from the core. What must never be logged is a Security question, so the logging practice leaves it out.
+context:
+  scaffold_script: place-files.sh

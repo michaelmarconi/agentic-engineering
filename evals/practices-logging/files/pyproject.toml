@@ -1,0 +1,16 @@
+[project]
+name = "stockroom"
+version = "0.2.0"
+description = "Track stock levels for a small shop from the command line."
+requires-python = ">=3.12"
+dependencies = ["structlog>=24.1"]
+
+[project.scripts]
+stockroom = "stockroom.cli:main"
+
+[dependency-groups]
+dev = ["pytest>=8.3"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
