@@ -1,7 +1,7 @@
 ---
 # Change status only through the agentic plugin's skills, which check each change; a change made by hand is not checked.
 type: Plan
-status: 🟢 Ready to build
+status: Ready to build 🟢
 date: 2026-11-12
 ---
 

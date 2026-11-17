@@ -1,6 +1,6 @@
 ---
 type: Spec
-status: 👍 Accepted
+status: Accepted 👍
 ---
 
 # Data retention

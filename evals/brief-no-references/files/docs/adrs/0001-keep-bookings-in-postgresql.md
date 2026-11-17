@@ -1,6 +1,6 @@
 ---
 type: ADR
-status: 👍 Accepted
+status: Accepted 👍
 ---
 
 # Keep bookings in PostgreSQL

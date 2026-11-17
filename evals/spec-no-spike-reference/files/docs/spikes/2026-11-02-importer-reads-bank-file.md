@@ -1,7 +1,7 @@
 ---
 # Change status only through the sdlc plugin's skills, which check each change; a change made by hand is not checked.
 type: Spike
-status: 🚫 Refuted
+status: Refuted 🚫
 ---
 
 # The importer reads the bank's statement file as the bank sends it

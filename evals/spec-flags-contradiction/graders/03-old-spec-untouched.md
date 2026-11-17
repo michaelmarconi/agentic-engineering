@@ -1,7 +1,7 @@
 ---
 type: regex
 target: { source: file, path: docs/specs/clinic/shared-computers.spec.md }
-pattern: "^status: 👍\\uFE0F? Accepted\\s*$"
+pattern: "^status: Accepted 👍\\uFE0F?\\s*$"
 flags: m
 weight: 1
 ---

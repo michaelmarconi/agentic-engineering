@@ -1,7 +1,7 @@
 ---
 # Change status only through the sdlc plugin's skills, which check each change; a change made by hand is not checked.
 type: Spike
-status: 💡 Confirmed
+status: Confirmed 💡
 ---
 
 # The importer reads the bank's file when it reads it as Latin-1
