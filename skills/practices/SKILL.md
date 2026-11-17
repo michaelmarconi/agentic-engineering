@@ -139,14 +139,16 @@ not to ask anything does.
   before writing it. When the project has no scripts folder, create `script/` with the first
   script. When it has a command runner, add an entry that only calls the script and record that
   entry, such as `pnpm check:new-mail`; otherwise record the script, such as `script/check-new-mail`.
+  Record only that command and what it is for, never the commands inside the script, since a copy
+  in the practice would drift from the script.
   Run a new or changed script only when everything it touches is in the repository or among the
   stand-ins Running the product lists as safe to touch, never a real release, deploy or rollback;
   name each script you did not run, and why, in the hand-over. When a script changes a real
   outside service, the hand-over also suggests, as work for `/agentic:plan`, a test that runs it
   against the stand-in; never write the test or wait for it. A step that needs logic, or a change
   that would add logic to a script, is not yours to write: under the step's heading write "Not set up yet: needs a script with
-  logic, work for `/agentic:plan`", so a skill that runs it stops, and name the script in the
-  hand-over as that work. Once the project has a place for
+  logic, work for `/agentic:plan`", so a skill that runs it stops, and give the agreed steps
+  in the hand-over, not the practice, as that work. Once the project has a place for
   commands, Check your work names it.
 
 Write only the core, the files under `docs/practices/` and the scripts and runner entries the
