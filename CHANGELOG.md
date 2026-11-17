@@ -6,6 +6,24 @@ What changed in each version of the plugin, newest first. Versions follow
 past a major version: it says what you need to change in your documents. Until 1.0.0, any
 minor version may need such a change, and its entry says so.
 
+## [0.63.0] - 2026-11-17
+
+### Changed
+
+- A repository is one project, a monorepo included: the plugin counts every `docs/` path from the
+  top of the git repository, wherever in it you start Claude. A session started inside one app,
+  such as `apps/web`, now gets the lifecycle rules and writes to the root `docs/` folder. Before,
+  it got no lifecycle rules when the documents sat at the root (ADR 0046, which replaces ADR 0032).
+- `/agentic:spec` puts a new spec in the existing folder of `docs/specs/` it fits, such as one
+  per app, and asks you only when none clearly does. The spec reviewer checks it.
+
+### What you need to change
+
+- A repository that kept a separate `docs/` folder inside each app or package, and started Claude
+  in that app, no longer has those documents checked by the plugin's hooks. Keep one `docs/`
+  folder at the top of the repository, grouping specs into folders if you like, or give each
+  unrelated app a repository of its own.
+
 ## [0.62.0] - 2026-11-17
 
 ### Changed

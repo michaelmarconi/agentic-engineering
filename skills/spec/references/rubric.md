@@ -11,7 +11,8 @@ checking, and quotes the spec as evidence for every failure.
    Constraints and Open questions, in that order relative to each other. Further sections, such
    as "Security" or "Privacy", may go wherever they fit before Open questions, which comes last,
    and every other check applies to them too. A further section holds no numbered requirement
-   heading; those belong under Requirements.
+   heading; those belong under Requirements. Where other specs are grouped into subfolders of
+   `docs/specs/`, a new spec sits in the one it fits, unless the person chose otherwise.
 2. **One story.** Story is one sentence, "When <situation>, <who> wants to <do something>, so
    they can <outcome>.", naming a concrete situation rather than a general complaint, and an
    outcome someone can see. It uses only people the person named, and does not choose how the

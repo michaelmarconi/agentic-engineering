@@ -1,16 +1,17 @@
 #!/usr/bin/env python3
-"""Find the git repository a hook works in, the same way for every hook, as docs/adrs/0032 decides.
+"""Find the git repository a hook works in, the same way for every hook, as docs/adrs/0046 decides.
 
 A hook that acts on a file finds its repository by going up from that file to the nearest folder
 holding `.git`, as a folder or a file, so worktrees and submodules count. A relative path is read
 from the folder given (the hook event's `cwd`, the folder Claude's shell is in), or else from the
 session folder: $CLAUDE_PROJECT_DIR, or the current directory if that is unset. A path that exists
 only when read from the session folder is read from there, since the shell may have moved. A file in no
-repository uses the session folder instead; so does a file inside the session folder when the
-session was started inside its repository, such as in one package of a larger repository. A hook
-with no file looks in the session folder and, when that is in no repository, the repositories
-directly inside it, as in a Claude project thread, whose session folder holds each repository one
-level down.
+repository uses the session folder instead. The whole repository is one project, so a session
+started in a subfolder, such as one app of a monorepo, still judges every path from the
+repository's top. A hook with no file looks at the top of the repository holding the session
+folder or, when that is in no repository, in the session folder and the repositories directly
+inside it, as in a Claude project thread, whose session folder holds each repository one level
+down.
 
 Every path is made real, links followed, so two spellings of one folder always agree.
 
@@ -59,30 +60,19 @@ def repository_of(path, base=None):
     return top(path, base) or session_folder()
 
 
-def inside(path, folder):
-    return path == folder or path.startswith(folder.rstrip(os.sep) + os.sep)
-
-
-def project_of(path, base=None):
-    """The folder the path's place is judged from: the repository holding it, or the session
-    folder when the session was started inside that repository, as in one package of a larger
-    repository, and the path is in it."""
-    full, project, session = full_path(path, base), repository_of(path, base), session_folder()
-    return session if inside(session, project) and inside(full, session) else project
-
-
 def relative_parts(path, base=None):
-    """The path's parts relative to its project, such as ['docs', 'plans', 'x.md']."""
-    relative = os.path.relpath(full_path(path, base), project_of(path, base))
+    """The path's parts relative to its repository, such as ['docs', 'plans', 'x.md']."""
+    relative = os.path.relpath(full_path(path, base), repository_of(path, base))
     return os.path.normpath(relative).split(os.sep)
 
 
 def session_folders():
-    """The session folder, then, when it is in no repository, each repository directly inside it,
-    for a hook with no file."""
+    """For a hook with no file: the top of the repository holding the session folder, or, when it
+    is in no repository, the session folder, then each repository directly inside it."""
     session = session_folder()
-    if top(os.path.join(session, "x")):
-        return [session]
+    repository = top(os.path.join(session, "x"))
+    if repository:
+        return [repository]
     try:
         names = sorted(os.listdir(session))
     except OSError:

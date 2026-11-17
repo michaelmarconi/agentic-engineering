@@ -3,9 +3,11 @@
 
 Claude Code runs this as a SessionStart hook. It gives Claude the plugin's docs/lifecycle.md only
 when the project uses the lifecycle, that is, when it has docs/brief.md or a spec under
-docs/specs/ whose frontmatter has a lifecycle status. It looks in the session folder and in each
-git repository directly inside it, as in a Claude project thread, whose session folder holds each
-repository one level down (docs/adrs/0032).
+docs/specs/ whose frontmatter has a lifecycle status. It looks at the top of the git repository
+holding the session folder, even when the session started in a subfolder such as one app of a
+monorepo; when the session folder is in no repository, it looks there and in each git repository
+directly inside it, as in a Claude project thread, whose session folder holds each repository one
+level down (docs/adrs/0046).
 
 In any other project it prints nothing, so installing the plugin costs other projects nothing.
 
@@ -61,8 +63,9 @@ def main(argv=None):
         description=__doc__,
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog=(
-            "It looks in the session folder ($CLAUDE_PROJECT_DIR, or the current directory if that is "
-            "unset) and in each git repository directly inside it (docs/adrs/0032). "
+            "It looks at the top of the git repository holding the session folder "
+            "($CLAUDE_PROJECT_DIR, or the current directory if that is unset), or, when that is in "
+            "no repository, there and in each git repository directly inside it (docs/adrs/0046). "
             "Output: nothing, or a SessionStart JSON object on stdout whose additionalContext "
             "holds the map and any warning about the Python version, which also goes in "
             "systemMessage. Exit code: always 0, so a session never fails to start because of "

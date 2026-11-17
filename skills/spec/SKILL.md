@@ -25,7 +25,9 @@ as "Spec:" or "ADR:" in front of it would: the frontmatter's `type:` already say
 
 Specs live at `docs/specs/<capability>.spec.md`, possibly in subfolders, named for the capability in
 two to five lowercase words joined by hyphens, each a word of the spec's title; a plugin hook
-refuses a name that breaks this, and an edit that drops one of those words from the title.
+refuses a name that breaks this, and an edit that drops one of those words from the title. When the
+existing specs sit in subfolders, put a new spec in the one it fits, and ask the person only when
+none clearly does; never move existing specs to a layout of your own.
 
 Never rename a document once its review has started: the review hook keeps the review under the
 document's path, so a renamed document's corrections can't be checked. If the name no longer fits,

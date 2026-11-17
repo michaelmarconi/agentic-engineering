@@ -96,15 +96,21 @@ class Layout(unittest.TestCase):
         with mock.patch.dict(os.environ, {"CLAUDE_PROJECT_DIR": empty.name}):
             self.assertEqual(repository.session_folders(), [os.path.realpath(empty.name)])
 
-    def test_a_project_started_in_a_subfolder_of_a_repository_counts_from_the_session_folder(self):
-        # A package of a larger repository, with the session started in the package.
+    def test_a_session_started_in_a_subfolder_counts_from_the_repository_top(self):
+        # One app of a monorepo, with the session started in the app (ADR 0046).
         package = os.path.join(self.app, "pkg")
+        os.makedirs(package)
         with mock.patch.dict(os.environ, {"CLAUDE_PROJECT_DIR": package}):
             spec = os.path.join(package, "docs", "specs", "x.spec.md")
-            self.assertEqual(repository.relative_parts(spec), ["docs", "specs", "x.spec.md"])
-            # A file of the repository outside the package still counts from the repository.
+            self.assertEqual(repository.relative_parts(spec), ["pkg", "docs", "specs", "x.spec.md"])
             self.assertEqual(repository.relative_parts(os.path.join(self.app, "docs", "brief.md")),
                              ["docs", "brief.md"])
+
+    def test_session_folders_from_a_subfolder_are_the_repository_top(self):
+        package = os.path.join(self.app, "pkg")
+        os.makedirs(package)
+        with mock.patch.dict(os.environ, {"CLAUDE_PROJECT_DIR": package}):
+            self.assertEqual(repository.session_folders(), [self.app])
 
     def test_session_folders_skip_repositories_inside_one_that_is_a_repository(self):
         # Such as a submodule or a checkout kept inside the project.

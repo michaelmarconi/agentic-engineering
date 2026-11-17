@@ -4,7 +4,7 @@
 Claude Code runs this as a PreToolUse hook on Write, Edit and MultiEdit, from status_check.sh.
 It reads the hook's JSON from stdin and, for the project's docs/brief.md, a *.spec.md under its
 docs/specs/, or a *.md directly in its docs/adrs/, docs/plans/ or docs/spikes/ (the project
-being the git repository holding the file, or the session folder when none does: docs/adrs/0032), works out what the file would contain after the edit. It reads every
+being the git repository holding the file, or the session folder when none does: docs/adrs/0046), works out what the file would contain after the edit. It reads every
 inline link and image, `[text](target)` or `[text](<target>)`, every reference definition,
 `[name]: target`, every autolink, `<scheme:target>`, and every HTML `href` and `src` value,
 outside code spans and fenced code blocks, and refuses the edit if it adds a target that is:
@@ -104,7 +104,7 @@ def problem(source, target):
         return "is outside the repository"
     full = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(source)), path))
     # Counted from the document's own repository, so a link into a repository beside it leaves it.
-    parts = os.path.relpath(repository.full_path(full), repository.project_of(source)).split(os.sep)
+    parts = os.path.relpath(repository.full_path(full), repository.repository_of(source)).split(os.sep)
     if parts[0] == os.pardir:
         return "is outside the repository"
     if path.endswith("/") or os.path.isdir(full):

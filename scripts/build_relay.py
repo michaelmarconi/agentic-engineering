@@ -20,7 +20,7 @@ build_session.py), and keeps:
 In a Claude project thread an agent's report is the one it handed back, not the tool's text,
 which there only says where the report went. Each is kept with the commit checked out when it ran,
 in the repository holding the plan its `Document:` line names, found as every hook finds one
-(docs/adrs/0032, repository.py), so it works when the repositories sit one level below the session
+(docs/adrs/0046, repository.py), so it works when the repositories sit one level below the session
 folder, as in a Claude project thread. A report of a later commit, or of a plan in another
 repository, starts a new set, so the checker only ever gets reports of one commit.
 
@@ -74,7 +74,7 @@ PARTS = (("code", "CODE REVIEW REPORT"), ("security", "SECURITY REVIEW REPORT"),
 
 
 def repository_of(prompt, cwd):
-    """The repository holding the plan the request's `Document:` line names (docs/adrs/0032)."""
+    """The repository holding the plan the request's `Document:` line names (docs/adrs/0046)."""
     named, _ = first_lines(prompt)
     return repository.repository_of(named, base=cwd) if named else None
 

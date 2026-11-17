@@ -18,7 +18,8 @@ A spec is edited in place on a branch, and git is its history.
 `docs/specs/<capability>.spec.md`, named for the capability in two to five words taken from the
 spec's title. Specs start flat; when there are
 enough to need it, group them into folders of your choosing. The plugin finds specs anywhere
-under `docs/specs/` and gives folders no meaning. Move a spec with `git mv`, which keeps its
+under `docs/specs/` and gives folders no meaning, and `/agentic:spec` puts a new spec in the
+folder it fits, asking you only when none clearly does. Move a spec with `git mv`, which keeps its
 status; the hook would see a spec written in a new place as a new spec and require `📝 Draft`.
 
 ## Anatomy
