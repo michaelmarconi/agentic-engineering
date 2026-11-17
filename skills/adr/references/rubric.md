@@ -8,7 +8,8 @@ decision, runs from the title down to Technical detail; Technical detail holds w
 reviewer needs to build and check it. Footnotes explaining terms come last, after Technical detail.
 
 1. **Shape.** The file is directly in `docs/adrs/`; its name is checked by a plugin hook, not
-   here. Its frontmatter has `type: ADR` and `status:` set to `📝 Draft`, `👍 Accepted`, `❌ Rejected` or `↪️ Superseded`,
+   here. Its frontmatter has `type: ADR`, `number:` with the four digits its file name starts with
+   if it has one (a missing one passes: a plugin hook requires it on new ADRs), and `status:` set to `📝 Draft`, `👍 Accepted`, `❌ Rejected` or `↪️ Superseded`,
    emoji included, and `date:` as YYYY-MM-DD if it has one (a missing date passes: a plugin hook requires it with the next
    status change). The sections are Question, Decision, Background,
    Options, Consequences, Out of scope, How we'll check, Open questions and Technical detail, in

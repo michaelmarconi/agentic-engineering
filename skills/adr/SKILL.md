@@ -49,7 +49,9 @@ starting at `0001`, then a subject: two to five lowercase words joined by hyphen
 the ADR's title, naming what the decision is about, such as `0004-session-data-redis.md` for "Keep
 session data in Redis". The title states the decision; a plugin hook refuses a name that breaks
 this, and an edit that drops one of the subject's words from the title. An ADR that supersedes
-another may share its subject. If `docs/specs/` exists, read the Open questions of its specs, so
+another may share its subject. The frontmatter's `number:` repeats the file's four digits, so a
+reader sees the number; a plugin hook refuses one that does not match, and an ADR written before
+the field may go without it. If `docs/specs/` exists, read the Open questions of its specs, so
 you can tell the person which ones the decision answers.
 
 Never rename a document once its review has started: the review hook keeps the review under the

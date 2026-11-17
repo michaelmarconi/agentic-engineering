@@ -31,8 +31,10 @@ review runs.
 - **ADR** (architecture decision record), `docs/adrs/NNNN-<subject>.md`, in one flat folder: one
   technical decision and why it was made. It reads from plain to technical: a part for people,
   of at most 500 words, from the question to the open questions, leaving out any diagram of the
-  chosen option, then the technical detail for agents and reviewers. Statuses: `📝 Draft` →
-  `👍 Accepted` or `❌ Rejected`; `👍 Accepted` → `↪️ Superseded`.
+  chosen option, then the technical detail for agents and reviewers. Its `number:` field repeats
+  the four digits its name starts with, so a reader sees the number other ADRs use; a plugin hook
+  refuses one that does not match. Statuses: `📝 Draft` → `👍 Accepted` or `❌ Rejected`;
+  `👍 Accepted` → `↪️ Superseded`.
 - **Plan**, `docs/plans/YYYY-MM-DD-<subject>.md`, in one flat folder: a piece of work that builds
   part of a spec or an ADR. Statuses: `📝 Draft` → `🟢 Ready to build` → `✅ Built`; any change
   returns it to `📝 Draft`. A plan is temporary: once `✅ Built` it is frozen, never

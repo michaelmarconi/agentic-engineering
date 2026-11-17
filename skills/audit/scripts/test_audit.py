@@ -30,8 +30,8 @@ def spec(status="👍 Accepted", requirements=("Import a statement",), open_ques
             f"{body}{extra}## Open questions\n\n- {open_questions}\n")
 
 
-def adr(status="👍 Accepted", supersedes=None, superseded_by=None, open_questions="None.", extra=""):
-    lines = [f"status: {status}", "date: 2026-11-01"]
+def adr(status="👍 Accepted", supersedes=None, superseded_by=None, open_questions="None.", extra="", number=None):
+    lines = ([f"number: {number}"] if number else []) + [f"status: {status}", "date: 2026-11-01"]
     if supersedes:
         lines.append(f"supersedes: {supersedes}")
     if superseded_by:
@@ -134,9 +134,9 @@ class Documents(Project):
         self.put("docs/specs/statement-import.spec.md", spec())
         self.put("docs/specs/sub/refund-limits.spec.md", spec())
         self.put("docs/specs/statement-exports.spec.md", spec(status="📝 Draft"))
-        self.put("docs/adrs/0001-whole-cents.md", adr())
-        self.put("docs/adrs/0002-float-amounts.md", adr(status="❌ Rejected"))
-        self.put("docs/adrs/0003-old-idea.md", adr(status="📝 Draft"))
+        self.put("docs/adrs/0001-whole-cents.md", adr(number="0001"))
+        self.put("docs/adrs/0002-float-amounts.md", adr(status="❌ Rejected", number="0002"))
+        self.put("docs/adrs/0003-old-idea.md", adr(status="📝 Draft", number="0003"))
         out = self.documents()
         self.assertTrue(out["lifecycle"])
         self.assertEqual(out["accepted"], {
@@ -178,6 +178,16 @@ class Documents(Project):
         self.assertEqual(sorted(found), ["docs/brief.md", "docs/specs/statement-import.spec.md"])
         self.assertIn("`type: Spec`", found["docs/specs/statement-import.spec.md"])
 
+    def test_an_adr_without_its_number_or_with_another_is_a_problem(self):
+        self.put("docs/adrs/0001-cents.md", adr())
+        self.put("docs/adrs/0002-cents.md", adr(number="0002"))
+        self.put("docs/adrs/0003-cents.md", adr(number="0004"))
+        self.put("docs/specs/statement-import.spec.md", spec())
+        found = {p["document"]: p["detail"] for p in self.problems("number field")}
+        self.assertEqual(sorted(found), ["docs/adrs/0001-cents.md", "docs/adrs/0003-cents.md"])
+        self.assertIn("has no `number:`", found["docs/adrs/0001-cents.md"])
+        self.assertIn("'0004'", found["docs/adrs/0003-cents.md"])
+
     def test_a_missing_or_malformed_date_is_a_problem(self):
         self.put("docs/brief.md", "---\ntype: Brief\n---\n\n# Product\n")
         self.put("docs/specs/statement-import.spec.md", spec().replace("date: 2026-11-01\n", ""))
@@ -206,8 +216,8 @@ class Documents(Project):
         self.assertIn("written for an earlier version of the agentic plugin", found["docs/plans/2026-11-01-good.md"])
 
     def test_a_status_written_without_the_variation_selector_is_fine(self):
-        self.put("docs/adrs/0001-whole-cents.md", adr(status="↪ Superseded", superseded_by="0002"))
-        self.put("docs/adrs/0002-new-idea.md", adr(supersedes="0001"))
+        self.put("docs/adrs/0001-whole-cents.md", adr(status="↪ Superseded", superseded_by="0002", number="0001"))
+        self.put("docs/adrs/0002-new-idea.md", adr(supersedes="0001", number="0002"))
         self.assertEqual(self.problems(), [])
 
     def test_a_spec_with_a_status_specs_no_longer_have_is_a_problem(self):
