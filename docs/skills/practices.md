@@ -97,19 +97,23 @@ same way; only the commands change.
 ## One command per step
 
 Every step the practices record, such as running the tests or releasing, is one command: one line
-that calls one program with its arguments, needs no answer from you and says by its exit code
-whether it worked. Every skill can then run a step the same way and tell whether it passed, and
-nothing has to interpret a list of instructions written in prose.[^scripts] A step that needs
-several commands becomes a named entry in the project's one place for commands: a command runner,
-such as Make, a justfile or the scripts of `package.json`, or a single scripts folder. A runner is
-recommended but not required.
+that calls a named entry point, needs no answer from you and says by its exit code whether it
+worked. Every skill can then run a step the same way and tell whether it passed, and nothing has to
+interpret a list of instructions written in prose.[^scripts] A named entry point is a command
+runner entry, such as a Make target or a script of `package.json`, a script in the project's
+scripts folder, or a tool's standard command, such as `npm test` or `pytest {file}`, given nothing
+but the values a skill fills in.
 
-When you agree a step of several commands, `/practices` writes that entry for you: it runs the
-commands in order and stops at the first failure. It shows you the entry, tries only what is safe
-to run, such as a dry run, and then records the one-line command. If the project has no runner or
-scripts folder yet, it asks which you want first. A step that needs real logic, such as retries, is
-ordinary work for [`/plan`](plan.md) and [`/build`](build.md). No other skill writes commands, so
-they don't pile up across the repository.
+Anything more, such as flags, settings, folder or account names your project chose, or several
+commands in a row, goes into a script in your scripts folder, so those choices live in a file that
+tests can run rather than in a long line of Markdown. `/practices` writes that script for you: it
+runs the agreed commands in order and stops at the first failure. It shows you the script first,
+creates a `script/` folder if you have none, and, when you have a runner, adds an entry that calls
+the script and records that entry. It runs the script only when that changes nothing real, and says
+which scripts it did not run. When a script changes a real outside service, such as a mail account,
+it suggests a test that runs the script against a stand-in, as work for [`/plan`](plan.md). A step
+that needs real logic, such as a retry or a condition, is ordinary work for [`/plan`](plan.md) and
+[`/build`](build.md). No other skill writes commands, so they don't pile up across the repository.
 
 ## Releasing and deploying
 

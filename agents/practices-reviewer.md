@@ -24,7 +24,7 @@ Read:
 - For check 2, the repository's build, dependency, continuous integration and setup files, such
   as `pyproject.toml`, `package.json`, `Makefile`, `Cargo.toml`, `go.mod` and the files under
   `.github/workflows/`, and each script or path a command names, to tell whether it exists.
-- For check 14, the command runner's file or the scripts folder that Check your work names.
+- For checks 3 and 14, the scripts folder and the command runner's file that Check your work names.
 - For check 9, the titles and decisions of the ADRs in `docs/adrs/`, to tell whether a choice the
   practices state was made in an ADR.
 
