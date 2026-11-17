@@ -91,6 +91,39 @@ class ProblemTest(unittest.TestCase):
         self.assertNotOne('pytest -k "parse', "quote")
 
 
+class OwnArgumentsTest(unittest.TestCase):
+    """ADR 0044: a recorded command calls a named entry point with nothing but {name} values."""
+
+    def assertEntryPoint(self, command):
+        self.assertEqual(one_command.own_arguments(command), [], command)
+
+    def test_entry_points_with_only_placeholders_pass(self):
+        for command in ("make test", "npm test", "npm run build", "pnpm check:new-mail", "script/setup",
+                        "./gradlew build", "docker compose up", "pytest {file}",
+                        "script/deploy {environment}", "make deploy ENV={environment}", "cargo build"):
+            self.assertEntryPoint(command)
+
+    def test_redirections_are_not_arguments(self):
+        self.assertEntryPoint("make test 2>&1")
+
+    def test_flags_and_settings_are_listed(self):
+        self.assertEqual(one_command.own_arguments("cargo test --release"), ["--release"])
+        self.assertEqual(one_command.own_arguments("pytest -k 'not slow' {file}"), ["-k", "not slow"])
+
+    def test_the_issue_example_lists_its_choices(self):
+        found = one_command.own_arguments(
+            "docker exec mail-test doveadm -o mail_driver=imapc copy -u test 'Test Folder' mailbox INBOX all")
+        self.assertIn("doveadm", found)
+        self.assertIn("Test Folder", found)
+
+    def test_at_most_two_subcommand_words(self):
+        self.assertEqual(one_command.own_arguments("docker exec mail-test doveadm"), ["doveadm"])
+
+    def test_paths_after_the_program_are_listed(self):
+        self.assertEqual(one_command.own_arguments("go test ./..."), ["./..."])
+        self.assertEqual(one_command.own_arguments("FOO=1 make test"), ["FOO=1"])
+
+
 class CommandLineTest(unittest.TestCase):
     def run_script(self, *args):
         return subprocess.run([sys.executable, SCRIPT, *args], capture_output=True, text=True)
@@ -98,7 +131,7 @@ class CommandLineTest(unittest.TestCase):
     def test_one_command_exits_zero(self):
         result = self.run_script("make test")
         self.assertEqual(result.returncode, 0)
-        self.assertIn("one command", result.stdout)
+        self.assertIn("named entry point", result.stdout)
 
     def test_several_commands_exit_one_with_reason(self):
         result = self.run_script("npm ci && npm run build")
@@ -113,10 +146,20 @@ class CommandLineTest(unittest.TestCase):
         self.assertIn("npm ci && npm run build", result.stdout)
 
     def test_commands_read_from_standard_input(self):
-        result = subprocess.run([sys.executable, SCRIPT], input="make test\npytest -k 'not slow'\n\n",
+        result = subprocess.run([sys.executable, SCRIPT], input="make test\npnpm vitest {file}\n\n",
                                 capture_output=True, text=True)
         self.assertEqual(result.returncode, 0, result.stdout)
         self.assertEqual(len(result.stdout.splitlines()), 2)
+
+    def test_own_arguments_exit_three_and_are_named(self):
+        result = self.run_script("cargo test --release")
+        self.assertEqual(result.returncode, 3)
+        self.assertIn("--release", result.stdout)
+        self.assertIn("script", result.stdout)
+
+    def test_not_one_command_outranks_own_arguments(self):
+        result = self.run_script("cargo test --release", "npm ci && npm run build")
+        self.assertEqual(result.returncode, 1)
 
     def test_no_command_at_all_is_a_usage_error(self):
         result = subprocess.run([sys.executable, SCRIPT], input="", capture_output=True, text=True)
