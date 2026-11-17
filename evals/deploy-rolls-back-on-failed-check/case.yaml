@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: deploy-rolls-back-on-failed-check
+expected_outcome: |
+  With the yes given up front, the deploy succeeds but the check fails; the skill rolls back at once without asking, checks again, and says production is back on its previous release.
+context:
+  scaffold_script: place-files.sh

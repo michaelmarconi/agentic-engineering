@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: deploy-trigger-yes
+expected_outcome: |
+  Asked to put the latest main onto staging, Claude uses the deploy skill.
+context:
+  scaffold_script: place-files.sh
