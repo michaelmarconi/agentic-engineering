@@ -1531,6 +1531,11 @@ class AdrNumber(Workspace):
         self.put(adr("👍 Accepted", number=None))
         self.assertIn("number: 0003", self.edit("type: ADR\n", "type: ADR\nnumber: 0004\n"))
 
+    def test_number_line_is_a_change_to_a_built_plan(self):
+        self.path = os.path.join(self.tmp.name, "docs", "plans", f"{TODAY}-thing-release.md")
+        self.put(plan("✅ Built", specs="None."))
+        self.assertIsNotNone(self.edit("type: Plan\n", "type: Plan\nnumber: 0003\n"))
+
     def test_other_documents_ignore_number(self):
         self.path = os.path.join(self.tmp.name, "docs", "specs", "big-thing.spec.md")
         self.assertIsNone(self.write(spec()))

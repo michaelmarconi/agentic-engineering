@@ -314,14 +314,14 @@ def meant(value, allowed):
     return full if full in allowed else None
 
 
-def restyled(before, after):
+def restyled(before, after, also=()):
     """True if the edit changes only how the status value is written, such as adding its emoji.
 
     Callers have already found the status the same before and after; its comment must not change.
     """
     return (
         (entry(before, "status") or (None, None))[1] == (entry(after, "status") or (None, None))[1]
-        and without_status(after) == without_status(before)
+        and without_status(after, also) == without_status(before, also)
     )
 
 
@@ -332,12 +332,11 @@ def listed(values):
 
 def without_status(text, also=()):
     """The text's lines without its frontmatter status, type and date lines, nor any line setting a
-    key in `also`. Leaving out `type:` lets a document from before types gain one with any edit, as
-    leaving out an ADR's `number:` does (number_problem() checks it), and leaving out `date:` lets a status be set on its own with its date; date_problem() checks dates."""
+    key in `also`. Leaving out `type:` lets a document from before types gain one with any edit, and
+    leaving out `date:` lets a status be set on its own with its date; date_problem() checks dates."""
     lines = text.lstrip("\ufeff").splitlines()
     end = len(frontmatter(text) or []) + 1
-    return [line for i, line in enumerate(lines)
-            if i > end or not is_key(line, "status", "type", "date", "number", *also)]
+    return [line for i, line in enumerate(lines) if i > end or not is_key(line, "status", "type", "date", *also)]
 
 
 def has_open_questions_section(text):
@@ -1198,18 +1197,20 @@ def replacement_problem(path, number):
 
 
 def adr_rules(path, before, after, old, new):
+    # `number:` is left out of every comparison, as `type:` is, so an ADR may gain it with any edit;
+    # number_problem() checks it (docs/adrs/0048).
     name = os.path.basename(path)
     if old not in ADR_STATUSES:
         return None
     if new == old:
-        if new != DRAFT and after != before and not restyled(before, after):
+        if new != DRAFT and after != before and not restyled(before, after, ("number",)):
             return (
                 f"{name}: this ADR is `{old}`, and a decided ADR is never edited. To change the "
                 f"decision, write a new `{DRAFT}` ADR that supersedes it."
             )
         return None
     if old == DRAFT and new in (ACCEPTED, REJECTED):
-        if without_status(after) != without_status(before):
+        if without_status(after, ("number",)) != without_status(before, ("number",)):
             return (
                 f"{name}: set `{new}` on its own, as the last edit after a passing review and the "
                 "person's sign-off; this edit also changes the ADR's content."
@@ -1249,7 +1250,7 @@ def adr_rules(path, before, after, old, new):
         problem = replacement_problem(path, number)
         if problem:
             return f"{name}: cannot set `{SUPERSEDED}`: {problem}."
-        if without_status(after, also=("superseded-by",)) != without_status(before):
+        if without_status(after, also=("superseded-by", "number")) != without_status(before, ("number",)):
             return (
                 f"{name}: setting `{SUPERSEDED}` may only change the status and add `superseded-by:`; "
                 "the rest of a decided ADR is never edited."
