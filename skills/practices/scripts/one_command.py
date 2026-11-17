@@ -14,8 +14,11 @@ a prefix such as `FOO=1`, `env` or `sudo`, since that string can hold several co
 Redirections pass.
 
 A command that is one command can still carry arguments of its own: anything after the program
-and up to two subcommand words, such as `run build` or `compose up`, that is not a `{name}` value,
-and any `NAME=value` setting before the program. Those are the project's own choices, which belong
+and its subcommand word, or two words after `run` or `compose`, such as `npm run build` or
+`docker compose up`, that is not a `{name}` value, alone or as `NAME={name}`; any `NAME=value`
+setting or prefix such as `sudo`, `env` or `time` before the program; and a redirection's file. A
+word shaped like a subcommand, such as `tests` in `pytest tests`, passes, so the skill still judges
+whether it is the tool's own word or a name the project chose. Those are the project's own choices, which belong
 in a script, unless the tool's documentation gives them as its usual arguments, such as `./...` in
 `go test ./...`: the script lists them and the skill judges. Whether the command needs no answer
 from a person and exits 0 on success is not something a script can tell from its text either.
@@ -42,9 +45,9 @@ PREFIXES = {"env", "sudo", "exec", "nohup", "command", "time"}
 ASSIGNMENT = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*=")
 REDIRECT_AMPERSAND = re.compile(r"[<>]&|&>>?")
 ANGLE_PLACEHOLDER = re.compile(r"<[A-Za-z][\w-]*>")
-PLACEHOLDER = re.compile(r"\{[A-Za-z][\w-]*\}")
+PLACEHOLDER_WORD = re.compile(r"^(?:[A-Za-z_][A-Za-z0-9_]*=)?\{[A-Za-z][\w-]*\}$")
 SUBCOMMAND = re.compile(r"^[A-Za-z][A-Za-z0-9:_-]*$")
-MAX_SUBCOMMANDS = 2
+TWO_WORD_SUBCOMMANDS = {"run", "compose"}
 
 
 def separator(token):
@@ -84,6 +87,11 @@ def punctuation(token):
     return bool(token) and set(token) <= set("();<>|&")
 
 
+def fills_in(word):
+    """True when the word is only a `{name}` value, alone or as a `NAME={name}` setting."""
+    return bool(PLACEHOLDER_WORD.match(word))
+
+
 def own_arguments(command):
     """The arguments a one-line command carries beyond a named entry point and `{name}` values.
 
@@ -94,19 +102,22 @@ def own_arguments(command):
     for i, token in enumerate(tokens):
         if punctuation(token):
             continue
-        after_redirection = i > 0 and punctuation(tokens[i - 1])
-        before_redirection = token.isdigit() and i + 1 < len(tokens) and punctuation(tokens[i + 1])
-        if not (after_redirection or before_redirection):
-            words.append(token)
+        before = tokens[i - 1] if i > 0 else ""
+        after = tokens[i + 1] if i + 1 < len(tokens) else ""
+        if token.isdigit() and (punctuation(after) or before.endswith("&")):
+            continue  # a file descriptor in a redirection, such as the 2 and 1 of 2>&1
+        words.append(token)
     found = []
-    while words and ASSIGNMENT.match(words[0]) and not PLACEHOLDER.search(words[0]):
-        found.append(words.pop(0))
+    while words and (ASSIGNMENT.match(words[0]) or words[0].rsplit("/", 1)[-1] in PREFIXES):
+        word = words.pop(0)
+        if not fills_in(word):
+            found.append(word)
     rest = words[1:]
-    subcommands = 0
-    while rest and subcommands < MAX_SUBCOMMANDS and SUBCOMMAND.match(rest[0]):
-        rest.pop(0)
-        subcommands += 1
-    found.extend(word for word in rest if not PLACEHOLDER.search(word))
+    if rest and SUBCOMMAND.match(rest[0]):
+        first = rest.pop(0)
+        if first in TWO_WORD_SUBCOMMANDS and rest and SUBCOMMAND.match(rest[0]):
+            rest.pop(0)
+    found.extend(word for word in rest if not fills_in(word))
     return found
 
 

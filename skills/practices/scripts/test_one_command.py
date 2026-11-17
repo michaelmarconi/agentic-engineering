@@ -116,13 +116,31 @@ class OwnArgumentsTest(unittest.TestCase):
         self.assertIn("doveadm", found)
         self.assertIn("Test Folder", found)
 
-    def test_at_most_two_subcommand_words(self):
-        self.assertEqual(one_command.own_arguments("docker exec mail-test doveadm"), ["doveadm"])
+    def test_a_second_subcommand_word_only_after_run_or_compose(self):
+        self.assertEqual(one_command.own_arguments("docker exec mail-test doveadm"), ["mail-test", "doveadm"])
+        self.assertEqual(one_command.own_arguments("docker exec prod-db psql"), ["prod-db", "psql"])
+        self.assertEqual(one_command.own_arguments("make deploy production"), ["production"])
 
     def test_paths_after_the_program_are_listed(self):
         self.assertEqual(one_command.own_arguments("go test ./..."), ["./..."])
         self.assertEqual(one_command.own_arguments("FOO=1 make test"), ["FOO=1"])
 
+    def test_text_around_a_placeholder_is_listed(self):
+        self.assertEqual(one_command.own_arguments("make deploy --config=prod-{env}.yaml"),
+                         ["--config=prod-{env}.yaml"])
+        self.assertEqual(one_command.own_arguments("rsync --dir=${DEPLOY_DIR}"), ["--dir=${DEPLOY_DIR}"])
+
+    def test_prefixes_are_listed_and_skipped(self):
+        self.assertEqual(one_command.own_arguments("time npm run build"), ["time"])
+        self.assertEqual(one_command.own_arguments("env FOO=1 make test"), ["env", "FOO=1"])
+        self.assertEqual(one_command.own_arguments("sudo make deploy"), ["sudo"])
+
+    def test_placeholder_settings_before_the_program_pass(self):
+        self.assertEqual(one_command.own_arguments("FOO={env} BAR=1 make test"), ["BAR=1"])
+
+    def test_redirection_targets_are_listed(self):
+        self.assertEqual(one_command.own_arguments("make test >/var/log/ci/test.log"), ["/var/log/ci/test.log"])
+        self.assertEqual(one_command.own_arguments("make report > report.txt"), ["report.txt"])
 
 class CommandLineTest(unittest.TestCase):
     def run_script(self, *args):

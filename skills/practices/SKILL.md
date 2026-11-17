@@ -144,8 +144,9 @@ not to ask anything does.
   name each script you did not run, and why, in the hand-over. When a script changes a real
   outside service, the hand-over also suggests, as work for `/agentic:plan`, a test that runs it
   against the stand-in; never write the test or wait for it. A step that needs logic, or a change
-  that would add logic to a script, is not yours to write: record the step with no command yet and
-  name the script in the hand-over as work for `/agentic:plan`. Once the project has a place for
+  that would add logic to a script, is not yours to write: under the step's heading write "Not set up yet: needs a script with
+  logic, work for `/agentic:plan`", so a skill that runs it stops, and name the script in the
+  hand-over as that work. Once the project has a place for
   commands, Check your work names it.
 
 Write only the core, the files under `docs/practices/` and the scripts and runner entries the
@@ -180,7 +181,7 @@ since the core and a topic file must agree.
    reports list: each failed check and each item under Other findings in the review report, and
    each finding in the wording report. Skip any finding outside the Practices section of
    `AGENTS.md`, which is the person's. A command outside this run's topic that breaks the
-   one-command rule stays as written for the person to decide, since writing its entry needs them. A wording item under Needs a person, whose meaning only the
+   one-command rule stays as written for the person to decide, since writing its script needs them. A wording item under Needs a person, whose meaning only the
    person knows, is a decision like any other. Correct by making the practices accurate, never by
    dropping or hedging what the person said. A finding only the person can settle, such as a rule
    they asked for word for word, or anything under Needs a person, stays as written for them to
