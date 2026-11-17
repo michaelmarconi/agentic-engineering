@@ -1,9 +1,10 @@
 ---
 # Change status only through the agentic plugin's skills, which check each change; a change made by hand is not checked.
 type: ADR
-status: 👍 Accepted
-date: 2026-11-14
+status: ↪️ Superseded
+date: 2026-11-17
 supersedes: 0022
+superseded-by: 0046
 ---
 
 # Find the repository from the file each hook acts on, through one shared piece of code
