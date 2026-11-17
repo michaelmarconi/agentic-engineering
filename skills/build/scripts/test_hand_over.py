@@ -19,6 +19,7 @@ import uncommitted  # noqa: E402
 
 PLAN = "docs/plans/2026-11-03-thing.md"
 TODAY = "2026-11-10"  # the script's "today" in these tests; never read from the clock
+NOTE = "You can now do the thing."
 
 ENV = dict(os.environ, GIT_AUTHOR_NAME="Test", GIT_AUTHOR_EMAIL="test@example.com",
            GIT_COMMITTER_NAME="Test", GIT_COMMITTER_EMAIL="test@example.com",
@@ -72,12 +73,14 @@ class Repo(unittest.TestCase):
         self.git("remote", "add", "origin", bare)
         return bare
 
-    def run_it(self, *args, own=""):
+    def run_it(self, *args, own="", notes=(NOTE,)):
         out = io.StringIO()
         self.data = os.path.join(self.tmp.name, "data")
         with redirect_stdout(out), mock.patch("sys.stdin", io.StringIO(own)):
             code = hand_over.main(["--repo", self.dir, "--plan", PLAN, "--message", "Build the thing",
-                                   "--data", self.data, "--session", "s1", "--report", "-", *args])
+                                   "--data", self.data, "--session", "s1", "--report", "-",
+                                   *(() if notes is None else [x for n in notes for x in ("--release-note", n)]),
+                                   *args])
         return code, out.getvalue()
 
     def report_file(self, out):
@@ -101,7 +104,7 @@ class Commit(Repo):
     def test_nothing_to_commit_said_so(self):
         code, out = self.run_it()
         self.assertEqual(code, 0)
-        self.assertEqual(self.subjects(), ["Start"])
+        self.assertEqual(self.subjects()[1:], ["Start"])
         self.assertIn("nothing new to commit", out)
 
     def test_sandbox_stand_ins_left_out_of_the_commit(self):
@@ -396,7 +399,7 @@ class OpenFindings(Repo):
         out = io.StringIO()
         with redirect_stdout(out), mock.patch("sys.stdin", io.StringIO(own)):
             code = hand_over.main(["--repo", self.dir, "--plan", PLAN, "--data", self.data, "--session", "s1",
-                                   "--report", "-", "--accept-open-findings", *extra])
+                                   "--report", "-", "--accept-open-findings", "--release-note", NOTE, *extra])
         return code, out.getvalue()
 
     def reports(self):
@@ -440,6 +443,7 @@ class OpenFindings(Repo):
         self.assertTrue(message.startswith("Mark the plan 2026-11-03-thing.md as built\n\n"), message)
         self.assertIn("Accepted as it stands by the person, without further review:\n\n" + "\n".join(FINDINGS),
                       message)
+        self.assertTrue(message.rstrip().endswith(f"\n\nRelease-note: {NOTE}"), message)
         self.assertEqual(self.git("show", "--name-only", "--format=", "HEAD"), PLAN)
         self.assertEqual(self.git("rev-parse", "HEAD"),
                          self.git("rev-parse", "build/thing", cwd=self.bare))
@@ -533,6 +537,63 @@ class OpenFindings(Repo):
             self.run_accept("", "--reviews-passed")
         self.assertEqual(raised.exception.code, 2)
         self.assertIn("status: 🟢 Ready to build", self.read(PLAN))
+
+
+class ReleaseNotes(Repo):
+    """Each hand-over leaves its release notes in the message of the last commit it makes
+    (docs/adrs/0043)."""
+
+    def message(self, rev="HEAD"):
+        return self.git("log", "-1", "--format=%B", rev)
+
+    def test_work_commit_carries_the_note_when_the_reviews_have_not_passed(self):
+        self.put("src/thing.py", "print('thing')\n")
+        code, out = self.run_it()
+        self.assertEqual(code, 0, out)
+        self.assertEqual(self.message(), f"Build the thing\n\nRelease-note: {NOTE}")
+
+    def test_built_commit_carries_the_note_and_the_work_commit_does_not(self):
+        self.put("src/thing.py", "print('thing')\n")
+        code, out = self.run_it("--reviews-passed")
+        self.assertEqual(code, 0, out)
+        self.assertEqual(self.message(), f"Mark the plan 2026-11-03-thing.md as built\n\nRelease-note: {NOTE}")
+        self.assertEqual(self.message("HEAD~1"), "Build the thing")
+
+    def test_one_line_per_note(self):
+        self.put("src/thing.py", "print('thing')\n")
+        code, out = self.run_it(notes=("You can export.", "Exports are faster."))
+        self.assertEqual(code, 0, out)
+        self.assertTrue(self.message().endswith("\n\nRelease-note: You can export.\nRelease-note: Exports are faster."))
+
+    def test_note_given_with_its_label_not_labelled_twice(self):
+        self.put("src/thing.py", "print('thing')\n")
+        code, out = self.run_it(notes=(f"Release-note: {NOTE}",))
+        self.assertEqual(code, 0, out)
+        self.assertEqual(self.message(), f"Build the thing\n\nRelease-note: {NOTE}")
+
+    def test_nothing_to_commit_records_the_notes_in_a_commit_of_their_own(self):
+        code, out = self.run_it()
+        self.assertEqual(code, 0, out)
+        self.assertEqual(self.message(), f"Record the release notes of the plan 2026-11-03-thing.md\n\n"
+                                         f"Release-note: {NOTE}")
+        self.assertEqual(self.git("show", "--name-only", "--format=", "HEAD"), "")
+        self.assertEqual(self.git("rev-parse", "HEAD"), self.git("rev-parse", "build/thing", cwd=self.bare))
+
+    def test_missing_note_refused_before_anything_changes(self):
+        self.put("src/thing.py", "print('thing')\n")
+        with mock.patch("sys.stderr", io.StringIO()), self.assertRaises(SystemExit) as raised:
+            self.run_it(notes=None)
+        self.assertEqual(raised.exception.code, 2)
+        self.assertEqual(self.subjects(), ["Start"])
+
+    def test_empty_or_several_line_note_refused_before_anything_changes(self):
+        self.put("src/thing.py", "print('thing')\n")
+        for bad in ("", "   ", "Release-note:", "First line\nsecond line"):
+            code, out = self.run_it(notes=(bad,))
+            self.assertEqual(code, 2, out)
+            self.assertIn("release note", out)
+            self.assertIn("Nothing was changed", out)
+            self.assertEqual(self.subjects(), ["Start"])
 
 
 class Head(Repo):

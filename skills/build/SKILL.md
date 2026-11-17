@@ -258,13 +258,12 @@ in the report.
 ## Handing over
 
 However the build ends once it has started, hand over with the script, which commits anything
-left, pushes the branch to `origin`, reports exactly what happened, and writes the build's report
-file. It copies each review's report and its own report into the file word for word, so the person
-reads them exactly as they were given; you write only your own sections, as Markdown under these
+left, pushes the branch, and writes the build's report file, copying each review's report and its
+own into it word for word; you write only your own sections, as Markdown under these
 `##` headings, in this order, leaving out any you have nothing for:
 
 1. `## What was built`: what was built, or why the build stopped and what is open, with any
-   question to raise asked plainly.
+   question asked plainly.
 2. `## Built before sign-off`: for a build before sign-off, what was not signed off and the
    proposed answers built, with a suggestion to settle them and sign the plan off.
 3. `## Tests and lint`: the test and lint commands you ran, with their final output, any tests
@@ -277,29 +276,32 @@ reads them exactly as they were given; you write only your own sections, as Mark
    correction check's reports are added for you.
 7. `## Left for you to check`: each requirement left for the person to check, and how to check
    the running product against the plan's requirements: `/agentic:verify <the plan's path>`. If
-   the practices say it must run and pass before merging, say to run it before merging; otherwise
-   offer it as optional. Nothing the plugin does blocks a merge.
+   the practices say it must pass before merging, say so; otherwise offer it as optional. Nothing
+   the plugin does blocks a merge.
 
 The script's own report goes under a heading of its own, which only the script writes. Give your
 sections to the script on standard input:
 
 ```
-python3 "${CLAUDE_SKILL_DIR}/scripts/hand_over.py" --plan <the plan's path> --message "<what the last commit holds>" [--reviews-passed] --data "${CLAUDE_PLUGIN_DATA}" --session "${CLAUDE_SESSION_ID}" --report - <<'EOF'
+python3 "${CLAUDE_SKILL_DIR}/scripts/hand_over.py" --plan <the plan's path> --message "<what the last commit holds>" --release-note "<one sentence>" [--reviews-passed] --data "${CLAUDE_PLUGIN_DATA}" --session "${CLAUDE_SESSION_ID}" --report - <<'EOF'
 ## What was built
 
 ...
 EOF
 ```
 
+Every hand-over gives one `--release-note` per thing users would notice: a plain sentence, drawn
+from the specs, on what users can now do, without plan names, paths or code.
+
 Pass `--reviews-passed` only for a plan that was signed off when the build began, and only when
 all three reviews passed, or the correction check passed, and
 nothing was raised: the script then marks a `🟢 Ready to build` plan `✅ Built`. In every other
 case the plan keeps its status, and the person sorts out what is open, then runs `/build` again on
-the branch. After a failed correction check, `/build` run again on the unchanged branch offers
-to accept the build as it stands instead. A plan built before sign-off stays as it was; once the person settles it and signs it
+the branch, where after a failed correction check `/build` offers to accept the build as it stands
+instead. A plan built before sign-off stays as it was; once the person settles it and signs it
 off, `/build` on the branch can mark it `✅ Built`.
 
-The script prints what happened, then the report file's path and the file as written. If it refuses
-your sections, correct them and run it again. Never write or edit the file yourself.
+The script prints what happened, the report file's path and the file. If it refuses your sections,
+correct them and run it again. Never write or edit the file yourself.
 
 End with a short reply, under 150 words: the outcome in a sentence or two, then at most five bullets of at most 15 words each, with the main findings and any question or action for the person, then the report file's full path; if the app you run in can show them a file in a viewer, show the report file there; never paste the report or its sections into the reply, since the file holds them. In the outcome, name the branch and say whether the plan was marked `✅ Built`.
