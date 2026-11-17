@@ -98,6 +98,9 @@ the `agentic:` prefix.
   It drafts the notes from the `Release-note:` line each build leaves in its last commit, has them
   reviewed and asks you to sign them off. It publishes only where the practice records a publish
   command, and only on your yes. It never merges.
+- `/deploy` puts one release into one environment, such as staging or production, by the steps the
+  deploying practice records: it shows what will go where, deploys only on your yes, runs the
+  recorded check and, if the check fails, rolls back at once. It writes nothing to the repository.
 - `/audit` finds drift, where the code and its documents disagree, and any spec or ADR that
   contradicts the brief, at any time. It changes nothing: you choose each correction.
 - `/practices` records how the project does things, such as the commands that check the work and

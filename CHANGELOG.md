@@ -6,6 +6,26 @@ What changed in each version of the plugin, newest first. Versions follow
 past a major version: it says what you need to change in your documents. Until 1.0.0, any
 minor version may need such a change, and its entry says so.
 
+## [0.65.0] - 2026-11-17
+
+### Added
+
+- `/agentic:deploy` puts one release, named by version or by commit, into one environment such
+  as staging or production, by the steps `docs/practices/deploying.md` records. It checks that
+  environment's practice and the commit first, shows what will go where, the check and the roll
+  back, and deploys only on your yes. It then runs the recorded check until it passes or its wait
+  runs out, and rolls back at once if it fails. It writes nothing to your repository: its reply is
+  the record.
+
+### Changed
+
+- `/agentic:practices deploying` now says, for each environment, whether a release is named by
+  version or by commit; the Deploy command may take `{environment}`, `{commit}` and `{version}`,
+  and may be any line starting `None:`, such as "None: the pipeline deploys it"; Roll back may
+  take `{environment}`.
+- The practice check judges one environment of `deploying.md` with `--environment <name>`, so a
+  gap in another environment no longer blocks a deploy, and lists the environments recorded.
+
 ## [0.64.0] - 2026-11-17
 
 ### Added

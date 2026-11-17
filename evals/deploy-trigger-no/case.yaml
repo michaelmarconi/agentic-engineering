@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: deploy-trigger-no
+expected_outcome: |
+  Asked to record how the project deploys, Claude does not use the deploy skill.
+context:
+  scaffold_script: place-files.sh
