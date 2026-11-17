@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: practices-long-command-script
+expected_outcome: |
+  Asked to record a long manual-check command that copies mail in a real mail account, /practices moves it into a script in script/ with its folder written in, adds a package.json entry that only calls the script, records that entry's command, never runs the command, and suggests a test against a stand-in.
+context:
+  scaffold_script: place-files.sh

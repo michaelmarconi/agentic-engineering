@@ -6,6 +6,26 @@ What changed in each version of the plugin, newest first. Versions follow
 past a major version: it says what you need to change in your documents. Until 1.0.0, any
 minor version may need such a change, and its entry says so.
 
+## [0.62.0] - 2026-11-17
+
+### Changed
+
+- `/agentic:practices` records a step as it stands only when it calls a named entry point, a
+  command runner entry, a script or a tool's standard command such as `npm test`, with nothing but
+  `{name}` values ([ADR 0044](docs/adrs/0044-practice-step-entry-point.md)). Any other command,
+  such as a long line holding your project's flags, folders or accounts, goes into a script in your
+  scripts folder, and the practice records only the command that runs it, so those choices live in
+  a file your tests can run instead of a line of Markdown that falls out of date.
+- `/agentic:practices` writes those scripts itself when they hold no logic, creating `script/` if
+  you have no scripts folder, and adds a runner entry that calls each one when you have a runner
+  ([ADR 0045](docs/adrs/0045-practices-skill-writes-scripts.md)). It no longer asks which kind of
+  place for commands to create. It runs a script only when that changes nothing real, and when a
+  script changes a real outside service it suggests a test against a stand-in as work for
+  `/agentic:plan`. A step that needs logic, such as a retry, is recorded as not set up yet and
+  handed to `/agentic:plan`.
+- Practices recorded earlier with long one-line commands may now fail the practices review until
+  you move those commands into scripts.
+
 ## [0.61.0] - 2026-11-17
 
 ### Added

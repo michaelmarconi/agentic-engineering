@@ -1,7 +1,7 @@
 ---
 type: regex
 target: { source: file, path: AGENTS.md }
-pattern: 'package\.json'
+pattern: '(?:script/|package\.json)'
 weight: 1
 ---
-Check your work names package.json as the project's place for commands (rubric check 14).
+Check your work names the project's place for commands, the script/ folder or package.json (rubric check 14).
