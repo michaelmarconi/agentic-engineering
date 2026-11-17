@@ -153,7 +153,7 @@ other topic you ask for is recorded the same way.
 | Testing | Whether tests come first, what each change is tested with, coverage, end-to-end tests, test data, and flaky or slow tests |
 | Branches and commits | Branch names, commit message style, and how long a branch may live |
 | Delivering work | How work is split, how big one plan may be, and what done means beyond the merge checks |
-| Reviews and merging | Who reviews, how work is merged, what must pass first, and whether [`/verify`](verify.md) must run and pass before a build is merged |
+| Reviews and merging | Pull requests or not and the sections every description holds, with a [template](#pull-request-template) on GitHub, who reviews, how work is merged, what must pass first, and whether [`/verify`](verify.md) must run and pass before a build is merged |
 | CI/CD | What the pipeline runs and when, which checks are required, and what to do when a run fails |
 | <a id="releasing"></a>Releasing | Which code may be released, how the version is set and tied to one commit, and the command that publishes it; [`/release`](#releasing-and-deploying) relies on it |
 | <a id="deploying"></a>Deploying | For each environment: which releases may go there, and the commands that deploy, check and roll back; [`/deploy`](#releasing-and-deploying) relies on it |
@@ -162,6 +162,21 @@ other topic you ask for is recorded the same way.
 | Hands off | Files an agent must never edit, and actions it must never take |
 | Documents to keep up to date | Which documents must change with the code |
 | <a id="running-the-product"></a>Running the product | How to start and stop the product, reach each of its interfaces, put it in a given starting state, and what is safe to touch; [`/verify`](verify.md) relies on it. Before recording it, `/practices` starts the product with the proposed commands and reaches each interface, correcting and trying again until it runs and you agree |
+
+### Pull request template
+
+When you record Reviews and merging and say the project uses pull requests, `/practices` gives
+every pull request description the same sections, so a reviewer can tell at a glance what a pull
+request is for: a short Summary in plain words, the plan, specs and ADRs it was built from, what
+changes, how it was checked, and optional notes. Each section's comment says which part of the
+[`/build`](build.md) report to draw it from. On GitHub, which shows a template to everyone opening
+a pull request on its website,[^prtemplate] it shows you the
+[default template](../../skills/practices/assets/pull_request_template.md) and writes it to
+`.github/pull_request_template.md` only if you say yes. If you already have a template, it leaves
+yours alone. Either way, the practice gains a rule that descriptions follow the template, so agents
+that open pull requests through their own tools follow it too. With no template, because the
+project is not on GitHub or you said no, that rule lists the sections instead.
+([ADR 0047](../adrs/0047-practices-pull-request-template.md))
 
 ## Using `/practices`
 
@@ -213,7 +228,8 @@ will use.
 - **Make a technical choice.** When a question turns out to be a choice between alternatives, it
   says so and leaves it for you to record with `/adr`, as `/plan` does. A command for a tool the
   project does not use yet is marked by ending it with "(not set up yet)".
-- **Change anything else.** It writes only the core and the files under `docs/practices/`, and
+- **Change anything else.** It writes only the core, the files under `docs/practices/`, any
+  script a recorded step needs and the pull request template you agree to, and
   leaves the rest of `AGENTS.md` alone, creating the file if the project has none. In `CLAUDE.md`
   it adds only the `@AGENTS.md` line, creating the file if needed, and asks you first when the file
   already exists. It never touches your README, contributing guide or any other file unless you
@@ -243,6 +259,7 @@ every document (see [Review process](../lifecycle.md#review-process)).
     the rest only when a task calls for it.
 [^memory]: Claude Code documentation, [How Claude remembers your project](https://code.claude.com/docs/en/memory).
 [^agentsmd]: [AGENTS.md](https://agents.md/).
+[^prtemplate]: GitHub Docs, [Creating a pull request template for your repository](https://docs.github.com/en/communities/using-templates-to-encourage-useful-issues-and-pull-requests/creating-a-pull-request-template-for-your-repository).
 [^check]: Claude Code documentation, [Best practices: give Claude a check to run](https://code.claude.com/docs/en/best-practices#give-claude-a-check-to-run).
 [^scripts]: GitHub's [Scripts to Rule Them All](https://github.blog/engineering/scripts-to-rule-them-all/) describes the same idea: one script per task, with the same names in every project.
 [^batches]: DORA's research on [working in small batches](https://dora.dev/capabilities/working-in-small-batches/)

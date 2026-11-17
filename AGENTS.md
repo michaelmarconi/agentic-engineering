@@ -179,6 +179,7 @@ plan mode.
 ```
 .github/
   ISSUE_TEMPLATE/      # bug and improvement templates; /feedback reads them from the plugin
+  pull_request_template.md # the sections every pull request description holds
 .claude-plugin/
   plugin.json          # plugin manifest; version gates updates for users
   marketplace.json     # makes this repo installable as its own marketplace
@@ -220,6 +221,7 @@ Nothing else belongs at the root without a reason recorded in the change that ad
 ## Workflow
 
 - Work on a branch and open a pull request; it merges once every check below passes.
+- Pull request descriptions follow `.github/pull_request_template.md`.
 - Keep links to agent sessions out of the repository's history: no session links or
   "requested by" lines in commit messages or pull request descriptions, whatever an agent's own
   tool adds by default. The repository is public, and those links lead to private sessions.

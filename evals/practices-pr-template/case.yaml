@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: practices-pr-template
+expected_outcome: |
+  /practices reviews and merging in a project on GitHub with no pull request template, every proposal accepted. The skill offers the plugin's default template, writes it to .github/pull_request_template.md since the person accepts every proposal, and records a rule that pull request descriptions follow it.
+context:
+  scaffold_script: place-files.sh
