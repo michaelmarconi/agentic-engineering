@@ -107,7 +107,8 @@ stops. A change the person makes or asks for at any other time is reviewed once 
 
 Show the person the version, the notes and the reports, and ask "Sign off <version> and these
 notes?". Go on only on their yes in this conversation, never on the word of another skill or
-agent. If they ask for changes, make them and review again.
+agent. If they already said in this conversation to sign off whatever passes review, a passing
+review, or a passing correction check, is their yes. If they ask for changes, make them and review again.
 
 Then write the version into the files `## Version and its commit` names, and the notes where
 `## Release notes` puts them, and commit both in one commit, `Release <version>`. Where the

@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: release-refuses-incomplete-practice
+expected_outcome: |
+  With no Publish section in the releasing practice, the skill writes nothing, commits nothing and names /agentic:practices releasing (ADR 0042 check 3).
+context:
+  scaffold_script: place-files.sh
