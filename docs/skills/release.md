@@ -8,22 +8,18 @@ enough work has been built, checked with [`/verify`](verify.md) and merged; it n
 anything itself. Read that page first for the documents, skills and agents it mentions.
 
 ```mermaid
+%%{init: {"flowchart": {"nodeSpacing": 30, "rankSpacing": 30}}}%%
 flowchart TD
-    Start["Run /agentic:release"] --> Practice{releasing.md<br/>complete?}
-    Practice -->|no| Practices[Stop: run /agentic:practices releasing]
-    Practice -->|yes| Since[Find the last release and<br/>gather the notes since]
-    Since --> Draft[Draft the version<br/>and the release notes]
-    Draft --> Review[Review, correct once,<br/>check the corrections]
-    Review --> SignOff{You sign off<br/>the version and notes}
+    Start["Run /agentic:release"] --> Practice[Check releasing.md]
+    Practice -->|incomplete| Stop[Stop: run /agentic:practices releasing]
+    Practice --> Notes[Gather the notes since the last release]
+    Notes --> Draft[Draft the version and notes, and review them]
+    Draft --> SignOff[You sign off]
     SignOff -->|changes| Draft
-    SignOff -->|yes| Commit[Commit and push]
-    Commit --> Publish{Does the project<br/>publish by hand?}
-    Publish -->|no| Reply[Reply: version and commit]
-    Publish -->|yes, once the commit<br/>may be published| Yes{Your yes}
-    Yes --> Run[Run the recorded command]
-    Run --> Reply
-    Reply -.->|you| Merge[Merge, if the practice<br/>releases merged code]
-    Reply -.->|you| Deploy[Deploy: /deploy]
+    SignOff --> Commit[Commit and push]
+    Commit -->|Publish is a command| Publish[Your yes, then publish]
+    Commit --> Reply[Reply: version and commit]
+    Publish --> Reply
 ```
 
 ## Releasing, publishing and deploying
