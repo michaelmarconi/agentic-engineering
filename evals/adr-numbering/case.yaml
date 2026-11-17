@@ -1,6 +1,6 @@
 schema_version: "1.1"
 name: adr-numbering
 expected_outcome: |
-  Three ADRs exist, so the new one is written as 0004 with a subject of two to five lowercase words joined by hyphens, each a word of its title, naming what the decision is about rather than stating it, and the existing ADRs are not touched.
+  Three ADRs exist, so the new one is written as 0004 with a subject of two to five lowercase words joined by hyphens, each a word of its title, naming what the decision is about rather than stating it, its frontmatter holds `number: 0004`, and the existing ADRs are not touched.
 context:
   scaffold_script: place-files.sh

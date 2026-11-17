@@ -102,6 +102,12 @@ document written before types may be edited without one, and adding one never co
 so it may come with any edit the rules above allow, even to a decided ADR, a `✅ Built` plan or a
 finished spike record, whose only allowed change it is.
 
+Every ADR repeats in its frontmatter's `number:` the four digits its file name starts with, for
+readers only (docs/adrs/0048). It refuses more than one `number:` line, a number that is not those
+four digits, a new ADR without one, and taking one away. An ADR written before the field may be
+edited without one, and adding or changing it to the matching number never counts as a change, so
+it may come with any edit the rules above allow, even to a decided ADR.
+
 Every spec, ADR, plan and spike record records in its frontmatter's `date:` the day its status
 last changed, as YYYY-MM-DD. For any of them with a lifecycle status before or after the edit, it
 refuses more than one `date:` line, a date that is not a real YYYY-MM-DD date or is after today, a new document or a
@@ -308,14 +314,14 @@ def meant(value, allowed):
     return full if full in allowed else None
 
 
-def restyled(before, after):
+def restyled(before, after, also=()):
     """True if the edit changes only how the status value is written, such as adding its emoji.
 
     Callers have already found the status the same before and after; its comment must not change.
     """
     return (
         (entry(before, "status") or (None, None))[1] == (entry(after, "status") or (None, None))[1]
-        and without_status(after) == without_status(before)
+        and without_status(after, also) == without_status(before, also)
     )
 
 
@@ -620,6 +626,26 @@ def date_problem(name, kind, before, after, old, new):
     return None
 
 
+def number_problem(name, before, after):
+    """Why an ADR's `number:` is wrong, or None (docs/adrs/0048). It repeats the four digits that
+    start the file's name, for readers only. A new ADR must have it and one it has is never taken
+    away; an ADR from before the field may go without, or gain a matching one with any edit."""
+    if count_key(after, "number") > 1:
+        return f"{name}: the frontmatter has more than one `number:` line; keep one."
+    expected = name[:4]
+    value = field(after, "number")
+    if value is None:
+        if before and field(before, "number") is not None:
+            return f"{name}: keep `number: {expected}` in the frontmatter; it shows the ADR's number."
+        if before:
+            return None
+        return f"{name}: a new ADR has `number: {expected}`, the number its file name starts with, after `type: ADR`."
+    if value != expected:
+        return (f"{name}: `number:` repeats the four digits the file name starts with, so it is "
+                f"`number: {expected}` (found '{value}').")
+    return None
+
+
 def brief_problem(payload, path):
     """Why an edit to the brief is refused: only for its `type:`, as the brief has no status."""
     before = None
@@ -680,7 +706,9 @@ def check(payload):
     # refuses anyway is refused for that, not with advice that only leads to that refusal.
     reason = lifecycle_problem(path, kind, statuses, rules, before, after, old, new, written)
     if not reason and (old in statuses or new in statuses):
-        reason = (type_problem(name, kind, before, after) or date_problem(name, kind, before, after, old, new)
+        reason = (type_problem(name, kind, before, after)
+                  or (number_problem(name, before, after) if kind == "ADR" else None)
+                  or date_problem(name, kind, before, after, old, new)
                   or layout_problem(name, before, after)
                   or (title_problem(path, kind, before, after) if before is not None else None))
     if reason or new == written:
@@ -1169,18 +1197,20 @@ def replacement_problem(path, number):
 
 
 def adr_rules(path, before, after, old, new):
+    # `number:` is left out of every comparison, as `type:` is, so an ADR may gain it with any edit;
+    # number_problem() checks it (docs/adrs/0048).
     name = os.path.basename(path)
     if old not in ADR_STATUSES:
         return None
     if new == old:
-        if new != DRAFT and after != before and not restyled(before, after):
+        if new != DRAFT and after != before and not restyled(before, after, ("number",)):
             return (
                 f"{name}: this ADR is `{old}`, and a decided ADR is never edited. To change the "
                 f"decision, write a new `{DRAFT}` ADR that supersedes it."
             )
         return None
     if old == DRAFT and new in (ACCEPTED, REJECTED):
-        if without_status(after) != without_status(before):
+        if without_status(after, ("number",)) != without_status(before, ("number",)):
             return (
                 f"{name}: set `{new}` on its own, as the last edit after a passing review and the "
                 "person's sign-off; this edit also changes the ADR's content."
@@ -1220,7 +1250,7 @@ def adr_rules(path, before, after, old, new):
         problem = replacement_problem(path, number)
         if problem:
             return f"{name}: cannot set `{SUPERSEDED}`: {problem}."
-        if without_status(after, also=("superseded-by",)) != without_status(before):
+        if without_status(after, also=("superseded-by", "number")) != without_status(before, ("number",)):
             return (
                 f"{name}: setting `{SUPERSEDED}` may only change the status and add `superseded-by:`; "
                 "the rest of a decided ADR is never edited."
