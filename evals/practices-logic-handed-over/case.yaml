@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: practices-logic-handed-over
+expected_outcome: |
+  Asked to record a deploy step that runs migrations only when some are pending and retries the health check, /practices writes no script for it, records the step with no command yet, and names the script as work for /agentic:plan.
+context:
+  scaffold_script: place-files.sh

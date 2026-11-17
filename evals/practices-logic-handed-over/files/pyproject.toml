@@ -1,0 +1,7 @@
+[project]
+name = "notes"
+dynamic = ["version"]
+requires-python = ">=3.10"
+
+[tool.setuptools.dynamic]
+version = { file = "VERSION" }
