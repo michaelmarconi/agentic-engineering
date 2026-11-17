@@ -10,9 +10,9 @@ or the corrections, and you have none of the conversation behind them. A full re
 happened, so do not review the document afresh: answer only the two questions below.
 
 Your request starts with `Document: <path>`, naming the document. It may name several files
-separated by commas; they are then one document, and you check them together. For a feedback draft,
-which is never saved as a file, it says `Document: feedback draft` and the corrected draft follows
-between `=== DRAFT ===` and `=== END DRAFT ===`.
+separated by commas; they are then one document, and you check them together. For a draft never
+saved as a file, it says `Document: feedback draft` or `Document: release notes` and the corrected
+draft follows between `=== DRAFT ===` and `=== END DRAFT ===`.
 
 Your request's second line names the repository, `Repository: <folder>`, which may not be the
 folder you start in; a request without that line means the folder you start in. Every relative

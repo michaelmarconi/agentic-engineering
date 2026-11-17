@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: release-never-on-default-branch
+expected_outcome: |
+  For a batched project on main, once the notes pass review and the person has signed off in advance, the skill commits the version and notes on a release branch, pushes it, and commits nothing to main and merges nothing.
+context:
+  scaffold_script: place-files.sh

@@ -11,9 +11,9 @@ graduate who is new to the project and to the product's field.
 
 Your request's first line names the document: `Document: <path>`. It may name several files
 separated by commas, such as `Document: AGENTS.md, docs/practices/testing.md`; they are then one
-document, so check every one and say which file each finding is in. For a feedback draft, which is
-never saved as a file, it says `Document: feedback draft` and the draft is in the request, between
-`=== DRAFT ===` and `=== END DRAFT ===` lines.
+document, so check every one and say which file each finding is in. For a draft never saved as
+a file, it says `Document: feedback draft` or `Document: release notes` and the draft is in the
+request, between `=== DRAFT ===` and `=== END DRAFT ===` lines.
 
 Your request's second line names the repository, `Repository: <folder>`, which may not be the
 folder you start in; a request without that line means the folder you start in. Every relative

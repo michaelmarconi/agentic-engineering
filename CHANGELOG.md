@@ -6,6 +6,27 @@ What changed in each version of the plugin, newest first. Versions follow
 past a major version: it says what you need to change in your documents. Until 1.0.0, any
 minor version may need such a change, and its entry says so.
 
+## [0.61.0] - 2026-11-17
+
+### Added
+
+- `/agentic:release` makes a release by the steps your project records in
+  `docs/practices/releasing.md`: it proposes the next version, drafts release notes for your
+  users, has them reviewed by a new release reviewer and the wording checker, corrects them once
+  and checks the corrections, then commits the version and notes after you sign off. It commits on
+  the branch being merged, or on a new `release/<version>` branch, never on the default branch, and
+  never opens a pull request or merges. It publishes only when the practice records a publish
+  command, only from a commit the practice allows, and only after you say yes.
+- The release notes come from the builds: every `/agentic:build` hand-over now gives at least one
+  `--release-note`, a plain sentence on what users can now do, and the hand-over script adds it to
+  the commit as a `Release-note:` line ([ADR 0043](docs/adrs/0043-build-commit-carries-release-note.md)).
+  Commits with no note are drafted from their subject, marked as drawn from history, and you keep,
+  reword or drop each.
+
+### Changed
+
+- `hand_over.py` now needs `--release-note` to hand over. If you call it yourself, add one.
+
 ## [0.60.0] - 2026-11-16
 
 ### Changed

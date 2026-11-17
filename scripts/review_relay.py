@@ -16,8 +16,8 @@ commas, such as `Document: /p/AGENTS.md, /p/docs/practices/testing.md`, which ar
 one document (see docs/adrs/0018): the hook saves each, hands the checker each between `=== FILE: <path> ===` and
 `=== END FILE ===` lines, and starts the checker once any of them has changed. The order of the
 names does not matter, and a line naming one existing file is that file even if its name holds a
-comma. A draft that is never written to a file, such as /feedback's,
-uses `Document: feedback draft` and carries the draft between `=== DRAFT ===` and
+comma. A draft that is never written to a file, /feedback's or /release's notes,
+uses `Document: feedback draft` or `Document: release notes` and carries the draft between `=== DRAFT ===` and
 `=== END DRAFT ===` lines in the request.
 
 Before any of these agents starts, the hook finds the repository the document is in (see
@@ -26,10 +26,10 @@ when they are in none. It rewrites the request's first line to name each file re
 puts `Repository: <the folder's full path>` on the second line, so an agent started from a folder
 above the project still reads and searches the right one. Everything it saves is keyed by those
 relative paths. It refuses the start when none of the files exists, or when they sit in different
-repositories. A feedback draft has no file, so its requests are left as they are.
+repositories. A draft has no file, so its requests are left as they are.
 
 Every review has two parts that run side by side: the skill's own reviewer (spec, brief, adr, plan,
-feedback, practices or spike) and the shared language checker, which checks the wording (see docs/adrs/0013).
+feedback, practices, spike or release) and the shared language checker, which checks the wording (see docs/adrs/0013).
 
 - Before either starts, it saves the document's text. A part joins the latest review of that
   document if it is of the same text apart from spacing and has no report from this part yet, so
@@ -89,6 +89,8 @@ except ImportError:  # Windows: run without the lock rather than fail every agen
 ROOT = os.environ.get("CLAUDE_PLUGIN_ROOT") or os.path.normpath(
     os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
 FEEDBACK_DRAFT = "feedback draft"
+# Drafts never written to a file before review: /feedback's issue and /release's notes.
+DRAFTS = (FEEDBACK_DRAFT, "release notes")
 DRAFT_START = "=== DRAFT ===\n"
 DRAFT_END = "=== END DRAFT ==="
 REPOSITORY = "Repository:"
@@ -103,6 +105,7 @@ REVIEWERS = {
     "brief-reviewer": ("brief", ["docs/specs/", "docs/adrs/", "docs/plans/", "docs/spikes/"]),
     "adr-reviewer": ("adr", ["docs/brief.md", "docs/specs/", "docs/adrs/", "docs/plans/", "docs/spikes/"]),
     "feedback-reviewer": ("feedback", []),
+    "release-reviewer": ("release", []),
     "plan-reviewer": ("plan", ["docs/brief.md", "docs/specs/", "docs/adrs/", "docs/plans/", "docs/spikes/",
                               "AGENTS.md", "CLAUDE.md", "docs/practices/"]),
     "spike-reviewer": ("spike", ["docs/brief.md", "docs/specs/", "docs/adrs/", "docs/plans/", "docs/spikes/"]),
@@ -151,8 +154,8 @@ def locate(name, prompt, cwd=None):
     A line that names an existing file is that one file, even if its name holds a comma, so the
     order of the names on the line never matters. Raises Unreadable when no named file exists, or
     when they sit in different repositories or outside the repository the others are in."""
-    if name == FEEDBACK_DRAFT:
-        return None, [FEEDBACK_DRAFT]
+    if name in DRAFTS:
+        return None, [name]
     named_folder = header(prompt)[1]
     base = named_folder or cwd or repositories.session_folder()
 
@@ -186,7 +189,7 @@ def named_after(name, prompt, cwd=None):
     A request the hook rewrote names them relative to its `Repository:` line, so the report is
     kept even if a file has moved or gone since the agent started. Raises Unreadable as locate."""
     _, repository, _ = header(prompt)
-    if repository and name != FEEDBACK_DRAFT:
+    if repository and name not in DRAFTS:
         parts = [name]
         if "," in name and not os.path.isfile(os.path.join(repository, name)):
             parts = [p.strip() for p in name.split(",") if p.strip()]
@@ -222,7 +225,7 @@ def current_text(repository, paths, prompt):
     Several files are joined, each between `=== FILE: <path> ===` and `=== END FILE ===`
     lines, with a file that does not exist shown as `(missing)`; when none exists there is no
     text."""
-    if paths == [FEEDBACK_DRAFT]:
+    if len(paths) == 1 and paths[0] in DRAFTS:
         return draft(prompt)
     if len(paths) == 1:
         return read(repository, paths[0])
