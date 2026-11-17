@@ -6,7 +6,7 @@ What changed in each version of the plugin, newest first. Versions follow
 past a major version: it says what you need to change in your documents. Until 1.0.0, any
 minor version may need such a change, and its entry says so.
 
-## [0.67.0] - 2026-11-17
+## [0.69.0] - 2026-11-17
 
 ### Changed
 
@@ -15,6 +15,16 @@ minor version may need such a change, and its entry says so.
   one agent alone, and that the requirements a change touches are usually enough. Its page says
   the same, and suggests recording helpers in the Running the product practice, such as a reset
   command or a quick way to make a connection fail, to save each agent time.
+## [0.68.0] - 2026-11-17
+
+### Added
+
+- Every new ADR shows its number in a `number:` field right after `type:`, the four digits its
+  file name starts with, so a reader sees the number other ADRs use. The ADR template carries it,
+  and a plugin hook refuses one that does not match the file name.
+- `/agentic:audit` lists each ADR without a `number:` field, or with one that does not match.
+  Existing ADRs may go without it: add it by hand when you like, with any edit, even to an
+  accepted ADR.
 
 ## [0.66.0] - 2026-11-17
 

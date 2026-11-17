@@ -22,6 +22,9 @@ documents
     - date: a spec, ADR, plan or spike record has no `date:`, the day its status last changed, or
       one that is not a real YYYY-MM-DD date. Those written before dates are listed here so they
       can be given one, which any edit may add;
+    - number field: an ADR has no `number:`, or one that is not the four digits its file name starts with
+      (docs/adrs/0048). Those written before the field are listed here so they can be given one by
+      hand, which any edit may add;
     - open questions: a `👍 Accepted` spec or ADR, a `🟢 Ready to build` plan or a `🟢 Ready to run`
       spike record whose Open questions section is missing or holds anything but "None.";
     - question layout: an open question is not laid out as ADR 0030 says, a heading
@@ -407,6 +410,14 @@ def check_documents(project):
                 add(relative, "date", "it has no `date:`, the day its status last changed")
             elif not real_date(written_date):
                 add(relative, "date", f"its `date:` is '{written_date}', not a real date written YYYY-MM-DD")
+            prefix = re.match(r"\d{4}-", os.path.basename(relative))
+            if kind == "ADR" and prefix:
+                written_number = field(text, "number")
+                if written_number is None:
+                    add(relative, "number field", "it has no `number:`, the four digits its file name starts with")
+                elif written_number != prefix.group()[:4]:
+                    add(relative, "number field", f"its `number:` is '{written_number}', not the four digits "
+                        "its file name starts with")
             current = status(kind, text)
             if current == SETTLED[kind] and has_open_questions(text):
                 add(relative, "open questions",

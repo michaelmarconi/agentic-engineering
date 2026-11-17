@@ -55,6 +55,7 @@ core parts kept, reordered and tightened.[^madr]
 
 | Part | Holds | In MADR |
 |---|---|---|
+| `number:` | The four digits the file's name starts with, so a reader sees the number other ADRs use | Part of the file name |
 | `status:` and `date:` | `📝 Draft`, `👍 Accepted`, `❌ Rejected` or `↪️ Superseded`, and the day the status last changed; `supersedes:` or `superseded-by:` name another ADR by number | Status and date |
 | Title | The decision in plain words, such as "Keep session data in Redis" | Title |
 | Question | The one choice to make, briefly, written first | Part of Context and Problem Statement |

@@ -288,10 +288,12 @@ ADR_BODY = "Chosen: keep sessions in Redis, because it is fast enough."
 
 
 def adr(status="📝 Draft", extra="", body=ADR_BODY,
-        questions="None.", background="B", detail="None.", kind="ADR", date=TODAY):
+        questions="None.", background="B", detail="None.", kind="ADR", date=TODAY, number="0001"):
+    """An ADR; `number` gives its `number:` line, or None for an ADR from before the field."""
     return (
         "---\n"
         f"{head(kind)}"
+        f"{f'number: {number}' + chr(10) if number else ''}"
         f"status: {status}\n"
         f"{dated(date)}"
         f"{extra}"
@@ -1453,7 +1455,7 @@ class DocumentType(Workspace):
     def test_removing_type_from_a_decided_adr_refused(self):
         self.at("docs", "adrs", "0001-sessions-redis.md")
         self.put(adr("👍 Accepted"))
-        self.assertIn("type: ADR", self.edit("type: ADR\nstatus: 👍 Accepted", "status: 👍 Accepted"))
+        self.assertIn("type: ADR", self.edit("type: ADR\nnumber: 0001\n", "number: 0001\n"))
 
     def test_rewriting_the_brief_without_its_type_refused(self):
         self.at("docs", "brief.md")
@@ -1481,6 +1483,62 @@ class DocumentType(Workspace):
 
     def test_type_value_with_comment_or_quotes_read(self):
         self.assertIsNone(self.write(spec(kind='"Spec"  # the document type')))
+
+
+class AdrNumber(Workspace):
+    """An ADR's `number:` repeats the four digits its file name starts with (docs/adrs/0048)."""
+
+    def setUp(self):
+        super().setUp()
+        self.path = os.path.join(self.tmp.name, "docs", "adrs", "0003-sessions-redis.md")
+
+    def test_new_adr_with_matching_number_allowed(self):
+        self.assertIsNone(self.write(adr(number="0003")))
+
+    def test_new_adr_without_number_refused(self):
+        self.assertIn("number: 0003", self.write(adr(number=None)))
+
+    def test_new_adr_with_wrong_number_refused(self):
+        self.assertIn("number: 0003", self.write(adr(number="0001")))
+
+    def test_two_number_lines_refused(self):
+        text = adr(number="0003").replace("number: 0003\n", "number: 0003\nnumber: 0003\n")
+        self.assertIn("more than one `number:`", self.write(text))
+
+    def test_old_adr_without_number_may_be_edited(self):
+        self.put(adr(number=None))
+        self.assertIsNone(self.edit("Background\n\nB", "Background\n\nC"))
+
+    def test_taking_number_away_refused(self):
+        self.put(adr(number="0003"))
+        self.assertIn("keep `number: 0003`", self.edit("number: 0003\n", ""))
+
+    def test_changing_number_to_a_wrong_one_refused(self):
+        self.put(adr(number="0003"))
+        self.assertIn("number: 0003", self.edit("number: 0003", "number: 0004"))
+
+    def test_changing_number_to_match_a_renamed_file_allowed(self):
+        self.put(adr("👍 Accepted", number="0002"))
+        self.assertIsNone(self.edit("number: 0002", "number: 0003"))
+
+    def test_decided_adrs_may_gain_a_matching_number(self):
+        for status in ("👍 Accepted", "❌ Rejected", "↪️ Superseded"):
+            extra = "superseded-by: 0009\n" if status == "↪️ Superseded" else ""
+            self.put(adr(status, extra=extra, number=None))
+            self.assertIsNone(self.edit("type: ADR\n", "type: ADR\nnumber: 0003\n"), status)
+
+    def test_decided_adr_may_not_gain_a_wrong_number(self):
+        self.put(adr("👍 Accepted", number=None))
+        self.assertIn("number: 0003", self.edit("type: ADR\n", "type: ADR\nnumber: 0004\n"))
+
+    def test_number_line_is_a_change_to_a_built_plan(self):
+        self.path = os.path.join(self.tmp.name, "docs", "plans", f"{TODAY}-thing-release.md")
+        self.put(plan("✅ Built", specs="None."))
+        self.assertIsNotNone(self.edit("type: Plan\n", "type: Plan\nnumber: 0003\n"))
+
+    def test_other_documents_ignore_number(self):
+        self.path = os.path.join(self.tmp.name, "docs", "specs", "big-thing.spec.md")
+        self.assertIsNone(self.write(spec()))
 
 
 class DateField(Workspace):
