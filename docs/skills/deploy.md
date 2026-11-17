@@ -76,7 +76,7 @@ changes nothing, shows those lines, and asks you to run `/agentic:practices depl
    check, and how it will roll back if the check fails, with any questions from step 3, and waits for your
    yes. Saying yes also agrees to the roll back.
 5. **Deploy and check.** It runs the deploy command. If that fails, it stops and shows what it
-   printed. Otherwise it runs the check, again until it passes or the recorded time runs out.
+   printed. Otherwise it runs the check repeatedly until it passes or the recorded time runs out.
 6. **Roll back if the check fails.** It runs the roll back command at once, without asking, then
    runs the check again so you know whether the previous release works. If Roll back is "None:
    stop and tell me", or the roll back command fails, it stops and tells you. It never tries a
