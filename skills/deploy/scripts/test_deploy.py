@@ -110,6 +110,12 @@ class Preflight(unittest.TestCase):
         self.assertEqual(code, 0, out)
         self.assertIn("not on the default branch (main)", out)
 
+    def test_unknown_default_branch_said_plainly(self):
+        self.git("remote", "set-head", "origin", "--delete")
+        code, out = self.preflight("--commit", self.first)
+        self.assertEqual(code, 0, out)
+        self.assertIn("default branch is not known here", out)
+
     def test_unknown_commit(self):
         code, out = self.preflight("--commit", "no-such-commit")
         self.assertEqual(code, 2, out)
@@ -211,10 +217,15 @@ class RealCommand(unittest.TestCase):
         self.assertEqual(code, 1, out)
         self.assertIn("could not be started", out)
 
-    def test_a_shell_command_not_found(self):
+    def test_a_shell_command_not_found_fails(self):
         code, out = self.run_check("no-such-program-for-deploy-tests --flag")
         self.assertEqual(code, 1, out)
-        self.assertIn("could not be started", out)
+        self.assertIn("Try 1: exit 127", out)
+
+    def test_every_must_be_more_than_zero(self):
+        with self.assertRaises(SystemExit) as raised, redirect_stdout(io.StringIO()):
+            deploy.main(["check", "--wait", "10", "--every", "0", "--", "true"])
+        self.assertEqual(raised.exception.code, 2)
 
     def test_no_command_is_wrong_use(self):
         with self.assertRaises(SystemExit) as raised, redirect_stdout(io.StringIO()):

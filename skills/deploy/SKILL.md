@@ -12,7 +12,9 @@ them out, decide none of them, and never interview. Read
 
 Run each step's command exactly as recorded, filling in any `{environment}`, `{commit}` or
 `{version}`, and judge it by its exit code. Never write or change a command, and never run a step
-that has none: a step written as prose rather than one command counts as missing.
+that has none. A line starting `None:` is a recorded answer; any other step written as prose
+rather than one command counts as missing. On exit 2 from any of the plugin's scripts here, stop
+and show what it printed, such as a commit that can't be found.
 
 ## Pick the environment and check the practice
 
@@ -69,11 +71,13 @@ front for this release and environment counts. The yes covers the roll back too.
 Run the Deploy command once. Then run the check, whatever the deploy's exit code:
 
 ```
-python3 "${CLAUDE_SKILL_DIR}/scripts/deploy.py" check --wait <seconds> -- "<the Check command>"
+python3 "${CLAUDE_SKILL_DIR}/scripts/deploy.py" check --wait <seconds> -- '<the Check command>'
 ```
 
-`--wait` is the recorded wait in seconds, or 0 when none is recorded. The script repeats the
-check until it passes or the wait runs out, so never run the check again yourself.
+`--wait` is the recorded wait in seconds, or 0 when none is recorded. Pass the Check command as
+one argument, exactly as recorded: in single quotes, with each `'` inside it written `'\''`, so
+your shell changes nothing in it. The script repeats the check until it passes or the wait runs
+out, so never run the check again yourself.
 
 - **Deploy failed** (non-zero exit): the check shows what state the environment is in. Roll
   nothing back and stop, since you can't tell what the failed deploy changed.

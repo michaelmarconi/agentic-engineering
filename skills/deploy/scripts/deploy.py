@@ -8,15 +8,16 @@
     Releases allowed names a branch; with --checked-out, it is the commit checked out, for a
     Deploy command that works from the checkout rather than taking {commit}. It fetches nothing,
     so fetch first. Prints one line per problem, or "The commit may be deployed."; then the commit
-    in full, and a line when it is not on the default branch (`origin/HEAD`).
+    in full, and a line when it is not on the default branch (`origin/HEAD`), or when that branch
+    is not known here.
 
 check --wait <seconds> [--every <seconds>] -- <command>
     Runs the recorded check, and again every --every seconds (default 5) until it exits 0 or the
     next try would start after --wait seconds; --wait 0 runs it once. Give the command as one
     argument, exactly as recorded, to run it with the shell (`sh -c`), or as several to run that
-    program directly. Each try may take the time left of the wait, and at least 60 seconds. A
-    command that can't be started, including a shell's "not found" or "not executable" (exit 127
-    or 126), is not tried again. Prints each try's exit code, the last try's output, then whether
+    program directly. Each try may take the time left of the wait, and at least 60 seconds; a try
+    that runs out of time is stopped with every process it started. A program that can't be
+    started is not tried again. Prints each try's exit code, the last try's output, then whether
     the check passed.
 
 Exit codes: preflight 0 when the commit may be deployed, 1 when it found a problem; check 0 when
@@ -28,6 +29,7 @@ import argparse
 import os
 import subprocess
 import sys
+import signal
 import time
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "..", "scripts"))
@@ -35,7 +37,6 @@ import uncommitted  # noqa: E402
 
 EVERY = 5
 SHORTEST_TRY = 60
-NOT_STARTED = (126, 127)
 
 
 class Unusable(Exception):
@@ -43,7 +44,10 @@ class Unusable(Exception):
 
 
 def git(repo, *args):
-    return subprocess.run(["git", "-C", repo, *args], capture_output=True, text=True)
+    try:
+        return uncommitted.git(repo, *args)
+    except uncommitted.NotARepository as error:
+        raise Unusable(str(error))
 
 
 def resolve(repo, ref):
@@ -76,28 +80,38 @@ def preflight(repo, commit, branch=None, checked_out=False):
     lines = problems or ["The commit may be deployed."]
     lines.append(f"Commit: {sha}")
     default = git(repo, "symbolic-ref", "--quiet", "--short", "refs/remotes/origin/HEAD").stdout.strip()
-    if default and git(repo, "merge-base", "--is-ancestor", sha, default).returncode != 0:
+    if not default:
+        lines.append("The default branch is not known here (origin/HEAD is not set), so whether the "
+                     "commit is on it was not checked.")
+    elif git(repo, "merge-base", "--is-ancestor", sha, default).returncode != 0:
         lines.append(f"The commit is not on the default branch ({default.split('/', 1)[-1]}).")
     return (1 if problems else 0), lines
 
 
 def run_once(command, timeout):
-    """(exit code, output) of one try; the code is None when the command could not be started."""
+    """(exit code, output) of one try; the code is None when the command could not be started.
+    A try that runs out of time is stopped with every process it started."""
     shell = len(command) == 1
     try:
-        done = subprocess.run(command[0] if shell else command, shell=shell, timeout=timeout,
-                              stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-                              encoding="utf-8", errors="replace")
-    except subprocess.TimeoutExpired as error:
-        output = error.output or ""
-        if isinstance(output, bytes):
-            output = output.decode("utf-8", "replace")
-        return "timed out", output + f"\n(stopped after {timeout:g} seconds)"
+        child = subprocess.Popen(command[0] if shell else command, shell=shell, stdout=subprocess.PIPE,
+                                 stderr=subprocess.STDOUT, start_new_session=True)
     except OSError as error:
         return None, f"The command could not be started: {error}"
-    if shell and done.returncode in NOT_STARTED:
-        return None, f"The command could not be started (exit {done.returncode}):\n{done.stdout}"
-    return done.returncode, done.stdout
+    try:
+        output, _ = child.communicate(timeout=timeout)
+    except subprocess.TimeoutExpired:
+        stop(child)
+        output, _ = child.communicate()
+        return "timed out", output.decode("utf-8", "replace") + f"\n(stopped after {timeout:g} seconds)"
+    return child.returncode, output.decode("utf-8", "replace")
+
+
+def stop(child):
+    """Stop the try and everything it started, which share its process group."""
+    try:
+        os.killpg(child.pid, signal.SIGKILL)
+    except (AttributeError, OSError):
+        child.kill()
 
 
 def check(command, wait, every=EVERY, run=run_once, clock=time.monotonic, pause=time.sleep):
@@ -128,6 +142,13 @@ def seconds(text):
     return value
 
 
+def pause_seconds(text):
+    value = float(text)
+    if value <= 0:
+        raise argparse.ArgumentTypeError("must be more than 0")
+    return value
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0], epilog=__doc__.split("\n\n", 1)[1],
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -140,7 +161,7 @@ def main(argv=None):
                         help="the commit must be the one checked out (Deploy does not take {commit})")
     after = commands.add_parser("check", help="run the recorded check until it passes or the wait runs out")
     after.add_argument("--wait", type=seconds, required=True, help="the recorded wait in seconds; 0 runs it once")
-    after.add_argument("--every", type=seconds, default=EVERY, help=f"seconds between tries (default {EVERY})")
+    after.add_argument("--every", type=pause_seconds, default=EVERY, help=f"seconds between tries (default {EVERY})")
     after.add_argument("probe", nargs=argparse.REMAINDER, help="-- then the recorded check command")
     args = parser.parse_args(argv)
     if args.command == "check":

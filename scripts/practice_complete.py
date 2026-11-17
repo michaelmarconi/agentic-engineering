@@ -111,6 +111,7 @@ def check_deploying(lines, only=None):
     the file-wide problems, and name the environment when it has no section."""
     problems = []
     names = []
+    known = set()
     environments = 0
     for level, title, body in sections(entries(lines)):
         match = ENVIRONMENT.match(title.strip()) if level == 2 else None
@@ -121,7 +122,8 @@ def check_deploying(lines, only=None):
         if not name:
             problems.append("an Environment heading has no name")
             continue
-        if name.lower() not in (n.lower() for n in names):
+        if name.lower() not in known:
+            known.add(name.lower())
             names.append(name)
         if only is not None and name.lower() != only.lower():
             continue
@@ -129,7 +131,7 @@ def check_deploying(lines, only=None):
         problems += check_items(sections(body), 3, ENVIRONMENT_PARTS, owner + ": ", owner)
     if not environments:
         problems.append("deploying.md has no environment: add a `## Environment: <name>` section")
-    elif only is not None and only.lower() not in (n.lower() for n in names):
+    elif only is not None and only.lower() not in known:
         problems.append(f"deploying.md has no environment named {only}")
     return problems, names
 
@@ -154,9 +156,11 @@ def main(argv=None):
     if base not in ("releasing.md", "deploying.md"):
         print(f"{args.file}: expected releasing.md or deploying.md", file=sys.stderr)
         return 2
-    if args.environment is not None and base != "deploying.md":
-        print("--environment is for deploying.md only", file=sys.stderr)
-        return 2
+    if args.environment is not None:
+        args.environment = args.environment.strip()
+        if base != "deploying.md" or not args.environment:
+            print("--environment takes an environment's name, and is for deploying.md only", file=sys.stderr)
+            return 2
     topic = base[:-3]
     if not os.path.isfile(args.file):
         print(f"{base} is not recorded yet: record it with /agentic:practices {topic}")
@@ -170,7 +174,7 @@ def main(argv=None):
         problems, names = check_deploying(lines, args.environment)
     for problem in problems:
         print(problem)
-    known = args.environment is not None and args.environment.lower() in (n.lower() for n in names)
+    known = args.environment is not None and any(n.lower() == args.environment.lower() for n in names)
     if names and not known:
         print("Environments recorded: " + ", ".join(names))
     if problems:

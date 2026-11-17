@@ -237,6 +237,14 @@ class PracticeComplete(unittest.TestCase):
         self.assertEqual(done.returncode, 2)
         self.assertIn("deploying.md", done.stderr)
 
+    def test_environment_name_is_trimmed(self):
+        done = self.run_script(self.two_environments(), "--environment", " production ")
+        self.assertEqual(done.returncode, 0, done.stdout + done.stderr)
+
+    def test_empty_environment_name_is_wrong_use(self):
+        done = self.run_script(self.two_environments(), "--environment", " ")
+        self.assertEqual(done.returncode, 2)
+
     def test_help_names_the_environment_option(self):
         done = self.run_script("--help")
         self.assertIn("--environment", done.stdout)
