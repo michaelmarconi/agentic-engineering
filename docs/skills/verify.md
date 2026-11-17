@@ -46,6 +46,10 @@ Tests that keep the product working stay `/build`'s job.
 or no longer works, `/verify` checks nothing: it says so and asks you to record or correct it with
 `/agentic:practices running the product`, then run `/verify` again.
 
+Both agents start and stop the product many times, so ready-made helpers in that practice save
+them time, such as a command that resets the product to a known state or one that makes a
+connection fail at once instead of after a long wait.
+
 ## What it checks
 
 `/verify` checks examples: the Given, When and Then rows under each requirement of a spec. Each
@@ -104,7 +108,9 @@ the list says why.
    problem-finding agents report.[^codereview] It repeats each pass and tries the edges of its
    example; it reruns each fail once, to rule out a one-off; and it tries again any example left
    not checked. It says of each verdict whether it is **confirmed** or **rejected**, with its own
-   evidence.
+   evidence. Since it challenges every verdict, passes included, it is a second full run and
+   takes about as long as the verifier, so checking only the requirements a change touches keeps
+   `/verify` short.
 4. **The report.** Claude writes the full report as a Markdown file in the plugin's data folder,
    outside your repository, and replies with a short summary of at most five bullets and the
    file's path, as `/build` and `/audit` do (see [What you get](#what-you-get)). In it, a verdict
