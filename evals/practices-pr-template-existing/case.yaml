@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: practices-pr-template-existing
+expected_outcome: |
+  /practices reviews and merging in a project on GitHub that already has .github/pull_request_template.md, every proposal accepted. The skill leaves that template exactly as it is and records a rule that pull request descriptions follow it. The unchanged-template grader is a guard: Claude without the skill leaves the file alone too, so the rule grader is what shows the skill's effect.
+context:
+  scaffold_script: place-files.sh
