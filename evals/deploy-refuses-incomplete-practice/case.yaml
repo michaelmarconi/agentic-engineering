@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: deploy-refuses-incomplete-practice
+expected_outcome: |
+  Staging's section has no Roll back, so the skill runs no deploy, says what is missing and points to /agentic:practices deploying.
+context:
+  scaffold_script: place-files.sh

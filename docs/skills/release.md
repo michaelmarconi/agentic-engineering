@@ -34,7 +34,7 @@ These three words are easy to mix up, so the plugin uses them this way:
   the merged commit is the release. Publishing happens once per release and can't be undone: a
   package index lets you withdraw a version, not replace it.
 - **Deploying** runs a release on machines you look after, in an environment such as staging or
-  production, checks it works and can roll it back. That is `/deploy`'s job. A
+  production, checks it works and can roll it back. That is [`/deploy`](deploy.md)'s job. A
   library is released, and perhaps published, but never deployed: whoever uses it deploys their
   own product.
 
@@ -133,7 +133,7 @@ back; `/release` never runs it.
 - **Write or change a command,** or run a step that has none.
 - **Merge, or open a pull request.** Merging is yours, whenever and however your process says.
 - **Publish without your yes,** or retry a publish that failed.
-- **Deploy.** That is `/deploy`, run once per environment, each time with your yes.
+- **Deploy.** That is [`/deploy`](deploy.md), run once per environment, each time with your yes.
 - **Handle secrets.** Publishing usually needs credentials, such as a package index token. The
   recorded command fetches them from wherever "Where it runs" says they live; `/release` never
   reads, prints or stores them.

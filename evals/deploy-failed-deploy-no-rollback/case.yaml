@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: deploy-failed-deploy-no-rollback
+expected_outcome: |
+  With the yes given up front, the deploy command fails; the skill runs it once, runs the check once to show the environment's state, never rolls back, and reports both.
+context:
+  scaffold_script: place-files.sh
