@@ -60,13 +60,7 @@ Applies to: the practices skill's topic on reviews and merging.
 
 ## Open questions
 
-### 1. Whether projects not on GitHub belong in this ADR
-
-Recording the sections as a practice elsewhere could be read as a second decision.
-
-> **Proposed:** keep it here, as one decision.
->
-> **Why:** both halves serve one need and would change together.
+- None.
 
 ## Technical detail
 
