@@ -1,8 +1,9 @@
 ---
 # Change status only through the agentic plugin's skills, which check each change; a change made by hand is not checked.
 type: ADR
-status: 👍 Accepted
-date: 2026-11-16
+status: ↪️ Superseded
+date: 2026-11-17
+superseded-by: 0045
 ---
 
 # The practices skill writes the one-line commands it records, from steps the person agreed

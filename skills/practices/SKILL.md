@@ -122,25 +122,37 @@ not to ask anything does.
   since they refuse until it is there.
 - **Disagreements.** When the repository, the core and a topic file disagree, such as two test
   commands, say what each says and ask which is right before changing either.
-- **One command per step.** Record each step as one command, as rubric check 3 defines it: one
-  line that calls one program, needs no answer from a person and exits non-zero on failure, so
-  every skill can run it and judge it the same way. Check the text of every command you will
-  record in one run before writing them, one per line in a quoted heredoc so no quote in a command
-  can break the call: `python3 "${CLAUDE_SKILL_DIR}/scripts/one_command.py" <<'EOF'`, the
-  commands, then `EOF`. When the agreed step is
-  several commands, write an entry in the project's command runner or scripts folder that runs them
-  in order and stops at the first failure, with no branching, retries or loops, passing on any
-  `{name}` value the step needs, such as `make deploy ENV={environment}`. Show it to the
-  person, try only the parts that are safe to run, such as a dry run or reading the current
-  version, never a real release, deploy or rollback, and record the one-line command that runs it.
-  When a step needs an entry and the project has neither a runner nor a scripts folder, ask which
-  the person wants, proposing the tool their language already provides, such as the scripts of
-  `package.json`, and create it the same way. A step that needs real logic is not yours to write:
-  name it in the hand-over as work for `/agentic:plan`. Once the project has a place for commands,
-  Check your work names it.
+- **One command per step.** Record a step as it stands only when it is one command, as rubric
+  check 3 defines it: one line calling a named entry point, a runner entry, a script or a tool's
+  standard command such as `npm test`, with nothing but `{name}` values, needing no answer from a
+  person and exiting non-zero on failure. Check every command you will record in one run before
+  writing them, one per line in a quoted heredoc so no quote in a command can break the call:
+  `python3 "${CLAUDE_SKILL_DIR}/scripts/one_command.py" <<'EOF'`, the commands, then `EOF`. It
+  lists any arguments a command carries of its own; keep them only when the tool's documentation
+  gives them as its usual ones, such as `./...` in `go test ./...`.
+  The product's own command line, recorded in Running the product as how to reach an interface,
+  such as `bin/wordcount --lines {file}`, is the product itself, not a step: record it as it is.
+  Anything else, such as flags, settings, folders or accounts the project chose, or several
+  commands, goes into a script in the project's scripts folder, with those choices written in. The
+  script runs the agreed commands in order and stops at the first failure, passing on any `{name}`
+  value the step needs, with no condition, loop, retry or reading of output. Show it to the person
+  before writing it. When the project has no scripts folder, create `script/` with the first
+  script. When it has a command runner, add an entry that only calls the script and record that
+  entry, such as `pnpm check:new-mail`; otherwise record the script, such as `script/check-new-mail`.
+  Record only that command and what it is for, never the commands inside the script, since a copy
+  in the practice would drift from the script.
+  Run a new or changed script only when everything it touches is in the repository or among the
+  stand-ins Running the product lists as safe to touch, never a real release, deploy or rollback;
+  name each script you did not run, and why, in the hand-over. When a script changes a real
+  outside service, the hand-over also suggests, as work for `/agentic:plan`, a test that runs it
+  against the stand-in; never write the test or wait for it. A step that needs logic, or a change
+  that would add logic to a script, is not yours to write: under the step's heading write "Not set up yet: needs a script with
+  logic, work for `/agentic:plan`", so a skill that runs it stops, and give the agreed steps
+  in the hand-over, not the practice, as that work. Once the project has a place for
+  commands, Check your work names it.
 
-Write only the core, the files under `docs/practices/` and the entries the bullet above lets you
-write in the project's runner or scripts folder. Leave the rest of `AGENTS.md` unchanged, creating
+Write only the core, the files under `docs/practices/` and the scripts and runner entries the
+bullet above lets you write. Leave the rest of `AGENTS.md` unchanged, creating
 the file if the project has none, and touch no other file but `CLAUDE.md`'s import line. Never
 commit: the person looks at the change and commits it.
 
@@ -171,7 +183,7 @@ since the core and a topic file must agree.
    reports list: each failed check and each item under Other findings in the review report, and
    each finding in the wording report. Skip any finding outside the Practices section of
    `AGENTS.md`, which is the person's. A command outside this run's topic that breaks the
-   one-command rule stays as written for the person to decide, since writing its entry needs them. A wording item under Needs a person, whose meaning only the
+   one-command rule stays as written for the person to decide, since writing its script needs them. A wording item under Needs a person, whose meaning only the
    person knows, is a decision like any other. Correct by making the practices accurate, never by
    dropping or hedging what the person said. A finding only the person can settle, such as a rule
    they asked for word for word, or anything under Needs a person, stays as written for them to

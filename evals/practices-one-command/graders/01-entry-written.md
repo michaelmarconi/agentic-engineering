@@ -1,7 +1,7 @@
 ---
 type: regex
 target: { source: file, path: package.json }
-pattern: '"[\w:.-]+"\s*:\s*"[^"]*npm ci\s*&&\s*npm run build[^"]*"'
+pattern: '"[\w:.-]+"\s*:\s*"(?:sh |bash )?(?:\./)?script/[\w.-]+"'
 weight: 1
 ---
-package.json has a script that runs npm ci and then npm run build, stopping if npm ci fails.
+package.json has an entry that only calls a script in the script/ folder.
