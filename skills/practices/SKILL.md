@@ -127,7 +127,7 @@ not to ask anything does.
   [assets/pull_request_template.md](assets/pull_request_template.md) and, only on yes, write it to
   `.github/pull_request_template.md`. Then record the rule "Pull request descriptions follow
   `<the template's path>`." With no template, off GitHub or declined, the rule lists the default's
-  sections instead, in one or two lines.
+  sections instead, in one or two lines, saying that Built from names the plan, specs and ADRs.
 - **Disagreements.** When the repository, the core and a topic file disagree, such as two test
   commands, say what each says and ask which is right before changing either.
 - **One command per step.** Record a step as it stands only when it is one command, as rubric
