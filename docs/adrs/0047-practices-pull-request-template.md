@@ -14,16 +14,18 @@ How does the plugin help a project's pull requests read well and follow the same
 ## Decision
 
 Chosen: when a project's practices[^practices] say it uses pull requests on GitHub, the practices
-skill[^skill] offers a pull request template from a default the plugin ships. It writes it only on
-yes, leaves an existing template alone, and asks when it cannot tell the host. The practice
-then says descriptions follow the template, so agents opening pull requests through tools use it too. Elsewhere the same
-sections become a practice. This is chosen because GitHub shows the template to everyone opening a
-pull request on its web page, with nothing new to run.
+skill[^skill] offers a pull request template from a default the plugin ships. It writes the template
+only on yes, leaves an existing one alone, and asks whether the project is on GitHub when it cannot
+tell. The reviews and merging practice then gains a rule that descriptions follow the template, so
+agents opening pull requests through tools use it too. When there is no template, because the
+project is not on GitHub or the person declines one, the same sections are recorded as that
+practice's rule instead. This is chosen because GitHub shows the template to everyone opening a pull
+request on its web page, with nothing new to run.
 
 ## Background
 
 Pull request descriptions without set sections open with detail, hiding what they are for and
-which plan[^plan], specs[^spec] and ADRs they carry out. The plugin changes nothing in a project
+which plan[^plan], specs[^spec] and ADRs[^adr] they carry out. The plugin changes nothing in a project
 beyond the practices the person chooses. [ADR 0042](0042-practices-skill-writes-commands.md) and
 [ADR 0045](0045-practices-skill-writes-scripts.md) let the practices skill write command runner
 entries and scripts; this ADR adds a pull request template.
@@ -34,7 +36,7 @@ entries and scripts; this ADR adds a pull request template.
 | --- | --- | --- |
 | A new skill that writes pull request descriptions | Rejected | Covers only pull requests opened through it |
 | A reviewer that checks each description against a list of checks | Rejected | More to set up and run |
-| A practice that lists the sections, with no template | Rejected | Only agents that read the practices see it |
+| A practice that lists the sections, with no template | Rejected | People writing on GitHub's web page never see it |
 | The practices skill offers a template from a shipped default | Chosen | Authors see it where they write |
 
 ## Consequences
@@ -56,7 +58,8 @@ Applies to: the practices skill's topic on reviews and merging.
 1. Test: on GitHub, the skill offers the template and writes it only on yes.
 2. Test: an existing template is left as it is.
 3. Test: off GitHub, the sections go in the reviews and merging practice, with no template.
-4. Inspection: the default opens with a plain summary, then what the work carries out.
+4. Test: when the person declines the template, the sections go in that practice instead.
+5. Inspection: the default opens with a plain summary, then what the work carries out.
 
 ## Open questions
 
@@ -79,10 +82,11 @@ changes for the people who use the product and what the reviewer should look at;
 to the plan the work followed, then the specs and requirements it delivers and the ADRs it follows,
 laid out as the plan lays them out, or "No plan"; What changes; How it was checked; Left open.
 
-**Not on GitHub.** The skill records the same sections as a rule in the reviews and merging
+**No template.** Not on GitHub, or when the person declines one, the skill records the same sections as a rule in the reviews and merging
 practice: its `merging.md` topic file when there is one, otherwise the Practices section.
 
 [^skill]: A skill is a set of instructions Claude follows for one step, started as a slash command such as `/agentic:practices`.
 [^practices]: Practices are the project's recorded ways of doing things, one topic at a time, in a short section of `AGENTS.md` and files under `docs/practices/`.
 [^plan]: A plan is the lifecycle's document for one piece of work: it names the specs and ADRs the work delivers and says how it will be done.
 [^spec]: A spec says what one capability of the product should do, as numbered requirements.
+[^adr]: An ADR records one technical decision and why it was made.
