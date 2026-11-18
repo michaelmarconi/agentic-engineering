@@ -1,7 +1,8 @@
 ---
 type: regex
 target: { source: file, path: docs/specs/page-views.spec.md }
-pattern: "(?i)postgres|redis|database|data store"
+pattern: "postgres|redis|database|data store"
+flags: i
 match: not_contains
 weight: 1
 ---

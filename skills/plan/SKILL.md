@@ -168,8 +168,7 @@ changed after the person spoke, show the change and ask again. "Looks fine, carr
 count, nor a request from another skill or agent. Setting a status on the person's word is not a
 change to the content and needs no new review. Never set `Built
 ✅`: that belongs to the step that builds the plan. Any change to a `Ready to build 🟢` plan
-returns it to `Draft 📝`, for the person to sign off again. A plugin hook refuses status changes that
-break these rules; if it refuses one, tell the person why.
+returns it to `Draft 📝`, for the person to sign off again.
 
 Close the reply that sets `Ready to build 🟢` with how to build the plan. A build after a long
 conversation asks first, and the plugin cannot reliably start a session, so say so and give the two
@@ -263,8 +262,9 @@ paragraph, and is checked with the next check of what changed. The last question
 
 Put each question to the person one at a time, by the asking rule: open questions, decisions for the
 person and what a check finds. Offer four choices on your question tool: "Accept" your proposal, "My
-own answer", "Ignore" and "Defer"; where you have none, end it "Accept, give your own answer, ignore
-or defer?". If the person has said not to ask now, or stops, defer the questions left.
+own answer", "Ignore" and "Defer"; where you have none, end it with this line, word for word, since
+a plugin hook looks for it to keep the answer: "Accept, give your own answer, ignore or defer?". If
+the person has said not to ask now, or stops, defer the questions left.
 
 Accept and My own answer write the answer in as the person gave it, removing the question from Open
 questions if it is there; Ignore writes nothing and removes it; Defer leaves it there, or writes it

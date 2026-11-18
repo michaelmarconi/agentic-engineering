@@ -252,8 +252,9 @@ an unfinished spike to a teammate, they commit the record.
 
 Put each question to the person one at a time, by the asking rule: open questions, decisions for the
 person and what a check finds. Offer four choices on your question tool: "Accept" your proposal, "My
-own answer", "Ignore" and "Defer"; where you have none, end it "Accept, give your own answer, ignore
-or defer?". If the person has said not to ask now, or stops, defer the questions left.
+own answer", "Ignore" and "Defer"; where you have none, end it with this line, word for word, since
+a plugin hook looks for it to keep the answer: "Accept, give your own answer, ignore or defer?". If
+the person has said not to ask now, or stops, defer the questions left.
 
 Accept and My own answer write the answer in as the person gave it, removing the question from Open
 questions if it is there; Ignore writes nothing and removes it; Defer leaves it there, or writes it
