@@ -235,8 +235,7 @@ it hard to miss anything. Show the person each document you wrote or changed: if
 can show them a file in a viewer, use it, and show a fresh copy after each change if what it shows
 is a copy; always name each one's full path; never send them to a code-hosting site to read it. Give
 them the review and wording reports and the check's report, if there was one, leaving out the
-decisions they list for the person. Then say how many questions there are. Take them without asking
-whether to; if the person has said not to ask now, ask nothing. List the reviewers' suggestions separately, as optional:
+decisions they list for the person. Then say how many questions there are. List the reviewers' suggestions separately, as optional:
 they never hold the plan back.
 
 Offer diagrams of the work at each hand-over of a `Draft 📝` plan, so a person can see how it fits
@@ -265,7 +264,7 @@ paragraph, and is checked with the next check of what changed. The last question
 Put each question to the person one at a time, by the asking rule: open questions, decisions for the
 person and what a check finds. Offer four choices on your question tool: "Accept" your proposal, "My
 own answer", "Ignore" and "Defer"; where you have none, end it "Accept, give your own answer, ignore
-or defer?".
+or defer?". If the person has said not to ask now, or stops, defer the questions left.
 
 Accept and My own answer write the answer in as the person gave it, removing the question from Open
 questions if it is there; Ignore writes nothing and removes it; Defer leaves it there, or writes it
