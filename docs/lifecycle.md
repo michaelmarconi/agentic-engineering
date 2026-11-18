@@ -74,8 +74,10 @@ The tariff is copied every day, but where it is kept is not yet chosen.
 ```
 
 When a skill asks you to settle a question during the session, it uses the same parts: a bold line
-naming the question and its place in the count, such as "**Question 1 of 3: where the tariff copy is
-kept**", then the context, the quote, and the question itself last.
+naming the question and its place in the count, such as "**Question 2 of 7: where the tariff copy is
+kept**", then the context, the quote, and the question itself last. The first number counts the
+questions asked or settled in the session, the one being asked included, so it only goes up; the
+total adds those still open, and the skill says in one line when an answer opens or settles others.
 
 ## Steps
 
