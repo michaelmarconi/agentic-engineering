@@ -163,7 +163,7 @@ mode?](#why-not-claude-codes-plan-mode)):
    only someone changing that code later, who gets the reason as a comment beside the code.
    Otherwise it goes to an ADR if later work must follow it, to the spec if a user or caller
    relies on it, or to the practices if every piece of work follows it, taking the first of
-   these that fits; a step order or a test's data needs no reason recorded at all. Question numbers only go up: if an answer adds a decision, it says so and the total grows.
+   these that fits; a step order or a test's data needs no reason recorded at all. Question numbers only go up: if an answer adds or settles another decision, it says so and the total changes.
 4. **Write.** Only when every decision is settled does it write the plan, with your decisions in
    it. A decision that needs an ADR, a spec change or a practice goes under Open questions until
    you have made it with `/adr`, `/spec` or `/practices`; `/plan` never writes those itself.

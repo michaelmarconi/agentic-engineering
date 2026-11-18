@@ -72,12 +72,11 @@ one they can accept, change or reject; give any examples as possible answers, no
 When you ask the person to settle a question in the conversation, lay it out in four parts, so they
 can find your proposal at a glance: a bold line naming it and its place in the count, such as
 "**Question 2 of 7: how often a failed pull is retried**", where the first number counts the
-questions asked or settled in this conversation, this one included, and the total adds those
-still open, so the first number only goes up, and you say in one line when an answer opens new
-questions; the context it needs; a block quote
-holding a "**Proposed:**" line with your answer, a line holding only `>`, and a "**Why:**" line with
-the reason; and the
-question itself, last, in one line. Ask the next once the first is settled, saying the answer is
+questions asked or settled in this conversation, this one included, and the total adds those still
+open, so the first number only goes up, saying in one line when an answer opens or settles others;
+the context it needs; a block quote holding a "**Proposed:**" line with your answer, a line holding
+only `>`, and a "**Why:**" line with the reason; and the question itself, last, in one line. Ask the
+next once the first is settled, saying the answer is
 noted, not recorded: nothing is recorded until the files are written. If the person has said not to
 ask, write what is settled and ask nothing. Otherwise, even when their answers covered everything,
 finish the topic by asking whether there is anything else about it they want recorded, in the

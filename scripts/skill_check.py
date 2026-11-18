@@ -130,8 +130,8 @@ ASK_RULE = (
     "so they can find your proposal at a glance: a bold line naming it and its place in the count, "
     "such as \"**Question 2 of 7: how often a failed pull is retried**\", where the first number "
     "counts the questions asked or settled in this conversation, this one included, and the total "
-    "adds those still open, so the first number only goes up, and you say in one line when an "
-    "answer opens new questions; the context it needs; a "
+    "adds those still open, so the first number only goes up, saying in one line when an answer "
+    "opens or settles others; the context it needs; a "
     "block quote holding a \"**Proposed:**\" line with your answer, a line holding only `>`, and a "
     "\"**Why:**\" line with the reason; and the question itself, last, in one line."
 )
