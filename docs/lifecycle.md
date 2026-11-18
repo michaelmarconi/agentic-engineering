@@ -12,7 +12,9 @@ The lifecycle keeps its thinking in five kinds of document, each a Markdown file
 repository. Each says what kind of document it is in the `type:` field of its frontmatter, the
 block of settings at the top of the file: `Brief`, `Spec`, `ADR`, `Plan` or `Spike`, so its title
 never needs to. Every document except the brief also has a status, the `status:` field, which says
-how far along it is. Beside it, the `date:` field gives the day that status was set, written
+how far along it is, written as its word then an emoji, such as `Accepted 👍`; documents
+written by earlier versions of the plugin, with the emoji in front, still count, and are rewritten
+the next time a skill edits them. Beside it, the `date:` field gives the day that status was set, written
 YYYY-MM-DD; a plugin hook refuses a status change that does not set it to that day.
 
 Each file is named by one rule: a number or a date, where its kind has one, then two to five
@@ -25,26 +27,26 @@ review runs.
   holding only what is true of the whole product. No status, since it is never built: it states
   the product's intent, is edited in place, and changes only when you change that intent.
 - **Spec**, `docs/specs/**/<subject>.spec.md`: what one capability of the product should do,
-  and how we will know it does. A product has many. Statuses: `📝 Draft` → `👍 Accepted`; any change returns it
-  to `📝 Draft`. The status describes the document, not the software: whether the software meets
+  and how we will know it does. A product has many. Statuses: `Draft 📝` → `Accepted 👍`; any change returns it
+  to `Draft 📝`. The status describes the document, not the software: whether the software meets
   a spec is found by checking the software against it.
 - **ADR** (architecture decision record), `docs/adrs/NNNN-<subject>.md`, in one flat folder: one
   technical decision and why it was made. It reads from plain to technical: a part for people,
   of at most 500 words, from the question to the open questions, leaving out any diagram of the
   chosen option, then the technical detail for agents and reviewers. Its `number:` field repeats
   the four digits its name starts with, so a reader sees the number other ADRs use; a plugin hook
-  refuses one that does not match. Statuses: `📝 Draft` → `👍 Accepted` or `❌ Rejected`;
-  `👍 Accepted` → `↪️ Superseded`.
+  refuses one that does not match. Statuses: `Draft 📝` → `Accepted 👍` or `Rejected ❌`;
+  `Accepted 👍` → `Superseded ↪️`.
 - **Plan**, `docs/plans/YYYY-MM-DD-<subject>.md`, in one flat folder: a piece of work that builds
-  part of a spec or an ADR. Statuses: `📝 Draft` → `🟢 Ready to build` → `✅ Built`; any change
-  returns it to `📝 Draft`. A plan is temporary: once `✅ Built` it is frozen, never
+  part of a spec or an ADR. Statuses: `Draft 📝` → `Ready to build 🟢` → `Built ✅`; any change
+  returns it to `Draft 📝`. A plan is temporary: once `Built ✅` it is frozen, never
   changed again, and may be deleted whenever nobody needs it.
 - **Spike record**, `docs/spikes/YYYY-MM-DD-<subject>.md`, in one flat folder: one hypothesis
   tested by a throwaway experiment, with the finding, the experiment's code and what each run
   produced. It reads from plain to technical: a part for people, of at most 600 words for the design
   and 400 for the verdict written after the runs, then the experiment's detail for agents and
-  reviewers. Statuses: `📝 Draft` → `🟢 Ready to run` → `💡 Confirmed`, `🚫 Refuted` or `❔ Not settled`;
-  `🟢 Ready to run` → `📝 Draft` only before the first run. Once `🟢 Ready to run`, its design is
+  reviewers. Statuses: `Draft 📝` → `Ready to run 🟢` → `Confirmed 💡`, `Refuted 🚫` or `Not settled ❔`;
+  `Ready to run 🟢` → `Draft 📝` only before the first run. Once `Ready to run 🟢`, its design is
   fixed, and only the run script adds runs. A finished spike record is never changed again, and may
   be deleted whenever nobody needs it.
 
@@ -178,7 +180,7 @@ flowchart LR
 - **Only a person decides an ADR.** A person accepts or rejects it by explicitly signing off its
   final, reviewed text. No skill or agent does it for them.
 - **References never go stale.** Documents refer to one another only where neither end can go stale:
-  a plan to the specs and ADRs it builds, since a `✅ Built` plan is a record of how they stood when
+  a plan to the specs and ADRs it builds, since a `Built ✅` plan is a record of how they stood when
   it was built; a spike record to the spec or ADR waiting on its hypothesis, since a finished spike
   record is a record of how that document stood; and an ADR to other ADRs, by number linked to the
   other ADR's file, since a decided ADR is never edited or moved. Nothing refers to a plan or a
@@ -192,7 +194,7 @@ flowchart LR
   handed over in a conversation, lives outside the repository or sits under `docs/` beside the
   lifecycle's documents: it can change or vanish without them being touched, and `docs/` holds only
   the lifecycle's documents. A plugin hook also refuses such a hyperlink or path in any of them.
-- **No separate design document.** `👍 Accepted` ADRs and the code are the design.
+- **No separate design document.** `Accepted 👍` ADRs and the code are the design.
 - **Every document but the brief carries its own status.** A plan holds nothing later work needs: a
   decision later work must follow is an ADR, one a user or caller relies on belongs in the spec,
   and one every piece of work follows is a practice. A reason someone changing the code later
@@ -204,22 +206,22 @@ flowchart LR
   `/practices` or a build.
 - **No document moves forward with open questions.** Anything only a person can settle is
   written into the document's Open questions, not left in the conversation. A spec or an ADR becomes
-  `👍 Accepted`, a plan `🟢 Ready to build`, and a spike record `🟢 Ready to run`, `💡 Confirmed`,
-  `🚫 Refuted` or `❔ Not settled` only when that section is empty.
+  `Accepted 👍`, a plan `Ready to build 🟢`, and a spike record `Ready to run 🟢`, `Confirmed 💡`,
+  `Refuted 🚫` or `Not settled ❔` only when that section is empty.
 - **Only legal status moves.** Only the moves listed under [Documents](#documents) are allowed,
-  and only `/build` sets a plan `✅ Built`. A plugin hook refuses illegal spec, ADR, plan and spike
+  and only `/build` sets a plan `Built ✅`. A plugin hook refuses illegal spec, ADR, plan and spike
   record status changes, edits to decided ADRs and finished spike records, and edits to a spike
   record's fixed parts and runs, made with Claude's file-editing tools.
 - **Only an experiment settles a spike.** Documentation, other people's reports and reasoning help
   design an experiment, but a spike's finding rests only on what its runs produced, compared with
   the result agreed before the first run.
-- **A plan builds only on settled documents.** A plan is `🟢 Ready to build` only when each spec
-  and each ADR it touches is `👍 Accepted`. No two
-  plans that are not `✅ Built` name the same requirement.
+- **A plan builds only on settled documents.** A plan is `Ready to build 🟢` only when each spec
+  and each ADR it touches is `Accepted 👍`. No two
+  plans that are not `Built ✅` name the same requirement.
   `/build` builds a plan that isn't signed off only when the person chooses to, building its open
   questions' proposed answers, and the build's first commit says what wasn't signed off.
 - **Drift is a finding, not a status.** `/audit` reports it with a suggested correction: correct
-  the code, return the spec to `📝 Draft`, or supersede the ADR.
+  the code, return the spec to `Draft 📝`, or supersede the ADR.
 
 ## Plain words
 
@@ -247,7 +249,7 @@ An issue the plugin files is read by the plugin's maintainers, who know the life
 the people building it, who use the lifecycle; a spike record by whoever takes its finding to a
 spec or an ADR, as its Next steps asks; and practices, in the Practices section of `AGENTS.md` and
 in `docs/practices/`, by agents that follow the lifecycle. So in an issue, a plan, a spike record
-or practices, the lifecycle's own terms, such as "spec", "ADR", "requirement", `🟢 Ready to build`
+or practices, the lifecycle's own terms, such as "spec", "ADR", "requirement", `Ready to build 🟢`
 and the plugin's commands such as `/agentic:build`, count as plain too, and so do the marks
 `/practices` ends a practice with, "(default)" and "(not set up yet)".
 
@@ -309,7 +311,7 @@ A review runs at these points:
 - when you make or ask for a change at any other time, once it is made;
 - when you ask for a document to be reviewed.
 
-A status that needs a passing review, such as `👍 Accepted`, is set only after a review of the text
+A status that needs a passing review, such as `Accepted 👍`, is set only after a review of the text
 as it stands has passed.
 
 There are no repeated rounds of review and correction. We measured this on specs with planted
@@ -321,8 +323,8 @@ rubric.
 `/build` follows the same sequence for code, with its own reviewers and its own correction
 checker, `agents/build-correction-checker.md`, and no language checker, since it writes code.
 `/build` corrects what the reviewers find once, and a correction check follows. A clean review or
-a passing correction check marks the plan `✅ Built`; a failing correction check stops and hands the branch back with its report. You
+a passing correction check marks the plan `Built ✅`; a failing correction check stops and hands the branch back with its report. You
 may then accept the build as it stands: run `/build` again on the unchanged branch, and it shows
-the open findings and asks once; if you accept, the plan is marked `✅ Built` and the commit that
+the open findings and asks once; if you accept, the plan is marked `Built ✅` and the commit that
 marks it lists the findings you accepted. Either way the work stays on its branch until you merge
 it.

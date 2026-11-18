@@ -1,0 +1,7 @@
+schema_version: "1.1"
+name: spec-emoji-first-on-edit
+expected_outcome: |
+  An Accepted spec whose status has its emoji in front, as earlier versions of the plugin wrote
+  it, is changed as asked, and its status is written word first, then its emoji, with that edit.
+context:
+  scaffold_script: place-files.sh

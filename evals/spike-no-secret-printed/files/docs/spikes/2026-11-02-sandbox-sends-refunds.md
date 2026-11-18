@@ -1,7 +1,7 @@
 ---
 # Change status only through the sdlc plugin's skills, which check each change; a change made by hand is not checked.
 type: Spike
-status: 📝 Draft
+status: Draft 📝
 ---
 
 # The bank's test system sends a refund

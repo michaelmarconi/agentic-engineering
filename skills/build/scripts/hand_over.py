@@ -7,10 +7,10 @@
    on that default branch, or with no branch checked out;
 2. commits everything not yet committed, with the message given, leaving out the stand-ins for
    the null device that Claude Code's sandbox puts in place on Linux (see uncommitted.py);
-3. with --reviews-passed, sets the plan's status from `🟢 Ready to build` to `✅ Built` and its
+3. with --reviews-passed, sets the plan's status from `Ready to build 🟢` to `Built ✅` and its
    `date:`, the day its status last changed, to today's date on this machine, adding the line under
    the status if the plan has none, changing nothing else in the file, and commits that on its own. It writes the file itself, so the
-   status hook, which refuses `✅ Built` from Claude, never sees it;
+   status hook, which refuses `Built ✅` from Claude, never sees it;
 4. pushes the branch to `origin`, and names the commit the branch is then at, `Head: <commit>`;
 5. writes the build's report file (docs/adrs/0033 and 0034) with scripts/run_report.py, outside the
    repository, even when it refused to start: Claude's own sections, read from stdin under the
@@ -33,10 +33,10 @@ When a build's correction check failed, the person may accept the build as it st
 
 - --open-findings prints the open findings the correction check listed, word for word, and the
   report's path, or the one reason none can be accepted. It changes nothing and writes no report.
-- --accept-open-findings, after the person accepts, marks the plan `✅ Built` as --reviews-passed
+- --accept-open-findings, after the person accepts, marks the plan `Built ✅` as --reviews-passed
   does, commits it with the open findings in the commit message, pushes, and writes a new report.
 
-Both go ahead only when the plan is `🟢 Ready to build`; the report is of this plan, its correction
+Both go ahead only when the plan is `Ready to build 🟢`; the report is of this plan, its correction
 check says `Result: FAIL`, and its "Built before sign-off" section is empty; the branch is still at
 the report's `Head:` commit, with nothing uncommitted; and the check lists at least one correction
 `not made` or `left for the person`, or something broken by a correction. An
@@ -45,7 +45,7 @@ stays the newest.
 
 Exit codes: 0 when every step that applied succeeded, or --open-findings found findings; 1 when a
 commit, the push or the report file failed, or --reviews-passed was given for a plan that is not
-`🟢 Ready to build` (the plan is then left as it is, and the rest still runs); 2 when it refused to
+`Ready to build 🟢` (the plan is then left as it is, and the rest still runs); 2 when it refused to
 start, could not use Claude's sections or was given an unusable release note, changing nothing in
 the repository; 3 when
 --open-findings found nothing that can be accepted.
@@ -62,13 +62,13 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."
 import build_relay  # noqa: E402
 import uncommitted  # noqa: E402
 import run_report  # noqa: E402
+from status_check import BUILT, READY, STATUSES, meant  # noqa: E402
 
 REVIEWS = (("Code review", "code"), ("Security review", "security"), ("Build review", "plan"),
            ("Correction check", "check"))
 NO_REPORT = "No report kept."
 NOT_REVIEWED = "No review: the person accepted the build as it stands."
 
-READY, BUILT = "🟢 Ready to build", "✅ Built"
 STATUS_LINE = re.compile(r"^status:[ \t]*(?P<value>[^\n#]*?)[ \t]*$", re.M)
 # The key in any case and with a space before its colon, as the status hook reads it.
 DATE_LINE = re.compile(r"^date[ \t]*:[ \t]*(?P<value>[^\n#]*?)[ \t]*(?:#[^\n]*)?$", re.M | re.I)
@@ -153,9 +153,9 @@ def frontmatter_status(text):
 
 
 def is_ready(value):
-    # A plan written before the emoji holds the status by its words alone.
-    words = re.sub(r"^[^\x00-\x7f]+ ?", "", value).replace("️", "")
-    return words == "Ready to build"
+    # Read as the status hook reads it: a plan written before the emoji, or with it in front, as
+    # earlier versions of the plugin wrote it, counts as the status its words name.
+    return meant(value, STATUSES) == READY
 
 
 def commit(repo, message, lines, allow_empty=False):

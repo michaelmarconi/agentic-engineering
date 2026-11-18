@@ -7,88 +7,89 @@ JSON from stdin and, for the project's docs/brief.md, a *.spec.md under its docs
 under its docs/adrs/ or a *.md directly in its docs/plans/ or docs/spikes/ (the project being
 the git repository holding the file, or the session folder when none does: docs/adrs/0046),
 works out what the file would contain after the edit and compares it with what is on disk now.
-Every status carries its emoji, emoji first: a spec is `📝 Draft` or `👍 Accepted`, describing the
-document, never the software; a plan is `📝 Draft`, `🟢 Ready to build` or `✅ Built`; an ADR is `📝 Draft`, `👍 Accepted`, `❌ Rejected` or `↪️ Superseded`; a spike record is `📝 Draft`, `🟢 Ready to run`, `💡 Confirmed`, `🚫 Refuted` or `❔ Not settled`. The U+FE0F that
+Every status carries its emoji, after its word: a spec is `Draft 📝` or `Accepted 👍`, describing the
+document, never the software; a plan is `Draft 📝`, `Ready to build 🟢` or `Built ✅`; an ADR is `Draft 📝`, `Accepted 👍`, `Rejected ❌` or `Superseded ↪️`; a spike record is `Draft 📝`, `Ready to run 🟢`, `Confirmed 💡`, `Refuted 🚫` or `Not settled ❔`. The U+FE0F that
 some keyboards add after an emoji is optional. It refuses a status written by its word alone or
 with the wrong emoji, and names the value to write. A document written before the emoji, whose
-status is a bare word such as `Accepted`, counts as having that status, and an edit that only adds
-the emoji to its status line is allowed, even on a decided ADR. Any other edit to it must add the
-emoji too.
+status is a bare word such as `Accepted`, or one written while the emoji came first, such as
+`👍 Accepted`, counts as having that status, and an edit that only rewrites its status line in
+the exact form is allowed, even on a decided ADR. Any other edit to it must write the exact form
+too.
 
 For a spec it refuses:
 
 - a spec that had a lifecycle status losing it;
-- a spec that had none being given any status but `📝 Draft`, so new specs start as Draft;
-- `👍 Accepted` while the Open questions section is missing or holds anything but "None.", or in
+- a spec that had none being given any status but `Draft 📝`, so new specs start as Draft;
+- `Accepted 👍` while the Open questions section is missing or holds anything but "None.", or in
   the same edit as any other change;
-- a change to a `👍 Accepted` spec that does not return it to `📝 Draft`;
-- `👍 Accepted` for a spec still heading a requirement `### Requirement: <name>`, as specs written
+- a change to a `Accepted 👍` spec that does not return it to `Draft 📝`;
+- `Accepted 👍` for a spec still heading a requirement `### Requirement: <name>`, as specs written
   for an earlier version of the plugin did, until it is reworked with /spec.
 
-A spec still holding `🟢 Ready to build` or `✅ Built`, statuses specs had before, is no longer
-checked until it is set back to `📝 Draft`, which is allowed; setting it to `👍 Accepted` straight
+A spec still holding `Ready to build 🟢` or `Built ✅`, statuses specs had before, is no longer
+checked until it is set back to `Draft 📝`, which is allowed; setting it to `Accepted 👍` straight
 away is refused.
 
 For an ADR (architecture decision record) it refuses:
 
 - an ADR that had a status losing it;
-- a new ADR with any status but `📝 Draft`, including one the lifecycle does not know;
-- `👍 Accepted` or `❌ Rejected`, except from `📝 Draft` and as an edit that changes nothing else;
-- `👍 Accepted` while the Open questions section is missing, or holds anything but "None.", while
+- a new ADR with any status but `Draft 📝`, including one the lifecycle does not know;
+- `Accepted 👍` or `Rejected ❌`, except from `Draft 📝` and as an edit that changes nothing else;
+- `Accepted 👍` while the Open questions section is missing, or holds anything but "None.", while
   the Decision section does not open with "Chosen:" and the option, or while the ADR's plain part,
   everything between the frontmatter and `## Technical detail` apart from HTML comments, holds more
   than 500 words, counted as for a spike record; a draft in the layout from before those
   sections is told to re-lay it first;
-- `↪️ Superseded`, except from `👍 Accepted` with a `superseded-by:` line added and nothing else
-  changed, naming the four-digit number of a `👍 Accepted` ADR in the same folder whose
+- `Superseded ↪️`, except from `Accepted 👍` with a `superseded-by:` line added and nothing else
+  changed, naming the four-digit number of a `Accepted 👍` ADR in the same folder whose
   `supersedes:` names this one (it may name several);
-- any other change to a `👍 Accepted`, `❌ Rejected` or `↪️ Superseded` ADR, since a decided ADR
+- any other change to a `Accepted 👍`, `Rejected ❌` or `Superseded ↪️` ADR, since a decided ADR
   is never edited, only superseded by a new one.
 
 For a plan it refuses:
 
-- a plan that had a lifecycle status losing it, and a new plan with any status but `📝 Draft`;
-- setting `✅ Built`: only `/build`'s hand-over script may, writing the file itself, so this hook
+- a plan that had a lifecycle status losing it, and a new plan with any status but `Draft 📝`;
+- setting `Built ✅`: only `/build`'s hand-over script may, writing the file itself, so this hook
   never sees it;
-- any change to a `✅ Built` plan, which is frozen once built (it may be deleted), apart from adding
-  the emoji to its status line;
-- `🟢 Ready to build` to anything but `📝 Draft`;
-- `🟢 Ready to build` in the same edit as any other change, or while the Open questions section is
+- any change to a `Built ✅` plan, which is frozen once built (it may be deleted), apart from writing
+  its status line in the exact form, adding its emoji or moving it after the word;
+- `Ready to build 🟢` to anything but `Draft 📝`;
+- `Ready to build 🟢` in the same edit as any other change, or while the Open questions section is
   missing or not empty or "None.";
-- `🟢 Ready to build` unless the plan names something to build, each spec listed under Specs
-  exists, is `👍 Accepted` and has a numbered heading under `## Requirements`, as
+- `Ready to build 🟢` unless the plan names something to build, each spec listed under Specs
+  exists, is `Accepted 👍` and has a numbered heading under `## Requirements`, as
   `### 2. <name>`, for each requirement link beneath it, `  - [<name>](<path>#<anchor>)`, whose text
   gives the name alone and whose anchor is the one GitHub gives that heading; each ADR listed in
-  the ADRs table, `| [<NNNN>](<path>) | <title> |`, exists, is `👍 Accepted`, shows its own number
+  the ADRs table, `| [<NNNN>](<path>) | <title> |`, exists, is `Accepted 👍`, shows its own number
   and is given by its title, word for word; a plan in the layout from before 0.38.0, with
   `- Requirement: <name>` lines or ADRs as bullets, is refused with a message saying how to
   rewrite it; and no
-  other plan in the folder that is not `✅ Built` names the same requirement of the same spec. A
+  other plan in the folder that is not `Built ✅` names the same requirement of the same spec. A
   spec still heading its requirements `### Requirement: <name>` is refused with a message saying it
   was written for an earlier version of the plugin and needs reworking with /spec. References are
   paths relative to the plan;
-- a change to a `🟢 Ready to build` plan that does not return it to `📝 Draft`.
+- a change to a `Ready to build 🟢` plan that does not return it to `Draft 📝`.
 
 For a spike record it refuses:
 
-- a record that had a lifecycle status losing it, and a new record with any status but `📝 Draft`
+- a record that had a lifecycle status losing it, and a new record with any status but `Draft 📝`
   or with anything in its Runs section;
 - any change to the Runs section, at any status: only the run script (skills/spike/scripts/spike.py)
   writes runs, writing the file itself, so this hook never sees it;
-- any move but `📝 Draft` to `🟢 Ready to run`, `🟢 Ready to run` back to `📝 Draft` while Runs is
-  empty, and `🟢 Ready to run` to `💡 Confirmed`, `🚫 Refuted` or `❔ Not settled`;
+- any move but `Draft 📝` to `Ready to run 🟢`, `Ready to run 🟢` back to `Draft 📝` while Runs is
+  empty, and `Ready to run 🟢` to `Confirmed 💡`, `Refuted 🚫` or `Not settled ❔`;
 - a move forward in the same edit as any other change, while the Open questions section is
   missing or not empty or "None.", or while the record's design holds more than 600 words or its
   verdict more than 400. The verdict is the Finding, Next steps,
   Results and Surprises sections, written after the runs; the design is the rest of the plain part,
   everything between the frontmatter and `## Experiment`. Neither counts HTML comments, and words
   are runs of non-space characters holding a letter or digit, so a table's bars and rules don't
-  count. `💡 Confirmed` or `🚫 Refuted` while Runs holds no run; and a finishing status that the
-  Finding does not open with, such as `💡 Confirmed` for a Finding that opens "Refuted:";
+  count. `Confirmed 💡` or `Refuted 🚫` while Runs holds no run; and a finishing status that the
+  Finding does not open with, such as `Confirmed 💡` for a Finding that opens "Refuted:";
 - a change to the Hypothesis, How we'll know, Out of scope, How the test works, Risks and
-  safeguards or Experiment section of a `🟢 Ready to run` record that does not return it to
-  `📝 Draft`;
-- any change to a `💡 Confirmed`, `🚫 Refuted` or `❔ Not settled` record, which is final, apart
+  safeguards or Experiment section of a `Ready to run 🟢` record that does not return it to
+  `Draft 📝`;
+- any change to a `Confirmed 💡`, `Refuted 🚫` or `Not settled ❔` record, which is final, apart
   from adding its `type:`.
   Deleting it is not an edit, so it is never refused.
 
@@ -99,7 +100,7 @@ Every lifecycle document names its kind in its frontmatter's `type:`: `Brief` fo
 before or after the edit, it refuses a `type:` that is not the one for the document's folder, more
 than one `type:` line, a new document without `type:`, and taking a document's `type:` away. A
 document written before types may be edited without one, and adding one never counts as a change,
-so it may come with any edit the rules above allow, even to a decided ADR, a `✅ Built` plan or a
+so it may come with any edit the rules above allow, even to a decided ADR, a `Built ✅` plan or a
 finished spike record, whose only allowed change it is.
 
 Every ADR repeats in its frontmatter's `number:` the four digits its file name starts with, for
@@ -114,7 +115,7 @@ refuses more than one `date:` line, a date that is not a real YYYY-MM-DD date or
 status change whose `date:` is not today's date on this machine, and a change to `date:`, or
 taking it away, while the status stays the same. A document written before dates may be edited
 without one until its next status change, and adding one, any real date, never counts as a change,
-so it may come with any edit the rules above allow, even to a decided ADR, a `✅ Built` plan or a
+so it may come with any edit the rules above allow, even to a decided ADR, a `Built ✅` plan or a
 finished spike record. A rule that a status be set on its own lets the `date:` line change with it.
 
 Every open question in the brief, a spec, an ADR, a plan or a spike record is laid out as ADR 0030
@@ -161,9 +162,9 @@ import unicodedata
 
 import repository
 
-DRAFT, READY, BUILT = "📝 Draft", "🟢 Ready to build", "✅ Built"
-READY_TO_RUN = "🟢 Ready to run"
-CONFIRMED, REFUTED, NOT_SETTLED = "💡 Confirmed", "🚫 Refuted", "❔ Not settled"
+DRAFT, READY, BUILT = "Draft 📝", "Ready to build 🟢", "Built ✅"
+READY_TO_RUN = "Ready to run 🟢"
+CONFIRMED, REFUTED, NOT_SETTLED = "Confirmed 💡", "Refuted 🚫", "Not settled ❔"
 SPIKE_STATUSES = (DRAFT, READY_TO_RUN, CONFIRMED, REFUTED, NOT_SETTLED)
 FINISHED = (CONFIRMED, REFUTED, NOT_SETTLED)
 # A spike record's design: fixed once it is signed off.
@@ -177,12 +178,12 @@ ADR_PLAIN_LIMIT = 500  # words in an ADR's plain part, from the title down to Te
 ADR_DETAIL = "Technical detail"  # the heading that starts an ADR's technical part
 ADR_DIAGRAMS = "Decision"  # the section whose diagrams the word limit leaves out
 WORD = re.compile(r"\S*[^\W_]\S*")  # a run of non-space characters holding a letter or digit
-ACCEPTED, REJECTED, SUPERSEDED = "👍 Accepted", "❌ Rejected", "↪️ Superseded"
+ACCEPTED, REJECTED, SUPERSEDED = "Accepted 👍", "Rejected ❌", "Superseded ↪️"
 STATUSES = (DRAFT, READY, BUILT)
 SPEC_STATUSES = (DRAFT, ACCEPTED)
 ADR_STATUSES = (DRAFT, ACCEPTED, REJECTED, SUPERSEDED)
 # Each status by its word alone, as documents written before the emoji hold it.
-WORDS = {value.split(" ", 1)[1]: value for value in STATUSES + ADR_STATUSES + SPIKE_STATUSES}
+WORDS = {value.rsplit(" ", 1)[0]: value for value in STATUSES + ADR_STATUSES + SPIKE_STATUSES}
 # U+FE0F asks for an emoji to be drawn in colour; some keyboards add it and some don't.
 VARIATION = "\ufe0f"
 WITHOUT_VARIATION = {value.replace(VARIATION, ""): value for value in WORDS.values()}
@@ -308,10 +309,27 @@ def canonical(value, statuses):
 
 
 def meant(value, allowed):
-    """The full status in `allowed` that `value` names by its word, as `Draft` or `🟢 Built` do."""
-    # Only a leading emoji is dropped, so `202 Accepted` or `- Draft` names no status.
-    full = WORDS.get(re.sub(r"^[^\x00-\x7f]+ ?", "", value or ""))
+    """The full status in `allowed` that `value` names by its word, as `Draft` or `Built 🟢` do."""
+    full = WORDS.get(word_of(value or ""))
     return full if full in allowed else None
+
+
+def emoji_first(value):
+    """The status `value` names if it is written as documents were before the emoji moved after
+    the word, its own emoji, a space, then its word, such as `👍 Accepted`; otherwise None."""
+    emoji, _, word = (value or "").replace(VARIATION, "").partition(" ")
+    return WITHOUT_VARIATION.get(f"{word} {emoji}") if word else None
+
+
+def word_of(value):
+    """`value` without the emoji after its word or, as documents written before the emoji moved
+    hold it, before it. Only one side is dropped, and only a run of non-ASCII characters, so
+    `202 Accepted`, `- Draft` and `👍 Accepted 👍` keep what names no status."""
+    after = re.fullmatch(r"(.*?) ?[^\x00-\x7f]+", value)
+    if after:
+        return after.group(1)
+    before = re.fullmatch(r"[^\x00-\x7f]+ ?(.*)", value)
+    return before.group(1) if before else value
 
 
 def restyled(before, after, also=()):
@@ -713,6 +731,11 @@ def check(payload):
                   or (title_problem(path, kind, before, after) if before is not None else None))
     if reason or new == written:
         return reason
+    if emoji_first(written) == new:
+        return (
+            f"{name}: move the status emoji after its word, as `{new}` (found {written!r}), the form "
+            f"earlier versions of the plugin wrote. The {kind} statuses are {listed(statuses)}."
+        )
     return (
         f"{name}: write the status with its emoji, as `{new}` (found {written!r}). The {kind} "
         f"statuses are {listed(statuses)}."
@@ -810,7 +833,7 @@ def lifecycle_problem(path, kind, statuses, rules, before, after, old, new, writ
     name = os.path.basename(path)
     if old not in statuses and new not in statuses:
         # A new document is refused any lifecycle status, even one only another kind uses, as
-        # `✅ Built` on a spec; a new ADR is refused any status at all.
+        # `Built ✅` on a spec; a new ADR is refused any status at all.
         if not before and new is not None and (kind == "ADR" or meant(new, WORDS.values())):
             return f"{name}: a new {kind} must be written as `{DRAFT}`, not '{new}'."
         return None
@@ -1482,7 +1505,7 @@ def spike_rules(path, before, after, old, new):
                 f"{name}: it has no runs, so it cannot be `{new}`: only an experiment's runs "
                 f"settle a spike. Run it through the run script, or end it `{NOT_SETTLED}`."
             )
-        word = new.split(" ", 1)[1]
+        word = word_of(new)
         if new in FINISHED and not finding_opens_with(after, word):
             return (
                 f"{name}: its Finding must open with \"{word}\", the status it is given, then say what "

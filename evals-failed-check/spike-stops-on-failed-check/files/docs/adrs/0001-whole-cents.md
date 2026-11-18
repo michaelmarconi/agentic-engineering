@@ -1,7 +1,7 @@
 ---
 # Change status only through the sdlc plugin's skills, which check each change; a change made by hand is not checked.
 type: ADR
-status: 👍 Accepted
+status: Accepted 👍
 ---
 
 # 0001. Keep amounts as whole numbers of cents

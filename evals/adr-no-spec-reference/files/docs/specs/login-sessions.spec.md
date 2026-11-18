@@ -1,6 +1,6 @@
 ---
 type: Spec
-status: 📝 Draft
+status: Draft 📝
 ---
 
 # Login sessions

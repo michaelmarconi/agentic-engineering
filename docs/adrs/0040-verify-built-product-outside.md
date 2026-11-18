@@ -1,7 +1,7 @@
 ---
 # Change status only through the agentic plugin's skills, which check each change; a change made by hand is not checked.
 type: ADR
-status: 👍 Accepted
+status: Accepted 👍
 date: 2026-11-16
 supersedes: 0016
 ---

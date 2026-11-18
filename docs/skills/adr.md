@@ -15,7 +15,7 @@ follow deserves one. What the product does is not an ADR: that belongs in the br
 Each ADR holds exactly one decision, because a decision is replaced whole: if part of a record
 could change while the rest stands, the two parts would have to be untangled later. Once
 accepted, an ADR is never edited. When a decision changes, a new ADR supersedes the old one,
-and the old one is kept, marked `↪️ Superseded`, so you can still see what was decided before and
+and the old one is kept, marked `Superseded ↪️`, so you can still see what was decided before and
 why it changed.[^fowler]
 
 Together, the accepted ADRs and the code are the system's design; there is no separate design
@@ -28,10 +28,10 @@ what each decision is about, in two to five words taken from its title:
 
 ```
 docs/adrs/
-  0001-store-sessions-files.md       ↪️ Superseded
-  0002-customer-email-provider.md    👍 Accepted
-  0003-store-sessions-redis.md       👍 Accepted
-  0004-cache-search-results.md       📝 Draft
+  0001-store-sessions-files.md       Superseded ↪️
+  0002-customer-email-provider.md    Accepted 👍
+  0003-store-sessions-redis.md       Accepted 👍
+  0004-cache-search-results.md       Draft 📝
 ```
 
 Nothing is moved or deleted once decided, so each file's status says whether it still holds. A
@@ -56,7 +56,7 @@ core parts kept, reordered and tightened.[^madr]
 | Part | Holds | In MADR |
 |---|---|---|
 | `number:` | The four digits the file's name starts with, so a reader sees the number other ADRs use | Part of the file name |
-| `status:` and `date:` | `📝 Draft`, `👍 Accepted`, `❌ Rejected` or `↪️ Superseded`, and the day the status last changed; `supersedes:` or `superseded-by:` name another ADR by number | Status and date |
+| `status:` and `date:` | `Draft 📝`, `Accepted 👍`, `Rejected ❌` or `Superseded ↪️`, and the day the status last changed; `supersedes:` or `superseded-by:` name another ADR by number | Status and date |
 | Title | The decision in plain words, such as "Keep session data in Redis" | Title |
 | Question | The one choice to make, briefly, written first | Part of Context and Problem Statement |
 | Decision | "Not chosen yet" until you pick; then "Chosen:" and the option in full, with the reason, and any diagram of it you asked for | Decision Outcome, moved up |
@@ -65,7 +65,7 @@ core parts kept, reordered and tightened.[^madr]
 | Consequences | Good and bad results of the choice, one line each | Consequences |
 | Out of scope | Each limit of this decision, and each related decision left to another ADR, stated once | None |
 | How we'll check | What the decision applies to, such as "any code that stores or reads session data", and numbered checks by test, demonstration, inspection or analysis | Confirmation |
-| Open questions | What only you can settle, such as which option to choose, each with a proposed answer; empty before the ADR can be `👍 Accepted` | None |
+| Open questions | What only you can settle, such as which option to choose, each with a proposed answer; empty before the ADR can be `Accepted 👍` | None |
 | Technical detail | The exact mechanism, rules and settings, evidence in the ADR's own words, and each check in full | More Information |
 
 How we'll check is what `/build` and [`/audit`](audit.md) use to check that the code still
@@ -78,27 +78,27 @@ before it can be accepted.
 
 ```mermaid
 stateDiagram-v2
-    state "📝 Draft" as Draft
-    state "👍 Accepted" as Accepted
-    state "❌ Rejected" as Rejected
-    state "↪️ Superseded" as Superseded
+    state "Draft 📝" as Draft
+    state "Accepted 👍" as Accepted
+    state "Rejected ❌" as Rejected
+    state "Superseded ↪️" as Superseded
     [*] --> Draft
     Draft --> Accepted: you accept
     Draft --> Rejected: you reject
     Accepted --> Superseded: you accept a replacement
 ```
 
-- `📝 Draft`: being written and reviewed; `/adr` may change it freely.
-- `👍 Accepted`: you have signed off the decision, and Open questions is empty. It is now fixed.
-- `❌ Rejected`: you decided against it. It is kept, so the same idea is not proposed again
+- `Draft 📝`: being written and reviewed; `/adr` may change it freely.
+- `Accepted 👍`: you have signed off the decision, and Open questions is empty. It is now fixed.
+- `Rejected ❌`: you decided against it. It is kept, so the same idea is not proposed again
   unnoticed.
-- `↪️ Superseded`: a newer accepted ADR replaced it. Its text stays as it was.
+- `Superseded ↪️`: a newer accepted ADR replaced it. Its text stays as it was.
 
 Only you can accept or reject an ADR. `/adr` asks you once the reviewed text is final, and
 approval given earlier, or by another skill, does not count. A plugin hook refuses status changes
 the lifecycle does not allow, a status without its emoji, accepting an ADR while Open questions is
 not empty, while its Decision does not open with "Chosen:" or while its plain part is over 500
-words, and any edit to an ADR that is no longer `📝 Draft`, when Claude makes them with its
+words, and any edit to an ADR that is no longer `Draft 📝`, when Claude makes them with its
 file-editing tools.
 
 ## Using `/adr`
@@ -121,8 +121,8 @@ Run `/adr` and say what you want: record a decision, accept or reject one, or re
   Consequences.
 - **One decision per record.** If the conversation holds several decisions, `/adr` says how many
   and writes one ADR for each. It splits them itself, rather than asking you whether to.
-- **Replacing a decision.** A new ADR names the one it replaces. The old one stays `👍 Accepted`
-  until you accept the new one; then it becomes `↪️ Superseded`. If you reject the new one, the old one
+- **Replacing a decision.** A new ADR names the one it replaces. The old one stays `Accepted 👍`
+  until you accept the new one; then it becomes `Superseded ↪️`. If you reject the new one, the old one
   stands.
 - **Uses spike records.** Given a finished [spike record](spike.md), `/adr` puts its measurements
   into Options and Technical detail in its own words. The ADR never refers to the record, which may be

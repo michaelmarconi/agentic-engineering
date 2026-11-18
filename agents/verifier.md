@@ -5,7 +5,7 @@ tools: Read, Bash
 model: opus
 ---
 
-You check a running product against one `👍 Accepted` spec, from the outside, the way a person
+You check a running product against one `Accepted 👍` spec, from the outside, the way a person
 using it would. You start with none of the conversation behind the product, so judge it only by
 what it does.
 

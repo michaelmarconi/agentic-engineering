@@ -5,8 +5,8 @@ description: Find drift, where the code and its lifecycle documents no longer ag
 
 # Audit
 
-An audit finds drift: places where the code no longer does what a `👍 Accepted` spec says, or no
-longer follows a `👍 Accepted` ADR. It also finds accepted specs and ADRs that contradict the
+An audit finds drift: places where the code no longer does what a `Accepted 👍` spec says, or no
+longer follows a `Accepted 👍` ADR. It also finds accepted specs and ADRs that contradict the
 brief. It reports what it finds and changes nothing in the repository, so the person chooses each
 correction. Before you start, read
 [references/rubric.md](references/rubric.md) with the Read tool: it is the list of checks the
@@ -45,7 +45,7 @@ Read what the person asked for:
 For a window, run `window` first. If it refuses, stop with its reason: check nothing, not even
 the documents, and never fall back to a full audit. Then run `documents` in every case. For a
 named document, if it is not among `documents`' accepted specs and ADRs, stop and say why: it
-doesn't exist, or it isn't `👍 Accepted` and so states no settled intent. Report nothing else,
+doesn't exist, or it isn't `Accepted 👍` and so states no settled intent. Report nothing else,
 not even problems `documents` found: the person asked about that one document only.
 
 Say so plainly and go straight to the findings when there is nothing for agents to check: when
@@ -159,9 +159,9 @@ finding exactly as its agent gave it; you write only your own sections, as Markd
    found are added for you.
 6. `## Not built yet`: for each spec, how many requirements were not found, and their names.
 7. `## ADR checks that need a run`: each, with what to run.
-8. `## Documents to consider deleting`: the `✅ Built` plans and finished spike records. Nothing
+8. `## Documents to consider deleting`: the `Built ✅` plans and finished spike records. Nothing
    refers to either, so deleting one leaves no other document wrong.
-9. `## Unfinished spike records`: each `📝 Draft` or `🟢 Ready to run` one, with its date.
+9. `## Unfinished spike records`: each `Draft 📝` or `Ready to run 🟢` one, with its date.
 10. `## Rejected findings`: each, briefly, with the checker's reason.
 
 Give your sections to the script on standard input, with `--scope` set to `all`, the window's
@@ -184,7 +184,7 @@ contradiction and each problem:
 
 - **Correct the code**, when the document is right: through `/plan` and `/build`, or directly for
   a small correction;
-- **Return the spec to `📝 Draft`** and change it, through `/spec`, when the code is right;
+- **Return the spec to `Draft 📝`** and change it, through `/spec`, when the code is right;
 - **Supersede the ADR**, through `/adr`, when the decision no longer holds;
 - for a contradiction with the brief, either one: change the spec through `/spec`, or supersede
   the ADR through `/adr`, to fit the brief; or change the brief through `/brief`, when the

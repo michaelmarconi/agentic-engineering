@@ -162,11 +162,11 @@ class RefusedReferences(Workspace):
         self.assertNotIn("/tmp/prd.md", reason)
 
     def test_a_decided_adr_holding_an_old_reference_can_still_be_superseded(self):
-        self.put(self.adr, "---\nstatus: 👍 Accepted\n---\n\n# X\n\nSee [notes](../research/n.md).\n")
+        self.put(self.adr, "---\nstatus: Accepted 👍\n---\n\n# X\n\nSee [notes](../research/n.md).\n")
         reason = reference_check.check({
             "tool_name": "Edit",
-            "tool_input": {"file_path": self.adr, "old_string": "status: 👍 Accepted",
-                           "new_string": "status: ↪️ Superseded\nsuperseded-by: 0002"},
+            "tool_input": {"file_path": self.adr, "old_string": "status: Accepted 👍",
+                           "new_string": "status: Superseded ↪️\nsuperseded-by: 0002"},
         })
         self.assertIsNone(reason)
 

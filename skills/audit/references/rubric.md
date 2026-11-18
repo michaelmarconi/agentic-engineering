@@ -8,12 +8,12 @@ check. "The run" is one `/audit` from the person's request to its findings.
    with the document it names. A refused script run, or one Claude Code doesn't allow, ends the
    run with its reason.
 2. **Stops when it must.** A window the script refuses, or a named document that doesn't exist or
-   isn't `👍 Accepted`, ends the run with its reason before anything is checked, documents
+   isn't `Accepted 👍`, ends the run with its reason before anything is checked, documents
    included. No lifecycle documents, no accepted spec or ADR, or a window with no commits is said
    plainly; the document checks still run in the last two cases.
-3. **One auditor per document in scope.** Each `👍 Accepted` spec and ADR in scope gets exactly
-   one `agentic:auditor` agent, and no other document gets one: no `📝 Draft` spec or ADR, no
-   `❌ Rejected` or `↪️ Superseded` ADR, no plan, spike record or brief. In scope is every accepted
+3. **One auditor per document in scope.** Each `Accepted 👍` spec and ADR in scope gets exactly
+   one `agentic:auditor` agent, and no other document gets one: no `Draft 📝` spec or ADR, no
+   `Rejected ❌` or `Superseded ↪️` ADR, no plan, spike record or brief. In scope is every accepted
    spec and ADR; for a window, those the `agentic:audit-picker` agent picks plus those whose own text
    changed; for a named document, that one. The one brief checker of check 10 is not an auditor.
 4. **All at once.** Every auditor is started in one message. Any refused for Claude Code's limit
@@ -32,13 +32,13 @@ check. "The run" is one `/audit` from the person's request to its findings.
    checked (each auditor that reported an `Error:`, never counted as no drift), drift,
    contradictions with the brief, problems
    with the documents, requirements not built yet (per spec, the count and names), ADR checks
-   that need a run (with what to run), documents to consider deleting (`✅ Built` plans and
+   that need a run (with what to run), documents to consider deleting (`Built ✅` plans and
    finished spike records), unfinished spike records with their dates, and rejected findings. A
    part with nothing in it is left out.
 8. **Each correction named.** Each drift finding, each contradiction with the brief and each
    problem with a document names its
    suggested correction and the skill that makes it: correct the code, through `/plan` and
-   `/build` or directly when small; return the spec to `📝 Draft` and change it, through `/spec`;
+   `/build` or directly when small; return the spec to `Draft 📝` and change it, through `/spec`;
    supersede the ADR, through `/adr`; for a contradiction, either changing the spec or
    superseding the ADR to fit the brief, or changing the brief through `/brief`; or, for a problem
    with a document, the edit that corrects it.

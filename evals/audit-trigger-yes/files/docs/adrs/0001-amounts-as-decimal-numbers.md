@@ -1,7 +1,7 @@
 ---
 # Change status only through the sdlc plugin's skills, which check each change; a change made by hand is not checked.
 type: ADR
-status: ↪️ Superseded
+status: Superseded ↪️
 date: 2026-09-01
 superseded-by: 0002
 ---

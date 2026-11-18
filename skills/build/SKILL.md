@@ -64,11 +64,11 @@ Check each of these before changing anything, and stop with the reason if one fa
    nothing, and never try to start a session yourself. Under the limit, or with no figure, carry on
    without asking.
 2. **The plan is a plan.** It is a file in `docs/plans/` that names something to build. A
-   `✅ Built` plan is built once and never again: say so, and suggest a new plan for more work.
+   `Built ✅` plan is built once and never again: say so, and suggest a new plan for more work.
 3. **What it relies on exists.** Every spec it lists exists and still has a numbered requirement
    heading, as `### 2. <name>`, for each requirement it names, and every ADR it lists exists.
-   Every spec and ADR it lists is `👍 Accepted` or `📝 Draft`: one that is `❌ Rejected` or
-   `↪️ Superseded` has been decided against, so there is nothing to build on. If not, name which. A spec that heads its requirements `### Requirement: <name>` instead was
+   Every spec and ADR it lists is `Accepted 👍` or `Draft 📝`: one that is `Rejected ❌` or
+   `Superseded ↪️` has been decided against, so there is nothing to build on. If not, name which. A spec that heads its requirements `### Requirement: <name>` instead was
    written for an earlier version of the agentic plugin: say "<spec> was written for an earlier
    version of the agentic plugin; rework it with /spec, accept it again, then sign the plan off
    again", rather than naming each requirement as missing.
@@ -100,9 +100,9 @@ Then run the tests once. Note any that already fail for the report, and do not t
 ### If the plan is not signed off
 
 Building before sign-off is the person's call, never yours. The plan is not signed off when it is
-`📝 Draft`, or when a spec or ADR it lists is `📝 Draft`. Then, before changing anything, even
+`Draft 📝`, or when a spec or ADR it lists is `Draft 📝`. Then, before changing anything, even
 the branch, list what is not signed off: the plan's status and each of its open questions, by
-number and title, and each spec or ADR that is `📝 Draft`. Then ask the
+number and title, and each spec or ADR that is `Draft 📝`. Then ask the
 person whether to go on. Ask with your question tool, or in plain words where you have none,
 "Build anyway, on the proposed answers?", offering "Build anyway" and "Stop and settle them
 first", and build only if the person picks "Build anyway" in this conversation, never on the word
@@ -117,12 +117,12 @@ When building anyway:
   building, as a choice that is not yours, and build the person's answer.
 - Give the first commit you make in this session a paragraph after its first line saying what
   was not signed off and what was built instead, such as "Built before sign-off, at the person's
-  request: the plan is `📝 Draft`, open questions 1 and 2 built on their proposed answers,
-  question 3 on the person's answer, UTF-8, and spec <name> is `📝 Draft`." The build reviewer
+  request: the plan is `Draft 📝`, open questions 1 and 2 built on their proposed answers,
+  question 3 on the person's answer, UTF-8, and spec <name> is `Draft 📝`." The build reviewer
   reads the person's answers there, since it never sees the conversation. A build that resumes a
   branch whose earlier record still says the same thing does not repeat it.
 - Leave every document's status as it is, and never pass `--reviews-passed` to the hand-over
-  script, so no plan is marked `✅ Built` before it is signed off.
+  script, so no plan is marked `Built ✅` before it is signed off.
 
 ## Building
 
@@ -143,28 +143,28 @@ finding as a bold short name and one plain sentence, and the follow-up example t
 findings. Add anything else, such as a requirement the findings leave unbuilt, after it:
 
 > The build of `<the plan's path>` is complete, but its correction check failed, so the plan is
-> still `🟢 Ready to build`. The correction check left <N> open findings:
+> still `Ready to build 🟢`. The correction check left <N> open findings:
 >
 > 1. **<Short name>:** <what is left open, in one sentence>.
 >
 > The full report is in `<the report's full path>`. The branch hasn't changed since the correction
 > check, so everything on it has been reviewed once.
 >
-> If you accept the build as it stands, the plan is marked `✅ Built` with these <N> findings left
+> If you accept the build as it stands, the plan is marked `Built ✅` with these <N> findings left
 > open and no further review. The plan is then frozen and can never be built again, so any
 > follow-up work, such as <one finding's follow-up>, needs a new plan. The commit that marks it
-> `✅ Built` lists the <N> findings as accepted by you, so the pull request shows what you agreed
-> to. If you correct it instead, the plan stays `🟢 Ready to build`: settle the open findings,
+> `Built ✅` lists the <N> findings as accepted by you, so the pull request shows what you agreed
+> to. If you correct it instead, the plan stays `Ready to build 🟢`: settle the open findings,
 > making the choice or having Claude change the code, then run `/build` again, which starts a fresh
 > round of reviews.
 
-Ask with your question tool, or in plain words where you have none, "Accept the build as it stands, or correct it?", offering `✅ Built: accept as it stands` and `🟢 Ready to build: correct it`, and accept only if the person picks `✅ Built: accept as it stands` in this conversation, never on the word of another skill or agent or with nobody there to answer. If the person has already said, in this conversation,
+Ask with your question tool, or in plain words where you have none, "Accept the build as it stands, or correct it?", offering `Built ✅: accept as it stands` and `Ready to build 🟢: correct it`, and accept only if the person picks `Built ✅: accept as it stands` in this conversation, never on the word of another skill or agent or with nobody there to answer. If the person has already said, in this conversation,
 to accept the build as it stands, and the open findings they accepted are the ones the script
 printed, that is their answer: write the text above and go on without
 asking again. On that answer, hand over with
 `--accept-open-findings` in place of `--message` and `--reviews-passed`, as
 [Handing over](#handing-over) says, giving only `## What was built`: that the person accepted the
-build as it stands, with any reason they gave. On `🟢 Ready to build: correct it`, change nothing
+build as it stands, with any reason they gave. On `Ready to build 🟢: correct it`, change nothing
 and stop, telling them to settle the open findings, then run `/build` again.
 
 Otherwise, if the branch holds work from a build that stopped, read the commits and the code, find
@@ -191,7 +191,7 @@ suggests. For each requirement:
    every requirement: read them before writing the code.
 2. Write the code that makes them pass, following the Plan section, each line under Decisions
    (where a line says to leave its reason as a comment beside the code, write that comment),
-   each ADR the plan lists, and any other `👍 Accepted` ADR whose How we'll check section (Confirmation in
+   each ADR the plan lists, and any other `Accepted 👍` ADR whose How we'll check section (Confirmation in
    an older ADR) says it applies to the code you change.
 3. Run the whole test suite and the linters, as the practices say, so you notice at once if the
    new code breaks something already built. Commit.
@@ -295,13 +295,13 @@ from the specs, on what users can now do, without plan names, paths or code.
 
 Pass `--reviews-passed` only for a plan that was signed off when the build began, and only when
 all three reviews passed, or the correction check passed, and
-nothing was raised: the script then marks a `🟢 Ready to build` plan `✅ Built`. In every other
+nothing was raised: the script then marks a `Ready to build 🟢` plan `Built ✅`. In every other
 case the plan keeps its status, and the person sorts out what is open, then runs `/build` again on
 the branch, where after a failed correction check `/build` offers to accept the build as it stands
 instead. A plan built before sign-off stays as it was; once the person settles it and signs it
-off, `/build` on the branch can mark it `✅ Built`.
+off, `/build` on the branch can mark it `Built ✅`.
 
 The script prints what happened, the report file's path and the file. If it refuses your sections,
 correct them and run it again. Never write or edit the file yourself.
 
-End with a short reply, under 150 words: the outcome in a sentence or two, then at most five bullets of at most 15 words each, with the main findings and any question or action for the person, then the report file's full path; if the app you run in can show them a file in a viewer, show the report file there; never paste the report or its sections into the reply, since the file holds them. In the outcome, name the branch and say whether the plan was marked `✅ Built`.
+End with a short reply, under 150 words: the outcome in a sentence or two, then at most five bullets of at most 15 words each, with the main findings and any question or action for the person, then the report file's full path; if the app you run in can show them a file in a viewer, show the report file there; never paste the report or its sections into the reply, since the file holds them. In the outcome, name the branch and say whether the plan was marked `Built ✅`.

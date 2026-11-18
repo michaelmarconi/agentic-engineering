@@ -1,7 +1,7 @@
 ---
 # Change status only through the sdlc plugin's skills, which check each change; a change made by hand is not checked.
 type: Spike
-status: 💡 Confirmed
+status: Confirmed 💡
 ---
 
 # A plain CSV file opens in the accountant's software

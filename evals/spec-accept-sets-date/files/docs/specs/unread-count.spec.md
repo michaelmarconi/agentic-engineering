@@ -1,6 +1,6 @@
 ---
 type: Spec
-status: 📝 Draft
+status: Draft 📝
 date: 2026-10-01
 ---
 

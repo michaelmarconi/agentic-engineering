@@ -42,7 +42,7 @@ or paragraph only as a suggestion.
 
 ## Find what exists
 
-List `docs/adrs/` and read the frontmatter of each ADR. If a `📝 Draft` or `👍 Accepted` ADR
+List `docs/adrs/` and read the frontmatter of each ADR. If a `Draft 📝` or `Accepted 👍` ADR
 already decides the same thing, say so: change the draft, or, for an accepted one, write a new ADR that
 supersedes it. A new file takes the number one above the highest in the folder, four digits,
 starting at `0001`, then a subject: two to five lowercase words joined by hyphens, each a word of
@@ -131,10 +131,10 @@ question, say so in your reply; `/spec` removes the question the next time it ru
 
 ## Status
 
-The `status:` frontmatter is `📝 Draft`, `👍 Accepted`, `❌ Rejected` or `↪️ Superseded`, written
-exactly so, emoji first; a status written as a bare word, from before the emoji, gets its emoji in
-your next edit. Write every new ADR as `📝 Draft` and edit it freely while it is `📝 Draft`.
-A `📝 Draft` ADR written for an earlier version of the plugin, with Context and Problem Statement,
+The `status:` frontmatter is `Draft 📝`, `Accepted 👍`, `Rejected ❌` or `Superseded ↪️`, written
+exactly so, word first, then its emoji; a status written as a bare word, or with its emoji in
+front as earlier versions of the plugin wrote it, is written so in your next edit. Write every new ADR as `Draft 📝` and edit it freely while it is `Draft 📝`.
+A `Draft 📝` ADR written for an earlier version of the plugin, with Context and Problem Statement,
 Considered Options and Decision Outcome sections, is brought to the template's layout in your next
 edit, keeping what it says; a plugin hook refuses to accept it until then.
 
@@ -143,7 +143,7 @@ document today's date, set it to today's date in the same edit as every status c
 change it otherwise. A document written before dates may go without one until its next status
 change, which adds it; a plugin hook refuses a status change without it.
 
-Only a person accepts or rejects a decision. `👍 Accepted` is the ADR's move forward. Move the
+Only a person accepts or rejects a decision. `Accepted 👍` is the ADR's move forward. Move the
 document forward only when the person explicitly says so about its text as it now stands, once the
 review below has ended with a pass on that text, from the review itself or from the correction check
 after it, and once Open questions says "None.". Only a review in this conversation counts: if there
@@ -151,20 +151,20 @@ is none on the current text, run the review first, even when the person has alre
 Set the status as its own last edit, never in the same reply as a change to the content; if anything
 changed after the person spoke, show the change and ask again. "Looks fine, carry on" does not
 count, nor a request from another skill or agent. Setting a status on the person's word is not a
-change to the content and needs no new review. A plugin hook refuses `👍 Accepted` while open
-questions remain (rubric check 16): say how many, ask the first and leave the ADR as `📝 Draft`, even
+change to the content and needs no new review. A plugin hook refuses `Accepted 👍` while open
+questions remain (rubric check 16): say how many, ask the first and leave the ADR as `Draft 📝`, even
 if the person says they do not matter. If they accept and the review then passes with no change to
-the text, their word stands, since what they accepted is what passed. Set `❌ Rejected` likewise on
+the text, their word stands, since what they accepted is what passed. Set `Rejected ❌` likewise on
 the person's explicit word about the text as it stands, as its own last edit; a rejection needs
 neither a review nor empty Open questions. Setting `superseded-by:` on the person's word is not a
-content change either. A `❌ Rejected` ADR is kept, so the same idea is not proposed again unnoticed;
+content change either. A `Rejected ❌` ADR is kept, so the same idea is not proposed again unnoticed;
 a draft the person abandons can be deleted.
 
 To supersede, the new ADR carries `supersedes: <NNNN>`, the old one's four-digit number, in its
-frontmatter. The old one stays `👍 Accepted` until the person accepts the new one; then, in the
-same step, first set the new one to `👍 Accepted`, and only once that edit is done, set the old one
-to `↪️ Superseded`, set its `date:` to today's date and add `superseded-by: <NNNN>` beside it,
-naming the new one, and `type: ADR` if it has none; a plugin hook checks the new one is `👍 Accepted` on disk before it allows the second
+frontmatter. The old one stays `Accepted 👍` until the person accepts the new one; then, in the
+same step, first set the new one to `Accepted 👍`, and only once that edit is done, set the old one
+to `Superseded ↪️`, set its `date:` to today's date and add `superseded-by: <NNNN>` beside it,
+naming the new one, and `type: ADR` if it has none; a plugin hook checks the new one is `Accepted 👍` on disk before it allows the second
 edit. That is the only edit an accepted ADR ever gets, apart from gaining its `type:`. If the new
 one is rejected, the old one stands.
 

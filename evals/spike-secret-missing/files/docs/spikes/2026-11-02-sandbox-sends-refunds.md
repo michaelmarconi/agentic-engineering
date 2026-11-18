@@ -1,7 +1,7 @@
 ---
 # Change status only through the sdlc plugin's skills, which check each change; a change made by hand is not checked.
 type: Spike
-status: 🟢 Ready to run
+status: Ready to run 🟢
 ---
 
 # The bank's test system sends a refund

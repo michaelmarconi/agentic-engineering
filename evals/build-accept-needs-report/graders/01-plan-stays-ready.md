@@ -1,8 +1,8 @@
 ---
 type: regex
 target: { source: file, path: docs/plans/2026-11-03-word-count.md }
-pattern: '^status: 🟢 Ready to build$'
+pattern: '^status: Ready to build 🟢$'
 flags: m
 weight: 1
 ---
-The plan is still `🟢 Ready to build`: with no report of a failed check, nothing can be accepted.
+The plan is still `Ready to build 🟢`: with no report of a failed check, nothing can be accepted.

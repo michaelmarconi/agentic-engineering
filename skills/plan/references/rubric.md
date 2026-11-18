@@ -4,8 +4,8 @@ Each check passes or fails. `/plan` reads this while writing; the plan reviewer 
 checking, and quotes the plan as evidence for every failure.
 
 1. **Shape.** The file is directly in `docs/plans/`; its name is checked by a plugin hook, not
-   here. Its frontmatter has `type: Plan`, `status:` set to `📝 Draft`, `🟢 Ready to build` or
-   `✅ Built`, emoji included, and `date:` as YYYY-MM-DD if it has one (a missing date passes: a plugin hook requires it with the next
+   here. Its frontmatter has `type: Plan`, `status:` set to `Draft 📝`, `Ready to build 🟢` or
+   `Built ✅`, emoji included, and `date:` as YYYY-MM-DD if it has one (a missing date passes: a plugin hook requires it with the next
    status change). Under a `# ` title, the sections are Specs, ADRs, Decisions, Plan
    and Open questions, in that order, and no `<!-- -->` comment from the template is left in; the
    frontmatter's `#` line stays.
@@ -18,7 +18,7 @@ checking, and quotes the plan as evidence for every failure.
 3. **ADRs.** ADRs is a `| ADR | Decision |` table with one row per ADR, its number linking to an
    ADR under `docs/adrs/` that exists and its title, word for word, as the decision; or the
    section says only "None."
-4. **Settled.** Each spec and each ADR listed is `👍 Accepted`.
+4. **Settled.** Each spec and each ADR listed is `Accepted 👍`.
 5. **Decisions.** Decisions holds one line for each decision, saying what was decided and why, or
    only "None." Take the lines one at a time. A line that only follows what a listed spec, ADR or
    the practices already say, or a pattern the code already uses, needs nothing recorded and
@@ -56,9 +56,9 @@ checking, and quotes the plan as evidence for every failure.
    handed over in the conversation, to anything outside the repository, or to a file under
    `docs/` that is not a brief, spec, ADR, plan or spike record: what matters from such material
    is stated in the plan's own words.
-9. **Ready means ready.** A plan with status `🟢 Ready to build` or `✅ Built` has an Open
+9. **Ready means ready.** A plan with status `Ready to build 🟢` or `Built ✅` has an Open
    questions section that is empty or says only "None."
-10. **No overlap.** No other plan under `docs/plans/` that is `📝 Draft` or `🟢 Ready to build`
+10. **No overlap.** No other plan under `docs/plans/` that is `Draft 📝` or `Ready to build 🟢`
     names a requirement that this plan names.
 11. **Fits the practices.** Where the project's practices say how work is split or how big one
     plan may be, the plan keeps to them, or Decisions has a line saying the work was kept whole

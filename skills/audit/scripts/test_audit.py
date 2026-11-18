@@ -23,14 +23,14 @@ GIT_ENV = dict(GIT_AUTHOR_NAME="Test", GIT_AUTHOR_EMAIL="test@example.com", GIT_
 NOW = "2026-11-05T12:00:00+00:00"
 
 
-def spec(status="👍 Accepted", requirements=("Import a statement",), open_questions="None.", extra="", old=False):
+def spec(status="Accepted 👍", requirements=("Import a statement",), open_questions="None.", extra="", old=False):
     body = "".join((f"### Requirement: {name}" if old else f"### {number}. {name}")
                    + "\n\nThe system SHALL do it.\n\n" for number, name in enumerate(requirements, 1))
     return (f"---\nstatus: {status}\ndate: 2026-11-01\n---\n\n# Statement import\n\n## Story\n\nS.\n\n## Requirements\n\n"
             f"{body}{extra}## Open questions\n\n- {open_questions}\n")
 
 
-def adr(status="👍 Accepted", supersedes=None, superseded_by=None, open_questions="None.", extra="", number=None):
+def adr(status="Accepted 👍", supersedes=None, superseded_by=None, open_questions="None.", extra="", number=None):
     lines = ([f"number: {number}"] if number else []) + [f"status: {status}", "date: 2026-11-01"]
     if supersedes:
         lines.append(f"supersedes: {supersedes}")
@@ -41,7 +41,7 @@ def adr(status="👍 Accepted", supersedes=None, superseded_by=None, open_questi
             f"## Open questions\n\n- {open_questions}\n\n## Technical detail\n\nNone.\n")
 
 
-def plan(status="📝 Draft", specs=(("statement-import.spec.md", ("Import a statement",)),), adrs=(), open_questions="None."):
+def plan(status="Draft 📝", specs=(("statement-import.spec.md", ("Import a statement",)),), adrs=(), open_questions="None."):
     spec_lines = "".join(f"- [Spec](../specs/{name})\n" + "".join(
         f"  - [{r}](../specs/{name}#{i}-{status_check.anchor_of(r)})\n" for i, r in enumerate(reqs, 1))
                          for name, reqs in specs) or "None.\n"
@@ -51,7 +51,7 @@ def plan(status="📝 Draft", specs=(("statement-import.spec.md", ("Import a sta
             f"## Decisions\n\nNone.\n\n## Plan\n\nDo it.\n\n## Open questions\n\n- {open_questions}\n")
 
 
-def spike(status="📝 Draft", open_questions="None."):
+def spike(status="Draft 📝", open_questions="None."):
     return (f"---\nstatus: {status}\ndate: 2026-11-01\n---\n\n# It can\n\n## Hypothesis\n\nIt can.\n\n## Open questions\n\n"
             f"- {open_questions}\n\n## Code\n\n## Runs\n")
 
@@ -133,10 +133,10 @@ class Documents(Project):
     def test_accepted_specs_and_adrs_are_listed_and_others_are_not(self):
         self.put("docs/specs/statement-import.spec.md", spec())
         self.put("docs/specs/sub/refund-limits.spec.md", spec())
-        self.put("docs/specs/statement-exports.spec.md", spec(status="📝 Draft"))
+        self.put("docs/specs/statement-exports.spec.md", spec(status="Draft 📝"))
         self.put("docs/adrs/0001-whole-cents.md", adr(number="0001"))
-        self.put("docs/adrs/0002-float-amounts.md", adr(status="❌ Rejected", number="0002"))
-        self.put("docs/adrs/0003-old-idea.md", adr(status="📝 Draft", number="0003"))
+        self.put("docs/adrs/0002-float-amounts.md", adr(status="Rejected ❌", number="0002"))
+        self.put("docs/adrs/0003-old-idea.md", adr(status="Draft 📝", number="0003"))
         out = self.documents()
         self.assertTrue(out["lifecycle"])
         self.assertEqual(out["accepted"], {
@@ -162,13 +162,39 @@ class Documents(Project):
     def test_a_status_without_its_emoji_or_unknown_is_a_problem(self):
         self.put("docs/specs/statement-import.spec.md", spec(status="Accepted"))
         self.put("docs/adrs/0001-cents.md", adr(status="Approved"))
-        self.put("docs/plans/2026-11-01-work.md", plan(status="🟢 Built"))
+        self.put("docs/plans/2026-11-01-work.md", plan(status="Built 🟢"))
         self.put("docs/spikes/2026-11-01-can-it.md", spike(status="Confirmed"))
         found = {p["document"]: p["detail"] for p in self.problems("status")}
         self.assertEqual(sorted(found), ["docs/adrs/0001-cents.md", "docs/plans/2026-11-01-work.md",
                                          "docs/specs/statement-import.spec.md", "docs/spikes/2026-11-01-can-it.md"])
-        self.assertIn("`👍 Accepted`", found["docs/specs/statement-import.spec.md"])
-        self.assertIn("`✅ Built`", found["docs/plans/2026-11-01-work.md"])
+        self.assertIn("`Accepted 👍`", found["docs/specs/statement-import.spec.md"])
+        self.assertIn("`Built ✅`", found["docs/plans/2026-11-01-work.md"])
+
+    def test_statuses_written_emoji_first_are_one_problem(self):
+        self.put("docs/specs/statement-import.spec.md", spec(status="👍 Accepted"))
+        self.put("docs/adrs/0001-cents.md", adr(status="↪️ Superseded"))
+        self.put("docs/plans/2026-11-01-work.md", plan(status="✅\ufe0f Built"))
+        self.put("docs/spikes/2026-11-01-can-it.md", spike(status="✅ Confirmed"))
+        problems = self.problems("status form")
+        self.assertEqual(len(problems), 1)
+        self.assertEqual(problems[0]["document"], "3 documents")
+        detail = problems[0]["detail"]
+        for path in ("docs/adrs/0001-cents.md", "docs/plans/2026-11-01-work.md",
+                     "docs/specs/statement-import.spec.md"):
+            self.assertIn(path, detail)
+        self.assertIn("`Accepted 👍`", detail)
+        # A wrong emoji in front is still its own problem, not the old form.
+        self.assertEqual([p["document"] for p in self.problems("status")], ["docs/spikes/2026-11-01-can-it.md"])
+        self.assertNotIn("docs/spikes/2026-11-01-can-it.md", detail)
+
+    def test_an_emoji_first_status_its_kind_does_not_have_is_a_status_problem(self):
+        self.put("docs/specs/statement-import.spec.md", spec(status="🟢 Ready to build"))
+        self.assertEqual(self.problems("status form"), [])
+        self.assertEqual([p["document"] for p in self.problems("status")], ["docs/specs/statement-import.spec.md"])
+
+    def test_one_status_written_emoji_first_is_one_document(self):
+        self.put("docs/specs/statement-import.spec.md", spec(status="📝 Draft"))
+        self.assertEqual([p["document"] for p in self.problems("status form")], ["1 document"])
 
     def test_a_wrong_type_is_a_problem_but_a_missing_one_is_not(self):
         self.put("docs/brief.md", "---\ntype: Spec\n---\n\n# Product\n")
@@ -202,7 +228,7 @@ class Documents(Project):
 
     def test_a_spec_in_the_old_layout_is_listed(self):
         self.put("docs/specs/statement-import.spec.md", spec(old=True))
-        self.put("docs/specs/exports.spec.md", spec(status="📝 Draft", old=True))
+        self.put("docs/specs/exports.spec.md", spec(status="Draft 📝", old=True))
         self.put("docs/specs/refunds.spec.md", spec())
         found = {p["document"]: p["detail"] for p in self.problems("layout")}
         self.assertEqual(sorted(found), ["docs/specs/exports.spec.md", "docs/specs/statement-import.spec.md"])
@@ -211,17 +237,17 @@ class Documents(Project):
 
     def test_a_ready_plan_on_an_old_layout_spec_says_so(self):
         self.put("docs/specs/statement-import.spec.md", spec(old=True))
-        self.put("docs/plans/2026-11-01-good.md", plan(status="🟢 Ready to build"))
+        self.put("docs/plans/2026-11-01-good.md", plan(status="Ready to build 🟢"))
         found = {p["document"]: p["detail"] for p in self.problems("ready plan")}
         self.assertIn("written for an earlier version of the agentic plugin", found["docs/plans/2026-11-01-good.md"])
 
     def test_a_status_written_without_the_variation_selector_is_fine(self):
-        self.put("docs/adrs/0001-whole-cents.md", adr(status="↪ Superseded", superseded_by="0002", number="0001"))
+        self.put("docs/adrs/0001-whole-cents.md", adr(status="Superseded ↪", superseded_by="0002", number="0001"))
         self.put("docs/adrs/0002-new-idea.md", adr(supersedes="0001", number="0002"))
         self.assertEqual(self.problems(), [])
 
     def test_a_spec_with_a_status_specs_no_longer_have_is_a_problem(self):
-        self.put("docs/specs/statement-import.spec.md", spec(status="🟢 Ready to build"))
+        self.put("docs/specs/statement-import.spec.md", spec(status="Ready to build 🟢"))
         self.assertEqual(len(self.problems("status")), 1)
 
     def test_a_document_missing_its_status_is_a_problem_but_other_files_are_left_alone(self):
@@ -234,10 +260,10 @@ class Documents(Project):
 
     def test_open_questions_on_a_settled_document_are_a_problem(self):
         self.put("docs/specs/statement-import.spec.md", spec(open_questions="What about refunds?"))
-        self.put("docs/specs/exports.spec.md", spec(status="📝 Draft", open_questions="Which format?"))
+        self.put("docs/specs/exports.spec.md", spec(status="Draft 📝", open_questions="Which format?"))
         self.put("docs/adrs/0001-cents.md", adr(open_questions="Which currency?"))
-        self.put("docs/plans/2026-11-01-work.md", plan(status="🟢 Ready to build", open_questions="When?"))
-        self.put("docs/spikes/2026-11-01-can-it.md", spike(status="🟢 Ready to run", open_questions="How?"))
+        self.put("docs/plans/2026-11-01-work.md", plan(status="Ready to build 🟢", open_questions="When?"))
+        self.put("docs/spikes/2026-11-01-can-it.md", spike(status="Ready to run 🟢", open_questions="How?"))
         found = sorted(p["document"] for p in self.problems("open questions"))
         self.assertEqual(found, ["docs/adrs/0001-cents.md", "docs/plans/2026-11-01-work.md",
                                  "docs/specs/statement-import.spec.md", "docs/spikes/2026-11-01-can-it.md"])
@@ -246,9 +272,9 @@ class Documents(Project):
         entry = ("### 1. Which format\n\nNobody has said.\n\n> **Proposed:** CSV.\n>\n"
                  "> **Why:** Every bank exports it.\n")
         self.put("docs/brief.md", "---\ntype: Brief\n---\n\n# Ledger\n\n## Open questions\n\n- Who pays?\n")
-        self.put("docs/specs/statement-import.spec.md", spec(status="📝 Draft", open_questions="Which format?"))
-        self.put("docs/specs/exports.spec.md", spec(status="📝 Draft").replace("- None.\n", entry))
-        self.put("docs/adrs/0001-cents.md", adr(status="📝 Draft", open_questions="Which currency?"))
+        self.put("docs/specs/statement-import.spec.md", spec(status="Draft 📝", open_questions="Which format?"))
+        self.put("docs/specs/exports.spec.md", spec(status="Draft 📝").replace("- None.\n", entry))
+        self.put("docs/adrs/0001-cents.md", adr(status="Draft 📝", open_questions="Which currency?"))
         self.put("docs/plans/2026-11-01-work.md", plan(open_questions="When?"))
         self.put("docs/spikes/2026-11-01-can-it.md", spike(open_questions="How?"))
         found = {p["document"]: p["detail"] for p in self.problems("question layout")}
@@ -259,13 +285,13 @@ class Documents(Project):
     def test_proposed_and_why_run_together_are_listed(self):
         joined = ("### 1. Which format\n\nNobody has said.\n\n> **Proposed:** CSV.\n"
                   "> **Why:** Every bank exports it.\n")
-        self.put("docs/specs/exports.spec.md", spec(status="📝 Draft").replace("- None.\n", joined))
+        self.put("docs/specs/exports.spec.md", spec(status="Draft 📝").replace("- None.\n", joined))
         found = {p["document"]: p["detail"] for p in self.problems("question layout")}
         self.assertEqual(list(found), ["docs/specs/exports.spec.md"])
         self.assertIn("line holding only `>`", found["docs/specs/exports.spec.md"])
 
     def test_question_layout_is_not_listed_where_it_cannot_or_need_not_change(self):
-        self.put("docs/adrs/0001-cents.md", adr(status="❌ Rejected", open_questions="Which currency?"))
+        self.put("docs/adrs/0001-cents.md", adr(status="Rejected ❌", open_questions="Which currency?"))
         self.put("docs/specs/statement-import.spec.md", spec(open_questions="What about refunds?"))
         self.assertEqual(self.problems("question layout"), [])
         self.assertEqual(len(self.problems("open questions")), 1)
@@ -297,16 +323,16 @@ class Documents(Project):
         self.assertEqual(found, ["docs/adrs/0003-tax.md"])
 
     def test_a_reference_in_frontmatter_comments_or_supersede_fields_is_fine(self):
-        self.put("docs/adrs/0001-cents.md", adr(status="↪️ Superseded", superseded_by="0002"))
+        self.put("docs/adrs/0001-cents.md", adr(status="Superseded ↪️", superseded_by="0002"))
         self.put("docs/adrs/0002-new.md", adr(supersedes="0001"))
         self.assertEqual(self.problems("references"), [])
 
     def test_supersede_fields_must_agree_both_ways(self):
-        self.put("docs/adrs/0001-a.md", adr(status="↪️ Superseded", superseded_by="0002"))
+        self.put("docs/adrs/0001-a.md", adr(status="Superseded ↪️", superseded_by="0002"))
         self.put("docs/adrs/0002-b.md", adr())
         self.put("docs/adrs/0003-c.md", adr())
         self.put("docs/adrs/0004-d.md", adr(supersedes="0003"))
-        self.put("docs/adrs/0005-e.md", adr(status="↪️ Superseded"))
+        self.put("docs/adrs/0005-e.md", adr(status="Superseded ↪️"))
         self.put("docs/adrs/0006-f.md", adr(supersedes="0009"))
         found = sorted(p["document"] for p in self.problems("supersede"))
         self.assertEqual(found, ["docs/adrs/0001-a.md", "docs/adrs/0004-d.md", "docs/adrs/0005-e.md",
@@ -314,19 +340,19 @@ class Documents(Project):
 
     def test_a_draft_adr_naming_the_one_it_will_supersede_is_fine(self):
         self.put("docs/adrs/0001-a.md", adr())
-        self.put("docs/adrs/0002-b.md", adr(status="📝 Draft", supersedes="0001"))
+        self.put("docs/adrs/0002-b.md", adr(status="Draft 📝", supersedes="0001"))
         self.assertEqual(self.problems("supersede"), [])
 
     def test_a_ready_plan_must_still_name_accepted_documents_and_existing_requirements(self):
         self.put("docs/specs/statement-import.spec.md", spec(requirements=("Import a statement",)))
-        self.put("docs/specs/exports.spec.md", spec(status="📝 Draft"))
-        self.put("docs/plans/2026-11-01-good.md", plan(status="🟢 Ready to build"))
+        self.put("docs/specs/exports.spec.md", spec(status="Draft 📝"))
+        self.put("docs/plans/2026-11-01-good.md", plan(status="Ready to build 🟢"))
         self.put("docs/plans/2026-11-02-draft-spec.md",
-                 plan(status="🟢 Ready to build", specs=(("exports.spec.md", ("Import a statement",)),)))
+                 plan(status="Ready to build 🟢", specs=(("exports.spec.md", ("Import a statement",)),)))
         self.put("docs/plans/2026-11-03-gone.md",
-                 plan(status="🟢 Ready to build", specs=(("statement-import.spec.md", ("Refunds",)),)))
+                 plan(status="Ready to build 🟢", specs=(("statement-import.spec.md", ("Refunds",)),)))
         self.put("docs/plans/2026-11-04-draft.md",
-                 plan(status="📝 Draft", specs=(("exports.spec.md", ("Refunds",)),)))
+                 plan(status="Draft 📝", specs=(("exports.spec.md", ("Refunds",)),)))
         found = {p["document"]: p["detail"] for p in self.problems("ready plan")}
         self.assertEqual(sorted(found), ["docs/plans/2026-11-02-draft-spec.md", "docs/plans/2026-11-03-gone.md"])
         self.assertIn("Refunds", found["docs/plans/2026-11-03-gone.md"])
@@ -334,8 +360,8 @@ class Documents(Project):
     def test_two_unbuilt_plans_naming_one_requirement_overlap(self):
         self.put("docs/specs/statement-import.spec.md", spec())
         self.put("docs/plans/2026-11-01-a.md", plan())
-        self.put("docs/plans/2026-11-02-b.md", plan(status="🟢 Ready to build"))
-        self.put("docs/plans/2026-11-03-c.md", plan(status="✅ Built"))
+        self.put("docs/plans/2026-11-02-b.md", plan(status="Ready to build 🟢"))
+        self.put("docs/plans/2026-11-03-c.md", plan(status="Built ✅"))
         found = self.problems("overlap")
         self.assertEqual(len(found), 1)
         self.assertIn("Import a statement", found[0]["detail"])
@@ -367,7 +393,7 @@ class Documents(Project):
     def test_a_plan_built_on_another_branch_is_not_an_overlap_there(self):
         self.init()
         self.put("docs/specs/statement-import.spec.md", spec())
-        self.put("docs/plans/2026-11-01-a.md", plan(status="✅ Built"))
+        self.put("docs/plans/2026-11-01-a.md", plan(status="Built ✅"))
         self.commit("Start")
         self.git("checkout", "-q", "-b", "old")
         self.put("docs/plans/2026-11-01-a.md", plan())
@@ -377,20 +403,20 @@ class Documents(Project):
         self.assertEqual(self.problems("overlap"), [])
 
     def test_built_plans_and_spike_records_are_listed(self):
-        self.put("docs/plans/2026-11-01-a.md", plan(status="✅ Built", specs=()))
+        self.put("docs/plans/2026-11-01-a.md", plan(status="Built ✅", specs=()))
         self.put("docs/plans/2026-11-02-b.md", plan(specs=()))
-        self.put("docs/spikes/2026-10-01-done.md", spike(status="💡 Confirmed"))
-        self.put("docs/spikes/2026-10-02-gave-up.md", spike(status="❔ Not settled"))
-        self.put("docs/spikes/2026-10-05-wrong.md", spike(status="🚫 Refuted"))
-        self.put("docs/spikes/2026-10-03-open.md", spike(status="📝 Draft"))
-        self.put("docs/spikes/2026-10-04-ready.md", spike(status="🟢 Ready to run"))
+        self.put("docs/spikes/2026-10-01-done.md", spike(status="Confirmed 💡"))
+        self.put("docs/spikes/2026-10-02-gave-up.md", spike(status="Not settled ❔"))
+        self.put("docs/spikes/2026-10-05-wrong.md", spike(status="Refuted 🚫"))
+        self.put("docs/spikes/2026-10-03-open.md", spike(status="Draft 📝"))
+        self.put("docs/spikes/2026-10-04-ready.md", spike(status="Ready to run 🟢"))
         out = self.documents()
         self.assertEqual(out["built_plans"], ["docs/plans/2026-11-01-a.md"])
         self.assertEqual(out["finished_spikes"], ["docs/spikes/2026-10-01-done.md", "docs/spikes/2026-10-02-gave-up.md",
                                                   "docs/spikes/2026-10-05-wrong.md"])
         self.assertEqual(out["unfinished_spikes"], [
-            {"document": "docs/spikes/2026-10-03-open.md", "status": "📝 Draft", "date": "2026-10-03"},
-            {"document": "docs/spikes/2026-10-04-ready.md", "status": "🟢 Ready to run", "date": "2026-10-04"}])
+            {"document": "docs/spikes/2026-10-03-open.md", "status": "Draft 📝", "date": "2026-10-03"},
+            {"document": "docs/spikes/2026-10-04-ready.md", "status": "Ready to run 🟢", "date": "2026-10-04"}])
 
     def test_a_status_without_its_emoji_still_counts_for_what_is_checked(self):
         self.put("docs/specs/statement-import.spec.md", spec(status="Accepted"))
@@ -403,7 +429,7 @@ class Documents(Project):
         self.put("docs/adrs/0002-b.md", adr(supersedes="0001"))
         found = self.problems("supersede")
         self.assertEqual([p["document"] for p in found], ["docs/adrs/0001-a.md"])
-        self.assertIn("`↪️ Superseded`", found[0]["detail"])
+        self.assertIn("`Superseded ↪️`", found[0]["detail"])
 
     def test_documents_never_change_the_working_tree(self):
         self.init()
@@ -487,7 +513,7 @@ class Window(Project):
 
     def test_accepted_documents_whose_text_changed_are_named(self):
         self.put("docs/specs/statement-import.spec.md", spec(extra="More.\n\n"))
-        self.put("docs/specs/exports.spec.md", spec(status="📝 Draft"))
+        self.put("docs/specs/exports.spec.md", spec(status="Draft 📝"))
         self.commit("Edit spec", date="2026-11-01T12:00:00+00:00")
         out = self.ok("last", "7", "days")
         self.assertEqual(out["changed_accepted_documents"], ["docs/specs/statement-import.spec.md"])
@@ -626,7 +652,7 @@ class Report(Project):
         super().setUp()
         self.data = os.path.join(self.tmp.name, "data")
         self.put("docs/adrs/0001-cents.md", adr())
-        self.put("docs/specs/statement-import.spec.md", spec(status="📝 Draft", extra="See ../adrs/0001-cents.md.\n"))
+        self.put("docs/specs/statement-import.spec.md", spec(status="Draft 📝", extra="See ../adrs/0001-cents.md.\n"))
         sys.path.insert(0, os.path.join(HERE, "..", "..", "..", "scripts"))
         import audit_relay
         self.relay = audit_relay

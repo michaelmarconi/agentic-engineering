@@ -3,7 +3,7 @@
 Each check passes or fails. `/spec` reads this while writing; the spec reviewer reads it while
 checking, and quotes the spec as evidence for every failure.
 
-1. **Shape.** The spec's frontmatter has `type: Spec`, `status:` set to `📝 Draft` or `👍 Accepted`,
+1. **Shape.** The spec's frontmatter has `type: Spec`, `status:` set to `Draft 📝` or `Accepted 👍`,
    emoji included, `date:` as YYYY-MM-DD if it has one (a missing date passes: a plugin hook requires it with the next
    status change) and the
    template's `#` line, and at least the sections
@@ -48,7 +48,7 @@ checking, and quotes the spec as evidence for every failure.
    a test.
 8. **Testable words.** No rule, example or constraint relies on words that cannot be checked,
    such as "fast", "user-friendly" or "as appropriate", without a measure.
-9. **Accepted means settled.** A spec with status `👍 Accepted` has no open questions: its
+9. **Accepted means settled.** A spec with status `Accepted 👍` has no open questions: its
    Open questions section is empty or says only "None."
 10. **No overlap.** No other spec under `docs/specs/` covers the same capability or contradicts a
     requirement here.

@@ -50,7 +50,7 @@ class SessionMap(unittest.TestCase):
     def test_prints_map_when_a_spec_has_a_lifecycle_status(self):
         with open(MAP) as f:
             expected = f.read()
-        self.put("docs/specs/billing/invoice.spec.md", "---\nstatus: 📝 Draft\n---\n# Invoice\n")
+        self.put("docs/specs/billing/invoice.spec.md", "---\nstatus: Draft 📝\n---\n# Invoice\n")
         out = self.output()
         self.assertEqual(out["hookSpecificOutput"]["hookEventName"], "SessionStart")
         self.assertEqual(out["hookSpecificOutput"]["additionalContext"], expected)
@@ -61,7 +61,7 @@ class SessionMap(unittest.TestCase):
         self.assertIn("hookSpecificOutput", self.output())
 
     def test_prints_map_for_a_spec_with_a_status_specs_had_before(self):
-        for value in ("🟢 Ready to build", "✅ Built"):
+        for value in ("Ready to build 🟢", "Built ✅"):
             self.put("docs/specs/invoice.spec.md", f"---\nstatus: {value}\n---\n# Invoice\n")
             self.assertIn("hookSpecificOutput", self.output(), value)
 
@@ -83,7 +83,7 @@ class SessionMap(unittest.TestCase):
 
     def test_prints_map_when_a_repository_inside_has_a_spec_with_a_lifecycle_status(self):
         self.repository("app")
-        self.put("app/docs/specs/invoice.spec.md", "---\nstatus: 📝 Draft\n---\n# Invoice\n")
+        self.put("app/docs/specs/invoice.spec.md", "---\nstatus: Draft 📝\n---\n# Invoice\n")
         self.assertIn("hookSpecificOutput", self.output())
 
     def test_prints_map_when_started_in_a_subfolder_of_a_repository_with_a_brief(self):

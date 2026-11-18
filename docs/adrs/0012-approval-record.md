@@ -1,6 +1,6 @@
 ---
 type: ADR
-status: ↪️ Superseded
+status: Superseded ↪️
 date: 2026-11-10
 superseded-by: 0027
 ---

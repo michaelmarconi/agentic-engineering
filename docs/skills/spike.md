@@ -49,8 +49,8 @@ its hypothesis:
 
 ```
 docs/spikes/
-  2026-10-21-tiff-files-open.md          💡 Confirmed
-  2026-11-04-refunds-in-test-system.md   📝 Draft
+  2026-10-21-tiff-files-open.md          Confirmed 💡
+  2026-11-04-refunds-in-test-system.md   Draft 📝
 ```
 
 **Nothing refers to a spike record**, so it can be deleted at any time without leaving another
@@ -73,7 +73,7 @@ stated once, under Out of scope.
 
 | Part | Holds |
 |---|---|
-| `status:` and `date:` | `📝 Draft`, `🟢 Ready to run`, `💡 Confirmed`, `🚫 Refuted` or `❔ Not settled`, and the day the status last changed |
+| `status:` and `date:` | `Draft 📝`, `Ready to run 🟢`, `Confirmed 💡`, `Refuted 🚫` or `Not settled ❔`, and the day the status last changed |
 | Title | The hypothesis, in plain words |
 | Hypothesis | The one claim the experiment tests, in one to three sentences, and the spec or ADR waiting on it, if any |
 | Finding | Empty until the verdict. Confirmed, Refuted or Not settled, followed by what was found, so it reads on its own, such as "Confirmed: all 20 sample files opened"; then the evidence, by run number |
@@ -99,11 +99,11 @@ code,[^shore] because they test one hypothesis.
 ```mermaid
 stateDiagram-v2
     direction LR
-    state "📝 Draft" as Draft
-    state "🟢 Ready to run" as Ready
-    state "💡 Confirmed" as Confirmed
-    state "🚫 Refuted" as Refuted
-    state "❔ Not settled" as NotSettled
+    state "Draft 📝" as Draft
+    state "Ready to run 🟢" as Ready
+    state "Confirmed 💡" as Confirmed
+    state "Refuted 🚫" as Refuted
+    state "Not settled ❔" as NotSettled
     [*] --> Draft
     Draft --> Ready: you sign off the design
     Ready --> Draft: the design changes, before any run
@@ -112,20 +112,20 @@ stateDiagram-v2
     Ready --> NotSettled: you confirm the verdict
 ```
 
-- `📝 Draft`: the design is being written: the hypothesis, how we'll know, what is out of scope,
+- `Draft 📝`: the design is being written: the hypothesis, how we'll know, what is out of scope,
   how the test works, its risks and safeguards, and the experiment.
-- `🟢 Ready to run`: you have signed off the reviewed design. From here the design is fixed.
-  Until the first run, changing any of it returns the record to `📝 Draft`, for you to sign off
+- `Ready to run 🟢`: you have signed off the reviewed design. From here the design is fixed.
+  Until the first run, changing any of it returns the record to `Draft 📝`, for you to sign off
   again; after it, it can't change at all, and a different hypothesis is a new spike record.
   Fixing How we'll know before seeing any results stops a spike from changing, after seeing the
   results, the result that counts as success. The Code may still be corrected when the experiment
   itself is at fault, for example when it crashes for a reason other than one the Experiment names
   as a result. Earlier runs then stay in Runs but no longer count: the finding rests only on runs
   of the latest code, which must reach the full number of runs again.
-- `💡 Confirmed`: the runs showed the hypothesis holds, and you confirmed the reviewed verdict.
-- `🚫 Refuted`: the runs showed it doesn't, and you confirmed that. A refuted hypothesis is as
+- `Confirmed 💡`: the runs showed the hypothesis holds, and you confirmed the reviewed verdict.
+- `Refuted 🚫`: the runs showed it doesn't, and you confirmed that. A refuted hypothesis is as
   useful a finding as a confirmed one.
-- `❔ Not settled`: the experiment couldn't run or settled nothing, for example because it needs
+- `Not settled ❔`: the experiment couldn't run or settled nothing, for example because it needs
   a system nobody can reach yet, and you confirmed that. The open question it came from stays
   open.
 
@@ -135,7 +135,7 @@ nobody needs it. Another try at a hypothesis that was not settled is a new spike
 A plugin hook enforces these rules when Claude edits a record with its file-editing tools: it
 refuses any move not shown above, a move forward while Open questions holds anything or while the
 design is over 600 words or the verdict over 400, a finishing status that the Finding does not open
-with, a change to the design of a `🟢 Ready to run` record that does not return it to `📝 Draft`
+with, a change to the design of a `Ready to run 🟢` record that does not return it to `Draft 📝`
 before the first run, any change to Runs, and any change to a finished record. A change made by
 hand, or by a shell command, is not checked.
 
@@ -150,12 +150,12 @@ on with.
    several, it says how many and takes them one at a time. Reading documentation helps it design
    the experiment, but never counts as evidence.[^shore]
 2. **Review the design.** The record goes through the review sequence (see [Review](#review)).
-   When you sign off the design, `/spike` sets `🟢 Ready to run`.
+   When you sign off the design, `/spike` sets `Ready to run 🟢`.
 3. **Run.** It runs the experiment only through the run script, exactly as many times as the
    Experiment says, and stops early only on a result the Experiment named in advance.
 4. **Review the verdict.** It writes the Finding, Next steps, Results and Surprises, and the
    record goes through the review sequence again. When you confirm the verdict, it sets
-   `💡 Confirmed`, `🚫 Refuted` or `❔ Not settled`, and tells you which spec or ADR to take the
+   `Confirmed 💡`, `Refuted 🚫` or `Not settled ❔`, and tells you which spec or ADR to take the
    finding to next.
 
 If a step needs you, for example to try something on your own device, `/spike` asks you then and
@@ -163,7 +163,7 @@ passes your answer to the run script unchanged, which records it as a run. This 
 that passes through Claude, so the run says it is your observation. Secrets reach the experiment as environment
 variables that Claude Code already has: set before it started on your own machine, or in the
 environment settings of a cloud session. They are never typed into the conversation. If a secret
-can't reach the experiment, the spike ends `❔ Not settled`.
+can't reach the experiment, the spike ends `Not settled ❔`.
 
 One person runs a record at a time. To hand an unfinished spike to someone else, commit the
 record and tell them; `/spike` never commits for you.
@@ -173,7 +173,7 @@ record and tell them; `/spike` never commits for you.
 The run script is the only way `/spike` runs an experiment, so that the results in the record are
 exactly what the experiment produced:
 
-- It refuses to run unless the record is `🟢 Ready to run`.
+- It refuses to run unless the record is `Ready to run 🟢`.
 - It writes each code block to the file it names, and copies in each input the Experiment names,
   in a working folder in the plugin's own data folder, outside your repository. Where that folder
   can't be written, as in a sandbox, it uses a folder in the system's temporary folder that only
@@ -208,13 +208,13 @@ A spike record is reviewed twice: once when its design is written, and once when
 Each time, a reviewer agent checks it against a short list of pass-or-fail checks, and the checks
 that apply depend on the status the record is moving to.
 
-- **Before `🟢 Ready to run`:** it tests one hypothesis; How we'll know is concrete enough to
+- **Before `Ready to run 🟢`:** it tests one hypothesis; How we'll know is concrete enough to
   pass or fail; the experiment, run as described, would show whether it does; it runs enough
   times for results that can vary, such as anything over a network or anything that calls an AI
   model; every input it needs is named; no code prints a secret; Out of scope holds each limit,
   stated nowhere else; an experiment that touches anything real says how harm is prevented; and
   the top part is in plain words a person can read.
-- **Before `💡 Confirmed`, `🚫 Refuted` or `❔ Not settled`:** every run is in Runs and in Results,
+- **Before `Confirmed 💡`, `Refuted 🚫` or `Not settled ❔`:** every run is in Runs and in Results,
   and the runs of the latest code reach the number the Experiment names, or stop early on a
   result it names; the Finding makes sense on its own and follows from the runs measured against
   How we'll know, not from documentation; and Next steps sends facts to the spec and choices to an

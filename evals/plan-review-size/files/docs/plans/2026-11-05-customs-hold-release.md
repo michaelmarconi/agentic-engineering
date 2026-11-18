@@ -1,7 +1,7 @@
 ---
 # Change status only through the sdlc plugin's skills, which check each change; a change made by hand is not checked.
 type: Plan
-status: 📝 Draft
+status: Draft 📝
 ---
 
 # Customs hold release and email

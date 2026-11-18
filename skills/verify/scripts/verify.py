@@ -11,7 +11,7 @@ start [<spec path> ...] --data <folder> --session <id> [--project <folder>]
     checked out, clears what the verify hook (scripts/verify_relay.py) kept of an earlier run in this
     session, and lists each spec named, or every spec under docs/specs/
     when none is: its path, its status as the status hook reads it (scripts/status_check.py),
-    whether it is `👍 Accepted`, whether it still heads its requirements `### Requirement: <name>`, as
+    whether it is `Accepted 👍`, whether it still heads its requirements `### Requirement: <name>`, as
     specs written for an earlier version of the plugin did (old_layout), and its numbered requirements, each with how many examples it holds
     (its `| Example | ... |` tables). A path may be relative to the repository or full. It refuses a
     path that is missing or is not a *.spec.md under docs/specs/, and a plan, saying to give

@@ -9,7 +9,7 @@ reviewer needs to build and check it. Footnotes explaining terms come last, afte
 
 1. **Shape.** The file is directly in `docs/adrs/`; its name is checked by a plugin hook, not
    here. Its frontmatter has `type: ADR`, `number:` with the four digits its file name starts with
-   if it has one (a missing one passes: a plugin hook requires it on new ADRs), and `status:` set to `📝 Draft`, `👍 Accepted`, `❌ Rejected` or `↪️ Superseded`,
+   if it has one (a missing one passes: a plugin hook requires it on new ADRs), and `status:` set to `Draft 📝`, `Accepted 👍`, `Rejected ❌` or `Superseded ↪️`,
    emoji included, and `date:` as YYYY-MM-DD if it has one (a missing date passes: a plugin hook requires it with the next
    status change). The sections are Question, Decision, Background,
    Options, Consequences, Out of scope, How we'll check, Open questions and Technical detail, in
@@ -27,7 +27,7 @@ reviewer needs to build and check it. Footnotes explaining terms come last, afte
 4. **Question.** Question names the one choice to make, briefly, and describes no option,
    method, version or setting.
 5. **Decision stands alone.** While the person has not chosen, Decision says only "Not chosen yet;
-   see Open questions.", Open questions asks for the choice, and the ADR stays `📝 Draft`. Once they
+   see Open questions.", Open questions asks for the choice, and the ADR stays `Draft 📝`. Once they
    have, its first sentence opens "Chosen:" and names the option in full, so that it makes sense
    with the rest of the ADR hidden, and the reason follows briefly. A bare option name fails. One
    or more `mermaid` diagrams may follow the reason, as check 18 says; Decision still makes sense
@@ -64,10 +64,10 @@ reviewer needs to build and check it. Footnotes explaining terms come last, afte
     decision needs, and any evidence in the ADR's own words, or says only "None.". It makes no
     choice that the sections above do not state.
 13. **Supersede fields agree.** An ADR that replaces another has `supersedes:` with that ADR's
-    four-digit number; a `↪️ Superseded` ADR has `superseded-by:` with the four-digit number of its
-    replacement. Each number exists in `docs/adrs/`, and an ADR is `↪️ Superseded` only when its
-    replacement is `👍 Accepted`, with both ends then naming each other. While the replacement is
-    still `📝 Draft`, the ADR it replaces stays `👍 Accepted` with no `superseded-by:`; that passes.
+    four-digit number; a `Superseded ↪️` ADR has `superseded-by:` with the four-digit number of its
+    replacement. Each number exists in `docs/adrs/`, and an ADR is `Superseded ↪️` only when its
+    replacement is `Accepted 👍`, with both ends then naming each other. While the replacement is
+    still `Draft 📝`, the ADR it replaces stays `Accepted 👍` with no `superseded-by:`; that passes.
 14. **References.** Of the lifecycle's documents, the ADR refers only to other ADRs. Each time its
     text names one by number, the number is a link to that ADR's file by its name alone, such as
     `[ADR 0003](0003-message-queue.md)`, and the file exists in `docs/adrs/`; a bare number fails.
@@ -79,10 +79,10 @@ reviewer needs to build and check it. Footnotes explaining terms come last, afte
     outside the repository, or to a file under `docs/` that is not a brief, spec, ADR, plan or spike
     record: such material can change or vanish without the ADR being touched, so what matters from
     it is stated in the ADR's own words. References to code are not part of this check.
-15. **No overlap.** No other `📝 Draft` or `👍 Accepted` ADR in `docs/adrs/` decides the same thing or
+15. **No overlap.** No other `Draft 📝` or `Accepted 👍` ADR in `docs/adrs/` decides the same thing or
     contradicts this one, unless this one supersedes it.
-16. **Accepted means settled.** A `👍 Accepted` or `↪️ Superseded` ADR has no open questions: its
-    Open questions section is empty or says only "None." A `📝 Draft` or `❌ Rejected` ADR may
+16. **Accepted means settled.** A `Accepted 👍` or `Superseded ↪️` ADR has no open questions: its
+    Open questions section is empty or says only "None." A `Draft 📝` or `Rejected ❌` ADR may
     have some.
 17. **Proposed answers.** Each open question's "**Proposed:**" line makes one proposal, a single
     decision the person can accept in a word or replace, and its "**Why:**" line gives the reason,
@@ -102,7 +102,7 @@ reviewer needs to build and check it. Footnotes explaining terms come last, afte
 
 The plain part's size, at most 500 words, tables included and the diagrams in Decision left out,
 is checked by the skill's `words` command and by the status hook, not by the reviewer. So is a
-`👍 Accepted` ADR whose Decision does not open with "Chosen:".
+`Accepted 👍` ADR whose Decision does not open with "Chosen:".
 
 Sentence and paragraph lengths are guidance in the skill, not checks: a reviewer may list a long
 one under Suggestions, which never fail the review, but never as a failed check.

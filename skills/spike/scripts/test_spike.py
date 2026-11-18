@@ -24,7 +24,7 @@ GIT_ENV = dict(GIT_AUTHOR_NAME="Test", GIT_AUTHOR_EMAIL="test@example.com", GIT_
                GIT_COMMITTER_EMAIL="test@example.com", GIT_CONFIG_GLOBAL=os.devnull, GIT_CONFIG_NOSYSTEM="1")
 
 
-def record(status="🟢 Ready to run", command="printf 'hello\\n'", commit="None.", inputs="None.",
+def record(status="Ready to run 🟢", command="printf 'hello\\n'", commit="None.", inputs="None.",
            secrets="None.", code="```sh\n# file: check.sh\necho ok\n```", runs=""):
     lines = ["- Runs: 1", "- Stop early if: None."]
     if commit is not None:
@@ -93,7 +93,7 @@ class Words(Project):
         self.assertIn(f"verdict holds {verdict} of the 400 words", done.stdout)
 
     def test_long_design_fails(self):
-        self.put(record("📝 Draft").replace("Prints things.", " ".join(["word"] * 650), 1))
+        self.put(record("Draft 📝").replace("Prints things.", " ".join(["word"] * 650), 1))
         done = self.words(self.path())
         self.assertEqual(done.returncode, 1)
         self.assertIn("design", done.stdout)
@@ -109,7 +109,7 @@ class Words(Project):
 
     def test_a_long_verdict_in_a_draft_fails(self):
         long = "## Finding\n\nConfirmed: " + " ".join(["word"] * 420)
-        self.put(record("📝 Draft").replace("## Finding\n", long, 1))
+        self.put(record("Draft 📝").replace("## Finding\n", long, 1))
         done = self.words(self.path())
         self.assertEqual(done.returncode, 1, done.stdout)
         self.assertIn("verdict", done.stdout)
@@ -139,7 +139,7 @@ class Words(Project):
 
     def test_a_finished_record_is_never_told_to_shorten(self):
         long = "## Finding\n\nConfirmed: " + " ".join(["word"] * 420)
-        self.put(record("💡 Confirmed").replace("## Finding\n", long, 1))
+        self.put(record("Confirmed 💡").replace("## Finding\n", long, 1))
         done = self.words(self.path())
         self.assertEqual(done.returncode, 0, done.stdout)
         self.assertNotIn("shorten", done.stdout)
@@ -170,12 +170,12 @@ class Refusals(Project):
             self.assertIn(word, done.stdout)
 
     def test_refuses_unless_ready_to_run(self):
-        for status in ("📝 Draft", "💡 Confirmed", "🚫 Refuted", "❔ Not settled"):
+        for status in ("Draft 📝", "Confirmed 💡", "Refuted 🚫", "Not settled ❔"):
             self.put(record(status))
             before = self.text()
             done = self.run_spike()
             self.assertEqual(done.returncode, 1, status)
-            self.assertIn("🟢 Ready to run", done.stderr)
+            self.assertIn("Ready to run 🟢", done.stderr)
             self.assertEqual(self.text(), before)
 
     def test_refuses_an_empty_data_folder(self):
@@ -237,6 +237,12 @@ class Runs(Project):
         self.assertIn("hello", entry)
         self.assertIn("exit code 0", entry)
         self.assertIn("### Run 1", done.stdout)
+
+    def test_runs_a_record_written_with_the_emoji_first(self):
+        self.put(record("🟢 Ready to run"))
+        done = self.run_spike()
+        self.assertEqual(done.returncode, 0, done.stderr)
+        self.assertIn("### Run 1", self.text())
 
     def test_numbers_each_run(self):
         self.put(record())
@@ -451,7 +457,7 @@ class WorkingFolder(Project):
 
     def test_removes_this_projects_leftovers_only(self):
         other = self.make_project("other")
-        self.put(record("💡 Confirmed"), name="finished")
+        self.put(record("Confirmed 💡"), name="finished")
         self.put(record(), name="unfinished")
         leftovers = {
             "finished": spike.work_folder(self.data, self.path(name="finished")),
@@ -626,7 +632,7 @@ class SecondReview(Project):
             self.assertNotIn(piece, runs)
 
     def test_removes_leftovers_from_the_other_folder_too(self):
-        self.put(record("💡 Confirmed"), name="finished")
+        self.put(record("Confirmed 💡"), name="finished")
         key = spike.project_key(self.project)
         in_temp = os.path.join(self.fallback(), f"{key}-finished")
         os.makedirs(in_temp)

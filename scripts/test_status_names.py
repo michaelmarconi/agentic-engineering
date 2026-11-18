@@ -34,17 +34,17 @@ class StatusNames(unittest.TestCase):
             self.assertIn(needle, done.stdout)
 
     def test_backticked_full_values_pass(self):
-        self.write("README.md", "A spec goes from `📝 Draft` to `🟢 Ready to build` to `✅ Built`.\n"
-                                "An ADR is `👍 Accepted`, `❌ Rejected` or `↪️ Superseded`.\n")
+        self.write("README.md", "A spec goes from `Draft 📝` to `Ready to build 🟢` to `Built ✅`.\n"
+                                "An ADR is `Accepted 👍`, `Rejected ❌` or `Superseded ↪️`.\n")
         self.assertPasses()
 
     def test_spike_record_values_pass(self):
-        self.write("README.md", "A record goes `📝 Draft`, `🟢 Ready to run`, `💡 Confirmed`, `🚫 Refuted` or `❔ Not settled`.\n")
+        self.write("README.md", "A record goes `Draft 📝`, `Ready to run 🟢`, `Confirmed 💡`, `Refuted 🚫` or `Not settled ❔`.\n")
         self.assertPasses()
 
     def test_spike_word_without_emoji_fails_with_the_value(self):
         self.write("docs/a.md", "Set `Not settled`.\n")
-        self.assertFails("docs/a.md:1", "`❔ Not settled`")
+        self.assertFails("docs/a.md:1", "`Not settled ❔`")
 
     def test_ready_to_run_outside_backticks_fails(self):
         self.write("docs/a.md", "Mark it Ready to run.\n")
@@ -52,55 +52,63 @@ class StatusNames(unittest.TestCase):
 
     def test_ready_to_run_in_a_longer_code_span_fails(self):
         self.write("docs/a.md", "Set `status: Ready to run now`.\n")
-        self.assertFails("`🟢 Ready to run`")
+        self.assertFails("`Ready to run 🟢`")
 
     def test_spike_emoji_status_outside_backticks_fails(self):
-        self.write("docs/a.md", "It ends 💡 Confirmed.\n")
+        self.write("docs/a.md", "It ends Confirmed 💡.\n")
         self.assertFails("docs/a.md:1")
 
     def test_backticked_word_without_emoji_fails_with_the_value(self):
         self.write("docs/a.md", "Intro.\n\nSet it to `Accepted`.\n")
-        self.assertFails("docs/a.md:3", "`👍 Accepted`")
+        self.assertFails("docs/a.md:3", "`Accepted 👍`")
 
     def test_backticked_wrong_emoji_fails(self):
-        self.write("docs/a.md", "Never `🟢 Built`.\n")
-        self.assertFails("docs/a.md:1", "`✅ Built`")
+        self.write("docs/a.md", "Never `Built 🟢`.\n")
+        self.assertFails("docs/a.md:1", "`Built ✅`")
+
+    def test_backticked_emoji_first_fails_with_the_value(self):
+        self.write("docs/a.md", "It is `👍 Accepted`, then `status: 🟢 Ready to build`.\n")
+        self.assertFails("`👍 Accepted` should be `Accepted 👍`", "should be `status: Ready to build 🟢`")
+
+    def test_ready_to_run_with_its_emoji_first_fails(self):
+        self.write("docs/a.md", "It is `🟢 Ready to run`.\n")
+        self.assertFails("docs/a.md:1")
 
     def test_ready_to_build_outside_backticks_fails(self):
         self.write("docs/a.md", "Mark it Ready to build.\n")
         self.assertFails("docs/a.md:1", "Ready to build")
 
     def test_emoji_status_outside_backticks_fails(self):
-        self.write("docs/a.md", "It stays 📝 Draft.\n")
+        self.write("docs/a.md", "It stays Draft 📝.\n")
         self.assertFails("docs/a.md:1")
 
     def test_status_key_in_a_code_span_is_checked(self):
         self.write("docs/a.md", "Set `status: Accepted`.\n")
-        self.assertFails("`status: 👍 Accepted`")
+        self.assertFails("`status: Accepted 👍`")
 
     def test_phrase_in_a_longer_code_span_fails(self):
         self.write("docs/a.md", "Run `mark Ready to build`.\n")
         self.assertFails("docs/a.md:1")
 
     def test_every_problem_on_a_line_is_reported(self):
-        self.write("docs/a.md", "It is 📝 Draft, then ✅ Built, then Ready to build.\n")
+        self.write("docs/a.md", "It is Draft 📝, then Built ✅, then Ready to build.\n")
         self.assertEqual(self.check().stdout.count("docs/a.md:1"), 3)
 
     def test_variation_selector_is_optional(self):
-        self.write("docs/a.md", "`\u21aa Superseded` and `🟢\ufe0f Ready to build`\n\n```\n🟢\ufe0f Ready to build\n```\n")
+        self.write("docs/a.md", "`Superseded \u21aa` and `Ready to build 🟢\ufe0f`\n\n```\nReady to build 🟢\ufe0f\n```\n")
         self.assertPasses()
-        self.write("docs/a.md", "It is \u21aa Superseded.\n")
+        self.write("docs/a.md", "It is Superseded \u21aa.\n")
         self.assertFails("docs/a.md:1")
 
     def test_code_span_may_wrap(self):
-        self.write("docs/a.md", "Set it to `🟢 Ready\nto build` once agreed.\n")
+        self.write("docs/a.md", "Set it to `Ready\nto build 🟢` once agreed.\n")
         self.assertPasses()
         self.write("docs/a.md", "Intro.\n\nSet it to `Ready\nto build` once agreed.\n")
         self.assertFails("docs/a.md:3")
 
     def test_code_span_does_not_cross_list_items(self):
         self.write("docs/a.md", "- use a ` here\n- then `Draft` and more\n")
-        self.assertFails("`📝 Draft`")
+        self.assertFails("`Draft 📝`")
 
     def test_status_key_in_any_case(self):
         self.write("docs/a.md", "Set `Status : Accepted`.\n")
@@ -111,11 +119,11 @@ class StatusNames(unittest.TestCase):
         self.assertPasses()
 
     def test_status_line_in_frontmatter_is_bare(self):
-        self.write("docs/a.md", "---\nstatus: 📝 Draft\n---\n\n# A\n")
+        self.write("docs/a.md", "---\nstatus: Draft 📝\n---\n\n# A\n")
         self.assertPasses()
 
     def test_fenced_status_needs_its_emoji(self):
-        self.write("docs/a.md", "```\nstate \"🟢 Ready to build\" as Ready\n```\n")
+        self.write("docs/a.md", "```\nstate \"Ready to build 🟢\" as Ready\n```\n")
         self.assertPasses()
         self.write("docs/a.md", "```\nReady: Ready to build\n```\n")
         self.assertFails("docs/a.md:2")

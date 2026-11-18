@@ -31,7 +31,8 @@ as it stands, with no AI involved, so this part takes seconds whatever the size 
 repository. It always checks every document, whatever window the run was given (see
 [How much a run checks](#how-much-a-run-checks)), and Draft documents too:
 
-- every status is one the lifecycle allows, with its emoji;
+- every status is one the lifecycle allows, with its emoji after its word; documents that still
+  put the emoji in front, as earlier versions of the plugin did, are listed together as one problem;
 - every `type:` names the document's kind, as its folder does; a document without one is not a
   problem, since documents written before types gain one only when next edited;
 - every spec, ADR, plan and spike record's file name has its number or date, then two to five
@@ -43,7 +44,7 @@ repository. It always checks every document, whatever window the run was given (
   field is listed, so it can be given one by hand;
 - every spec, ADR, plan and spike record has a `date:`, the day its status last changed, written
   YYYY-MM-DD; one written before dates is listed, so it can be given one by hand;
-- no accepted spec or ADR, no `🟢 Ready to build` plan and no `🟢 Ready to run` spike record has
+- no accepted spec or ADR, no `Ready to build 🟢` plan and no `Ready to run 🟢` spike record has
   open questions;
 - every open question is laid out as [the lifecycle page](../lifecycle.md#documents) shows; one
   written before that layout is listed, so it can be laid out again;
@@ -55,19 +56,19 @@ repository. It always checks every document, whatever window the run was given (
   version of the plugin did; such a spec breaks nothing while left alone, but no plan naming it
   can be signed off until it is reworked with [`/spec`](spec.md) and accepted again, so the list
   shows how much rework there is before it is in the way;
-- each `🟢 Ready to build` plan still names only accepted specs and ADRs, and only requirements
+- each `Ready to build 🟢` plan still names only accepted specs and ADRs, and only requirements
   that still exist, which catches a spec changed by hand after the plan was signed off;
-- no two plans that are not `✅ Built` name the same requirement, including plans on other
+- no two plans that are not `Built ✅` name the same requirement, including plans on other
   branches that git already knows, local or remote; `/audit` fetches nothing;
-- `✅ Built` plans, and finished spike records (`💡 Confirmed`, `🚫 Refuted` or `❔ Not settled`), are listed,
+- `Built ✅` plans, and finished spike records (`Confirmed 💡`, `Refuted 🚫` or `Not settled ❔`), are listed,
   so you can decide whether to delete any; nothing refers to either, so deleting one leaves no
   other document wrong;
-- spike records still `📝 Draft` or `🟢 Ready to run` are listed with their date, so a spike
+- spike records still `Draft 📝` or `Ready to run 🟢` are listed with their date, so a spike
   nobody finished is noticed.
 
-**The code, by judgement.** One agent per `👍 Accepted` spec and per `👍 Accepted` ADR checks the
+**The code, by judgement.** One agent per `Accepted 👍` spec and per `Accepted 👍` ADR checks the
 code against that one document. Draft specs and ADRs are left out, since their intent is not
-settled, and so are `❌ Rejected` and `↪️ Superseded` ADRs and the project's recorded practices,
+settled, and so are `Rejected ❌` and `Superseded ↪️` ADRs and the project's recorded practices,
 which are rules for how agents work rather than what the product does.
 
 Each agent starts fresh, without your conversation, and reads only its document and the code that
@@ -143,7 +144,7 @@ give the window.
 
 - the window can't be read, the commit doesn't exist, or the history doesn't reach back far
   enough, as in a clone made with only recent history; it never falls back to a full run;
-- the document you named doesn't exist or isn't `👍 Accepted`.
+- the document you named doesn't exist or isn't `Accepted 👍`.
 
 If Claude Code doesn't let it run the script, as can happen in a routine whose permissions don't
 allow it, the run stops and says so, since without the script it can't tell which documents to
@@ -175,7 +176,7 @@ the skill that makes it:
 
 - **Correct the code**, when the document is right: through [`/plan`](plan.md) and `/build`, or
   directly for a small correction;
-- **Return the spec to `📝 Draft`** and change it, through [`/spec`](spec.md), when the code is
+- **Return the spec to `Draft 📝`** and change it, through [`/spec`](spec.md), when the code is
   right;
 - **Supersede the ADR**, through [`/adr`](adr.md), when the decision no longer holds;
 - for a problem with a document, the edit that corrects it.

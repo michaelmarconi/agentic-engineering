@@ -14,8 +14,8 @@ rule or a limit, belongs in that capability's [spec](spec.md), and a technical c
 an [ADR](adr.md). Keeping each thing in one place means the documents cannot
 disagree. Specs read the brief to see whether they fit the product.
 
-Unlike the other documents, the brief has no status. A spec moves from `📝 Draft` to
-`👍 Accepted` once you accept its text, but the brief is never signed off as finished. It states
+Unlike the other documents, the brief has no status. A spec moves from `Draft 📝` to
+`Accepted 👍` once you accept its text, but the brief is never signed off as finished. It states
 what the product is meant to be, so it changes only when you decide that has changed, never
 because a spec or ADR added detail it doesn't mention. Only a spec or ADR that contradicts its
 Goals, Out of scope or Constraints is raised, by `/spec` while the spec is written and by
