@@ -6,6 +6,17 @@ What changed in each version of the plugin, newest first. Versions follow
 past a major version: it says what you need to change in your documents. Until 1.0.0, any
 minor version may need such a change, and its entry says so.
 
+## [0.71.0] - 2026-11-18
+
+### Changed
+
+- When a skill asks you questions one at a time, "Question N of M" now only moves forward. The
+  first number counts the questions asked or settled so far in the conversation, this one
+  included, and the total adds those still open, so an answer that splits one question into two
+  makes it "Question 2 of 7" rather than "Question 1 of 6" again. The skill says in one line when
+  an answer opens or settles other questions. This holds in /brief, /spec, /adr, /plan, /spike
+  and /practices.
+
 ## [0.70.0] - 2026-11-17
 
 ### Changed
