@@ -245,8 +245,8 @@ picked diagram, or one the person proposes, is a `mermaid` block drawn only from
 already says, so every box and arrow in it is named there. Offer each ADR's diagrams until the
 person picks or declines them, then not again for that ADR. A picked diagram goes in Decision, after
 the reason, which still reads on its own without it, and is checked with the next check of what
-changed. The last question offers `Accepted 👍` or `Rejected ❌` as the next status, once the offer
-is settled. Leave committing to them.
+changed, or, with no review in this conversation, reviewed in full. The last question, asked only
+once the offer is settled, offers `Accepted 👍` or `Rejected ❌` as the next status. Leave committing to them.
 
 Put each question to the person one at a time, by the asking rule: open questions, decisions for the
 person and what a check finds. Offer four choices on your question tool: "Accept" your proposal, "My

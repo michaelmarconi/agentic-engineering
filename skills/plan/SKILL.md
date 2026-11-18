@@ -68,8 +68,7 @@ code already uses is not a decision.
 
 ## Ask
 
-Tell the person how many decisions there are, naming the count only, not the decisions: each comes
-up when you reach it. Then ask the first only, and wait until it is settled before asking the next.
+Tell the person how many decisions there are, naming the count only, then ask them one at a time.
 Each question's proposal is one answer that also says where it belongs, such as "Record an ADR
 choosing the Redis the app already uses", and its reason covers both. When you ask the person to settle a question in the
 conversation, lay it out in four parts, so they can find your proposal at a glance: a bold line
@@ -172,9 +171,9 @@ returns it to `Draft 📝`, for the person to sign off again.
 
 Close the reply that sets `Ready to build 🟢` with how to build the plan. A build after a long
 conversation asks first, and the plugin cannot reliably start a session, so say so and give the two
-steps with the plan's path: run `/clear`, then send `/agentic:build <the plan's path>`. In a Claude
-project thread, which has no `/clear`, they open a new thread and send that command as its first message. Start
-neither the build nor a new session yourself.
+steps with the plan's path: run `/clear`, or, in a Claude project thread, which has no `/clear`,
+open a new thread; then send `/agentic:build <the plan's path>` as the first message. Start neither
+the build nor a new session yourself.
 
 ## Review
 
@@ -257,8 +256,9 @@ person picks it, and an offer never holds the plan back from its next status. A 
 one the person proposes, is a `mermaid` block drawn only from what the text already says, so every
 box and arrow in it is named there. Offer each plan's diagrams until the person picks or declines
 them, then not again for that plan. A picked diagram goes in the Plan section, after its opening
-paragraph, and is checked with the next check of what changed. The last question offers
-`Ready to build 🟢` as the next status, once the offer is settled. Leave committing to them.
+paragraph, and is checked with the next check of what changed, or, with no review in this
+conversation, reviewed in full. The last question, asked only once the offer is settled, offers
+`Ready to build 🟢` as the next status. Leave committing to them.
 
 Put each question to the person one at a time, by the asking rule: open questions, decisions for the
 person and what a check finds. Offer four choices on your question tool: "Accept" your proposal, "My
