@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: spec-answers-get-check
+expected_outcome: |
+  The person gives "Accept" in advance to every question. The skill drafts the spec, reviews it once, writes the accepted proposals in, and has what changed checked by the correction checker instead of a second full review. Open questions ends as "None." and the last question offers to accept the spec, run one more full review, or stop.

@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: spec-ignore-writes-nothing
+expected_outcome: |
+  The spec was reviewed earlier in the conversation, which is not on record, so this is a new conversation holding an existing spec with two open questions. The person ignores both. The skill removes both questions, writes nothing else, starts no review or check for answers that wrote nothing in, and asks the last question.
+context:
+  scaffold_script: place-files.sh

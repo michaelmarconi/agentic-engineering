@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: spec-asks-on-failed-check
+expected_outcome: |
+  Run only by scripts/failed_check_evals.py, with a stand-in correction checker that always fails with finding CHK-417. The skill reviews once, corrects once, and when the check fails it changes nothing more and puts the failed finding to the person as a question with four choices: accept, own answer, ignore or defer.
+context:
+  scaffold_script: place-files.sh

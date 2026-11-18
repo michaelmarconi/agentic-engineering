@@ -14,7 +14,7 @@ Result: FAIL
 Corrections:
 - All corrections in the report: made
 
-Broken by a correction:
+Broken by a change:
 - Test finding CHK-417: a correction contradicts another sentence in the document.
 
 Suggestions:
