@@ -81,7 +81,10 @@ sees only the brief, not your conversation, so it judges the page as a newcomer 
 the same time, a language checker reads it for words a newcomer could not follow, by the
 [Plain words](../lifecycle.md#plain-words) rule: a term from your field gets a footnote, and
 team shorthand is rewritten. `/brief` corrects what both find, once, and has the corrections checked (see
-[Review process](../lifecycle.md#review-process)); then you get the brief with the reports.
+[Review process](../lifecycle.md#review-process)); then you get the brief with the reports. After that, `/brief` puts each question to you with four choices, Accept its proposal, give your
+own answer, Ignore or Defer, and only deferred ones go into Open questions. Each round of answers
+is checked on only what it changed, and the whole review runs again only when you ask, after a
+change you make yourself, or in a new conversation.
 
 The reviewer cannot tell whether the brief matches what you said or showed it, so read the draft
 before you rely on it.

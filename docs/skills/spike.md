@@ -224,7 +224,9 @@ The reviewer sees the record and those folders, not your conversation, so it jud
 a newcomer would. At the same time, a language checker reads it for words a newcomer could not
 follow, by the [Plain words](../lifecycle.md#plain-words) rule. Each time, `/spike` corrects what
 both find, once, and has the corrections checked (see
-[Review process](../lifecycle.md#review-process)). The top part's length is counted by a script,
+[Review process](../lifecycle.md#review-process)). After that, `/spike` puts each question to you
+with four choices, Accept its proposal, give your own answer, Ignore or Defer, and only deferred
+ones go into Open questions. Each round of answers is checked on only what it changed. The top part's length is counted by a script,
 not judged by the reviewer.
 
 [^beck]: Kent Beck's spike solution in Extreme Programming, described on the

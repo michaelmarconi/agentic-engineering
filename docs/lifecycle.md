@@ -269,18 +269,26 @@ skill while it writes. Beside it, at the same time, the language checker, shared
 that writes a document, reads the document for words a newcomer could not follow, by the
 [Plain words](#plain-words) rule.
 
-Every review follows the same fixed sequence:
+Every document is reviewed once, then only what changes is checked, and you decide each
+question:
 
 ```mermaid
-flowchart LR
-    Draft --> Review
-    Review -->|findings| Correct
-    Review -->|none| You
-    Correct --> Check[Correction check]
-    Check -->|passes| You
-    Check -->|fails| Stop[Stop and show you]
-    Stop ~~~ Pad["#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;"]
-    style Pad fill:none,stroke:none
+stateDiagram-v2
+    state "Full review" as Review
+    state "Correct once" as Correct
+    state "Check of only what changed" as Check
+    state "Each question put to you" as Ask
+    state "Next status" as Next
+
+    [*] --> Review
+    Review --> Correct
+    Correct --> Check
+    Check --> Ask
+    Ask --> Ask : accept, own answer, ignore or defer
+    Ask --> Check : a round of answers written in
+    Ask --> Next : every question answered or ignored
+    Ask --> Review : you ask for another full review
+    Ask --> [*] : you stop
 ```
 
 | Step | Who does it | What it does | What comes out |
@@ -288,39 +296,46 @@ flowchart LR
 | **Draft** | The drafting agent: Claude running the skill, with you | Writes the document from your conversation | The document |
 | **Review** | The skill's reviewer, such as `agents/spec-reviewer.md` | Checks the whole document against the skill's rubric | The review report: pass or fail for each check, quoting the check and the words that break it |
 | | `agents/language-checker.md`, shared by every skill that writes a document, at the same time | Checks every phrase of the document against the [Plain words](#plain-words) rule | The wording report: pass or fail, quoting each phrase that breaks the rule |
-| **Correct** | The drafting agent | Makes each correction from both reports once; a decision only you can make becomes an open question, never a guess | The corrected document |
-| **Correction check** | `agents/correction-checker.md`, shared by every skill that writes a document | Checks only that each correction was made and that none broke anything; anything else it notices is a suggestion | The correction report: pass or fail |
-| **Sign-off** | You | Read the document, shown in your Claude app's file viewer where there is one and always named by its path, and the reports; settle the open questions, and set the status | The document at its next status |
+| **Correct** | The drafting agent | Makes each correction from both reports once; a decision only you can make becomes a question for you, never a guess | The corrected document |
+| **Check** | `agents/correction-checker.md`, shared by every skill that writes a document | Checks only what changed: that each correction was made, that each answer was written in as you gave it, and that no change broke anything; a situation a change leaves uncovered comes back as a question, never a failure | The check's report: pass or fail, and any questions |
+| **Questions** | You, with the drafting agent | Each question, one at a time, with four choices: Accept the proposal, give your own answer, Ignore it or Defer it | The answers, written in; deferred questions in Open questions |
+| **Sign-off** | You | Read the document, shown in your Claude app's file viewer where there is one and always named by its path, and the reports, and pick the next status on the last question | The document at its next status |
+
+Accept and your own answer write the answer into the document. Ignore writes nothing, and a fault
+you ignore stays, with the skill saying which check it fails. Defer writes the question into Open
+questions with its proposal, where it holds the document back from its next status. Nothing else is
+written there. After each round of answers, if anything was written in, the check runs again on
+only what changed; it never runs a full review. Once nothing is left to ask, the last question
+offers the document's next status, one more full review, or stopping; while anything is deferred,
+only the last two.
 
 If both reports pass with nothing left for you to decide, the skill hands the document to you
-with no correction step. If the correction check fails, the skill
-stops and shows you why, rather than trying again.
+with no correction step. A full review runs again only when you ask, after a change you make
+yourself, on a document rewritten to a new layout, or in a new conversation, since the record of
+the last check is kept only within one conversation.
 
 | Term | Meaning |
 |---|---|
 | **Rubric** | A skill's short list of pass-or-fail checks. The skill follows it while drafting; the reviewer checks against it. |
-| **Review** | The skill's reviewer and the language checker, run side by side on the same document. |
-| **Finding** | Anything a review reports. It is one of the three kinds below. |
-| **Failure** | A finding that breaks a rubric check. The drafting agent corrects it. |
-| **Decision** | A finding only you can settle, such as which of two readings you meant. It becomes an open question in the document. |
+| **Review** | The skill's reviewer and the language checker, run side by side on the whole document. |
+| **Check** | A separate Claude judging only what changed since the review or the last check, against the rest of the document. |
+| **Finding** | Anything a review or check reports. It is one of the three kinds below. |
+| **Failure** | A finding that breaks a rubric check. The drafting agent corrects it, or, when it can't, asks you. |
+| **Question** | A finding only you can settle, such as which of two readings you meant. It is put to you, and reaches Open questions only if you defer it. |
 | **Suggestion** | A finding you might act on. It never holds a document back. |
 
-A review runs at these points:
+A status that needs a review, such as `Accepted 👍`, is set only once the last review or check of
+the text as it stands has run, with every question it raised answered or ignored, and nothing
+deferred.
 
-- when the skill has written its first draft, before you see it;
-- when a walk-through of open questions ends, because none are left or you stop: answers you
-  give along the way are not reviewed one by one;
-- when you make or ask for a change at any other time, once it is made;
-- when you ask for a document to be reviewed.
+There are no repeated full reviews. We measured this on specs with planted mistakes: one review
+finds nearly every one, and each further round of corrections brings new problems, while a full
+review after each round of answers always finds new questions, so the loop never ended. The
+wording has its own checker because we measured that too: a checker that does only that job found
+more of the jargon we added on purpose than the same rule added to each rubric.
 
-A status that needs a passing review, such as `Accepted 👍`, is set only after a review of the text
-as it stands has passed.
-
-There are no repeated rounds of review and correction. We measured this on specs with planted
-mistakes: one review finds nearly every one, and each further round of corrections brings new
-problems. The wording has its own checker because we measured that too: a checker that does
-only that job found more of the jargon we added on purpose than the same rule added to each
-rubric.
+`/feedback`, `/release` and `/practices` run the review, the correction and one check, and stop
+and show you the check's report if it fails, rather than trying again.
 
 `/build` follows the same sequence for code, with its own reviewers and its own correction
 checker, `agents/build-correction-checker.md`, and no language checker, since it writes code.
