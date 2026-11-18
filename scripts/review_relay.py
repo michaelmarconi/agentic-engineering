@@ -57,18 +57,21 @@ feedback, practices, spike or release) and the shared language checker, which ch
   `=== ANSWERS ===` and `=== END ANSWERS ===` lines, and the files that skill's checker should read,
   between fixed `=== ... ===` lines, and approves the start (docs/adrs/0049 and 0050). It then
   keeps the document as it now stands as the text last checked, and clears the answers, so checks
-  can follow checks with no new review. It refuses the start, with a reason Claude sees, when the
-  request has no `Document:` line, when no review with the reviewer's report is on record in this
-  session, or when the document is unchanged: since its review, or, after a check or once answers
+  can follow checks with no new review; a new review never joins one already checked. It
+  refuses the start, with a reason Claude sees, when the request has no `Document:` line, when no
+  review with the reviewer's report is on record in this session, when a language checker started
+  for a review not yet checked has not reported, or when the document is unchanged: since its review, or, after a check or once answers
   are on record, since it was last checked, when nothing was written in and no check is needed.
   When nothing at all is saved under the document's path, the reason adds that it may have been
   renamed since its review, and to move it back (docs/adrs/0036). No refusal asks for another
   review.
 - The person's answers are saved with the latest review of the document reviewed last in the
   session, word for word: after the question tool returns, its `answers` map, each question's
-  text paired with the option picked or the text typed; and, where there is no question tool, as
-  in a Claude project thread, the person's next message after a turn of Claude's that ends asking
-  "... ignore or defer?", with the turn's "**Question N of M: ...**" line as its question. A
+  text paired with the option picked or the text typed, for the questions offered with "Ignore"
+  and "Defer" among their options; and, where there is no question tool, as in a Claude project
+  thread, the person's next message when the last thing Claude said in its turn, as text or as a
+  message a tool sends, never a file edit, ends asking "... ignore or defer?", with that message's
+  last "**Question N of M: ...**" line as its question. A
   message that arrives as a project thread's wake is taken from its `<message trigger="true">`
   tag.
 - A saved review is kept after its check, and deleted once unchanged for 30 days (see
@@ -478,14 +481,18 @@ def start_checker(session, tool_input, cwd=None):
         return refuse(f"No review of {name} is on record in this session, so the corrections cannot "
                       "be checked. If you renamed the document since its review, move it back to the name "
                       "it had when reviewed. Do not review again: stop and show the person this reason; "
-                      "the review may also have been checked already, or saved before the plugin was "
-                      "updated.")
+                      "the review may also have been saved before the plugin was updated.")
     if not reviews or not has_report(reviews[0], "reviewer"):
         lacking = ": the reviewer's report is missing" if reviews else ""
         return refuse(f"No review of {name} with the reviewer's report is on record in this "
                       f"session{lacking}, so the corrections cannot be checked. Do not review "
                       "again: stop and show the person the reports you have and this reason.")
     record = reviews[-1]
+    if not record.get("checked") and "language" in record["started"].values() \
+            and not has_report(record, "language"):
+        return refuse(f"The language checker started on {name} has not reported yet, so the "
+                      "corrections cannot be checked. Wait for its report; if it never comes, stop "
+                      "and show the person the reports you have and this reason.")
     text = current_text(repository, paths, prompt)
     if text == record["text"]:
         if record.get("checked") or answers_of(record):
@@ -494,15 +501,18 @@ def start_checker(session, tool_input, cwd=None):
         return refuse(f"{name} is unchanged since its review. Make the corrections first, then "
                       "start the correction checker.")
     updated = rewritten(tool_input, repository, paths) if repository else dict(tool_input)
-    updated["prompt"] += attachments(name, record)
-    # The next check judges what changes after this one, against the answers given after it.
     with locked(session):
+        # Read again under the lock, so an answer saved meanwhile is either attached or kept.
         saved = load(session, name)
-        for review in reversed(saved):
-            if reviewed(review):
-                review.update(text=text, checked=True, answers=[])
-                break
+        record = [r for r in saved if reviewed(r)][-1]
+        updated["prompt"] += attachments(name, record)
+        # The next check judges what changes after this one, against the answers given after it.
+        record.update(text=text, checked=True, answers=[])
         save(session, name, saved)
+        runs = load_runs(session)
+        launched = {k: v for k, v in runs["launched"].items() if v.get("name") != name}
+        if launched != runs["launched"]:
+            save_runs(session, dict(runs, launched=launched))
     return allow(updated)
 
 
@@ -541,17 +551,39 @@ def keep_answers(session, answers):
 MARKER = "ignore or defer?"
 QUESTION_LINE = re.compile(r"\*\*Question \d+ of \d+:[^*\n]*\*\*")
 WAKE_MESSAGE = re.compile(r'<message\b[^>]*\btrigger="true"[^>]*>(.*?)</message>', re.S)
+TAIL = 1 << 20  # the last turn is near the end of the transcript; read at most this much of it
+SAID = ("text", "message")  # where a tool's input holds what Claude says to the person
 
 
-def last_turn(transcript):
-    """The text Claude wrote in its last turn, tool inputs included, from the transcript."""
+def said(block):
+    """What one block of Claude's turn says to the person: a text block, or a message a tool
+    sends, such as a project thread's post_message; never a file edit's text."""
+    if not isinstance(block, dict):
+        return None
+    if block.get("type") == "text":
+        return block.get("text") if isinstance(block.get("text"), str) else None
+    if block.get("type") == "tool_use" and isinstance(block.get("input"), dict):
+        if re.search(r"(^|_)(Edit|Write|MultiEdit|NotebookEdit)$", str(block.get("name"))):
+            return None
+        for key in SAID:
+            if isinstance(block["input"].get(key), str):
+                return block["input"][key]
+    return None
+
+
+def last_said(transcript):
+    """The last thing Claude said to the person in its last turn, from the transcript."""
     try:
-        with open(transcript, encoding="utf-8") as f:
-            entries = [json.loads(line) for line in f if line.strip()]
+        with open(transcript, "rb") as f:
+            f.seek(max(0, os.path.getsize(transcript) - TAIL))
+            lines = f.read().decode("utf-8", "replace").splitlines()
     except (OSError, TypeError, ValueError):
         return ""
-    turn = []
-    for entry in reversed(entries):
+    for line in reversed(lines):
+        try:
+            entry = json.loads(line)
+        except ValueError:
+            continue
         if not isinstance(entry, dict):
             continue
         message = entry.get("message") if isinstance(entry.get("message"), dict) else {}
@@ -560,35 +592,52 @@ def last_turn(transcript):
             results = isinstance(content, list) and all(
                 isinstance(b, dict) and b.get("type") == "tool_result" for b in content)
             if not results:
-                break
+                return ""
         elif entry.get("type") == "assistant":
-            turn.append(json.dumps(content, ensure_ascii=False) if not isinstance(content, str) else content)
-    return "\n".join(reversed(turn))
+            blocks = [{"type": "text", "text": content}] if isinstance(content, str) else content
+            for block in reversed(blocks if isinstance(blocks, list) else []):
+                text = said(block)
+                if text is not None and text.strip():
+                    return text
+    return ""
 
 
 def message_answer(event):
-    """The person's message, when Claude's last turn ended by putting a question to them."""
+    """The person's message, when the last thing Claude said ended by putting a question to them."""
     prompt = event.get("prompt")
-    turn = last_turn(event.get("transcript_path"))
-    if not isinstance(prompt, str) or not prompt.strip() or MARKER not in turn.lower():
+    if not isinstance(prompt, str) or not prompt.strip():
         return []
-    try:
-        turn = json.loads(json.dumps(turn))
-    except ValueError:
-        pass
-    asked = QUESTION_LINE.findall(turn.replace("\\n", "\n"))
+    asked = last_said(event.get("transcript_path"))
+    if not asked.rstrip(" \t\n\"'`*_.").lower().endswith(MARKER):
+        return []
+    lines = QUESTION_LINE.findall(asked)
     wake = WAKE_MESSAGE.search(prompt)
     answer = html.unescape(wake.group(1)).strip() if wake else prompt
-    return [{"question": asked[-1] if asked else "(asked in a message)", "answer": answer}]
+    return [{"question": lines[-1] if lines else "(asked in a message)", "answer": answer}]
+
+
+def four_choices(event):
+    """The questions the question tool asked with the four choices, Accept to Defer."""
+    tool_input = event.get("tool_input") if isinstance(event.get("tool_input"), dict) else {}
+    questions = tool_input.get("questions") if isinstance(tool_input.get("questions"), list) else []
+    found = set()
+    for q in questions:
+        options = q.get("options") if isinstance(q, dict) and isinstance(q.get("options"), list) else []
+        labels = {str(o.get("label", "")).strip().lower() for o in options if isinstance(o, dict)}
+        if {"ignore", "defer"} <= labels and isinstance(q.get("question"), str):
+            found.add(q["question"])
+    return found
 
 
 def tool_answers(event):
-    """The answers the question tool returned, each question's text paired with the answer."""
+    """The answers the question tool returned to questions with the four choices, each question's
+    text paired with the answer; answers to any other question are left alone."""
+    asked = four_choices(event)
     for source in (event.get("tool_response"), event.get("tool_input")):
         answers = source.get("answers") if isinstance(source, dict) else None
         if isinstance(answers, dict) and answers:
             return [{"question": str(q), "answer": a if isinstance(a, str) else json.dumps(a, ensure_ascii=False)}
-                    for q, a in answers.items()]
+                    for q, a in answers.items() if q in asked]
     return []
 
 
@@ -601,6 +650,8 @@ def handle(event):
     if subagent_report.finished(event):
         return agent_stopped(session, event)
     if when == "UserPromptSubmit":
+        if not folder(session) or not latest_record(session):
+            return None
         return keep_answers(session, message_answer(event))
     if when == "PostToolUse" and event.get("tool_name") == "AskUserQuestion":
         return keep_answers(session, tool_answers(event))
@@ -635,7 +686,8 @@ def handle(event):
             if text is None:
                 return start
             latest = reviews[-1] if reviews else None
-            if not (latest and same_text(latest["text"], text) and not has_report(latest, part)):
+            if not (latest and same_text(latest["text"], text) and not has_report(latest, part)
+                    and not latest.get("checked")):
                 latest = {"text": text, "reports": {}, "started": {}}
                 reviews.append(latest)
             if part == "reviewer":

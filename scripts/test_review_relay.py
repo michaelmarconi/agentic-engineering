@@ -27,6 +27,7 @@ def handed_back(report):
     """An Agent tool result whose report came through a hand-back."""
     return {"status": "completed", "agentId": "a1b2c3", "handback": "send",
             "handbackReport": {"text": report}, "content": [{"type": "text", "text": POINTER}]}
+FOUR = ("Accept", "My own answer", "Ignore", "Defer")
 TOPIC = "docs/practices/testing.md"
 PAIR = f"AGENTS.md, {TOPIC}"
 
@@ -983,26 +984,30 @@ class Relay(unittest.TestCase):
 
     # Checks after a check, with the person's answers (ADR 0049 and 0050)
 
-    def answer(self, answers, session=None):
+    def answer(self, answers, session=None, options=FOUR):
         """The question tool returns the person's answers."""
         return self.run_hook({"hook_event_name": "PostToolUse", "session_id": session or self.session,
                               "cwd": self.project, "tool_name": "AskUserQuestion",
-                              "tool_input": {"questions": [{"question": q} for q in answers],
+                              "tool_input": {"questions": [{"question": q, "options": [
+                                  {"label": o} for o in options]} for q in answers],
                                              "answers": answers},
                               "tool_response": {"answers": answers}})
 
     def message(self, prompt, asked="**Question 1 of 2: colour**\n\nAccept, give your own answer, ignore or defer?",
-                session=None):
+                session=None, before=None):
         """The person writes a message after Claude's last turn, which ended with `asked`."""
         transcript = os.path.join(self.tmp.name, "transcript.jsonl")
         with open(transcript, "w", encoding="utf-8") as f:
             f.write(json.dumps({"type": "user", "message": {"role": "user", "content": "go"}}) + "\n")
+            if before is not None:
+                f.write(json.dumps({"type": "assistant", "message": {"role": "assistant", "content": before}}) + "\n")
             f.write(json.dumps({"type": "assistant", "message": {"role": "assistant", "content": [
                 {"type": "tool_use", "name": "mcp__hearthbot__post_message", "input": {"text": asked}}]}}) + "\n")
             f.write(json.dumps({"type": "user", "message": {"role": "user", "content": [
                 {"type": "tool_result", "content": "sent"}]}}) + "\n")
             f.write(json.dumps({"type": "assistant", "message": {"role": "assistant", "content": [
-                {"type": "text", "text": "Waiting."}]}}) + "\n")
+                {"type": "tool_use", "name": "mcp__hearthbot__no_reply_needed",
+                 "input": {"reason": "nothing_to_add"}}]}}) + "\n")
         return self.run_hook({"hook_event_name": "UserPromptSubmit", "session_id": session or self.session,
                               "cwd": self.project, "transcript_path": transcript, "prompt": prompt})
 
@@ -1105,6 +1110,64 @@ class Relay(unittest.TestCase):
         self.answer({"Which colour?": "Green"}, session="other")
         self.put(SPEC, "v3\n")
         self.assertNotIn("Green", self.assertAllowed(self.check())["prompt"])
+
+    def test_a_question_line_with_quotes_is_kept_word_for_word(self):
+        self.checked_once()
+        self.message("Yes", asked='**Question 2 of 3: should "archived" items count?**\n\n'
+                                  'Accept, give your own answer, ignore or defer?')
+        self.put(SPEC, "v3\n")
+        prompt = self.assertAllowed(self.check())["prompt"]
+        self.assertIn('Question: **Question 2 of 3: should "archived" items count?**\nAnswer: Yes\n', prompt)
+
+    def test_a_turn_that_only_quotes_the_line_in_an_edit_is_no_question(self):
+        self.checked_once()
+        edit = [{"type": "tool_use", "name": "Edit", "input": {
+            "file_path": "SKILL.md", "new_string": "end it \"Accept, give your own answer, ignore or defer?\""}}]
+        self.message("looks good, commit it", asked="Done: I updated the skill.", before=edit)
+        self.put(SPEC, "v3\n")
+        self.assertNotIn("=== ANSWERS ===", self.assertAllowed(self.check())["prompt"])
+
+    def test_a_message_that_only_mentions_the_line_mid_turn_is_no_question(self):
+        self.checked_once()
+        self.message("ok", asked="The skill now ends questions with \"ignore or defer?\" and then says more.")
+        self.put(SPEC, "v3\n")
+        self.assertNotIn("=== ANSWERS ===", self.assertAllowed(self.check())["prompt"])
+
+    def test_question_tool_answers_without_the_four_choices_are_left_alone(self):
+        self.checked_once()
+        self.answer({"Which database?": "Postgres"}, options=("Postgres", "Redis"))
+        self.put(SPEC, "v3\n")
+        self.assertNotIn("=== ANSWERS ===", self.assertAllowed(self.check())["prompt"])
+
+    def test_a_language_check_still_running_holds_the_first_check_back(self):
+        self.put(SPEC, "v1\n")
+        self.review(wording=None)
+        self.assertAllowed(self.agent("PreToolUse", LANGUAGE, f"Document: {SPEC}\nCheck the wording."))
+        self.put(SPEC, "v2\n")
+        self.assertRefused(self.check(), "language checker")
+
+    def test_a_new_language_check_never_joins_a_review_already_checked(self):
+        self.checked_once()
+        self.language(wording="fresh wording")
+        self.review(report="fresh report", wording=None)
+        self.put(SPEC, "v3\n")
+        prompt = self.assertAllowed(self.check())["prompt"]
+        self.assertIn("fresh report", prompt)
+        self.assertIn("fresh wording", prompt)
+
+    def test_the_refusal_for_nothing_saved_never_says_it_was_checked_already(self):
+        self.put(SPEC, "v1\n")
+        reason = self.check()["hookSpecificOutput"]["permissionDecisionReason"]
+        self.assertNotIn("checked already", reason)
+
+    def test_a_check_clears_its_documents_background_notes(self):
+        self.put(SPEC, "v1\n")
+        self.launch("agentic:spec-reviewer", f"Document: {SPEC}\nReview this spec.", "a1")
+        self.stopped("agentic:spec-reviewer", "a1", REPORT)
+        self.language()
+        self.put(SPEC, "v2\n")
+        self.assertAllowed(self.check())
+        self.assertEqual(self.held(), {})
 
     def test_answers_with_no_review_on_record_are_left_alone(self):
         self.assertIsNone(self.answer({"Which colour?": "Green"}))
