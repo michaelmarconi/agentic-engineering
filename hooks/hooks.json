@@ -16,6 +16,10 @@
           {
             "type": "command",
             "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/scripts/build_session.py\""
+          },
+          {
+            "type": "command",
+            "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/scripts/review_relay.py\""
           }
         ]
       }
@@ -81,6 +85,15 @@
       }
     ],
     "PostToolUse": [
+      {
+        "matcher": "AskUserQuestion",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/scripts/review_relay.py\""
+          }
+        ]
+      },
       {
         "matcher": "Agent|Task|SubagentHandback",
         "hooks": [
