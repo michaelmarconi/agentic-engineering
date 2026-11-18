@@ -9,7 +9,7 @@ SCRIPT = os.path.join(HERE, "skill_check.py")
 ROOT = os.path.join(HERE, "..")
 sys.path.insert(0, HERE)
 from skill_check import (AGENT_RULE, SHELL_AGENT_RULE, ASK_RULE, BUILD_ACCEPT_RULE, BUILD_ASK_RULE, BUILD_PATH_RULE, BUILD_REREAD_RULE, REPORT_RULE, ASK_SKILLS, CORRECT_RULES, DOCUMENT_SKILLS, PATH_RULE, PROPOSED_RULE,  # noqa: E402
-                         QUESTIONS_RULE, REPORT_RULES, REVIEW_RULE, SHOW_RULE,
+                         QUESTIONS_RULE, REPORT_RULES, REVIEW_RULE, SHOW_RULE, ANSWER_RULES,
                          SIGNOFF_RULE, STATUS_SKILLS, TYPE_RULE, DATE_RULE, RENAME_RULE, DIAGRAM_SKILLS,
                          diagram_rules, holds)
 
@@ -75,6 +75,38 @@ class SkillCheck(unittest.TestCase):
         body = f"# Demo\n\nStart the `agentic:correction-checker` agent.\n\n{STEPS}\n\n{rule}\n"
         self.put("demo", skill_md(body=body))
         self.assertFails("review rule missing")
+
+    # Document skills: one review, then checks of answers (ADR 0049)
+
+    def document_reviewing(self, rules):
+        return (f"# Spec\n\n{TYPE_RULE}\n\n{PROPOSED_RULE}\n\n{RENAME_RULE}\n\n{ASK_RULE}\n\n{SIGNOFF_RULE}\n\n"
+                f"{DATE_RULE}\n\n{SHOW_RULE}\n\n{PATH_RULE}\n\nStart the `agentic:correction-checker` agent.\n\n"
+                f"{STEPS}\n\n" + "\n\n".join(rules) + "\n")
+
+    def test_document_skill_holding_every_answer_rule_needs_no_review_rule(self):
+        self.put("spec", skill_md(name="spec", body=self.document_reviewing(ANSWER_RULES)))
+        done = self.check()
+        self.assertEqual((done.returncode, done.stdout), (0, ""))
+
+    def test_document_skill_missing_an_answer_rule_fails(self):
+        self.put("spec", skill_md(name="spec", body=self.document_reviewing(ANSWER_RULES[:2] + ANSWER_RULES[3:])))
+        self.assertFails("spec/SKILL.md: answer rule 3 missing")
+
+    def test_document_skill_holding_the_old_review_rule_fails(self):
+        self.put("spec", skill_md(name="spec", body=self.document_reviewing(ANSWER_RULES + (REVIEW_RULE,))))
+        self.assertFails("spec/SKILL.md: old review rule")
+
+    def test_every_document_skill_holds_every_answer_rule(self):
+        for name in DOCUMENT_SKILLS:
+            with open(os.path.join(ROOT, "skills", name, "SKILL.md"), encoding="utf-8") as f:
+                text = f.read()
+            for rule in ANSWER_RULES:
+                self.assertTrue(holds(text, rule), (name, rule[:40]))
+
+    def test_answer_rules_offer_the_four_choices(self):
+        rules = " ".join(ANSWER_RULES)
+        for choice in ('"Accept"', '"My own answer"', '"Ignore"', '"Defer"', "ignore or defer?"):
+            self.assertIn(choice, rules)
 
     def test_build_checker_needs_no_review_rule(self):
         body = "# Demo\n\nStart the `agentic:build-correction-checker` agent.\n"

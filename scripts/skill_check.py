@@ -14,6 +14,8 @@ For each skills/<folder>/SKILL.md under the given plugin root (default: this plu
   `agentic:correction-checker` agent, holds REVIEW_RULE word for word (line breaks may differ), so
   every such skill reviews at the same points, as the lifecycle page's Review process says.
   /build, whose checker is `agentic:build-correction-checker`, reviews code and is not held to it.
+  A document skill (DOCUMENT_SKILLS) holds each of ANSWER_RULES instead, and not REVIEW_RULE, so
+  after one full review it checks only what the person's answers changed (docs/adrs/0049).
 - such a skill that names a document by its path, as `Document: <...>`, holds PATH_RULE word for
   word, so every review is given the full path the review relay hook finds the repository from
   (docs/adrs/0046). A draft never saved as a file, `Document: feedback draft` or `Document: release notes`, is not
@@ -80,6 +82,28 @@ REVIEW_RULE = (
     " time is reviewed once it is made."
 )
 
+# How a document skill takes the person's answers after the review (docs/adrs/0049): one full
+# review, then a check of only what changed after each round, with four choices per question.
+ANSWER_RULES = (
+    "Put each question to the person one at a time, by the asking rule: open questions, "
+    "decisions for the person and what a check finds. Offer four choices on your question "
+    'tool: "Accept" your proposal, "My own answer", "Ignore" and "Defer"; where you have '
+    'none, end it "Accept, give your own answer, ignore or defer?".',
+    "Accept and My own answer write the answer in as the person gave it, removing the "
+    "question from Open questions if it is there; Ignore writes nothing and removes it; Defer"
+    " leaves it there, or writes it there with its proposal. Nothing else is written into "
+    "Open questions. An ignored fault you cannot fix leaves the document as it is: say which "
+    "rubric check it fails.",
+    "When a round of questions ends and anything was written in, start the "
+    "`agentic:correction-checker` agent again with the same request: the hook attaches the "
+    "text as last checked and the answers, so it checks only what changed. Put what it raises"
+    " to the person the same way. Never run a full review for answers.",
+    "Once nothing is left to ask, the last question offers the next status, where there is "
+    "one, one more full review, or stopping; while any question is deferred, only the last "
+    "two. Run a full review again only when the person asks, after their own change, on a "
+    "document rewritten to a new layout, or in a new conversation.",
+)
+
 # The skills that write a lifecycle document, which names its kind in its frontmatter's `type:`.
 DOCUMENT_SKILLS = ("brief", "spec", "adr", "plan", "spike")
 TYPE_RULE = (
@@ -98,8 +122,9 @@ RENAME_RULE = (
 STATUS_SKILLS = ("spec", "adr", "plan", "spike")
 SIGNOFF_RULE = (
     "Move the document forward only when the person explicitly says so about its text as it now "
-    "stands, once the review below has ended with a pass on that text, from the review itself or "
-    "from the correction check after it, and once Open questions says \"None.\". Only a review in "
+    "stands, once the review below has ended on that text, by a full review or a check of what "
+    "changed, with every question it raised answered or ignored, and once Open questions says "
+    "\"None.\". Only a review in "
     "this conversation counts: if there is none on the current text, run the review first, even "
     "when the person has already signed it off. Set the status as its own last edit, never in the "
     "same reply as a change to the content; if anything changed after the person spoke, show the "
@@ -321,7 +346,15 @@ def problems(folder, text):
     tokens = len(body) // 4
     if tokens > MAX_TOKENS:
         found.append(f"body is about {tokens:,} tokens, over about 5,000 tokens")
-    if REVIEWS in body and not holds(body, REVIEW_RULE):
+    if REVIEWS in body and folder in DOCUMENT_SKILLS:
+        for number, rule in enumerate(ANSWER_RULES, 1):
+            if not holds(body, rule):
+                found.append(f"answer rule {number} missing: a document skill that runs the review "
+                             f"sequence must hold skill_check.ANSWER_RULES[{number - 1}] word for word")
+        if holds(body, REVIEW_RULE):
+            found.append("old review rule: a document skill takes answers by ANSWER_RULES, so it "
+                         "must not hold skill_check.REVIEW_RULE")
+    elif REVIEWS in body and not holds(body, REVIEW_RULE):
         found.append("review rule missing: a skill that runs the review sequence must hold "
                      "skill_check.REVIEW_RULE word for word")
     if REVIEWS in body:

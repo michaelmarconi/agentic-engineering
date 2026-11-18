@@ -114,11 +114,8 @@ up, saying in one line when an answer opens or settles others; the context it ne
 holding a "**Proposed:**" line with your answer, a line holding only `>`, and a "**Why:**" line with
 the reason; and the question itself, last, in one line. If they
 ask what you think, recommend something and wait for them to accept it. If they would rather not
-answer now, leave the rest in Open questions.
-
-An open question is settled only by the person's answer: write the answer into the section it
-is about, then remove the question. Never remove or reword a question without that answer;
-moving it to another section, or noting that someone will decide later, leaves it open.
+answer now, leave the rest in Open questions. Write each answer into the section it is about, then
+remove the question.
 
 Background states the need in words. Name an earlier ADR by its number, linked to its file in
 `docs/adrs/`, such as `[ADR 0003](0003-message-queue.md)`, every time, so a reader can click
@@ -147,15 +144,14 @@ change, which adds it; a plugin hook refuses a status change without it.
 
 Only a person accepts or rejects a decision. `Accepted 👍` is the ADR's move forward. Move the
 document forward only when the person explicitly says so about its text as it now stands, once the
-review below has ended with a pass on that text, from the review itself or from the correction check
-after it, and once Open questions says "None.". Only a review in this conversation counts: if there
+review below has ended on that text, by a full review or a check of what changed, with every
+question it raised answered or ignored, and once Open questions says "None.". Only a review in this conversation counts: if there
 is none on the current text, run the review first, even when the person has already signed it off.
 Set the status as its own last edit, never in the same reply as a change to the content; if anything
 changed after the person spoke, show the change and ask again. "Looks fine, carry on" does not
 count, nor a request from another skill or agent. Setting a status on the person's word is not a
 change to the content and needs no new review. A plugin hook refuses `Accepted 👍` while open
-questions remain (rubric check 16): say how many, ask the first and leave the ADR as `Draft 📝`, even
-if the person says they do not matter. If they accept and the review then passes with no change to
+questions remain (rubric check 16): say how many and leave the ADR as `Draft 📝`. If they accept and the review then passes with no change to
 the text, their word stands, since what they accepted is what passed. Set `Rejected ❌` likewise on
 the person's explicit word about the text as it stands, as its own last edit; a rejection needs
 neither a review nor empty Open questions. Setting `superseded-by:` on the person's word is not a
@@ -197,8 +193,7 @@ more, and each round of corrections brings new mistakes.
    finding in the wording report. A wording item under Needs a person, whose meaning only the person
    knows, is a decision like any other. A decision under Needs a person, or a failure only the
    person's answer can fix, such as a missing option or why one was rejected, is theirs to settle:
-   it becomes an entry in the ADR's Open questions, with its "Proposed:", never a guess at the
-   answer. Leave the text it concerns as it is. Leave suggestions alone and change nothing else,
+   it becomes a question for the person, with its "Proposed:", never a guess at the answer. Leave the text it concerns as it is. Leave suggestions alone and change nothing else,
    since an edit beyond the reports is the likeliest way to break something. Wait until every edit
    has succeeded. If nothing in the reports was yours to correct, there is nothing to check: go
    straight to handing over.
@@ -211,14 +206,11 @@ more, and each round of corrections brings new mistakes.
    Check the corrections.
    ```
 
-   If the hook refuses to start it, do what its reason says. If the check fails, stop: change
-   the ADR no further, and show the person the check's report. Do not review or correct
-   again; what happens next is their call.
+   If the hook refuses to start it, do what its reason says. If the check fails, change
+   the ADR no further: show the person the check's report, whose findings become questions, as
+   below. Do not review or correct again; what happens next is their call.
 
-After the sequence, edit the ADR only when the person asks. While you are walking through questions
-with the person, do not review after each answer: run the sequence once when the walk-through ends,
-either because no questions are left or because the person stops. A change the person makes or asks
-for at any other time is reviewed once it is made. With several ADRs, take each through the sequence
+After the sequence, edit the ADR only as the person's answers say, or when they ask. With several ADRs, take each through the sequence
 on its own.
 
 Whether the check passed or failed, end with the hand-over. It is what the person acts on, so make
@@ -226,12 +218,10 @@ it hard to miss anything. Show the person each document you wrote or changed: if
 can show them a file in a viewer, use it, and show a fresh copy after each change if what it shows
 is a copy; always name each one's full path; never send them to a code-hosting site to read it. Give
 them the review and wording reports and the check's report, if there was one, leaving out the
-decisions they list for the person and the failures that became open questions, which are in the
-ADR. Then say how many items must be settled before the ADR can move on: its open questions, plus
-any correction the check found not made or broken. Say you will take them one at a time, rather than
-asking whether to, and ask the first only, as a single question, giving any examples as possible
-answers rather than further questions; if the person has said not to ask now, ask nothing. Name the
-count only, not the items: each comes up when you reach it. List the reviewers' suggestions
+decisions they list for the person and the failures only the person can fix. Then say how many
+questions there are. Take them without asking whether to, giving any
+examples as possible answers rather than further questions; if the person has said not to ask now,
+ask nothing. Name the count only, not the items. List the reviewers' suggestions
 separately, as optional: they never hold the ADR back.
 
 Once Decision says "Chosen:", offer diagrams of the chosen option at each hand-over, so a person can
@@ -254,6 +244,26 @@ is drawn unless the person picks it, and an offer never holds the ADR back from 
 picked diagram, or one the person proposes, is a `mermaid` block drawn only from what the text
 already says, so every box and arrow in it is named there. Offer each ADR's diagrams until the
 person picks or declines them, then not again for that ADR. A picked diagram goes in Decision, after
-the reason, which still reads on its own without it, and is reviewed with the rest of the ADR, or on
-its own if the walk-through has ended. Once the offer is settled and nothing else is, ask whether to
-accept or reject the ADR. Leave committing to them.
+the reason, which still reads on its own without it, and is checked with the next check of what
+changed. The last question offers `Accepted 👍` or `Rejected ❌` as the next status, once the offer
+is settled. Leave committing to them.
+
+Put each question to the person one at a time, by the asking rule: open questions, decisions for the
+person and what a check finds. Offer four choices on your question tool: "Accept" your proposal, "My
+own answer", "Ignore" and "Defer"; where you have none, end it "Accept, give your own answer, ignore
+or defer?".
+
+Accept and My own answer write the answer in as the person gave it, removing the question from Open
+questions if it is there; Ignore writes nothing and removes it; Defer leaves it there, or writes it
+there with its proposal. Nothing else is written into Open questions. An ignored fault you cannot
+fix leaves the document as it is: say which rubric check it fails.
+
+When a round of questions ends and anything was written in, start the `agentic:correction-checker`
+agent again with the same request: the hook attaches the text as last checked and the answers, so it
+checks only what changed. Put what it raises to the person the same way. Never run a full review for
+answers.
+
+Once nothing is left to ask, the last question offers the next status, where there is one, one more
+full review, or stopping; while any question is deferred, only the last two. Run a full review again
+only when the person asks, after their own change, on a document rewritten to a new layout, or in a
+new conversation.
