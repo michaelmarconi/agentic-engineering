@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: spec-question-count-forward
+expected_outcome: |
+  The person settles the spec's first open question in a way that opens a new one. The skill writes the answer in, says in one line that the answer opened a new question, and asks the next as question 2 of 3, so the number moves forward rather than starting again at 1.
+context:
+  scaffold_script: place-files.sh

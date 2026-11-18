@@ -67,17 +67,19 @@ built-in helper agents: the Explore agent to find the code that matters, and the
 think through how to build it. This is where you find the decisions: choices with a reasonable
 alternative that the specs, the ADRs, the practices and the existing code don't already settle, such as where a
 new piece of data is kept or how an outside system's message is mapped. Following a pattern the
-code already uses is not a decision, and nor is anything a spec, an ADR or a practice already says.
+code already uses is not a decision.
 
 ## Ask
 
 Tell the person how many decisions there are, naming the count only, not the decisions: each comes
-up when you reach it. Then ask the first only, and wait for the answer. Each question's proposal is
+up when you reach it. Then ask the first only. Each question's proposal is
 one answer that also says where it belongs, such as "Record an ADR choosing the Redis the app
 already uses", and its reason covers both. When you ask the person to settle a question in the
 conversation, lay it out in four parts, so they can find your proposal at a glance: a bold line
-naming it and its place in the count, such as "**Question 1 of 3: how often a failed pull is
-retried**"; the context it needs; a block quote holding a "**Proposed:**" line with your answer, a
+naming it and its place in the count, such as "**Question 2 of 7: how often a failed pull is retried**", where the first number counts the
+questions asked or settled in this conversation, this one included, and the total adds those
+still open, so the first number only goes up, and you say in one line when an answer opens new
+questions; the context it needs; a block quote holding a "**Proposed:**" line with your answer, a
 line holding only `>`, and a "**Why:**" line with the reason; and the question itself, last, in one
 line. A plan may be deleted
 once built, so a decision belongs in it only if nobody needs its reason once the work is built. Ask
@@ -96,9 +98,7 @@ of each who would need its reason after the build, in this order, taking the fir
 - nobody, such as for the order of the steps or which file a helper goes in: this plan.
 
 Give any alternatives as possible answers, not as further
-questions, and end with a single question, such as whether they agree with your proposal. Ask the
-next once the first is settled. If an answer adds or removes a decision, say so and give the new
-count. With no decisions, say so and go straight to writing.
+questions. Ask the next once the first is settled. With no decisions, say so and go straight to writing.
 
 ## Write
 

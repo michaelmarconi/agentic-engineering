@@ -100,8 +100,10 @@ holds one proposal, so a question with two answers is two questions, and a plugi
 questions laid out any other way. Where only the person can know the answer, "Proposed:" says what
 would settle it instead, never a guess. When you ask the person to settle a question in the
 conversation, lay it out in four parts, so they can find your proposal at a glance: a bold line
-naming it and its place in the count, such as "**Question 1 of 3: how often a failed pull is
-retried**"; the context it needs; a block quote holding a "**Proposed:**" line with your answer, a
+naming it and its place in the count, such as "**Question 2 of 7: how often a failed pull is retried**", where the first number counts the
+questions asked or settled in this conversation, this one included, and the total adds those
+still open, so the first number only goes up, and you say in one line when an answer opens new
+questions; the context it needs; a block quote holding a "**Proposed:**" line with your answer, a
 line holding only `>`, and a "**Why:**" line with the reason; and the question itself, last, in one
 line.
 

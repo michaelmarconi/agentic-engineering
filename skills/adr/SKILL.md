@@ -107,8 +107,10 @@ wait, so leave them out of that reply entirely: describe the draft by what it sa
 lacks, and do not list the questions or their topics (they are in the ADR). Ask the next once the
 first is settled, playing back what you have understood. When you ask the person to settle a
 question in the conversation, lay it out in four parts, so they can find your proposal at a glance:
-a bold line naming it and its place in the count, such as "**Question 1 of 3: how often a failed
-pull is retried**"; the context it needs; a block quote holding a "**Proposed:**" line with your
+a bold line naming it and its place in the count, such as "**Question 2 of 7: how often a failed pull is retried**", where the first number counts the
+questions asked or settled in this conversation, this one included, and the total adds those
+still open, so the first number only goes up, and you say in one line when an answer opens new
+questions; the context it needs; a block quote holding a "**Proposed:**" line with your
 answer, a line holding only `>`, and a "**Why:**" line with the reason; and the question itself,
 last, in one line. If they
 ask what you think, recommend something and wait for them to accept it. If they would rather not
