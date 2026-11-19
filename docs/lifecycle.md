@@ -141,24 +141,26 @@ stateDiagram-v2
 
 ### What every document shares
 
-- **Frontmatter.** The block of settings at the top of the file. Its `type:` field says what kind
-  of document it is (`Brief`, `Spec`, `ADR`, `Plan` or `Spike`), so the title never needs to.
-  Every document but the brief has a `status:`, written as its word then its emoji, such as
-  `Accepted 👍`, and a `date:`, the day that status was set, as YYYY-MM-DD. An ADR's `number:`
-  repeats the four digits its file name starts with. Documents written by earlier versions, with
-  the emoji in front, still count, and are rewritten the next time a skill edits them.
-- **File names.** A number or a date where the kind has one, then two to five lowercase words
-  joined by hyphens, each a word of the document's title, so you know the file when you open it
-  and its name never has to change, least of all while its review runs.
-- **Reads plain first.** An ADR and a spike record start with a part for people, then the
-  technical detail for agents and reviewers. An ADR's plain part, from the question to the open
-  questions, is at most 500 words, diagrams of the chosen option left out; a spike record's is at
-  most 600 for its design and 400 for the verdict written after the runs.
-- **Open questions.** Every document has an Open questions section, holding what only you can
-  settle and chose to defer (and, in a plan, the changes it waits on), or "None." when nothing is
-  open. Each question has a numbered heading saying what is to be settled, the context it needs,
-  then a quote holding the proposed answer and its reason. A question with two answers is two
-  questions. A document written before this layout keeps it until its Open questions next change.
+- **Frontmatter**, the settings block at the top of the file:
+
+  ```yaml
+  type: ADR               # Brief, Spec, ADR, Plan or Spike, so the title never says it
+  number: 0007            # ADRs only: the four digits the file name starts with
+  status: Accepted 👍     # all but the brief: word, then emoji
+  date: 2026-11-19        # the day the status was set
+  ```
+
+  A status written emoji first, by an earlier version, still counts until a skill next edits it.
+- **File name**: a number or date where the kind has one, then two to five lowercase words of the
+  title joined by hyphens, so the name never has to change, least of all during a review.
+- **Plain first**: an ADR or spike record opens with a part for people, then technical detail. An
+  ADR's plain part, from the question to the open questions, is at most 500 words, leaving out
+  diagrams of the chosen option; a spike record's is at most 600 for its design and 400 for its
+  verdict.
+- **Open questions**: what only you can settle and chose to defer (and, in a plan, the changes it
+  waits on), or "None.". Each question has a numbered heading, its context, then a quote with the
+  proposed answer and why; a question with two answers is two questions. An older document keeps
+  its layout until its Open questions next change.
 
 ```markdown
 ### 1. Where the daily tariff copy is kept
