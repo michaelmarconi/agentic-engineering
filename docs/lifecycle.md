@@ -180,71 +180,6 @@ repository, wherever in it the session started, or from the session's folder in 
 git. A monorepo, several related apps or packages in one repository, keeps one `docs/` folder at
 its top; its specs may be grouped into folders, such as one per app, which carry no meaning.
 
-## Skills
-
-The plugin has twelve skills, listed in the order of the overview above. Each
-heading links to the skill's own page.
-
-### [/brief](skills/brief.md)
-
-Writes or changes the brief.
-
-### [/spec](skills/spec.md)
-
-Writes or changes the spec for one capability.
-
-### [/spike](skills/spike.md)
-
-Settles an unknown by a throwaway experiment, when one is needed. You take its finding to `/spec` (a
-fact) or `/adr` (a choice); `/spike` edits neither.
-
-### [/adr](skills/adr.md)
-
-Records one technical decision.
-
-### [/plan](skills/plan.md)
-
-Scopes a piece of work against the specs and ADRs it delivers.
-
-### [/build](skills/build.md)
-
-Builds a plan on a branch of its own, tests first, has it reviewed and pushes the branch to your
-remote. It never starts the product, so it can run on any machine, and never opens a pull request or
-merges.
-
-### [/verify](skills/verify.md)
-
-Checks the running product against accepted specs from the outside, usually before you merge. It
-changes nothing: you decide what follows.
-
-### [/release](skills/release.md)
-
-Makes a numbered release with notes for the product's users, by the steps your releasing practice
-records. It publishes only where the practice records a publish command, and only on your yes, and
-it never merges.
-
-### [/deploy](skills/deploy.md)
-
-Puts one release into one environment by the steps your deploying practice records, deploys only on
-your yes, and rolls back at once if its check fails. It writes nothing to the repository.
-
-### [/audit](skills/audit.md)
-
-Finds drift, where the code and its documents disagree, and any spec or ADR that contradicts the
-brief. It changes nothing: you choose each correction.
-
-### [/practices](skills/practices.md)
-
-Records how the project does things, such as the commands that check the work, for agents to follow.
-Practices are not a lifecycle document and have no status: their essentials live in `AGENTS.md`,
-which Claude Code loads, and longer topics in `docs/practices/`. Every skill sees them, and `/plan`
-and `/build` follow them.
-
-### [/feedback](skills/feedback.md)
-
-Drafts a GitHub issue about the plugin itself, when one of its skills gets something wrong or could
-work better. It writes nothing in your repository.
-
 ## Principles
 
 ### Your way of working
@@ -254,6 +189,14 @@ work better. It writes nothing in your repository.
   it off. Everything else is yours to choose, such as how you test, branch, review code, release
   and deploy, and how strict to be. You record those choices once as practices, and every skill
   follows them. The plugin never asks you to work its way where you have already chosen your own.
+
+### What stays with you
+
+- **No skill merges or opens a pull request.** `/build` works on a branch of its own and pushes it;
+  what happens to that branch is yours to decide.
+- **Checks change nothing.** `/verify` and `/audit` report what they find; you choose what follows.
+- **Nothing leaves without your yes.** `/release` publishes and `/deploy` deploys only when you
+  say so. `/deploy` and `/feedback` write nothing to your repository.
 
 ### The brief
 
@@ -287,6 +230,8 @@ work better. It writes nothing in your repository.
 - **A plan holds nothing later work needs.** A decision later work must follow is an ADR; one a
   user or caller relies on belongs in the spec; one every piece of work follows is a practice. A
   reason someone changing the code later needs is a comment beside the code.
+- **A spike's finding goes to its owner.** `/spike` edits neither spec nor ADR: you take a fact to
+  `/spec` and a choice to `/adr`.
 - **Only an experiment settles a spike.** Documentation, other people's reports and reasoning help
   design it, but the finding rests only on what its runs produced, compared with the result agreed
   before the first run.
@@ -333,6 +278,9 @@ flowchart LR
 
 ### Practices
 
+- **Practices are not a lifecycle document** and have no status. Their essentials live in
+  `AGENTS.md`, which Claude Code loads, and longer topics in `docs/practices/`. Every skill sees
+  them, and `/plan` and `/build` follow them.
 - **Every practice step is one command.** A step the practices record, such as running the tests,
   is one line that a skill runs as written, filling in any `{name}`, and judges by its exit code.
   It calls a runner entry, a script or a tool's standard command with nothing else of the
