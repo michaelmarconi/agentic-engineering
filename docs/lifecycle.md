@@ -497,6 +497,9 @@ After the sequence, edit the document only as the person's answers say, or when 
 /brief, /spec, /adr, /plan and /spike end this way. If the check fails, change the document no
 further: show the person the check's report, whose findings become questions, as below. After the
 skill's hand-over, every question, including those you raise while drafting, is taken this way.
+When the person has said not to ask now, such as "don't ask me anything until it passes", ask
+nothing at the hand-over, even after a failed check: write each question into Open questions with
+its proposal, as Defer does, and give only the count.
 
 While drafting, keep your own questions out of the document: ask them with the review's, once where
 both raise the same point, so only a deferred one reaches Open questions.

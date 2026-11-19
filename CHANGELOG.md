@@ -17,6 +17,9 @@ minor version may need such a change, and its entry says so.
   them there, keeping only its own reviewer and requests. Reviews run as before (ADR 0053),
   with two points made explicit: /feedback's and /release's drafts, never saved as files, keep
   their own `Document:` line, and each of a spike's two reviews is a full review.
+- When you tell a document skill not to ask you anything until the review passes, it writes each
+  question into Open questions with its proposed answer, even after a failed correction check, and
+  tells you how many there are.
 - The README says what /release, /deploy and /practices change in your repository, its skills
   diagram follows the lifecycle's, and the steps for moving from an `sdlc@sdlc` install are
   shorter.
