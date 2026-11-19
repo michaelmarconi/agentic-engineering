@@ -71,9 +71,11 @@ feedback, practices, spike or release) and the shared language checker, which ch
   and "Defer" among their options; and, where there is no question tool, as in a Claude project
   thread, the person's next message when the last thing Claude said in its turn, as text or as a
   message a tool sends, never a file edit, ends asking "... ignore or defer?", with that message's
-  last "**Question N of M: ...**" line as its question. A
-  message that arrives as a project thread's wake is taken from its `<message trigger="true">`
-  tag.
+  last "**Question N of M: ...**" line as its question. A tap on a project thread's decision card,
+  which arrives as 'Chose "<option>" on the decision card asking "<question>"', is saved against
+  the card's own question whenever the option is one of the four choices, so each of several
+  cards keeps its own answer, whatever Claude said after posting them. A message that arrives as a project thread's wake is taken from its
+  `<message trigger="true">` tag.
 - A saved review is kept after its check, and deleted once unchanged for 30 days (see
   saved_records.py), not when the session ends, since a resumed session carries on. A later
   review of the same document, such as a spike record's verdict review after its design review,
@@ -549,6 +551,10 @@ def keep_answers(session, answers):
 
 
 MARKER = "ignore or defer?"
+# A tap on a project thread's decision card arrives as this message, naming the option and the
+# card's question; only a card offering the four choices answers a document's question.
+TAP = re.compile(r'Chose "(.*?)" on the decision card asking "(.*)"\s*$', re.S)
+CHOICES = ("accept", "my own answer", "ignore", "defer")
 QUESTION_LINE = re.compile(r"\*\*Question \d+ of \d+:[^*\n]*\*\*")
 WAKE_MESSAGE = re.compile(r'<message\b[^>]*\btrigger="true"[^>]*>(.*?)</message>', re.S)
 TAIL = 1 << 20  # the last turn is near the end of the transcript; read at most this much of it
@@ -603,16 +609,21 @@ def last_said(transcript):
 
 
 def message_answer(event):
-    """The person's message, when the last thing Claude said ended by putting a question to them."""
+    """The person's message, when it is a tap on a decision card offering the four choices, paired
+    with the card's question, or when the last thing Claude said ended by putting a question to
+    them, paired with that question."""
     prompt = event.get("prompt")
     if not isinstance(prompt, str) or not prompt.strip():
         return []
+    wake = WAKE_MESSAGE.search(prompt)
+    answer = html.unescape(wake.group(1)).strip() if wake else prompt
+    tap = TAP.match(answer)
+    if tap:
+        return [{"question": tap.group(2), "answer": answer}] if tap.group(1).lower() in CHOICES else []
     asked = last_said(event.get("transcript_path"))
     if not asked.rstrip(" \t\n\"'`*_.").lower().endswith(MARKER):
         return []
     lines = QUESTION_LINE.findall(asked)
-    wake = WAKE_MESSAGE.search(prompt)
-    answer = html.unescape(wake.group(1)).strip() if wake else prompt
     return [{"question": lines[-1] if lines else "(asked in a message)", "answer": answer}]
 
 

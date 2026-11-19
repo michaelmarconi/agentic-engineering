@@ -15,8 +15,8 @@ Before writing, read [references/rubric.md](references/rubric.md): it is the lis
 reviewer will apply, so writing to it leaves less to correct. Write in plain words, as the Plain
 words section of [the lifecycle page](../../docs/lifecycle.md#plain-words) says: a language
 checker holds every document to it. New ADRs start from
-[assets/template.md](assets/template.md). Read these with the Read tool, not the shell, so the
-person is not asked to approve a command.
+[assets/template.md](assets/template.md). Read these with the Read tool, not the shell, so no
+command needs approving.
 
 The template's frontmatter holds `type: ADR`, which says what the document is. An ADR written
 before it has no `type:`, so add it with your next edit. The title never names the document's type,
@@ -35,10 +35,8 @@ python3 "${CLAUDE_SKILL_DIR}/scripts/adr.py" words <the ADR's path>
 ```
 
 Aim for sentences under 25 words and paragraphs of up to three sentences, with the Question in up
-to three sentences and the reason for the choice in up to two. These counts are a guide for you,
-not checks: never split, merge or rewrite text that already reads clearly just to meet them. The
-review checks that a newcomer can follow every sentence in one reading, and lists a long sentence
-or paragraph only as a suggestion.
+to three sentences and the reason for the choice in up to two. These counts are a guide: never
+rewrite clear text to meet them.
 
 ## Find what exists
 
@@ -60,12 +58,12 @@ say so to the person, who can rename it once the review has ended.
 
 ## Shape it with the person
 
-Usually the person has already talked the decision through in this conversation. Draft from
-that, and from whatever they point you to; research what else you need, such as how the options
+Usually the person has already talked the decision through in the conversation. Draft from
+that and whatever they point you to; research what else you need, such as how the options
 compare. Where the conversation changed its mind, the latest word wins. Given a finished
 spike record from `docs/spikes/`, put its measurements into the ADR's own words, such as "read all
 12 of 12 transactions": a line in Options says what they showed, and Technical detail gives them in
-full. A spike record may be deleted at any time, so the ADR never names it. Only when there is nothing to draw on, ask what needs deciding first.
+full. A spike record may be deleted, so the ADR never names it. With nothing to draw on, ask what needs deciding first.
 
 Write the Question first: the one choice to make, briefly. Until the person
 has picked an option, Decision says only "Not chosen yet.", every row in Options is Open, and
@@ -100,18 +98,22 @@ the person can find the
 proposal at a glance and accept it in a word or give another. Each question holds one proposal, so a
 question with two answers is two questions, and a plugin hook refuses Open questions laid out any
 other way. Where only the person can know the answer, "Proposed:" says what would settle it instead,
-never a guess. For a choice not yet made, propose the option you would recommend; for a reason only
-the person knows, say what would settle it. Write the draft with what you have, review it as below
+never a guess. For a choice not yet made, propose the option you would recommend. Write the draft with what you have, review it as below
 even if sections are thin, then say how many questions there are and ask only the first. The others wait: describe the draft by what it says, not what it lacks,
 and list no questions or topics. Ask the next once the
 first is settled, playing back what you have understood. When you ask the person to settle a
 question in the conversation, lay it out in four parts, so they can find your proposal at a glance:
 a bold line naming it and its place in the count, such as "**Question 2 of 7: how often a failed
 pull is retried**", where the first number counts the questions asked or settled in this
-conversation, this one included, and the total adds those still open, so the first number only goes
+conversation, across every document, this one included, and the total adds those still open, so the first number only goes
 up, saying in one line when an answer opens or settles others; the context it needs; a block quote
 holding a "**Proposed:**" line with your answer, a line holding only `>`, and a "**Why:**" line with
-the reason; and the question itself, last, in one line. If they
+the reason; and the question itself, last, in one line.
+With no question tool but a decision card, as in a Claude project thread, ask in words as the skill
+says, then post it on a card offering the choices that need no typing, your proposal recommended.
+Where one reply asks several questions, follow each with its card or question tool, and a line
+holding only `---` before the next.
+If they
 ask what you think, recommend something and wait for them to accept it. If they would rather not answer now, defer the rest. Write each answer into the section it is about, then
 remove the question.
 
@@ -120,7 +122,7 @@ Background states the need in words. Name an earlier ADR by its number, linked t
 through; a plugin hook refuses a link to a file that is not there. Never refer to a spec, the brief,
 a plan or a spike record in any way, by hyperlink, path or title, and never edit them, even when the
 person asks you to note the decision there: they change while an ADR does not, so the reference
-would go stale, and the lifecycle allows no references between them. Tell the person so. Material
+would go stale. Tell the person so. Material
 they hand over that is not a web page, such as a requirements document or notes, is drawn on but
 never referred to (rubric check 14): state what matters from it in the ADR's own words, and tell
 them it can change or vanish without the ADR being touched. If the decision answers a spec's open
