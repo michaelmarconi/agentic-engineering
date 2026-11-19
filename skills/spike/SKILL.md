@@ -146,8 +146,8 @@ The run script writes the record itself, so read the record again after each run
 it, and make sure each edit succeeded before the next run.
 
 - **The experiment itself is at fault,** for example it crashes for a reason the Experiment doesn't
-  name: correct the Code, tell the person what you changed, and run the corrected code the full
-  number of times. Earlier runs stay in Runs but no longer count.
+  name: once a run shows it, and never before, correct the Code before the next run, tell the
+  person what you changed, and run the corrected code the full number of times. Earlier runs stay in Runs but no longer count.
 - **A step only the person can do:** ask them to do it, then pass their answer unchanged:
   `python3 "${CLAUDE_SKILL_DIR}/scripts/spike.py" run <path> --scratchpad "<your scratchpad folder>" --session "${CLAUDE_SESSION_ID}" --observation "<their words>"`.
 - **A secret is not set:** the script records that it did not run. Tell the person how to set it

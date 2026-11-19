@@ -24,9 +24,9 @@ date: <YYYY-MM-DD>
 
 ## Next steps
 
-<!-- Written after the runs. -->
+<!-- Written after the runs, as two lines, and empty until then:
 - Spec: <what should change in which spec, or "Nothing">
-- ADR: <which choice an ADR should record, or "Nothing">
+- ADR: <which choice an ADR should record, or "Nothing"> -->
 
 ## How we'll know
 
