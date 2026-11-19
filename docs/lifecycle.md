@@ -25,7 +25,8 @@ flowchart LR
     Verify --> Release
     Spike -.- Spec
     Spike -.- ADR
-    Audit -.-> Decide
+    Ship ~~~ Audit
+    Decide <-.- Audit
 ```
 
 Solid arrows show the usual order, each step using what the one before it wrote. Dotted lines show
