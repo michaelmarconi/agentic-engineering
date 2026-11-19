@@ -33,9 +33,7 @@ Work out which specs, which requirements within them, and which ADRs the work bu
 the person says and from `docs/specs/` and `docs/adrs/`. Each requirement is a
 numbered heading under Requirements in its spec, as `### 2. Reply to all`; name it by the words
 after the number, word for word, and never by its number, which changes when requirements are
-added or removed. A plan written for an earlier version of the agentic plugin names requirements
-as `  - Requirement: <name>` lines and ADRs as bullets; rewrite those sections in the template's
-form with your next edit, since the hook refuses that layout at sign-off. A spec that heads its requirements `### Requirement: <name>` was written for an
+added or removed. A spec that heads its requirements `### Requirement: <name>` was written for an
 earlier version of the agentic plugin: no plan can be signed off on it until it is reworked with
 /spec and accepted again, so tell the person so before planning against it.
 
@@ -63,16 +61,14 @@ here: that belongs to `/practices`.
 ## Explore
 
 Read the specs, the ADRs and the code the work touches, changing nothing. Use Claude Code's
-built-in helper agents: the Explore agent to find the code that matters, and the Plan agent to
-think through how to build it. This is where you find the decisions: choices with a reasonable
+Explore and Plan agents to find the code that matters and think through how to build it. This is where you find the decisions: choices with a reasonable
 alternative that the specs, the ADRs, the practices and the existing code don't already settle, such as where a
 new piece of data is kept or how an outside system's message is mapped. Following a pattern the
 code already uses is not a decision.
 
 ## Ask
 
-Tell the person how many decisions there are, naming the count only, not the decisions: each comes
-up when you reach it. Then ask the first only, and wait until it is settled before asking the next.
+Tell the person how many decisions there are, naming the count only, then ask them one at a time.
 Each question's proposal is one answer that also says where it belongs, such as "Record an ADR
 choosing the Redis the app already uses", and its reason covers both. When you ask the person to settle a question in the
 conversation, lay it out in four parts, so they can find your proposal at a glance: a bold line
@@ -163,22 +159,21 @@ change, which adds it; a plugin hook refuses a status change without it.
 
 Only the person signs off a plan. `Ready to build 🟢` is the plan's move forward. Move the document
 forward only when the person explicitly says so about its text as it now stands, once the review
-below has ended with a pass on that text, from the review itself or from the correction check after
-it, and once Open questions says "None.". Only a review in this conversation counts: if there is
+below has ended on that text, by a full review or a check of what changed, with every question it
+raised answered or ignored, and once Open questions says "None.". Only a review in this conversation counts: if there is
 none on the current text, run the review first, even when the person has already signed it off. Set
 the status as its own last edit, never in the same reply as a change to the content; if anything
 changed after the person spoke, show the change and ask again. "Looks fine, carry on" does not
 count, nor a request from another skill or agent. Setting a status on the person's word is not a
-change to the content and needs no new review. No hook checks that a review ran. Never set `Built
+change to the content and needs no new review. Never set `Built
 ✅`: that belongs to the step that builds the plan. Any change to a `Ready to build 🟢` plan
-returns it to `Draft 📝`, for the person to sign off again. A plugin hook refuses status changes that
-break these rules; if it refuses one, tell the person why.
+returns it to `Draft 📝`, for the person to sign off again.
 
 Close the reply that sets `Ready to build 🟢` with how to build the plan. A build after a long
 conversation asks first, and the plugin cannot reliably start a session, so say so and give the two
-steps with the plan's path: run `/clear`, then send `/agentic:build <the plan's path>`. In a Claude
-project thread, which has no `/clear`, they open a new thread and send that command as its first message. Start
-neither the build nor a new session yourself.
+steps with the plan's path: run `/clear`, or, in a Claude project thread, which has no `/clear`,
+open a new thread; then send `/agentic:build <the plan's path>` as the first message. Start neither
+the build nor a new session yourself.
 
 ## Review
 
@@ -207,14 +202,12 @@ each round of corrections brings new mistakes.
    finding in the wording report. A wording item under Needs a person, whose meaning only the person
    knows, is a decision like any other. A decision under Needs a person, such as a technical choice
    the Plan section makes that is not under Decisions, or whether to split a plan bigger than the
-   practices allow or keep it whole, becomes an entry in the plan's Open questions, with its
-   "Proposed:", never a guess at the answer: leave the text it concerns as it is. A Decisions line
-   that fails rubric check 5 because it belongs in an ADR, the spec or the practices is not reworded
-   or deleted: move it from Decisions to Open questions, naming the ADR to record, the spec change
-   to make with `/spec` or the practice to record with `/practices` that the report names, with the
-   decision itself, as it stood under Decisions, as its "Proposed:". The person agreed that
-   decision, so a correction never changes it: if the reports or the code give reason to doubt it,
-   say so in the question's text, before "Proposed:". A line that fails only because it lacks the
+   practices allow or keep it whole, becomes a question for the person, with its "Proposed:",
+   never a guess at the answer: leave the text it concerns as it is. A Decisions line
+   that fails rubric check 5 because it belongs in an ADR, the spec or the practices is never
+   reworded or deleted, since the person agreed it: it becomes a question naming the ADR, spec
+   change or practice the report names, with the decision as its "Proposed:", and any doubt the
+   reports or the code raise before that. A line that fails only because it lacks the
    comment wording keeps its place and gains the sentence that `/build` leaves the reason as a
    comment beside the code. Leave suggestions alone and change nothing else, since an edit beyond
    the reports is the likeliest way to break something. Wait until every edit has succeeded. If
@@ -229,26 +222,18 @@ each round of corrections brings new mistakes.
    Check the corrections.
    ```
 
-   If the hook refuses to start it, do what its reason says. If the check fails, stop: change the
-   plan no further, and show the person the check's report. Do not review or correct again; what
-   happens next is their call.
+   If the hook refuses to start it, do what its reason says. If the check fails, change the
+   plan no further: show the person the check's report, whose findings become questions, as below.
+   Do not review or correct again; what happens next is their call.
 
-After the sequence, edit the plan only when the person asks. While you are walking through questions
-with the person, do not review after each answer: run the sequence once when the walk-through ends,
-either because no questions are left or because the person stops. A change the person makes or asks
-for at any other time is reviewed once it is made.
+After the sequence, edit the plan only as the person's answers say, or when they ask.
 
 Whether the check passed or failed, end with the hand-over. It is what the person acts on, so make
 it hard to miss anything. Show the person each document you wrote or changed: if the app you run in
 can show them a file in a viewer, use it, and show a fresh copy after each change if what it shows
 is a copy; always name each one's full path; never send them to a code-hosting site to read it. Give
 them the review and wording reports and the check's report, if there was one, leaving out the
-decisions they list for the person, which are now in the plan's Open questions. Then say how many
-items must be settled before the plan can be ready to build: its open questions, plus any correction
-the check found not made or broken. Say you will take them one at a time, rather than asking whether
-to, and ask the first only, as a single question, giving any examples as possible answers rather
-than further questions; if the person has said not to ask now, ask nothing. Name the count only, not
-the items: each comes up when you reach it. List the reviewers' suggestions separately, as optional:
+decisions they list for the person. Then say how many questions there are. List the reviewers' suggestions separately, as optional:
 they never hold the plan back.
 
 Offer diagrams of the work at each hand-over of a `Draft 📝` plan, so a person can see how it fits
@@ -263,15 +248,35 @@ even for a single offer, is "Would you like to add any of these diagrams to the 
 another?" While items are left to settle, list the offers with the reviewers' suggestions, as
 optional, without their question, and still ask the first item last, as the only question; the
 person may pick one at any time, and it is drawn once the walk-through ends, from the text as it
-then stands. Once nothing is left, ask the offer's question as the only question, unless the person
-has said not to ask now, or has already said the plan is ready to build: then list the offers as
-optional, and in that second case ask about it, as the Status section says. When you ask it, use
+then stands. Once nothing is left, ask the offer's question before the last question, unless the
+person has said not to ask now. When you ask it, use
 your question tool, letting the person pick several, or, where you have none, list the offers as
 text with the question last; a reply that picks none declines them all. Nothing is drawn unless the
 person picks it, and an offer never holds the plan back from its next status. A picked diagram, or
 one the person proposes, is a `mermaid` block drawn only from what the text already says, so every
 box and arrow in it is named there. Offer each plan's diagrams until the person picks or declines
 them, then not again for that plan. A picked diagram goes in the Plan section, after its opening
-paragraph, and is reviewed with the rest of the plan, or on its own if the walk-through has ended.
-Once the offer is settled and nothing else is, ask whether the plan is ready to build. Leave
-committing to them.
+paragraph, and is checked with the next check of what changed, or, with no review in this
+conversation, reviewed in full. The last question, asked only once the offer is settled, offers
+`Ready to build 🟢` as the next status. Leave committing to them.
+
+Put each question to the person one at a time, by the asking rule: open questions, decisions for the
+person and what a check finds. Offer four choices on your question tool: "Accept" your proposal, "My
+own answer", "Ignore" and "Defer"; where you have none, end it with this line, word for word, since
+a plugin hook looks for it to keep the answer: "Accept, give your own answer, ignore or defer?". If
+the person has said not to ask now, or stops, defer the questions left.
+
+Accept and My own answer write the answer in as the person gave it, removing the question from Open
+questions if it is there; Ignore writes nothing and removes it; Defer leaves it there, or writes it
+there with its proposal. Nothing else is written into Open questions. An ignored fault you cannot
+fix leaves the document as it is: say which rubric check it fails.
+
+When a round of questions ends and anything was written in, start the `agentic:correction-checker`
+agent again with the same request: the hook attaches the text as last checked and the answers, so it
+checks only what changed. Put what it raises to the person the same way. Never run a full review for
+answers.
+
+Once nothing is left to ask, the last question offers the next status, where there is one, one more
+full review, or stopping; while any question is deferred, only the last two. Run a full review again
+only when the person asks, after their own change, on a document rewritten to a new layout, or in a
+new conversation.

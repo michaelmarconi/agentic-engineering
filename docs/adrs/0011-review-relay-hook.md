@@ -1,8 +1,9 @@
 ---
 # Change status only through the sdlc plugin's skills. A hand edit skips the lifecycle checks.
 type: ADR
-status: Accepted 👍
-date: 2026-10-28
+status: Superseded ↪️
+superseded-by: 0050
+date: 2026-11-18
 ---
 
 # Pass the review to the correction checker by a hook

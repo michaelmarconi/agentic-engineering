@@ -28,9 +28,9 @@ everything else is judgement.
      `SKILL.md` says when to read each one.
 4. **Reviewed.** No agent checks its own work. Every skill that writes a document takes
    it through the review sequence that [docs/lifecycle.md](docs/lifecycle.md#review-process)
-   describes, and [ADR 0010](docs/adrs/0010-correction-check.md)
-   explains: review once, correct once, then check only the corrections. To build it into a
-   skill:
+   describes, and [ADR 0049](docs/adrs/0049-review-once-check-changes.md)
+   explains: review once, correct once, then check only what changes, with the person deciding
+   each question. To build it into a skill:
    - A rubric at `skills/<name>/references/rubric.md`: a short list of named checks, each pass
      or fail. The skill reads it while writing and again before correcting; the reviewer reads
      it while checking.
@@ -45,9 +45,10 @@ everything else is judgement.
      (`agents/language-checker.md`, [ADR 0013](docs/adrs/0013-language-checker.md))
      side by side, then the shared correction checker (`agents/correction-checker.md`), each
      with a request whose first line is `Document: <path>`, the document's full path. The review
-     relay hook (`scripts/review_relay.py`, [ADR 0011](docs/adrs/0011-review-relay-hook.md))
-     reads that line to save the document before the review and both reports after it, and
-     attaches them to the checker's request, so the skill never copies them. It also finds the
+     relay hook (`scripts/review_relay.py`, [ADR 0050](docs/adrs/0050-checker-hook-answers.md))
+     reads that line to save the document before the review and both reports after it, saves the
+     person's answers, and attaches them to the checker's request, so the skill never copies
+     them. It also finds the
      document's repository ([ADR 0046](docs/adrs/0046-whole-repository-one-project.md)), names the
      document relative to it and adds a `Repository: <folder>` second line, so a review started
      from another folder still reads the right one. The skill holds `PATH_RULE`, and each agent
@@ -57,23 +58,25 @@ everything else is judgement.
      carries the draft between `=== DRAFT ===` and `=== END DRAFT ===` lines.
    - The correct step reads the rubric and the Plain words rule again, corrects only what the
      reports list, turns each
-     decision for the person into an open question, leaves suggestions alone and changes
-     nothing else. A failed correction check stops and shows the person; there is never a
-     second review of the skill's own corrections. The sentences every skill shares for these
-     steps are `CORRECT_RULES` in `scripts/skill_check.py`, held word for word.
-   - When the sequence runs again is the same for every such skill: each holds `REVIEW_RULE`
-     from `scripts/skill_check.py` word for word, and the script fails a skill that names
-     `agentic:correction-checker` without it.
+     decision for the person into a question for them, leaves suggestions alone and changes
+     nothing else; there is never a second review of the skill's own corrections. The sentences
+     every skill shares for these steps are `CORRECT_RULES` in `scripts/skill_check.py`, held word
+     for word.
+   - A document skill (brief, spec, ADR, plan, spike) then puts each question to the person with
+     four choices and checks each round of answers, holding `ANSWER_RULES` word for word; the
+     other skills that name `agentic:correction-checker` stop on a failed check and hold
+     `REVIEW_RULE`. The script checks both.
    - The hand-over shows the person the document in the app's file viewer where there is one,
      always names its path and never sends them to a code-hosting site
      ([ADR 0025](docs/adrs/0025-document-review-display.md)): the skill holds `SHOW_RULE` from
      `scripts/skill_check.py` word for word, and the script checks it. The hand-over also gives
-     the reports, the number of items the person must settle, and the first of them; suggestions
-     are listed apart as optional.
+     the reports and the number of questions for the person; suggestions are listed apart as
+     optional.
    - A document with a status has an Open questions section, last apart from a spike record's
      Experiment, Code and Runs and an ADR's Technical detail, their technical parts, which follow
      it so the document reads plain first. The skill writes there
-     whatever only the person can settle, each question laid out with its proposed answer in a block
+     whatever only the person can settle, and after the review only what the person defers, each
+     question laid out with its proposed answer in a block
      quote, as [ADR 0030](docs/adrs/0030-open-questions-layout.md) says (`PROPOSED_RULE`; questions
      asked in the conversation follow `ASK_RULE`), and never moves the document forward while the section holds anything, nor
      without the person's sign-off on the reviewed text (`SIGNOFF_RULE`). The status hook (`scripts/status_check.py`) refuses such a move

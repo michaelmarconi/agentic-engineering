@@ -115,8 +115,7 @@ more, and each round of corrections brings new mistakes.
    and each finding in the wording report. A wording item under Needs a person, whose
    meaning only the person knows, is a decision like any other. Correct by making the brief
    accurate, never by dropping or hedging what the person said. A decision under Needs a person
-   becomes an entry in the brief's Open questions, with its "Proposed:", never a guess at the
-   answer. Leave
+   becomes a question for the person, with its "Proposed:", never a guess at the answer. Leave
    suggestions alone and change nothing else, since an edit beyond the reports is the likeliest
    way to break something. Wait until every edit has succeeded. If nothing in the reports was
    yours to correct, there is nothing to check: go straight to handing over.
@@ -129,24 +128,42 @@ more, and each round of corrections brings new mistakes.
    Check the corrections.
    ```
 
-   If the hook refuses to start it, do what its reason says. If the check fails, stop: change
-   the brief no further, and show the person the check's report. Do not review or correct
-   again; what happens next is their call.
+   If the hook refuses to start it, do what its reason says. If the check fails, change
+   the brief no further: show the person the check's report, whose findings become questions, as
+   below. Do not review or correct again; what happens next is their call.
 
-After the sequence, edit the brief only when the person asks. While you are walking through
-questions with the person, do not review after each answer: run the sequence once when the
-walk-through ends, either because no questions are left or because the person stops. A change the
-person makes or asks for at any other time is reviewed once it is made.
+After the sequence, edit the brief only as the person's answers say, or when they ask.
 
 Whether the check passed or failed, end with the hand-over. It is what the person acts on, so make
 it hard to miss anything. Show the person each document you wrote or changed: if the app you run in
 can show them a file in a viewer, use it, and show a fresh copy after each change if what it shows
 is a copy; always name each one's full path; never send them to a code-hosting site to read it. Give
 them the review and wording reports and the check's report, if there was one, leaving out the
-decisions they list for the person. Then say how many items must be settled before the brief can
-move on: its open questions, plus any correction the check found not made or broken. Say you will
+decisions they list for the person. Then say how many questions there are: its open questions, the
+decisions the reports list and any correction the check found not made or broken. Say you will
 take them one at a time, rather than asking whether to, and ask the first only, as a single
 question, giving any examples as possible answers rather than further questions; if the person has
 said not to ask now, ask nothing. Name the count only, not the items: each comes up when you reach
 it. List the reviewers' suggestions separately, as optional: they never hold the brief back. Leave
 committing to them.
+
+Put each question to the person one at a time, by the asking rule: open questions, decisions for the
+person and what a check finds. Offer four choices on your question tool: "Accept" your proposal, "My
+own answer", "Ignore" and "Defer"; where you have none, end it with this line, word for word, since
+a plugin hook looks for it to keep the answer: "Accept, give your own answer, ignore or defer?". If
+the person has said not to ask now, or stops, defer the questions left.
+
+Accept and My own answer write the answer in as the person gave it, removing the question from Open
+questions if it is there; Ignore writes nothing and removes it; Defer leaves it there, or writes it
+there with its proposal. Nothing else is written into Open questions. An ignored fault you cannot
+fix leaves the document as it is: say which rubric check it fails.
+
+When a round of questions ends and anything was written in, start the `agentic:correction-checker`
+agent again with the same request: the hook attaches the text as last checked and the answers, so it
+checks only what changed. Put what it raises to the person the same way. Never run a full review for
+answers.
+
+Once nothing is left to ask, the last question offers the next status, where there is one, one more
+full review, or stopping; while any question is deferred, only the last two. Run a full review again
+only when the person asks, after their own change, on a document rewritten to a new layout, or in a
+new conversation.

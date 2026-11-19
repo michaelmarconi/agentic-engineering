@@ -27,6 +27,7 @@ def handed_back(report):
     """An Agent tool result whose report came through a hand-back."""
     return {"status": "completed", "agentId": "a1b2c3", "handback": "send",
             "handbackReport": {"text": report}, "content": [{"type": "text", "text": POINTER}]}
+FOUR = ("Accept", "My own answer", "Ignore", "Defer")
 TOPIC = "docs/practices/testing.md"
 PAIR = f"AGENTS.md, {TOPIC}"
 
@@ -336,11 +337,14 @@ class Relay(unittest.TestCase):
                 self.assertIn(WORDING, prompt)
                 self.assertIn("=== DOCUMENT AS REVIEWED: " + SPEC + " ===\nv1\n", prompt)
 
-    def test_checker_without_the_wording_report_is_refused(self):
+    def test_checker_without_the_wording_report_is_allowed(self):
+        # ADR 0050: a missing wording report no longer stops the check.
         self.put(SPEC, "v1\n")
         self.review(wording=None)
         self.put(SPEC, "v2\n")
-        self.assertRefused(self.check(), "language checker")
+        prompt = self.assertAllowed(self.check())["prompt"]
+        self.assertIn(REPORT, prompt)
+        self.assertIn("=== WORDING REPORT ===\n(none)\n=== END WORDING REPORT ===", prompt)
 
     def test_checker_with_only_the_wording_report_is_refused(self):
         self.put(SPEC, "v1\n")
@@ -352,9 +356,11 @@ class Relay(unittest.TestCase):
         self.put(SPEC, "v1\n")
         self.review(wording=None)
         self.put(SPEC, "v2\n")
-        self.language()
+        self.language(wording="wording of v2")
         self.put(SPEC, "v3\n")
-        self.assertRefused(self.check(), "No review")
+        prompt = self.assertAllowed(self.check())["prompt"]
+        self.assertNotIn("wording of v2", prompt)
+        self.assertIn(f"=== DOCUMENT AS REVIEWED: {SPEC} ===\nv1\n", prompt)
 
     def test_a_new_review_of_unchanged_text_replaces_both_reports(self):
         self.put(SPEC, "v1\n")
@@ -395,16 +401,6 @@ class Relay(unittest.TestCase):
         prompt = self.assertAllowed(self.check())["prompt"]
         self.assertIn("current wording", prompt)
         self.assertNotIn("stale wording", prompt)
-
-    def test_refusal_for_a_missing_wording_report_never_asks_for_another_review(self):
-        self.put(SPEC, "v1\n")
-        self.review(wording=None)
-        self.put(SPEC, "v2\n")
-        out = self.check()
-        self.assertRefused(out, "language checker")
-        reason = out["hookSpecificOutput"]["permissionDecisionReason"]
-        self.assertIn("show the person", reason)
-        self.assertNotIn("Start the language checker", reason)
 
     def test_a_saved_record_in_another_shape_counts_as_no_review(self):
         self.put(SPEC, "v1\n")
@@ -944,19 +940,16 @@ class Relay(unittest.TestCase):
 
     # Clearing up
 
-    def test_checker_finishing_deletes_only_its_documents_review(self):
-        other = "docs/specs/payments.spec.md"
+    def test_checker_finishing_keeps_the_review_for_the_next_check(self):
+        # ADR 0050: the record outlives the check, so a check of answers can follow it.
         self.put(SPEC, "v1\n")
-        self.put(other, "p1\n")
         self.review()
-        self.review(prompt=f"Document: {other}\nReview.")
         self.put(SPEC, "v2\n")
-        self.put(other, "p2\n")
         prompt = f"Document: {SPEC}\nCheck."
         self.assertAllowed(self.check(prompt=prompt))
         self.assertIsNone(self.agent("PostToolUse", "agentic:correction-checker", prompt, response="Result: PASS"))
-        self.assertRefused(self.check(prompt=prompt), "No review")
-        self.assertAllowed(self.check(prompt=f"Document: {other}\nCheck."))
+        self.put(SPEC, "v3\n")
+        self.assertAllowed(self.check(prompt=prompt))
 
     def test_a_review_survives_the_session_ending_so_a_resumed_session_can_check_it(self):
         # Issue #37: `claude --resume`, or a restarted container, brings the same session back.
@@ -976,12 +969,209 @@ class Relay(unittest.TestCase):
         self.assertFalse(os.path.exists(os.path.join(self.data, "reviews", "old")))
         self.assertTrue(os.path.exists(os.path.join(self.data, "reviews", "recent")))
 
-    def test_nothing_is_left_once_the_checker_finishes(self):
+    def test_nothing_is_saved_inside_the_project(self):
         self.put(SPEC, "v1\n")
+        before = sorted(os.path.join(d, f) for d, _, fs in os.walk(self.project) for f in fs)
         self.review()
         self.put(SPEC, "v2\n")
         self.check()
-        self.agent("PostToolUse", "agentic:correction-checker", f"Document: {SPEC}\nCheck.", response="ok")
+        self.answer({"Which colour?": "Green"})
+        self.message("Teal")
+        self.put(SPEC, "v3\n")
+        self.check()
+        after = sorted(os.path.join(d, f) for d, _, fs in os.walk(self.project) for f in fs)
+        self.assertEqual(before, after)
+
+    # Checks after a check, with the person's answers (ADR 0049 and 0050)
+
+    def answer(self, answers, session=None, options=FOUR):
+        """The question tool returns the person's answers."""
+        return self.run_hook({"hook_event_name": "PostToolUse", "session_id": session or self.session,
+                              "cwd": self.project, "tool_name": "AskUserQuestion",
+                              "tool_input": {"questions": [{"question": q, "options": [
+                                  {"label": o} for o in options]} for q in answers],
+                                             "answers": answers},
+                              "tool_response": {"answers": answers}})
+
+    def message(self, prompt, asked="**Question 1 of 2: colour**\n\nAccept, give your own answer, ignore or defer?",
+                session=None, before=None):
+        """The person writes a message after Claude's last turn, which ended with `asked`."""
+        transcript = os.path.join(self.tmp.name, "transcript.jsonl")
+        with open(transcript, "w", encoding="utf-8") as f:
+            f.write(json.dumps({"type": "user", "message": {"role": "user", "content": "go"}}) + "\n")
+            if before is not None:
+                f.write(json.dumps({"type": "assistant", "message": {"role": "assistant", "content": before}}) + "\n")
+            f.write(json.dumps({"type": "assistant", "message": {"role": "assistant", "content": [
+                {"type": "tool_use", "name": "mcp__hearthbot__post_message", "input": {"text": asked}}]}}) + "\n")
+            f.write(json.dumps({"type": "user", "message": {"role": "user", "content": [
+                {"type": "tool_result", "content": "sent"}]}}) + "\n")
+            f.write(json.dumps({"type": "assistant", "message": {"role": "assistant", "content": [
+                {"type": "tool_use", "name": "mcp__hearthbot__no_reply_needed",
+                 "input": {"reason": "nothing_to_add"}}]}}) + "\n")
+        return self.run_hook({"hook_event_name": "UserPromptSubmit", "session_id": session or self.session,
+                              "cwd": self.project, "transcript_path": transcript, "prompt": prompt})
+
+    def checked_once(self):
+        self.put(SPEC, "v1\n")
+        self.review()
+        self.put(SPEC, "v2\n")
+        self.assertAllowed(self.check())
+
+    def test_the_first_check_gets_no_answers_block(self):
+        self.put(SPEC, "v1\n")
+        self.review()
+        self.put(SPEC, "v2\n")
+        self.assertNotIn("=== ANSWERS ===", self.assertAllowed(self.check())["prompt"])
+
+    def test_a_second_check_gets_the_text_as_last_checked(self):
+        self.checked_once()
+        self.put(SPEC, "v3\n")
+        prompt = self.assertAllowed(self.check())["prompt"]
+        self.assertIn(f"=== DOCUMENT AS LAST CHECKED: {SPEC} ===\nv2\n\n=== END DOCUMENT ===", prompt)
+        self.assertNotIn("v1", prompt)
+        self.assertIn(REPORT, prompt)
+        self.assertIn(WORDING, prompt)
+
+    def test_a_check_with_nothing_written_in_since_the_last_is_refused_as_not_needed(self):
+        self.checked_once()
+        self.answer({"Which colour?": "Ignore"})
+        reason = self.check()["hookSpecificOutput"]["permissionDecisionReason"]
+        self.assertIn("nothing was written in", reason)
+        self.assertNotIn("stop", reason.lower())
+
+    def test_checks_can_follow_checks(self):
+        self.checked_once()
+        for text in ("v3\n", "v4\n", "v5\n"):
+            self.put(SPEC, text)
+            self.assertAllowed(self.check())
+
+    def test_answers_from_the_question_tool_reach_the_next_check_word_for_word(self):
+        self.checked_once()
+        self.assertIsNone(self.answer({"Which colour?": "Green", "Why?": 'Teal — "bright!"'}))
+        self.put(SPEC, "v3\n")
+        prompt = self.assertAllowed(self.check())["prompt"]
+        self.assertIn("=== ANSWERS ===\nQuestion: Which colour?\nAnswer: Green\n\n"
+                      'Question: Why?\nAnswer: Teal — "bright!"\n=== END ANSWERS ===', prompt)
+
+    def test_answers_are_cleared_once_checked(self):
+        self.checked_once()
+        self.answer({"Which colour?": "Green"})
+        self.put(SPEC, "v3\n")
+        self.assertAllowed(self.check())
+        self.put(SPEC, "v4\n")
+        self.assertNotIn("Green", self.assertAllowed(self.check())["prompt"])
+
+    def test_answers_before_the_first_check_reach_a_check_after_a_passing_review(self):
+        # A review with nothing to correct goes straight to the questions; the first check then
+        # checks the answers.
+        self.put(SPEC, "v1\n")
+        self.review()
+        self.answer({"Which colour?": "Green"})
+        self.put(SPEC, "v2\n")
+        prompt = self.assertAllowed(self.check())["prompt"]
+        self.assertIn("Answer: Green", prompt)
+
+    def test_an_answer_given_as_a_message_after_a_question_is_saved_word_for_word(self):
+        self.checked_once()
+        self.assertIsNone(self.message('Teal — "bright!"'))
+        self.put(SPEC, "v3\n")
+        prompt = self.assertAllowed(self.check())["prompt"]
+        self.assertIn('Question: **Question 1 of 2: colour**\nAnswer: Teal — "bright!"\n', prompt)
+
+    def test_a_message_after_no_question_is_not_saved(self):
+        self.checked_once()
+        self.message("Thanks", asked="Here is the spec.")
+        self.put(SPEC, "v3\n")
+        self.assertNotIn("=== ANSWERS ===", self.assertAllowed(self.check())["prompt"])
+
+    def test_a_message_in_a_project_thread_is_taken_from_its_message_tag(self):
+        self.checked_once()
+        wake = ('<wake reason="mention"><thread><message trigger="true" from="human" id="m1">'
+                'Defer &amp; keep &quot;it&quot;</message></thread></wake>')
+        self.message(wake)
+        self.put(SPEC, "v3\n")
+        prompt = self.assertAllowed(self.check())["prompt"]
+        self.assertIn('Answer: Defer & keep "it"\n', prompt)
+        self.assertNotIn("<wake", prompt)
+
+    def test_answers_go_to_the_document_last_reviewed_in_the_session(self):
+        other = "docs/specs/payments.spec.md"
+        self.put(other, "p1\n")
+        self.review(prompt=f"Document: {other}\nReview.")
+        self.checked_once()
+        self.answer({"Which colour?": "Green"})
+        self.put(SPEC, "v3\n")
+        self.put(other, "p2\n")
+        self.assertIn("Green", self.assertAllowed(self.check())["prompt"])
+        self.assertNotIn("Green", self.assertAllowed(self.check(prompt=f"Document: {other}\nCheck."))["prompt"])
+
+    def test_answers_of_another_session_do_not_count(self):
+        self.checked_once()
+        self.answer({"Which colour?": "Green"}, session="other")
+        self.put(SPEC, "v3\n")
+        self.assertNotIn("Green", self.assertAllowed(self.check())["prompt"])
+
+    def test_a_question_line_with_quotes_is_kept_word_for_word(self):
+        self.checked_once()
+        self.message("Yes", asked='**Question 2 of 3: should "archived" items count?**\n\n'
+                                  'Accept, give your own answer, ignore or defer?')
+        self.put(SPEC, "v3\n")
+        prompt = self.assertAllowed(self.check())["prompt"]
+        self.assertIn('Question: **Question 2 of 3: should "archived" items count?**\nAnswer: Yes\n', prompt)
+
+    def test_a_turn_that_only_quotes_the_line_in_an_edit_is_no_question(self):
+        self.checked_once()
+        edit = [{"type": "tool_use", "name": "Edit", "input": {
+            "file_path": "SKILL.md", "new_string": "end it \"Accept, give your own answer, ignore or defer?\""}}]
+        self.message("looks good, commit it", asked="Done: I updated the skill.", before=edit)
+        self.put(SPEC, "v3\n")
+        self.assertNotIn("=== ANSWERS ===", self.assertAllowed(self.check())["prompt"])
+
+    def test_a_message_that_only_mentions_the_line_mid_turn_is_no_question(self):
+        self.checked_once()
+        self.message("ok", asked="The skill now ends questions with \"ignore or defer?\" and then says more.")
+        self.put(SPEC, "v3\n")
+        self.assertNotIn("=== ANSWERS ===", self.assertAllowed(self.check())["prompt"])
+
+    def test_question_tool_answers_without_the_four_choices_are_left_alone(self):
+        self.checked_once()
+        self.answer({"Which database?": "Postgres"}, options=("Postgres", "Redis"))
+        self.put(SPEC, "v3\n")
+        self.assertNotIn("=== ANSWERS ===", self.assertAllowed(self.check())["prompt"])
+
+    def test_a_language_check_still_running_holds_the_first_check_back(self):
+        self.put(SPEC, "v1\n")
+        self.review(wording=None)
+        self.assertAllowed(self.agent("PreToolUse", LANGUAGE, f"Document: {SPEC}\nCheck the wording."))
+        self.put(SPEC, "v2\n")
+        self.assertRefused(self.check(), "language checker")
+
+    def test_a_new_language_check_never_joins_a_review_already_checked(self):
+        self.checked_once()
+        self.language(wording="fresh wording")
+        self.review(report="fresh report", wording=None)
+        self.put(SPEC, "v3\n")
+        prompt = self.assertAllowed(self.check())["prompt"]
+        self.assertIn("fresh report", prompt)
+        self.assertIn("fresh wording", prompt)
+
+    def test_the_refusal_for_nothing_saved_never_says_it_was_checked_already(self):
+        self.put(SPEC, "v1\n")
+        reason = self.check()["hookSpecificOutput"]["permissionDecisionReason"]
+        self.assertNotIn("checked already", reason)
+
+    def test_a_check_clears_its_documents_background_notes(self):
+        self.put(SPEC, "v1\n")
+        self.launch("agentic:spec-reviewer", f"Document: {SPEC}\nReview this spec.", "a1")
+        self.stopped("agentic:spec-reviewer", "a1", REPORT)
+        self.language()
+        self.put(SPEC, "v2\n")
+        self.assertAllowed(self.check())
+        self.assertEqual(self.held(), {})
+
+    def test_answers_with_no_review_on_record_are_left_alone(self):
+        self.assertIsNone(self.answer({"Which colour?": "Green"}))
+        self.assertIsNone(self.message("Green"))
         self.assertEqual(self.saved(), [])
 
     # Several files named on one Document: line (ADR 0018)

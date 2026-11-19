@@ -180,8 +180,8 @@ The `status:` frontmatter is `Draft 📝`, `Ready to run 🟢`, `Confirmed 💡`
 settled ❔`, written exactly so, word first, then its emoji; one with its emoji in front, as earlier versions of the plugin wrote it, is written so in your next edit. Only the person moves a record forward: `Ready to run 🟢`
 when they sign off the design, and the status the Finding starts with when they confirm the verdict.
 Move the document forward only when the person explicitly says so about its text as it now stands,
-once the review below has ended with a pass on that text, from the review itself or from the
-correction check after it, and once Open questions says "None.". Only a review in this conversation
+once the review below has ended on that text, by a full review or a check of what changed, with
+every question it raised answered or ignored, and once Open questions says "None.". Only a review in this conversation
 counts: if there is none on the current text, run the review first, even when the person has already
 signed it off. Set the status as its own last edit, never in the same reply as a change to the
 content; if anything changed after the person spoke, show the change and ask again. "Looks fine,
@@ -224,8 +224,8 @@ corrections brings new mistakes.
    reports list: each failed check and each item under Other findings in the review report, and each
    finding in the wording report. A wording item under Needs a person, whose meaning only the person
    knows, is a decision like any other. A decision only the person can make, such as what result
-   counts as success, becomes an entry in Open questions, with its "Proposed:", never a guess: leave
-   the text it concerns as it is. Leave suggestions alone and change nothing else, since an edit
+   counts as success, becomes a question for the person, with its "Proposed:", never a guess:
+   leave the text it concerns as it is. Leave suggestions alone and change nothing else, since an edit
    beyond the reports is the likeliest way to break something. Wait until every edit has succeeded.
    If nothing was yours to correct, go straight to handing over.
 3. **Check the corrections.** Start the `agentic:correction-checker` agent in the foreground with
@@ -236,22 +236,37 @@ corrections brings new mistakes.
    Check the corrections.
    ```
 
-   If the hook refuses to start it, do what its reason says. If the check fails, stop: change the
-   record no further, and show the person the check's report. Do not review or correct again; what
-   happens next is their call.
-
-While you are walking through questions with the person, do not review after each answer: run the
-sequence once when the walk-through ends, either because no questions are left or because the
-person stops. A change the person makes or asks for at any other time is reviewed once it is made.
+   If the hook refuses to start it, do what its reason says. If the check fails, change the
+   record no further: show the person the check's report, whose findings become questions, as
+   below. Do not review or correct again; what happens next is their call.
 
 End with the hand-over. Show the person each document you wrote or changed: if the app you run in
 can show them a file in a viewer, use it, and show a fresh copy after each change if what it shows
 is a copy; always name each one's full path; never send them to a code-hosting site to read it. Give
 the person the review and wording reports and the check's report, if there was one, leaving out the
-decisions they list, which are now in Open questions. Say how many items must be settled before the
-record can move on: its open questions, plus any correction the check found not made or broken. Say
-you will take them one at a time and ask the first only, as a single question; name the count only,
-not the items. List the reviewers' suggestions apart, as optional. Once nothing is left, ask the
-person to sign off the design, or to confirm the verdict, naming the status it would get. After the
+decisions they list. Say how many questions there are, naming the count only, not the items. List
+the reviewers' suggestions apart, as optional. The last question's next status signs off the
+design, or confirms the verdict, naming the status it would get. After the
 verdict, tell them which spec or ADR to take the finding to next. Leave committing to them: to hand
 an unfinished spike to a teammate, they commit the record.
+
+Put each question to the person one at a time, by the asking rule: open questions, decisions for the
+person and what a check finds. Offer four choices on your question tool: "Accept" your proposal, "My
+own answer", "Ignore" and "Defer"; where you have none, end it with this line, word for word, since
+a plugin hook looks for it to keep the answer: "Accept, give your own answer, ignore or defer?". If
+the person has said not to ask now, or stops, defer the questions left.
+
+Accept and My own answer write the answer in as the person gave it, removing the question from Open
+questions if it is there; Ignore writes nothing and removes it; Defer leaves it there, or writes it
+there with its proposal. Nothing else is written into Open questions. An ignored fault you cannot
+fix leaves the document as it is: say which rubric check it fails.
+
+When a round of questions ends and anything was written in, start the `agentic:correction-checker`
+agent again with the same request: the hook attaches the text as last checked and the answers, so it
+checks only what changed. Put what it raises to the person the same way. Never run a full review for
+answers.
+
+Once nothing is left to ask, the last question offers the next status, where there is one, one more
+full review, or stopping; while any question is deferred, only the last two. Run a full review again
+only when the person asks, after their own change, on a document rewritten to a new layout, or in a
+new conversation.

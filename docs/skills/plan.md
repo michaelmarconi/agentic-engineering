@@ -214,7 +214,10 @@ judges the page as a newcomer would. At the same time, a language checker reads 
 newcomer could not follow, by the [Plain words](../lifecycle.md#plain-words) rule. `/plan`
 corrects what both find, once, and has the
 corrections checked (see [Review process](../lifecycle.md#review-process)); then you get the plan
-with the reports.
+with the reports. After that, `/plan` puts each question to you with four choices, Accept its proposal, give your
+own answer, Ignore or Defer, and only deferred ones go into Open questions. Each round of answers
+is checked on only what it changed, and the whole review runs again only when you ask, after a
+change you make yourself, or in a new conversation.
 
 ## Why not Claude Code's plan mode?
 

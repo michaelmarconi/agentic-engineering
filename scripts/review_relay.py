@@ -1,13 +1,15 @@
 #!/usr/bin/env python3
 """Hand the correction checker the review report and the document as reviewed, word for word.
 
-After a review, the drafting agent corrects the document once and starts the correction checker
-(see docs/adrs/0010 and 0011). The checker needs two texts it cannot see: the reviewer's report,
-and the document as it stood when reviewed. A model copying them can reword them, so this hook
+After a review, the drafting agent corrects the document once and starts the correction checker,
+and starts it again after each round of the person's answers (see docs/adrs/0049 and 0050). The
+checker needs texts it cannot see: the reviewer's report, the document as it stood when reviewed
+or last checked, and the person's answers. A model copying them can reword them, so this hook
 saves them and adds them to the checker's request itself.
 
 Claude Code runs it on PreToolUse and PostToolUse for the Agent tool, on PostToolUse for a
-subagent's SubagentHandback tool, and on SubagentStop. It reads
+subagent's SubagentHandback tool and for the question tool (AskUserQuestion), on SubagentStop and
+on UserPromptSubmit. It reads
 the hook's JSON from stdin. A reviewer's or checker's request must start with the line
 `Document: <path>`. Skills give the document's full path; a relative path is read from a
 `Repository: <folder>` second line if the request has one, or else as every hook reads one (see
@@ -50,18 +52,32 @@ feedback, practices, spike or release) and the shared language checker, which ch
   launch is seen, the report is held under its id until it is. These notes live in the session's
   background-runs.json.
 - Before the correction checker starts, it takes the latest review the reviewer ran in, appends
-  both its reports, the document as reviewed, and the files that skill's checker should read,
-  between fixed `=== ... ===` lines, and approves the start. It refuses the start, with a reason
-  Claude sees, when the request has no `Document:` line, when that review lacks either report or
-  none is on record in this session, or when the document is unchanged since its review. When
-  nothing at all is saved under the document's path, the reason adds that it may have been renamed
-  since its review, and to move it back (docs/adrs/0036). No
-  refusal asks for another review, which the lifecycle never repeats: when a report is missing,
-  it tells Claude to stop and show the person.
-- When the checker finishes, it deletes that document's saved review, so a later review of the
-  same document, such as a spike record's verdict review after its design review, starts a new
-  cycle. A review whose checker never runs is deleted once unchanged for 30 days (see
-  saved_records.py), not when the session ends, since a resumed session carries on.
+  both its reports (the wording report as `(none)` if it never came), the document as reviewed
+  or, after a first check, as last checked, the person's answers since then between
+  `=== ANSWERS ===` and `=== END ANSWERS ===` lines, and the files that skill's checker should read,
+  between fixed `=== ... ===` lines, and approves the start (docs/adrs/0049 and 0050). It then
+  keeps the document as it now stands as the text last checked, and clears the answers, so checks
+  can follow checks with no new review; a new review never joins one already checked. It
+  refuses the start, with a reason Claude sees, when the request has no `Document:` line, when no
+  review with the reviewer's report is on record in this session, when a language checker started
+  for a review not yet checked has not reported, or when the document is unchanged: since its review, or, after a check or once answers
+  are on record, since it was last checked, when nothing was written in and no check is needed.
+  When nothing at all is saved under the document's path, the reason adds that it may have been
+  renamed since its review, and to move it back (docs/adrs/0036). No refusal asks for another
+  review.
+- The person's answers are saved with the latest review of the document reviewed last in the
+  session, word for word: after the question tool returns, its `answers` map, each question's
+  text paired with the option picked or the text typed, for the questions offered with "Ignore"
+  and "Defer" among their options; and, where there is no question tool, as in a Claude project
+  thread, the person's next message when the last thing Claude said in its turn, as text or as a
+  message a tool sends, never a file edit, ends asking "... ignore or defer?", with that message's
+  last "**Question N of M: ...**" line as its question. A
+  message that arrives as a project thread's wake is taken from its `<message trigger="true">`
+  tag.
+- A saved review is kept after its check, and deleted once unchanged for 30 days (see
+  saved_records.py), not when the session ends, since a resumed session carries on. A later
+  review of the same document, such as a spike record's verdict review after its design review,
+  starts a new one.
 
 Saved reviews live in $CLAUDE_PLUGIN_DATA/reviews/<session>/, outside the project, one file per
 document. Without $CLAUDE_PLUGIN_DATA nothing is saved. Any other agent or tool, and any input it
@@ -71,6 +87,7 @@ cannot read, is left alone, so the hook never blocks anything else.
 import argparse
 import contextlib
 import hashlib
+import html
 import json
 import os
 import re
@@ -306,20 +323,9 @@ def save(session, name, reviews):
     os.makedirs(os.path.dirname(path), exist_ok=True)
     handle, temp = tempfile.mkstemp(dir=os.path.dirname(path))
     with os.fdopen(handle, "w", encoding="utf-8") as f:
-        json.dump({"reviews": trim(reviews)}, f)
+        json.dump({"name": name, "reviews": trim(reviews)}, f)
     os.replace(temp, path)
     saved_records.prune(os.path.dirname(os.path.dirname(path)))
-
-
-def forget(session, name):
-    try:
-        os.remove(record_path(session, name))
-    except (OSError, TypeError):
-        pass
-    runs = load_runs(session)
-    launched = {k: v for k, v in runs["launched"].items() if v.get("name") != name}
-    if launched != runs["launched"]:
-        save_runs(session, dict(runs, launched=launched))
 
 
 def runs_path(session):
@@ -422,16 +428,18 @@ def reviewer_of(review):
     return next((k for k in review["reports"] if k in REVIEWERS), None)
 
 
-def complete(review):
-    return reviewer_of(review) is not None and LANGUAGE in review["reports"]
-
-
 def has_report(review, part):
     return LANGUAGE in review["reports"] if part == "language" else reviewer_of(review) is not None
 
 
 def same_text(a, b):
     return " ".join(a.split()) == " ".join(b.split())
+
+
+def answers_of(review):
+    answers = review.get("answers")
+    return [a for a in answers if isinstance(a, dict) and isinstance(a.get("question"), str)
+            and isinstance(a.get("answer"), str)] if isinstance(answers, list) else []
 
 
 def attachments(name, record):
@@ -442,10 +450,15 @@ def attachments(name, record):
     if extra:
         lines.append("Only where needed to judge a changed sentence: " + ", ".join(extra))
     reports = record["reports"]
-    return ("\n\n=== REVIEW REPORT ===\n" + reports[reviewer] + "\n=== END REVIEW REPORT ===\n\n"
-            "=== WORDING REPORT ===\n" + reports[LANGUAGE] + "\n=== END WORDING REPORT ===\n\n"
-            f"=== DOCUMENT AS REVIEWED: {name} ===\n" + record["text"] + "\n=== END DOCUMENT ===\n\n"
-            "=== FILES TO READ ===\n" + "\n".join(lines) + "\n=== END FILES TO READ ===\n")
+    since = "LAST CHECKED" if record.get("checked") else "REVIEWED"
+    blocks = ("\n\n=== REVIEW REPORT ===\n" + reports[reviewer] + "\n=== END REVIEW REPORT ===\n\n"
+              "=== WORDING REPORT ===\n" + reports.get(LANGUAGE, "(none)") + "\n=== END WORDING REPORT ===\n\n"
+              f"=== DOCUMENT AS {since}: {name} ===\n" + record["text"] + "\n=== END DOCUMENT ===\n\n")
+    answers = answers_of(record)
+    if answers:
+        blocks += ("=== ANSWERS ===\n" + "\n".join(f"Question: {a['question']}\nAnswer: {a['answer']}\n"
+                                                  for a in answers) + "=== END ANSWERS ===\n\n")
+    return blocks + "=== FILES TO READ ===\n" + "\n".join(lines) + "\n=== END FILES TO READ ===\n"
 
 
 def start_checker(session, tool_input, cwd=None):
@@ -461,33 +474,171 @@ def start_checker(session, tool_input, cwd=None):
     name = ", ".join(paths)
     with locked(session, create=False):
         saved = load(session, name)
-        reviews = [r for r in saved if reviewed(r)][-1:]
+    reviews = [r for r in saved if reviewed(r)][-1:]
     if not saved:
         # Nothing saved under this path at all: the likeliest cause is a rename since the review,
         # which the skills forbid (docs/adrs/0036). Claude knows what it renamed in its own session.
         return refuse(f"No review of {name} is on record in this session, so the corrections cannot "
                       "be checked. If you renamed the document since its review, move it back to the name "
                       "it had when reviewed. Do not review again: stop and show the person this reason; "
-                      "the review may also have been checked already, or saved before the plugin was "
-                      "updated.")
-    if not reviews or not complete(reviews[0]):
-        missing = [] if not reviews else [
-            who for who, part in (("the reviewer's", "reviewer"), ("the language checker's", "language"))
-            if not has_report(reviews[0], part)]
-        lacking = f": {' and '.join(missing)} report{'s are' if len(missing) > 1 else ' is'} missing" \
-            if missing else ""
-        return refuse(f"No review of {name} with both the reviewer's and the language checker's "
-                      f"reports is on record in this session{lacking}, so the corrections cannot "
-                      "be checked. Do not review again: stop and show the person the reports you "
-                      "have and this reason.")
+                      "the review may also have been saved before the plugin was updated.")
+    if not reviews or not has_report(reviews[0], "reviewer"):
+        lacking = ": the reviewer's report is missing" if reviews else ""
+        return refuse(f"No review of {name} with the reviewer's report is on record in this "
+                      f"session{lacking}, so the corrections cannot be checked. Do not review "
+                      "again: stop and show the person the reports you have and this reason.")
     record = reviews[-1]
+    if not record.get("checked") and "language" in record["started"].values() \
+            and not has_report(record, "language"):
+        return refuse(f"The language checker started on {name} has not reported yet, so the "
+                      "corrections cannot be checked. Wait for its report; if it never comes, stop "
+                      "and show the person the reports you have and this reason.")
     text = current_text(repository, paths, prompt)
     if text == record["text"]:
+        if record.get("checked") or answers_of(record):
+            return refuse(f"{name} is unchanged since it was last checked: nothing was written in, "
+                          "so no check is needed. Go on to the next question.")
         return refuse(f"{name} is unchanged since its review. Make the corrections first, then "
                       "start the correction checker.")
     updated = rewritten(tool_input, repository, paths) if repository else dict(tool_input)
-    updated["prompt"] += attachments(name, record)
+    with locked(session):
+        # Read again under the lock, so an answer saved meanwhile is either attached or kept.
+        saved = load(session, name)
+        record = [r for r in saved if reviewed(r)][-1]
+        updated["prompt"] += attachments(name, record)
+        # The next check judges what changes after this one, against the answers given after it.
+        record.update(text=text, checked=True, answers=[])
+        save(session, name, saved)
+        runs = load_runs(session)
+        launched = {k: v for k, v in runs["launched"].items() if v.get("name") != name}
+        if launched != runs["launched"]:
+            save_runs(session, dict(runs, launched=launched))
     return allow(updated)
+
+
+def latest_record(session):
+    """The name of the document whose review was saved last in this session, or None."""
+    base = folder(session)
+    try:
+        entries = [os.path.join(base, f) for f in os.listdir(base) if f != RUNS and f.endswith(".json")]
+    except (OSError, TypeError):
+        return None
+    for path in sorted(entries, key=os.path.getmtime, reverse=True):
+        try:
+            with open(path, encoding="utf-8") as f:
+                name = json.load(f).get("name")
+        except (OSError, ValueError, AttributeError):
+            continue
+        if isinstance(name, str):
+            return name
+    return None
+
+
+def keep_answers(session, answers):
+    """Add the person's answers to the latest review of the document last reviewed."""
+    if not answers or not folder(session) or not os.path.isdir(folder(session)):
+        return
+    with locked(session, create=False):
+        name = latest_record(session)
+        reviews = load(session, name) if name else []
+        for review in reversed(reviews):
+            if reviewed(review):
+                review["answers"] = answers_of(review) + answers
+                save(session, name, reviews)
+                break
+
+
+MARKER = "ignore or defer?"
+QUESTION_LINE = re.compile(r"\*\*Question \d+ of \d+:[^*\n]*\*\*")
+WAKE_MESSAGE = re.compile(r'<message\b[^>]*\btrigger="true"[^>]*>(.*?)</message>', re.S)
+TAIL = 1 << 20  # the last turn is near the end of the transcript; read at most this much of it
+SAID = ("text", "message")  # where a tool's input holds what Claude says to the person
+
+
+def said(block):
+    """What one block of Claude's turn says to the person: a text block, or a message a tool
+    sends, such as a project thread's post_message; never a file edit's text."""
+    if not isinstance(block, dict):
+        return None
+    if block.get("type") == "text":
+        return block.get("text") if isinstance(block.get("text"), str) else None
+    if block.get("type") == "tool_use" and isinstance(block.get("input"), dict):
+        if re.search(r"(^|_)(Edit|Write|MultiEdit|NotebookEdit)$", str(block.get("name"))):
+            return None
+        for key in SAID:
+            if isinstance(block["input"].get(key), str):
+                return block["input"][key]
+    return None
+
+
+def last_said(transcript):
+    """The last thing Claude said to the person in its last turn, from the transcript."""
+    try:
+        with open(transcript, "rb") as f:
+            f.seek(max(0, os.path.getsize(transcript) - TAIL))
+            lines = f.read().decode("utf-8", "replace").splitlines()
+    except (OSError, TypeError, ValueError):
+        return ""
+    for line in reversed(lines):
+        try:
+            entry = json.loads(line)
+        except ValueError:
+            continue
+        if not isinstance(entry, dict):
+            continue
+        message = entry.get("message") if isinstance(entry.get("message"), dict) else {}
+        content = message.get("content")
+        if entry.get("type") == "user":
+            results = isinstance(content, list) and all(
+                isinstance(b, dict) and b.get("type") == "tool_result" for b in content)
+            if not results:
+                return ""
+        elif entry.get("type") == "assistant":
+            blocks = [{"type": "text", "text": content}] if isinstance(content, str) else content
+            for block in reversed(blocks if isinstance(blocks, list) else []):
+                text = said(block)
+                if text is not None and text.strip():
+                    return text
+    return ""
+
+
+def message_answer(event):
+    """The person's message, when the last thing Claude said ended by putting a question to them."""
+    prompt = event.get("prompt")
+    if not isinstance(prompt, str) or not prompt.strip():
+        return []
+    asked = last_said(event.get("transcript_path"))
+    if not asked.rstrip(" \t\n\"'`*_.").lower().endswith(MARKER):
+        return []
+    lines = QUESTION_LINE.findall(asked)
+    wake = WAKE_MESSAGE.search(prompt)
+    answer = html.unescape(wake.group(1)).strip() if wake else prompt
+    return [{"question": lines[-1] if lines else "(asked in a message)", "answer": answer}]
+
+
+def four_choices(event):
+    """The questions the question tool asked with the four choices, Accept to Defer."""
+    tool_input = event.get("tool_input") if isinstance(event.get("tool_input"), dict) else {}
+    questions = tool_input.get("questions") if isinstance(tool_input.get("questions"), list) else []
+    found = set()
+    for q in questions:
+        options = q.get("options") if isinstance(q, dict) and isinstance(q.get("options"), list) else []
+        labels = {str(o.get("label", "")).strip().lower() for o in options if isinstance(o, dict)}
+        if {"ignore", "defer"} <= labels and isinstance(q.get("question"), str):
+            found.add(q["question"])
+    return found
+
+
+def tool_answers(event):
+    """The answers the question tool returned to questions with the four choices, each question's
+    text paired with the answer; answers to any other question are left alone."""
+    asked = four_choices(event)
+    for source in (event.get("tool_response"), event.get("tool_input")):
+        answers = source.get("answers") if isinstance(source, dict) else None
+        if isinstance(answers, dict) and answers:
+            return [{"question": str(q), "answer": a if isinstance(a, str) else json.dumps(a, ensure_ascii=False)}
+                    for q, a in answers.items() if q in asked]
+    return []
 
 
 def handle(event):
@@ -498,6 +649,12 @@ def handle(event):
     when = event.get("hook_event_name")
     if subagent_report.finished(event):
         return agent_stopped(session, event)
+    if when == "UserPromptSubmit":
+        if not folder(session) or not latest_record(session):
+            return None
+        return keep_answers(session, message_answer(event))
+    if when == "PostToolUse" and event.get("tool_name") == "AskUserQuestion":
+        return keep_answers(session, tool_answers(event))
     tool_input = event.get("tool_input")
     if event.get("tool_name") not in ("Agent", "Task") or not isinstance(tool_input, dict):
         return None
@@ -506,16 +663,7 @@ def handle(event):
     named = document(prompt)
     cwd = event.get("cwd") if isinstance(event.get("cwd"), str) and event.get("cwd") else None
     if agent == CHECKER:
-        if when == "PreToolUse":
-            return start_checker(session, tool_input, cwd)
-        if when == "PostToolUse" and named:
-            try:
-                name = ", ".join(named_after(named, prompt, cwd))
-            except Unreadable:
-                return None
-            with locked(session, create=False):
-                forget(session, name)
-        return None
+        return start_checker(session, tool_input, cwd) if when == "PreToolUse" else None
     if (agent not in REVIEWERS and agent != LANGUAGE) or not named:
         return None
     call = str(event.get("tool_use_id") or agent)
@@ -538,7 +686,8 @@ def handle(event):
             if text is None:
                 return start
             latest = reviews[-1] if reviews else None
-            if not (latest and same_text(latest["text"], text) and not has_report(latest, part)):
+            if not (latest and same_text(latest["text"], text) and not has_report(latest, part)
+                    and not latest.get("checked")):
                 latest = {"text": text, "reports": {}, "started": {}}
                 reviews.append(latest)
             if part == "reviewer":

@@ -6,6 +6,27 @@ What changed in each version of the plugin, newest first. Versions follow
 past a major version: it says what you need to change in your documents. Until 1.0.0, any
 minor version may need such a change, and its entry says so.
 
+## [0.72.0] - 2026-11-19
+
+### Changed
+
+- A document is now reviewed in full once. After that, only what changes is checked. /brief,
+  /spec, /adr, /plan and /spike put each question to you with four choices: accept the proposal,
+  give your own answer, ignore it, or defer it. Only deferred questions are written into Open
+  questions. After each round of answers, a check reads only what your answers changed, and any
+  situation a change leaves uncovered comes back as a question, never a failure. Once nothing is
+  left to ask, the last question offers the document's next status, one more full review, or
+  stopping, so you decide when the review ends. A full review runs again only when you ask, after
+  a change you make yourself, on a document rewritten to a new layout, or in a new conversation.
+- When the correction check fails in those skills, its findings now come back to you as
+  questions instead of stopping the skill.
+- When you say not to ask now, or stop partway, the questions left are deferred into Open
+  questions.
+- /spec never asks, or files as an open question, a question whose answer is a technical choice.
+  It says the choice belongs in an ADR.
+- /feedback, /release and /practices are unchanged: they still review once, check once, and stop
+  on a failed check.
+
 ## [0.71.0] - 2026-11-18
 
 ### Changed

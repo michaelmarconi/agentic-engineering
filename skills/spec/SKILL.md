@@ -110,8 +110,10 @@ unknown goes into Open questions, worded so it can be answered. When the person 
 should be built (a library, a service, a named bucket or database, a design), keep the behaviour it
 serves and leave the choice out of every section, even when they state it as settled: the spec
 should still hold if the choice changes, and tell the person you left it out. If it is already
-decided, suggest recording it as an ADR (architecture decision record); if not, make it an open
-question. When an unknown can only be settled by trying something, suggest a spike: a throwaway
+decided, suggest recording it as an ADR (architecture decision record); if not, suggest deciding
+it in one. Never ask a question whose answer is a technical choice, nor make it an open question:
+say it belongs in an ADR, since a spec says what the product does, never how it is built. When an
+unknown can only be settled by trying something, suggest a spike: a throwaway
 experiment. When the person wants the spec to refer to the brief, another spec, an ADR, a plan or a
 spike record, by hyperlink, path or title, leave it out (rubric check 11) and tell them why: that
 document can change or be deleted without this spec being touched, so the reference would go stale.
@@ -131,13 +133,6 @@ check.
 Add a section beyond the template's, such as "Security", only when the person asks for one, and
 place it as rubric check 1 says.
 
-An open question the person has seen is settled only by their answer: written into the spec,
-or, for a technical choice, recorded in an ADR they accept, after which the question goes.
-Never remove or reword such a question without that answer, and moving it to another section,
-or noting that someone will decide later, leaves it open. A decision the review raises is
-settled the same way: write the person's choice into the part of the spec it is about, even if
-the choice is to keep the meaning, so the next review can see it is settled.
-
 ## Status
 
 The `status:` frontmatter says whether the person has accepted the spec's text: `Draft 📝` or
@@ -155,18 +150,16 @@ change, which adds it; a plugin hook refuses a status change without it.
   plugin hook refuses any other change to such a spec. A spec still holding `Ready to build 🟢` or
   `Built ✅`, statuses specs had before, goes back to `Draft 📝` the same way.
 - `Accepted 👍` is the spec's one move forward. Move the document forward only when the person
-  explicitly says so about its text as it now stands, once the review below has ended with a pass on
-  that text, from the review itself or from the correction check after it, and once Open questions
-  says "None.". Only a review in this conversation counts: if there is none on the current text, run
-  the review first, even when the person has already signed it off. Set the status as its own last
+  explicitly says so about its text as it now stands, once the review below has ended on that text,
+  by a full review or a check of what changed, with every question it raised answered or ignored,
+  and once Open questions says "None.". Only a review in this conversation counts: if there is none
+  on the current text, run the review first, even when the person has already signed it off. Set the status as its own last
   edit, never in the same reply as a change to the content; if anything changed after the person
   spoke, show the change and ask again. "Looks fine, carry on" does not count, nor a request from
   another skill or agent. Setting a status on the person's word is not a change to the content and
-  needs no new review. Nothing may be left under the review's Needs a person either (rubric
-  check 9 covers Open questions). `Accepted 👍` means the person agreed to this text, so
+  needs no new review. `Accepted 👍` means the person agreed to this text, so
   agreement given before they saw it does not count, even a request to fix small things and carry
-  on. If questions remain, say how many, ask the first and leave the spec as `Draft 📝`, even if the
-  person says they do not matter: offer to settle them now instead.
+  on. If questions remain, say how many and leave the spec as `Draft 📝`.
 
 ## Review
 
@@ -194,8 +187,8 @@ more, and each round of corrections brings new mistakes.
    the reports list: each failed check and each item under Other findings in the review report,
    and each finding in the wording report. A wording item under Needs a person, whose
    meaning only the person knows, is a decision like any other. A decision under Needs a person
-   becomes an entry in the spec's Open questions, with the answer you would propose, never a
-   guess written into the spec as settled. Leave
+   is not written into the spec: it becomes a question for the person, with the answer you would
+   propose, never a guess written in as settled. Leave
    suggestions alone and change nothing else, since an edit beyond the reports is the likeliest
    way to break something. Wait until every edit has succeeded. If nothing in the reports was
    yours to correct, there is nothing to check: go straight to handing over.
@@ -208,14 +201,11 @@ more, and each round of corrections brings new mistakes.
    Check the corrections.
    ```
 
-   If the hook refuses to start it, do what its reason says. If the check fails, stop: change
-   the spec no further, and show the person the check's report. Do not review or correct
-   again; what happens next is their call.
+   If the hook refuses to start it, do what its reason says. If the check fails, change
+   the spec no further: show the person the check's report, whose findings become questions, as
+   below. Do not review or correct again; what happens next is their call.
 
-After the sequence, edit the spec only when the person asks. While you are walking through questions
-with the person, do not review after each answer: run the sequence once when the walk-through ends,
-either because no questions are left or because the person stops. A change the person makes or asks
-for at any other time is reviewed once it is made.
+After the sequence, edit the spec only as the person's answers say, or when they ask.
 
 Whether the check passed or failed, end with the hand-over. It is what the person acts on, so make
 it hard to miss anything. Show the person each document you wrote or changed: if the app you run in
@@ -224,10 +214,31 @@ is a copy; always name each one's full path; never send them to a code-hosting s
 them the review and wording reports and the check's report, if there was one, leaving out the
 decisions they list for the person. When the review found a conflict with another spec, name that
 spec and the rule that conflicts, since the spec itself cannot refer to it, so this reply is the
-only place the person learns of it. Then say how many items must be settled before the spec can move
-on: its open questions, plus any correction the check found not made or broken. Say you will take
+only place the person learns of it. Then say how many questions there are: its open questions, the
+decisions the reports list and any correction the check found not made or broken. Say you will take
 them one at a time, rather than asking whether to, and ask the first only, as a single question,
 giving any examples as possible answers rather than further questions; if the person has said not to
 ask now, ask nothing. Name the count only, not the items: each comes up when you reach it. List the
-reviewers' suggestions separately, as optional: they never hold the spec back. Once nothing is left
-to settle, ask whether to accept it. Leave committing to them.
+reviewers' suggestions separately, as optional: they never hold the spec back. Leave committing
+to them.
+
+Put each question to the person one at a time, by the asking rule: open questions, decisions for the
+person and what a check finds. Offer four choices on your question tool: "Accept" your proposal, "My
+own answer", "Ignore" and "Defer"; where you have none, end it with this line, word for word, since
+a plugin hook looks for it to keep the answer: "Accept, give your own answer, ignore or defer?". If
+the person has said not to ask now, or stops, defer the questions left.
+
+Accept and My own answer write the answer in as the person gave it, removing the question from Open
+questions if it is there; Ignore writes nothing and removes it; Defer leaves it there, or writes it
+there with its proposal. Nothing else is written into Open questions. An ignored fault you cannot
+fix leaves the document as it is: say which rubric check it fails.
+
+When a round of questions ends and anything was written in, start the `agentic:correction-checker`
+agent again with the same request: the hook attaches the text as last checked and the answers, so it
+checks only what changed. Put what it raises to the person the same way. Never run a full review for
+answers.
+
+Once nothing is left to ask, the last question offers the next status, where there is one, one more
+full review, or stopping; while any question is deferred, only the last two. Run a full review again
+only when the person asks, after their own change, on a document rewritten to a new layout, or in a
+new conversation.
