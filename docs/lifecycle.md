@@ -10,18 +10,8 @@ or a spec, and every skill opens it for the rules it shares with the others. The
 
 ```mermaid
 flowchart LR
-    Brief --> Spec
-    Spec -->|unknowns| Spike
-    ADR -->|untested assumptions| Spike
-    Spike -->|facts| Spec
-    Spike -->|choices| ADR
-    Spec -->|decisions| ADR
-    Spec --> Plan
-    ADR --> Plan
-    Plan --> Build --> Verify --> Release --> Deploy
-    Audit -.->|drift| Spec
-    Audit -.->|drift| ADR
-    Audit -.->|contradiction| Brief
+    Decide[Decide what to build] --> Build[Build it] --> Ship[Ship it]
+    Any[Any time: audit, practices, feedback]
 ```
 
 ## Documents
@@ -129,14 +119,30 @@ Each step has a skill. Most belong to one of three phases; the rest you run when
 
 **Deciding what to build**
 
+```mermaid
+flowchart LR
+    Brief --> Spec
+    Spec -->|unknowns| Spike
+    ADR -->|untested assumptions| Spike
+    Spike -->|facts| Spec
+    Spike -->|choices| ADR
+    Spec -->|decisions| ADR
+```
+
 - [`/brief`](skills/brief.md) writes or changes the brief.
 - [`/spec`](skills/spec.md) writes or changes the spec for one capability.
 - [`/spike`](skills/spike.md) settles an unknown by a throwaway experiment, when one is needed. You
-  take its finding
-  to `/spec` (a fact) or `/adr` (a choice); `/spike` edits neither.
+  take its finding to `/spec` (a fact) or `/adr` (a choice); `/spike` edits neither.
 - [`/adr`](skills/adr.md) records one technical decision.
 
 **Building it**
+
+```mermaid
+flowchart LR
+    Spec --> Plan
+    ADR --> Plan
+    Plan --> Build --> Verify
+```
 
 - [`/plan`](skills/plan.md) scopes a piece of work against the specs and ADRs it delivers.
 - [`/build`](skills/build.md) builds a plan on a branch of its own, tests first, has it reviewed
@@ -155,6 +161,15 @@ Each step has a skill. Most belong to one of three phases; the rest you run when
   nothing to the repository.
 
 **Any time**
+
+```mermaid
+flowchart LR
+    Audit -.->|drift| Spec
+    Audit -.->|drift| ADR
+    Audit -.->|contradiction| Brief
+    Practices -.->|followed by| Plan
+    Practices -.->|followed by| Build
+```
 
 - [`/audit`](skills/audit.md) finds drift, where the code and its documents disagree, and any
   spec or ADR that contradicts the brief. It changes nothing: you choose each correction.
