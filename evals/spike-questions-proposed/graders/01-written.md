@@ -1,5 +1,5 @@
 ---
 type: file_exists
-path: docs/spikes/2026-11-10-geocoding-free-tier-limit.md
+path: .eval/document.md
 weight: 1
 ---
