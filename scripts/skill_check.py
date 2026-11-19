@@ -96,9 +96,10 @@ ANSWER_RULES = (
     " leaves it there, or writes it there with its proposal. Nothing else is written into "
     "Open questions. An ignored fault you cannot fix leaves the document as it is: say which "
     "rubric check it fails.",
-    "When a round of questions ends and anything was written in, start the "
+    "When a round of questions ends and an answer was written in, start the "
     "`agentic:correction-checker` agent again with the same request: the hook attaches the "
-    "text as last checked and the answers, so it checks only what changed. Put what it raises"
+    "text as last checked and the answers, so it checks only what changed. A deferred or "
+    "ignored question changes nothing else, so it needs no check. Put what it raises"
     " to the person the same way. Never run a full review for answers.",
     "Once nothing is left to ask, the last question offers the next status, where there is "
     "one, one more full review, or stopping; while any question is deferred, only the last "
