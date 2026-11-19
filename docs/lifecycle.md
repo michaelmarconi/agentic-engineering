@@ -334,10 +334,12 @@ flowchart LR
   project's own; anything more is a script in the
   project's scripts folder, written only by `/practices` or a build.
 
-## What the hooks refuse
+## Rules the plugin enforces
 
-A hook is a script the plugin runs at set moments, such as before Claude edits a file or starts an
-agent. These refuse an edit made with Claude's file-editing tools, and say why:
+Some of the rules above matter too much to rest on Claude remembering them, so the plugin checks
+them itself. Before Claude saves a change to a lifecycle document, a small script the plugin
+installs, called a hook, checks the change and refuses it, saying why, if it would break one of
+these rules:
 
 - a status change the status diagrams do not allow, or one that does not set `date:` to that day;
 - an edit to a decided ADR or a finished spike record, or to a `Ready to run 🟢` spike record's
