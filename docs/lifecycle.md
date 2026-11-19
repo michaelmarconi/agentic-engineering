@@ -5,9 +5,10 @@ what to build and why, a plan says how, and skills, instructions an agent follow
 slash commands such as `/agentic:spec`, write and act on them. It fixes the shape of the documents
 and leaves how you work to you.
 
-An agent is given this page at the start of every session in a repository with a brief or a spec, and
-every skill reads it for the rules they share. Skills appear here without their `agentic:` prefix.
-The [README](../README.md) covers installing the plugin.
+An agent is given this page at the start of every session in a repository with a brief or a spec, so
+it knows how the skills fit together even when you run only one, and every skill reads it for the
+rules they share. Skills appear here without their `agentic:` prefix.
+The [README](../README.md) lists the skills and covers installing the plugin.
 
 ```mermaid
 flowchart LR
@@ -31,13 +32,14 @@ flowchart LR
     Deploy --> Audit
 ```
 
-Each step uses what the one before it wrote, though not every piece of work needs every step: a
-spike runs only when there is an unknown to settle, and an audit can run at any time.
+Each step uses what an earlier one wrote, though not every piece of work needs every step: a
+spike runs only when there is an unknown to settle, and an audit can run at any time. `/release`,
+for example, drafts its notes from the `Release-note:` line each `/build` leaves in its last commit.
 
 This is the order within one small piece of work, not a plan for the whole project. You go round it
 many times, each round deciding only what the next change needs, then building and checking it.
 What you learn feeds the next round: specs are edited as you learn, a wrong decision is superseded
-by a new ADR, and a plan is thrown away once built.
+by a new ADR, and a plan is done with once built.
 
 ```mermaid
 flowchart LR
@@ -46,29 +48,140 @@ flowchart LR
     Check --> Ship[Ship when ready]
 ```
 
-## Documents
+## How it works
+
+### The documents
 
 The lifecycle keeps its thinking in five kinds of document, each a Markdown file in your
-repository's `docs/` folder. Every kind but the brief has a status, which says how far along the
-document is, not whether the software does what it says: that is found by checking the software
-against it.
+repository's `docs/` folder:
+
+- **Brief:** what the product is, who it is for and why.
+- **Spec:** what one capability of the product should do, and how we will know it does.
+- **ADR:** an architecture decision record, one technical decision and why it was made.
+- **Plan:** one piece of work that builds part of a spec or an ADR.
+- **Spike record:** one hypothesis tested by a throwaway experiment, with its code, every run's
+  output and the finding.
+
+Every kind but the brief has a status, which says how far along the document is, not whether the
+software does what it says: that is found by checking the software against it.
 
 How long each lasts decides what may refer to it:
 
 - **Lasting:** the brief, specs and ADRs, the project's record. They stay while true, and change by
   being edited (the brief and specs) or superseded (ADRs).
 - **Temporary:** plans and spike records. Once built or finished they are never changed again, and
-  they may be deleted whenever nobody needs them, so nothing refers to them.
+  they may be deleted whenever nobody needs them, so nothing [refers](#references) to them.
 - **Throwaway:** the reports of reviews, `/build`, `/verify` and `/audit`. They never enter the
   repository: each is given in the reply or written to the session's scratchpad (in a session
   without one, the system's temporary folder), and lasts only as long as that folder.
+
+Each kind's file, rules and statuses are under [Documents](#documents).
+
+### You decide
+
+The skills draft, check and propose; you decide. Three kinds of decision are always yours:
+
+- **What the documents say.** The lifecycle fixes only what makes its documents worth trusting:
+  what each one holds, that it is reviewed, and that a person signs it off. No document becomes
+  `Accepted 👍`, `Ready to build 🟢` or `Ready to run 🟢` until you sign off its reviewed text.
+- **How you work.** The skills set the shape; your practices set the rules. Everything else is
+  yours to choose, such as how you test, branch, review code, open pull requests, merge, release
+  and deploy, and how strict to be. You record those choices once as practices, with
+  [`/practices`](skills/practices.md), and every skill follows them. The plugin never asks you to
+  work its way where you have already chosen your own.
+- **Anything that leaves your hands.** No skill merges or opens a pull request: `/build` works on
+  a branch of its own and pushes it, and what happens to that branch is yours to decide. It never
+  starts the product, so it can run on any machine; `/verify` does that where the product runs.
+  `/release` publishes and `/deploy` deploys only when you say so, and `/deploy` and `/feedback`
+  write nothing to your repository. Checks change nothing: `/verify` and `/audit` report what they
+  find, and you choose what follows.
+
+### How a document is reviewed
+
+No agent checks its own work. Every document a skill writes is checked by separate agents that
+start without the conversation, so they read it as a newcomer would. Each document is reviewed once
+and corrected once, then only what changes is checked, and you decide each question. A full review
+after every round of answers always finds new questions, so it would never end. Tests on specs
+with planted mistakes showed one review finds nearly all of them.
+
+```mermaid
+stateDiagram-v2
+    state "Full review" as Review
+    state "Correct once" as Correct
+    state "Check of only what changed" as Check
+    state "Each question put to you" as Ask
+    state "Next status" as Next
+
+    [*] --> Review
+    Review --> Ask : nothing to correct
+    Check --> [*] : fails, in /practices, /feedback and /release
+    Review --> Correct
+    Correct --> Check
+    Check --> Ask
+    Ask --> Ask : accept, own answer, ignore or defer
+    Ask --> Check : a round of answers written in
+    Ask --> Next : every question answered or ignored
+    Ask --> Review : you ask for another full review
+    Ask --> [*] : you stop
+```
+
+#### The reviewer agent
+
+Each skill that writes a document has its own, such as `agents/spec-reviewer.md`. It checks the whole document against the
+skill's rubric, a short list of pass-or-fail checks such as "each requirement has exactly one
+rule", which also guides the skill as it writes. It reports pass or fail for each check, quoting
+the words that break it.
+
+#### The language checker agent
+
+`agents/language-checker.md`, shared by every skill that writes a document, runs beside the
+reviewer and checks for words a newcomer could not follow, by the [Plain words](#plain-words) rule.
+Alone, it finds more of them than the same rule added to every rubric.
+
+#### The correction checker agent
+
+`agents/correction-checker.md`, also shared, runs after the corrections and after each round of
+your answers. It judges only what changed since the review or the last check: each correction
+made, each answer written in as you gave it, nothing broken. What a change leaves uncovered comes
+back as a question, never a failure.
+
+#### What they report
+
+| Finding | Meaning |
+|---|---|
+| **Failure** | Breaks a rubric check, or is another mistake the review lists. The skill corrects it, or, when it can't, asks you. |
+| **Question** | Only you can settle it, such as which of two readings you meant. A report lists these under Needs a person. |
+| **Suggestion** | Something you might act on. It never holds a document back. |
+
+#### Signing off
+
+At the end you read the document, shown in your app's file viewer where there is one and
+always named by its path, with the reports, and pick its next status on the last question. A status
+that needs a review, such as `Accepted 👍`, is set only once the last review or check of the text
+as it stands has run, with every question it raised answered or ignored and nothing deferred. The
+record of the last check lasts only one conversation, so a new conversation starts with a full
+review.
+
+### How you are asked
+
+When a skill needs you to settle something, it asks one question at a time, numbered such as
+"Question 2 of 7", with the answer it proposes, and waits for yours. You accept the proposal, give
+your own answer, ignore the question or defer it to the document's Open questions. The rule in full
+is under [Asking you questions](#asking-you-questions).
+
+---
+
+The rest of this page holds the rules in full, for looking things up. Agents follow the whole
+page.
+
+## Documents
 
 ### Brief
 
 File: `docs/brief.md`, one per product.
 
-What the product is, who it is for and why. It has no status, since it is never built: it states
-the product's intent and is edited in place.
+The brief has no status, since it is never built: it states the product's intent and is edited
+in place.
 
 - **The brief is the whole product.** It holds only what is true of the whole product; one
   capability's behaviour belongs in its spec.
@@ -81,9 +194,6 @@ the product's intent and is edited in place.
 ### Spec
 
 File: `docs/specs/**/<subject>.spec.md`, one per capability.
-
-What one capability of the product should do, and how we will know it does. Any change returns it
-to `Draft 📝`.
 
 - **Specs say what, never how.** A technical choice is an ADR.
 - **One living spec per capability.** It is edited in place, and git is its history. A retired spec
@@ -101,8 +211,6 @@ stateDiagram-v2
 ### ADR
 
 File: `docs/adrs/NNNN-<subject>.md`, in one flat folder.
-
-An architecture decision record: one technical decision and why it was made.
 
 - **One decision per ADR.** A decided ADR is never edited or moved, apart from the `superseded-by:`
   field and status that mark it superseded. A new ADR supersedes it whole, each naming the other by
@@ -127,9 +235,6 @@ stateDiagram-v2
 
 File: `docs/plans/YYYY-MM-DD-<subject>.md`, in one flat folder.
 
-One piece of work that builds part of a spec or an ADR. Any change before it is built returns it to
-`Draft 📝`, and only `/build` marks it `Built ✅`.
-
 - **A plan builds only on settled documents.** A plan is `Ready to build 🟢` only when each spec and
   ADR it touches is `Accepted 👍`, and no two plans that are not `Built ✅` name the same
   requirement. `/build` builds a plan that isn't signed off only when you choose to, building its
@@ -153,9 +258,7 @@ stateDiagram-v2
 
 File: `docs/spikes/YYYY-MM-DD-<subject>.md`, in one flat folder.
 
-One hypothesis tested by a throwaway experiment, with its code, every run's output and the finding.
-Once `Ready to run 🟢`, its design
-is fixed and only the run script adds runs.
+Once a spike record is `Ready to run 🟢`, its design is fixed and only the run script adds runs.
 
 - **A spike's finding goes to its owner.** `/spike` edits neither spec nor ADR: you take a fact to
   `/spec` and a choice to `/adr`.
@@ -186,7 +289,8 @@ stateDiagram-v2
   date: 2026-11-19        # the day the status was set
   ```
 
-  A status written emoji first, by an earlier version, still counts until a skill next edits it.
+  A status written emoji first, by an earlier version, still counts, and is rewritten the next time
+  a skill edits it.
 - **File name**: a number or date where the kind has one, then two to five lowercase words of the
   title joined by hyphens, so the name never has to change, least of all during a review.
 - **Plain first**: an ADR or spike record opens with a part for people, then technical detail. An
@@ -216,22 +320,6 @@ git. A monorepo, several related apps or packages in one repository, keeps one `
 its top; its specs may be grouped into folders, such as one per app, which carry no meaning.
 
 ## Principles
-
-### Your way of working
-
-- **The skills set the shape; your practices set the rules.** The lifecycle fixes only what makes
-  its documents worth trusting: what each one holds, that it is reviewed, and that a person signs
-  it off. Everything else is yours to choose, such as how you test, branch, review code, release
-  and deploy, and how strict to be. You record those choices once as practices, and every skill
-  follows them. The plugin never asks you to work its way where you have already chosen your own.
-
-### What stays with you
-
-- **No skill merges or opens a pull request.** `/build` works on a branch of its own and pushes it;
-  what happens to that branch is yours to decide.
-- **Checks change nothing.** `/verify` and `/audit` report what they find; you choose what follows.
-- **Nothing leaves without your yes.** `/release` publishes and `/deploy` deploys only when you
-  say so. `/deploy` and `/feedback` write nothing to your repository.
 
 ### References
 
@@ -267,8 +355,7 @@ flowchart LR
   becomes `Accepted 👍`, a plan `Ready to build 🟢`, and a spike record `Ready to run 🟢` or
   finished only when that section is empty.
 - **Only legal status moves.** Only the moves in the status diagrams under [Documents](#documents)
-  are allowed, and only `/build`
-  sets a plan `Built ✅`.
+  are allowed, and only `/build` sets a plan `Built ✅`.
 - **Drift is a finding, not a status.** `/audit` reports it with a suggested correction: correct
   the code, return the spec to `Draft 📝`, or supersede the ADR.
 
@@ -280,19 +367,21 @@ flowchart LR
 - **Every practice step is one command.** A step the practices record, such as running the tests,
   is one line that a skill runs as written, filling in any `{name}`, and judges by its exit code.
   It calls a runner entry, a script or a tool's standard command with nothing else of the
-  project's own; anything more is a script in the
-  project's scripts folder, written only by `/practices` or a build.
+  project's own; anything more is a script in the project's scripts folder, written only by
+  `/practices` or a build.
 
 ## Rules the plugin enforces
 
 Some of the rules above matter too much to rest on an agent remembering them, so the plugin checks
-them itself. Before an agent saves a change to a lifecycle document, a small script the plugin
+them itself. Before an agent saves a change to a lifecycle document with its file-editing tools, a
+small script the plugin
 installs, called a hook, checks the change and refuses it, saying why, if it would break one of
 these rules:
 
 - a status change the status diagrams do not allow, or one that does not set `date:` to that day;
-- an edit to a decided ADR or a finished spike record, or to a `Ready to run 🟢` spike record's
-  design and runs, which only its run script adds;
+- an edit to a decided ADR, other than marking it superseded, or to a finished spike record; or
+  an edit to a `Ready to run 🟢` spike record's design, or to its runs other than by its run
+  script;
 - a new document whose file name breaks the naming rule, or an edit that drops one of its name's
   words from the title;
 - an ADR whose `number:` does not match its file name;
@@ -314,9 +403,9 @@ conversations behind it.
 - **Domain terms**, words from the product's own field such as a trade, legal or business term,
   get a Markdown footnote (`[^1]`) defining them where they first appear, unless that sentence
   already explains them. A domain term that is an acronym, such as "OTIF" for "on time, in full",
-  gives its full form in the footnote. A title cannot hold a
-  footnote, so a domain term in a title is defined at its first use in the text. Each document
-  defines its own terms, so it never depends on a glossary that could fall out of date.
+  gives its full form in the footnote. A title cannot hold a footnote, so a domain term in a title
+  is defined at its first use in the text. Each document defines its own terms, so it never
+  depends on a glossary that could fall out of date.
 - **Anything else a newcomer would not know** is rewritten in plain words or spelled out, never
   footnoted: a name used only inside the code or the team, an acronym that is neither a computing
   term nor a domain term, or a phrase whose meaning the reader would have to guess. Read every
@@ -336,8 +425,7 @@ project's rules.
 ## Asking you questions
 
 This is the asking rule. When a skill asks you to settle a question during the session, it uses the
-parts of an open
-question: a bold line naming the question and its place in the count, such as
+parts of an open question: a bold line naming the question and its place in the count, such as
 "**Question 2 of 7: where the tariff copy is kept**", then the context, the quote with its
 proposal, and the question itself last.
 
@@ -352,75 +440,9 @@ proposal, and the question itself last.
 
 ## Review process
 
-No agent checks its own work. Every document a skill writes is checked by separate agents that
-start without the conversation, so they read it as a newcomer would. Each document is reviewed once
-and corrected once, then only what changes is checked, and you decide each question. A full review
-after every round of answers always finds new questions, so it would never end.
-
-```mermaid
-stateDiagram-v2
-    state "Full review" as Review
-    state "Correct once" as Correct
-    state "Check of only what changed" as Check
-    state "Each question put to you" as Ask
-    state "Next status" as Next
-
-    [*] --> Review
-    Review --> Ask : nothing to correct
-    Check --> [*] : fails, in /practices, /feedback and /release
-    Review --> Correct
-    Correct --> Check
-    Check --> Ask
-    Ask --> Ask : accept, own answer, ignore or defer
-    Ask --> Check : a round of answers written in
-    Ask --> Next : every question answered or ignored
-    Ask --> Review : you ask for another full review
-    Ask --> [*] : you stop
-```
-
-### Who checks
-
-#### The reviewer agent
-
-Each skill has its own, such as `agents/spec-reviewer.md`. It checks the whole document against the
-skill's rubric, a short list of pass-or-fail checks such as "each requirement has exactly one
-rule", which also guides the skill as it writes. It reports pass or fail for each check, quoting
-the words that break it.
-
-#### The language checker agent
-
-`agents/language-checker.md`, shared by every skill that writes a document, runs beside the
-reviewer and reads the document by the [Plain words](#plain-words) rule. A checker doing only that
-job finds more unclear words than the same rule added to every rubric.
-
-#### The correction checker agent
-
-`agents/correction-checker.md`, also shared, runs after the corrections and after each round of
-your answers. It judges only what changed since the review or the last check: each correction
-made, each answer written in as you gave it, nothing broken. What a change leaves uncovered comes
-back as a question, never a failure.
-
-### What they report
-
-| Finding | Meaning |
-|---|---|
-| **Failure** | Breaks a rubric check. The skill corrects it, or, when it can't, asks you. |
-| **Question** | Only you can settle it, such as which of two readings you meant. |
-| **Suggestion** | Something you might act on. It never holds a document back. |
-
-### Signing off
-
-At the end you read the document, shown in your app's file viewer where there is one and
-always named by its path, with the reports, and pick its next status on the last question. A status
-that needs a review, such as `Accepted 👍`, is set only once the last review or check of the text
-as it stands has run, with every question it raised answered or ignored and nothing deferred. The
-record of the last check lasts only one conversation, so a new conversation starts with a full
-review.
-
-### How a skill runs the review
-
-Every skill that writes a document follows these steps, written once, here. In them "you" is the agent
-running the skill and "the person" is you, the reader. The skill names its own reviewer, its
+Every skill that writes a document follows these steps, written once, here;
+[How a document is reviewed](#how-a-document-is-reviewed) explains them. In them "you" is the agent
+running the skill and "the person" is the human it works with. The skill names its own reviewer, its
 requests, its hand-over (the reply that gives the person the finished document and the reports)
 and anything only it does. A review report lists its failed checks, then Other findings, Needs a
 person (what only the person can settle) and Suggestions.
@@ -455,9 +477,8 @@ stateDiagram-v2
 2. **Correct, once.** Read the rubric and the Plain words rule again, then correct only what the
    reports list: each failed check and each item under Other findings in the review report, and each
    finding in the wording report. A wording item under Needs a person, whose meaning only the person
-   knows, is a decision like any other. A decision under
-   Needs a person, and any finding the skill names as the person's to settle, is not written
-   into the document: it becomes a question for the person, with the answer you would propose,
+   knows, is a decision like any other. A decision under Needs a person, and any finding the skill
+   names as the person's to settle, is not written into the document: it becomes a question for the person, with the answer you would propose,
    never a guess written in as settled. Leave suggestions alone and change nothing else, since an
    edit beyond the reports is the likeliest way to break something. Wait until every edit has
    succeeded. If nothing in the reports was yours to correct, there is nothing to check: go
@@ -511,4 +532,4 @@ change the person makes or asks for at any other time is reviewed once it is mad
 ### Building
 
 /build runs its own review sequence for code, with its own reviewers and correction checker, as
-its [page](skills/build.md) describes. The work stays on its branch until you merge it.
+its [page](skills/build.md) describes.
