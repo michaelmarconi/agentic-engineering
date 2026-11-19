@@ -351,16 +351,10 @@ proposal, and the question itself last.
 
 ## Review process
 
-No agent checks its own work. Every document a skill writes is checked before you see it by a
-reviewer agent, a separate Claude that starts without the conversation and so reads the page as a
-newcomer would. It checks the document against the skill's rubric, a short list of pass-or-fail
-checks such as "each requirement has exactly one rule", which also guides the skill as it writes.
-Beside it, the language checker reads the document by the [Plain words](#plain-words) rule; a
-checker doing only that job finds more unclear words than the same rule added to every rubric.
-
-Each document is reviewed once and corrected once, then only what changes is checked, and you
-decide each question. A full review after every round of answers always finds new questions, so it
-would never end.
+No agent checks its own work. Every document a skill writes is checked by separate Claudes that
+start without the conversation, so they read it as a newcomer would. Each document is reviewed once
+and corrected once, then only what changes is checked, and you decide each question. A full review
+after every round of answers always finds new questions, so it would never end.
 
 ```mermaid
 stateDiagram-v2
@@ -383,14 +377,37 @@ stateDiagram-v2
     Ask --> [*] : you stop
 ```
 
-| Term | Meaning |
+### Who checks
+
+#### The reviewer
+
+Each skill has its own, such as `agents/spec-reviewer.md`. It checks the whole document against the
+skill's rubric, a short list of pass-or-fail checks such as "each requirement has exactly one
+rule", which also guides the skill as it writes. It reports pass or fail for each check, quoting
+the words that break it.
+
+#### The language checker
+
+`agents/language-checker.md`, shared by every skill that writes a document, runs beside the
+reviewer and reads the document by the [Plain words](#plain-words) rule. A checker doing only that
+job finds more unclear words than the same rule added to every rubric.
+
+#### The correction checker
+
+`agents/correction-checker.md`, also shared, runs after the corrections and after each round of
+your answers. It judges only what changed since the review or the last check: each correction
+made, each answer written in as you gave it, nothing broken. What a change leaves uncovered comes
+back as a question, never a failure.
+
+### What they report
+
+| Finding | Meaning |
 |---|---|
-| **Review** | The skill's reviewer and the language checker, run side by side on the whole document, each reporting pass or fail with the check and the words that break it. |
-| **Check** | `agents/correction-checker.md`, judging only what changed since the review or the last check: each correction made, each answer written in as you gave it, nothing broken. What a change leaves uncovered comes back as a question, never a failure. |
-| **Finding** | Anything a review or check reports: a failure, a question or a suggestion. |
-| **Failure** | A finding that breaks a rubric check. The skill corrects it, or, when it can't, asks you. |
-| **Question** | A finding only you can settle, such as which of two readings you meant. |
-| **Suggestion** | A finding you might act on. It never holds a document back. |
+| **Failure** | Breaks a rubric check. The skill corrects it, or, when it can't, asks you. |
+| **Question** | Only you can settle it, such as which of two readings you meant. |
+| **Suggestion** | Something you might act on. It never holds a document back. |
+
+### Signing off
 
 At the end you read the document, shown in your Claude app's file viewer where there is one and
 always named by its path, with the reports, and pick its next status on the last question. A status
