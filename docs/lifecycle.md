@@ -182,7 +182,7 @@ its top; its specs may be grouped into folders, such as one per app, which carry
 ## Skills
 
 The plugin has twelve skills. Most belong to one of three phases; the rest you run whenever you
-need them. Each has its own page in the plugin's [skills folder](skills/).
+need them.
 
 **Deciding what to build**
 
@@ -196,11 +196,11 @@ flowchart LR
     Spec -->|decisions| ADR
 ```
 
-- `/brief` writes or changes the brief.
-- `/spec` writes or changes the spec for one capability.
-- `/spike` settles an unknown by a throwaway experiment, when one is needed. You
+- [`/brief`](skills/brief.md) writes or changes the brief.
+- [`/spec`](skills/spec.md) writes or changes the spec for one capability.
+- [`/spike`](skills/spike.md) settles an unknown by a throwaway experiment, when one is needed. You
   take its finding to `/spec` (a fact) or `/adr` (a choice); `/spike` edits neither.
-- `/adr` records one technical decision.
+- [`/adr`](skills/adr.md) records one technical decision.
 
 **Building it**
 
@@ -211,19 +211,19 @@ flowchart LR
     Plan --> Build --> Verify
 ```
 
-- `/plan` scopes a piece of work against the specs and ADRs it delivers.
-- `/build` builds a plan on a branch of its own, tests first, has it reviewed
+- [`/plan`](skills/plan.md) scopes a piece of work against the specs and ADRs it delivers.
+- [`/build`](skills/build.md) builds a plan on a branch of its own, tests first, has it reviewed
   and pushes the branch to your remote. It never starts the product, so it can run on any machine,
   and never opens a pull request or merges.
-- `/verify` checks the running product against accepted specs from the
+- [`/verify`](skills/verify.md) checks the running product against accepted specs from the
   outside, usually before you merge. It changes nothing: you decide what follows.
 
 **Shipping it**
 
-- `/release` makes a numbered release with notes for the product's users,
+- [`/release`](skills/release.md) makes a numbered release with notes for the product's users,
   by the steps your releasing practice records. It publishes only where the practice records a
   publish command, and only on your yes, and it never merges.
-- `/deploy` puts one release into one environment by the steps your deploying
+- [`/deploy`](skills/deploy.md) puts one release into one environment by the steps your deploying
   practice records, deploys only on your yes, and rolls back at once if its check fails. It writes
   nothing to the repository.
 
@@ -238,13 +238,13 @@ flowchart LR
     Practices -.->|followed by| Build
 ```
 
-- `/audit` finds drift, where the code and its documents disagree, and any
+- [`/audit`](skills/audit.md) finds drift, where the code and its documents disagree, and any
   spec or ADR that contradicts the brief. It changes nothing: you choose each correction.
-- `/practices` records how the project does things, such as the commands
+- [`/practices`](skills/practices.md) records how the project does things, such as the commands
   that check the work, for agents to follow. Practices are not a lifecycle document and have no
   status: their essentials live in `AGENTS.md`, which Claude Code loads, and longer topics in
   `docs/practices/`. Every skill sees them, and `/plan` and `/build` follow them.
-- `/feedback` drafts a GitHub issue about the plugin itself, when one of its
+- [`/feedback`](skills/feedback.md) drafts a GitHub issue about the plugin itself, when one of its
   skills gets something wrong or could work better. It writes nothing in your repository.
 
 ## Principles
