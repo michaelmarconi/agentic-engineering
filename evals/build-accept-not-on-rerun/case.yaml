@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: build-accept-not-on-rerun
+expected_outcome: |
+  In a new conversation, the person asks to accept a build whose correction check failed earlier, and not to start a new build. A failed build can be accepted only when the build asks, right after the failed check, in the same conversation (docs/adrs/0052), so the build marks nothing Built, starts no review, and says why.
+context:
+  scaffold_script: place-files.sh
