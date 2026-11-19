@@ -23,8 +23,8 @@ The template's frontmatter holds `type: Plan`, which says what the document is. 
 before it has no `type:`, so add it with your next edit. The title never names the document's type,
 as "Spec:" or "ADR:" in front of it would: the frontmatter's `type:` already says what it is.
 
-You never make a technical decision for the person: explore, then settle each with them, one at a
-time, before writing.
+You never make a technical decision for the person: explore, then settle each with them before
+writing.
 
 ## Find the work
 
@@ -39,7 +39,7 @@ earlier version of the plugin: tell the person first that no plan on it can be s
 - If the work builds no requirement and follows no ADR, such as tidying code, a routine upgrade or
   a quick fix, it needs no plan. Say so, suggest doing it straight from the conversation, and stop.
 - If a spec it builds or an ADR it follows is not `Accepted 👍`, stop and say which one, and
-  what is left to settle in it. A plan builds only on settled documents, and you never change a spec or an ADR from here.
+  what is left to settle in it. A plan builds only on settled documents.
 - Read the frontmatter and Specs section of each plan in `docs/plans/`. If one that is not
   `Built ✅` already names a requirement this work builds, say so and offer to change that plan
   instead; no two unbuilt plans may name the same requirement.
@@ -51,7 +51,8 @@ have one, and any file under `docs/practices/` they name that bears on planning 
 whatever task its line names. Where they say how work is split or how big one plan may be, plan
 within that. If the work asked for is bigger, or exploring shows it is, say so, quoting the
 practice, propose how to split it into several plans that can each be built and reviewed on their
-own, and ask which to plan first. Ask this before any decision. If the person keeps the work whole, give it a line under Decisions saying
+own, and ask which to plan first. Ask this before any decision, since the decisions depend on
+what this plan covers. If the person keeps the work whole, give it a line under Decisions saying
 it was kept as one plan against the practice, quoting the practice, and the person's reason.
 Where the practices say neither, or there are none, plan as below. Never edit the practices from
 here: that belongs to `/practices`.
@@ -77,8 +78,9 @@ line when an answer opens or settles others; the context it needs; a block quote
 "**Proposed:**" line with your answer, a line holding only `>`, and a "**Why:**" line with the
 reason; and the question itself, last, in one line.
 With no question tool but a decision card, as in a Claude project thread, ask in words as the skill
-says, then post it on a card, your proposal recommended. Where one reply asks several questions,
-follow each with its card or question tool, and a line holding only `---` before the next.
+says, then post it on a card offering the choices that need no typing, your proposal recommended.
+Where one reply asks several questions, follow each with its card or question tool, and a line
+holding only `---` before the next.
 A plan may be deleted
 once built, so a decision belongs in it only if nobody needs its reason once the work is built. Ask
 of each who would need its reason after the build, in this order, taking the first answer that fits:
@@ -100,7 +102,7 @@ questions. With no decisions, say so and go straight to writing.
 
 ## Write
 
-Write the plan from the template, named as above and with the template's comments removed.
+Once every decision is settled, write the plan from the template, named as above and with the template's comments removed.
 
 Never rename a document once its review has started: the review hook keeps the review under the
 document's path, so a renamed document's corrections can't be checked. If the name no longer fits,
@@ -119,7 +121,7 @@ The plan's sections:
   one. To explain a term there, add a footnote mark after the link, never a line of prose.
 - **Decisions** holds one line for each decision whose reason nobody needs once the work is
   built, or only someone changing that code later: what was decided and why, and for the second
-  kind, that `/build` leaves the reason as a comment beside the code.
+  kind, that the reason goes in a comment beside the code.
 - **Open questions** holds whatever only the person can settle. Write each open question as a
   heading, `### 1. <what is to be settled>`, numbered in order, then the context it needs, then a
   block quote holding a line starting `> **Proposed:**` with the answer you would choose, then a

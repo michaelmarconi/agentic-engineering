@@ -69,11 +69,13 @@ feedback, practices, spike or release) and the shared language checker, which ch
   session, word for word: after the question tool returns, its `answers` map, each question's
   text paired with the option picked or the text typed, for the questions offered with "Ignore"
   and "Defer" among their options; and, where there is no question tool, as in a Claude project
-  thread, the person's next message when the last thing Claude said in its turn, as text or as a
-  message a tool sends, never a file edit, ends asking "... ignore or defer?", with that message's
-  last "**Question N of M: ...**" line as its question. A decision card posted after that
-  message says nothing in this sense, so a tap on it, which arrives as the person's next message,
-  is saved the same way. A message that arrives as a project thread's wake is taken from its
+  thread, the person's next message when something Claude said in its last turn, as text or as
+  a message a tool sends, never a file edit, ends asking "... ignore or defer?", with that
+  message's last "**Question N of M: ...**" line as its question. A decision card posted after
+  that message says nothing in this sense, so a tap on it, which arrives as the person's next
+  message, is saved the same way, even when a note follows the card. When the turn asked
+  several such questions, each followed by its own card, the tap does not say which card it
+  answers, so the answer is saved against "One of: " and all of them. A message that arrives as a project thread's wake is taken from its
   `<message trigger="true">` tag.
 - A saved review is kept after its check, and deleted once unchanged for 30 days (see
   saved_records.py), not when the session ends, since a resumed session carries on. A later
@@ -572,14 +574,15 @@ def said(block):
     return None
 
 
-def last_said(transcript):
-    """The last thing Claude said to the person in its last turn, from the transcript."""
+def turn_said(transcript):
+    """What Claude said to the person in its last turn, from the transcript, first to last."""
     try:
         with open(transcript, "rb") as f:
             f.seek(max(0, os.path.getsize(transcript) - TAIL))
             lines = f.read().decode("utf-8", "replace").splitlines()
     except (OSError, TypeError, ValueError):
-        return ""
+        return []
+    found = []
     for line in reversed(lines):
         try:
             entry = json.loads(line)
@@ -593,28 +596,35 @@ def last_said(transcript):
             results = isinstance(content, list) and all(
                 isinstance(b, dict) and b.get("type") == "tool_result" for b in content)
             if not results:
-                return ""
+                break
         elif entry.get("type") == "assistant":
             blocks = [{"type": "text", "text": content}] if isinstance(content, str) else content
             for block in reversed(blocks if isinstance(blocks, list) else []):
                 text = said(block)
                 if text is not None and text.strip():
-                    return text
-    return ""
+                    found.append(text)
+    return found[::-1]
 
 
 def message_answer(event):
-    """The person's message, when the last thing Claude said ended by putting a question to them."""
+    """The person's message, when Claude's last turn put a question to them: paired with that
+    question, or, when the turn asked several, with all of them, since a tap on a decision card
+    does not say which card it answers."""
     prompt = event.get("prompt")
     if not isinstance(prompt, str) or not prompt.strip():
         return []
-    asked = last_said(event.get("transcript_path"))
-    if not asked.rstrip(" \t\n\"'`*_.").lower().endswith(MARKER):
+    asked = [text for text in turn_said(event.get("transcript_path"))
+             if text.rstrip(" \t\n\"'`*_.").lower().endswith(MARKER)]
+    if not asked:
         return []
-    lines = QUESTION_LINE.findall(asked)
+    questions = []
+    for text in asked:
+        lines = QUESTION_LINE.findall(text)
+        questions.append(lines[-1] if lines else "(asked in a message)")
     wake = WAKE_MESSAGE.search(prompt)
     answer = html.unescape(wake.group(1)).strip() if wake else prompt
-    return [{"question": lines[-1] if lines else "(asked in a message)", "answer": answer}]
+    question = questions[0] if len(questions) == 1 else "One of: " + "; ".join(questions)
+    return [{"question": question, "answer": answer}]
 
 
 def four_choices(event):

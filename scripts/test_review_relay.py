@@ -994,23 +994,27 @@ class Relay(unittest.TestCase):
                               "tool_response": {"answers": answers}})
 
     def message(self, prompt, asked="**Question 1 of 2: colour**\n\nAccept, give your own answer, ignore or defer?",
-                session=None, before=None, card=None):
-        """The person writes a message after Claude's last turn, which ended with `asked`, then
-        posted `card` on a decision card, if given."""
+                session=None, before=None, card=None, after=None):
+        """The person writes a message after Claude's last turn, which ended with `asked`, or with
+        each message of a list of them, each followed by `card` on a decision card if given, then
+        by the message `after` if given."""
         transcript = os.path.join(self.tmp.name, "transcript.jsonl")
+
+        def call(f, name, tool_input, result):
+            f.write(json.dumps({"type": "assistant", "message": {"role": "assistant", "content": [
+                {"type": "tool_use", "name": name, "input": tool_input}]}}) + "\n")
+            f.write(json.dumps({"type": "user", "message": {"role": "user", "content": [
+                {"type": "tool_result", "content": result}]}}) + "\n")
         with open(transcript, "w", encoding="utf-8") as f:
             f.write(json.dumps({"type": "user", "message": {"role": "user", "content": "go"}}) + "\n")
             if before is not None:
                 f.write(json.dumps({"type": "assistant", "message": {"role": "assistant", "content": before}}) + "\n")
-            f.write(json.dumps({"type": "assistant", "message": {"role": "assistant", "content": [
-                {"type": "tool_use", "name": "mcp__hearthbot__post_message", "input": {"text": asked}}]}}) + "\n")
-            f.write(json.dumps({"type": "user", "message": {"role": "user", "content": [
-                {"type": "tool_result", "content": "sent"}]}}) + "\n")
-            if card is not None:
-                f.write(json.dumps({"type": "assistant", "message": {"role": "assistant", "content": [
-                    {"type": "tool_use", "name": "mcp__hearthbot__request_decision", "input": card}]}}) + "\n")
-                f.write(json.dumps({"type": "user", "message": {"role": "user", "content": [
-                    {"type": "tool_result", "content": "posted"}]}}) + "\n")
+            for text in ([asked] if isinstance(asked, str) else asked):
+                call(f, "mcp__hearthbot__post_message", {"text": text}, "sent")
+                if card is not None:
+                    call(f, "mcp__hearthbot__request_decision", card, "posted")
+            if after is not None:
+                call(f, "mcp__hearthbot__post_message", {"text": after}, "sent")
             f.write(json.dumps({"type": "assistant", "message": {"role": "assistant", "content": [
                 {"type": "tool_use", "name": "mcp__hearthbot__no_reply_needed",
                  "input": {"reason": "nothing_to_add"}}]}}) + "\n")
@@ -1093,6 +1097,25 @@ class Relay(unittest.TestCase):
         self.put(SPEC, "v3\n")
         prompt = self.assertAllowed(self.check())["prompt"]
         self.assertIn("Question: **Question 1 of 2: colour**\nAnswer: Accept\n", prompt)
+
+    # No eval covers posting the card itself: eval runs offer no decision card tool, so these tests
+    # check only that the hook keeps the answer a card brings back.
+
+    def test_a_note_after_the_card_does_not_lose_the_answer(self):
+        self.checked_once()
+        self.message("Defer", card={"question": "Which colour?"}, after="I've put the question on a card.")
+        self.put(SPEC, "v3\n")
+        self.assertIn("Question: **Question 1 of 2: colour**\nAnswer: Defer\n",
+                      self.assertAllowed(self.check())["prompt"])
+
+    def test_an_answer_after_several_questions_in_one_turn_names_them_all(self):
+        self.checked_once()
+        ask = "\n\nAccept, give your own answer, ignore or defer?"
+        self.message("Accept", asked=["**Question 1 of 2: colour**" + ask, "---\n\n**Question 2 of 2: size**" + ask],
+                     card={"question": "?"})
+        self.put(SPEC, "v3\n")
+        self.assertIn("Question: One of: **Question 1 of 2: colour**; **Question 2 of 2: size**\nAnswer: Accept\n",
+                      self.assertAllowed(self.check())["prompt"])
 
     def test_a_message_after_no_question_is_not_saved(self):
         self.checked_once()

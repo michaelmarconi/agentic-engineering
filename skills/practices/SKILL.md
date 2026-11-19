@@ -77,8 +77,9 @@ open, so the first number only goes up, saying in one line when an answer opens 
 the context it needs; a block quote holding a "**Proposed:**" line with your answer, a line holding
 only `>`, and a "**Why:**" line with the reason; and the question itself, last, in one line.
 With no question tool but a decision card, as in a Claude project thread, ask in words as the skill
-says, then post it on a card, your proposal recommended. Where one reply asks several questions,
-follow each with its card or question tool, and a line holding only `---` before the next.
+says, then post it on a card offering the choices that need no typing, your proposal recommended.
+Where one reply asks several questions, follow each with its card or question tool, and a line
+holding only `---` before the next.
 Ask the
 next once the first is settled, saying the answer is
 noted, not recorded: nothing is recorded until the files are written. If the person has said not to

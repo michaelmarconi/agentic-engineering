@@ -35,8 +35,8 @@ python3 "${CLAUDE_SKILL_DIR}/scripts/adr.py" words <the ADR's path>
 ```
 
 Aim for sentences under 25 words and paragraphs of up to three sentences, with the Question in up
-to three sentences and the reason for the choice in up to two. These counts are a guide, not
-checks: never rewrite text that already reads clearly to meet them.
+to three sentences and the reason for the choice in up to two. These counts are a guide: never
+rewrite clear text to meet them.
 
 ## Find what exists
 
@@ -111,8 +111,9 @@ up, saying in one line when an answer opens or settles others; the context it ne
 holding a "**Proposed:**" line with your answer, a line holding only `>`, and a "**Why:**" line with
 the reason; and the question itself, last, in one line.
 With no question tool but a decision card, as in a Claude project thread, ask in words as the skill
-says, then post it on a card, your proposal recommended. Where one reply asks several questions,
-follow each with its card or question tool, and a line holding only `---` before the next.
+says, then post it on a card offering the choices that need no typing, your proposal recommended.
+Where one reply asks several questions, follow each with its card or question tool, and a line
+holding only `---` before the next.
 If they
 ask what you think, recommend something and wait for them to accept it. If they would rather not
 answer now, leave the rest in Open questions. Write each answer into the section it is about, then
