@@ -6,6 +6,19 @@ What changed in each version of the plugin, newest first. Versions follow
 past a major version: it says what you need to change in your documents. Until 1.0.0, any
 minor version may need such a change, and its entry says so.
 
+## [0.75.0] - 2026-11-19
+
+### Changed
+
+- /brief, /spec, /adr, /plan and /spike keep the questions they raise while drafting out of the
+  document. They ask them one at a time with the review's questions, asking once where both raise
+  the same point, and write a question into Open questions only when you defer it, as ADR 0049
+  already says. An ADR whose choice isn't made yet says "Not chosen yet." in Decision. Reviewers
+  report a gap the document marks as not chosen or not known yet as a question for you, not a
+  failure. A plan still lists the ADRs, spec changes and practices it waits on under Open
+  questions. Nothing in your documents needs changing: an older ADR's "Not chosen yet; see Open
+  questions." still passes, and is shortened the next time the skill edits it.
+
 ## [0.73.1] - 2026-11-19
 
 ### Fixed

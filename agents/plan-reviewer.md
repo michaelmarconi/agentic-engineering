@@ -37,8 +37,9 @@ person can settle: under Needs a person goes a technical decision the Plan secti
 missing from Decisions and ADRs, with the choice it makes and the alternative; a plan bigger than
 the practices allow, with the choice of splitting it or keeping it whole; and anything else only the
 person can decide, quoting the sentence it is about. Under Suggestions go the rubric's advice on the
-Plan section, where the plan does not follow it. Leave out a finding that the document's Open
-questions already raise: it is already waiting for the person.
+Plan section, where the plan does not follow it. Leave out a finding that the document's Open questions already raise: it is already waiting for the person. A gap the document marks as
+not chosen or not known yet goes under Needs a person, never as a failure: the writer asks the
+person about it.
 
 Report in this shape:
 

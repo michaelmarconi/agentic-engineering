@@ -5,4 +5,4 @@ timeout_seconds: 1200
 allowed_tools: [Read, Glob, Grep, Skill, Write, Edit, Agent]
 ---
 
-Write our product brief from the notes in docs/kickoff-notes.md.
+Write our product brief from the notes in docs/kickoff-notes.md. I'm away today, so leave whatever you can't decide as questions.
