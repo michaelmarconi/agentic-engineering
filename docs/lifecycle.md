@@ -62,13 +62,11 @@ the product's intent and is edited in place.
 
 - **The brief is the whole product.** It holds only what is true of the whole product; one
   capability's behaviour belongs in its spec.
-- **The brief changes only when its intent does.** Specs and ADRs add detail the brief never
-  mentions, and that is never a reason to change it, so no skill or agent proposes an edit to the
-  brief to match one. Only an outright contradiction counts: a spec
-  or ADR that breaks the brief's Goals, Out of scope or Constraints. You settle it by changing the
-  spec or superseding the ADR, or by changing the brief, and it is never raised again. `/spec`
-  raises one while the spec is written, as a question to you; `/audit` finds any that appear later,
-  such as after the brief changes.
+- **The brief changes only when its intent does.** Detail a spec or ADR adds is never a reason to
+  edit the brief, and no skill or agent proposes one. Only an outright contradiction of its Goals,
+  Out of scope or Constraints counts: `/spec` asks you about one as the spec is written, and
+  `/audit` finds any later. You settle it once, by changing the spec, superseding the ADR or
+  changing the brief.
 
 ### Spec
 
@@ -345,16 +343,16 @@ proposal, and the question itself last.
 
 ## Review process
 
-No agent checks its own work. The agent that writes a document can miss its own mistakes, so
-every document a skill writes is checked by a reviewer agent before you see it: a separate Claude
-that starts fresh, without the conversation, so it judges the page as a newcomer would. It checks
-the document against the skill's rubric, a short list of pass-or-fail checks, such as "each
-requirement has exactly one rule", which also guides the skill while it writes. Beside it, the
-language checker, shared by every skill that writes a document, reads it for words a newcomer
-could not follow, by the [Plain words](#plain-words) rule.
+No agent checks its own work. Every document a skill writes is checked before you see it by a
+reviewer agent, a separate Claude that starts without the conversation and so reads the page as a
+newcomer would. It checks the document against the skill's rubric, a short list of pass-or-fail
+checks such as "each requirement has exactly one rule", which also guides the skill as it writes.
+Beside it, the language checker reads the document by the [Plain words](#plain-words) rule; a
+checker doing only that job finds more unclear words than the same rule added to every rubric.
 
-Every document is reviewed once, corrected once, then only what changes is checked, and you
-decide each question:
+Each document is reviewed once and corrected once, then only what changes is checked, and you
+decide each question. A full review after every round of answers always finds new questions, so it
+would never end.
 
 ```mermaid
 stateDiagram-v2
@@ -379,39 +377,27 @@ stateDiagram-v2
 
 | Term | Meaning |
 |---|---|
-| **Review** | The skill's reviewer, such as `agents/spec-reviewer.md`, and `agents/language-checker.md`, run side by side on the whole document. Each reports pass or fail, quoting the check and the words that break it. |
-| **Check** | `agents/correction-checker.md`, a separate Claude judging only what changed since the review or the last check: that each correction was made, each answer written in as you gave it, and nothing broken. A situation a change leaves uncovered comes back as a question, never a failure. |
+| **Review** | The skill's reviewer and the language checker, run side by side on the whole document, each reporting pass or fail with the check and the words that break it. |
+| **Check** | `agents/correction-checker.md`, judging only what changed since the review or the last check: each correction made, each answer written in as you gave it, nothing broken. What a change leaves uncovered comes back as a question, never a failure. |
 | **Finding** | Anything a review or check reports: a failure, a question or a suggestion. |
 | **Failure** | A finding that breaks a rubric check. The skill corrects it, or, when it can't, asks you. |
-| **Question** | A finding only you can settle, such as which of two readings you meant. It reaches Open questions only if you defer it. |
+| **Question** | A finding only you can settle, such as which of two readings you meant. |
 | **Suggestion** | A finding you might act on. It never holds a document back. |
 
-Each question comes with four choices. Accept and your own answer write the answer into the
-document. Ignore writes nothing and takes the question out of Open questions if it is there, and a
-fault you
-ignore stays, with the skill saying which check it
-fails. Defer writes the question into Open questions with its proposal, where it holds the
-document back from its next status. At the end you read the document, shown in your Claude app's
-file viewer where there is one and always named by its path, with the reports, and pick the next
-status on the last question. A full review runs again only when you ask, after a change you make
-yourself, on a document rewritten to a new layout, or in a new conversation, since the record of
-the last check is kept only within one conversation. A status that needs a review, such as `Accepted
-👍`, is set
-only once the last review or check of the text as it stands has run, with every question it raised
-answered or ignored and nothing deferred.
-
-There are no repeated full reviews, and the wording has its own checker, because both were
-measured: [ADR 0010](adrs/0010-correction-check.md), [ADR 0049](adrs/0049-review-once-check-changes.md)
-and [ADR 0013](adrs/0013-language-checker.md) give the figures.
+At the end you read the document, shown in your Claude app's file viewer where there is one and
+always named by its path, with the reports, and pick its next status on the last question. A status
+that needs a review, such as `Accepted 👍`, is set only once the last review or check of the text
+as it stands has run, with every question it raised answered or ignored and nothing deferred. The
+record of the last check lasts only one conversation, so a new conversation starts with a full
+review.
 
 ### The steps
 
-Every skill that writes a document follows these steps. They are written once, here, for Claude
-to follow, so in this part "you" is Claude running the skill and "the person" is you, the reader.
-The skill names its own reviewer, the requests it sends, its hand-over (the reply that gives the
-person the finished document and the reports) and anything only it does. A review report lists
-its failed checks, then Other findings, Needs a person (what only the person can settle) and
-Suggestions.
+Every skill that writes a document follows these steps, written once, here. In them "you" is Claude
+running the skill and "the person" is you, the reader. The skill names its own reviewer, its
+requests, its hand-over (the reply that gives the person the finished document and the reports)
+and anything only it does. A review report lists its failed checks, then Other findings, Needs a
+person (what only the person can settle) and Suggestions.
 
 The sequence is fixed so it always ends with a clear result: further rounds of review find little
 more, and each round of corrections brings new mistakes.
