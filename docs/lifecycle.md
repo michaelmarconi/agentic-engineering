@@ -469,7 +469,7 @@ stateDiagram-v2
    `agentic:language-checker` agent. Give each the request the skill shows, laid out exactly as
    shown: a plugin hook reads its first line, and for a draft its `=== DRAFT ===` and
    `=== END DRAFT ===` lines, to keep a copy of the document as reviewed. A draft never saved as a
-   file keeps the `Document:` line its skill shows; for any other document, as follows. Give the
+   file keeps the `Document:` line its skill shows. Every other review follows this rule. Give the
    document's full path on the `Document:` line, the one you wrote it to: the hook works out the
    document's repository from it, so the review reads the right one whatever folder you started in. If it
    refuses to start them, do what its reason says. Each reads everything else it needs itself. Wait
