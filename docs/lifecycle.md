@@ -416,7 +416,7 @@ as it stands has run, with every question it raised answered or ignored and noth
 record of the last check lasts only one conversation, so a new conversation starts with a full
 review.
 
-### The steps
+### How a skill runs the review
 
 Every skill that writes a document follows these steps, written once, here. In them "you" is Claude
 running the skill and "the person" is you, the reader. The skill names its own reviewer, its
