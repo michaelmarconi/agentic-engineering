@@ -351,7 +351,7 @@ proposal, and the question itself last.
 
 ## Review process
 
-No agent checks its own work. Every document a skill writes is checked by separate Claudes that
+No agent checks its own work. Every document a skill writes is checked by separate agents that
 start without the conversation, so they read it as a newcomer would. Each document is reviewed once
 and corrected once, then only what changes is checked, and you decide each question. A full review
 after every round of answers always finds new questions, so it would never end.
