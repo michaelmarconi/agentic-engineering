@@ -164,6 +164,8 @@ DATE_RULE = (
     "status change, which adds it; a plugin hook refuses a status change without it."
 )
 PROPOSED_RULE = (
+    "A question goes into Open questions only when the person defers it or has said not to ask "
+    "now; until then it stays out of the document and is asked in the conversation. "
     "Write each open question as a heading, `### 1. <what is to be settled>`, numbered in order, "
     "then the context it needs, then a block quote holding a line starting `> **Proposed:**` with "
     "the answer you would choose, then a line holding only `>`, then a line starting `> **Why:**` "

@@ -47,7 +47,9 @@ what they are building and for whom first.
 
 Write only what they said or showed you, as rubric check 8 describes. Where they haven't said something, write in its section
 that it is not known yet, and ask them about it, each question asking one thing: "What do they do today, and how long does it take?" is two
-questions. Write each open question as a heading, `### 1. <what is to be settled>`, numbered in
+questions. A question goes into Open questions only when the person defers it or has said not to ask
+now; until then it stays out of the document and is asked in the conversation. Write each open
+question as a heading, `### 1. <what is to be settled>`, numbered in
 order, then the context it needs, then a block quote holding a line starting `> **Proposed:**` with
 the answer you would choose, then a line holding only `>`, then a line starting `> **Why:**` with
 the reason, so the

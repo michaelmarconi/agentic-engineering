@@ -91,7 +91,9 @@ must actually exercise the thing in question.
   report: write `- Command: None.` when every run is theirs, and describe what they will do.
 
 Anything only the person can settle, such as what result counts as success, is a question for
-them. Write each open question as a heading, `### 1. <what is to be settled>`, numbered in
+them. A question goes into Open questions only when the person defers it or has said not to ask now;
+until then it stays out of the document and is asked in the conversation. Write each open question
+as a heading, `### 1. <what is to be settled>`, numbered in
 order, then the context it needs, then a block quote holding a line starting `> **Proposed:**` with
 the answer you would choose, then a line holding only `>`, then a line starting `> **Why:**` with
 the reason, so the

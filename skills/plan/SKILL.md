@@ -118,7 +118,9 @@ The plan's sections:
 - **Decisions** holds one line for each decision whose reason nobody needs once the work is
   built, or only someone changing that code later: what was decided and why, and for the second
   kind, that the reason goes in a comment beside the code.
-- **Open questions** holds what the person defers and the changes below, not questions. Write each open question as a
+- **Open questions** holds the changes below and what the person defers. A question goes into Open
+  questions only when the person defers it or has said not to ask now; until then it stays out of
+  the document and is asked in the conversation. Write each open question as a
   heading, `### 1. <what is to be settled>`, numbered in order, then the context it needs, then a
   block quote holding a line starting `> **Proposed:**` with the answer you would choose, then a
   line holding only `>`, then a line starting `> **Why:**` with the reason, so the person can find

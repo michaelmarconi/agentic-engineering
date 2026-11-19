@@ -61,7 +61,7 @@ date: <YYYY-MM-DD>
 
 ## Open questions
 
-<!-- What only the person can settle about the spike, each a heading `### 1. <what is to be
+<!-- Each question about the spike that the person deferred, as a heading `### 1. <what is to be
      settled>`, numbered in order; the context it needs; then a block quote, last, holding
      `> **Proposed:** <the answer you would choose, or, if only the person can know, what would
      settle it>`, `>` alone on the next line, then `> **Why:** <the reason>`. "None." before it moves on. -->

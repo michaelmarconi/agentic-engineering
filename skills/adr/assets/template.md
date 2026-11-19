@@ -44,7 +44,7 @@ Applies to: <the concern, such as "any code that stores or reads session data">.
 
 ## Open questions
 
-### 1. <What only the person can settle; or "None." in place of every entry when nothing is open>
+### 1. <A question the person deferred; or "None." in place of every entry when none is>
 
 <The context the question needs.>
 
