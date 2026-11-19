@@ -307,6 +307,14 @@ class SkillCheck(unittest.TestCase):
         self.put("brief", skill_md(name="brief", body=f"# Brief\n\n{TYPE_RULE}\n\n{PROPOSED_RULE}\n\n{RENAME_RULE}\n"))
         self.assertFails("brief/SKILL.md: ask rule missing")
 
+    def test_ask_rule_waits_for_each_answer(self):
+        # A question tool or card can return before the person answers (issue #125), so the
+        # rule says to end the turn there, and one reply never holds several questions.
+        self.assertIn("Ask one question per reply, then end your turn", ASK_RULE)
+        self.assertIn("until the person answers it", ASK_RULE)
+        self.assertIn("returns at once", ASK_RULE)
+        self.assertNotIn("several questions", ASK_RULE)
+
     def test_reworded_ask_rule_fails(self):
         rule = ASK_RULE.replace("last", "first")
         self.assertNotEqual(rule, ASK_RULE)

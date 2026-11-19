@@ -1,0 +1,7 @@
+schema_version: "1.1"
+name: adr-one-question-across-documents
+expected_outcome: |
+  The person asks for two ADRs at once, each with questions to settle. The reply asks only the
+  first question and ends there, leaving the rest for later replies, even though both ADRs have
+  questions waiting. The count runs across both ADRs, so the question is "Question 1 of M" with M
+  at least 2.
