@@ -2,7 +2,7 @@
 
 `/practices` is the skill for recording how your project does things, so that a coding agent
 building it works the way your team does: the commands it uses to check its work, the rules it
-follows, and where to find more detail. It is part of [the lifecycle](../../README.md) but not one of
+follows, and where to find more detail. It is part of [the lifecycle](../lifecycle.md) but not one of
 its steps: you run it whenever you need it. Read that page first for the documents, skills and
 agents it mentions.
 
@@ -243,16 +243,16 @@ it out from the repository and says what it assumed (see [`/build`](build.md)).
 
 ## Review
 
-Before you see the changes, `/practices` has its reviewer agent check them against a short list of
+Before you see the changes, `/practices` has its reviewer agent (`agents/practices-reviewer.md`) check them against a short list of
 pass-or-fail checks, such as: each command matches what the repository holds, no secret is
 written down, and no choice between alternatives is made there instead of in an ADR. The core and
 any topic file a run changed are reviewed together, since they must agree. A hook, a script Claude
 Code runs before every edit, refuses an edit that would take a file past the 50-line or 200-line
 limit and make it longer, or add an import, so those never reach the review. Beside the reviewer,
-the language checker, an agent shared by every skill that writes a document, reads the changes
-for words a newcomer could not follow, by the [Plain words](../lifecycle.md#plain-words) rule.
-Both are corrected once, as for
-every document (see [Review process](../lifecycle.md#review-process)).
+the language checker agent (`agents/language-checker.md`) reads the changes for words a newcomer
+could not follow, by the [Plain words](../lifecycle.md#plain-words) rule. The review then runs as
+[Review process](../lifecycle.md#review-process) says: `/practices` corrects what both find once,
+and the correction checker agent (`agents/correction-checker.md`) checks the corrections.
 
 [^tools]: [Claude Code](https://code.claude.com/docs/en/memory), [Cursor](https://docs.cursor.com/context/rules),
     [GitHub Copilot](https://docs.github.com/en/copilot/tutorials/customize-code-review) and

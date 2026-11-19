@@ -1,7 +1,7 @@
 # `/audit`
 
 `/audit` is the skill for finding drift: places where the code and its documents no longer
-agree, and specs or ADRs that contradict the brief. It is not a step in the sequence of [the lifecycle](../../README.md); run it whenever you want
+agree, and specs or ADRs that contradict the brief. It is not a step in the sequence of [the lifecycle](../lifecycle.md); run it whenever you want
 to know, or on a schedule. Read that page first for the documents, skills and agents it mentions.
 
 ## What drift is
@@ -46,10 +46,10 @@ repository. It always checks every document, whatever window the run was given (
   YYYY-MM-DD; one written before dates is listed, so it can be given one by hand;
 - no accepted spec or ADR, no `Ready to build 🟢` plan and no `Ready to run 🟢` spike record has
   open questions;
-- every open question is laid out as [the lifecycle page](../lifecycle.md#documents) shows; one
+- every open question is laid out as [the lifecycle page](../lifecycle.md#what-every-document-shares) shows; one
   written before that layout is listed, so it can be laid out again;
 - no document links to another, or names its path, where
-  [the references rule](../lifecycle.md#principles) does not allow it;
+  [the references rule](../lifecycle.md#references) does not allow it;
 - each ADR named in a `supersedes:` field names it back in `superseded-by:`, and the other way
   round;
 - no spec still heads its requirements `### Requirement: <name>`, as specs written for an earlier
@@ -66,7 +66,7 @@ repository. It always checks every document, whatever window the run was given (
 - spike records still `Draft 📝` or `Ready to run 🟢` are listed with their date, so a spike
   nobody finished is noticed.
 
-**The code, by judgement.** One agent per `Accepted 👍` spec and per `Accepted 👍` ADR checks the
+**The code, by judgement.** One auditor agent (`agents/auditor.md`) per `Accepted 👍` spec and per `Accepted 👍` ADR checks the
 code against that one document. Draft specs and ADRs are left out, since their intent is not
 settled, and so are `Rejected ❌` and `Superseded ↪️` ADRs and the project's recorded practices,
 which are rules for how agents work rather than what the product does.
@@ -97,14 +97,13 @@ Every finding quotes the requirement or decision and the code that breaks it, wi
 line, so you can judge it yourself.
 
 **Each drift finding is checked**, as Claude Code's own `/code-review` checks what its
-problem-finding agents report.[^codereview] For every document with drift findings, one more
-fresh agent tries to disprove them, and says of each whether it is confirmed or rejected, with its
+problem-finding agents report.[^codereview] For every document with drift findings, one more fresh agent, the audit checker (`agents/audit-checker.md`), tries to disprove them, and says of each whether it is confirmed or rejected, with its
 evidence. Only confirmed findings are reported as drift; rejected ones are listed briefly at the
 end with the checking agent's reason, so a real finding dropped by mistake is still in front of
 you. A document with no findings needs no checking agent, so this costs more only when there is
 drift to check.
 
-**The brief, by judgement.** When the project has a brief, one more agent reads it beside the
+**The brief, by judgement.** When the project has a brief, one more agent, the brief checker (`agents/brief-checker.md`), reads it beside the
 accepted specs and ADRs the run covers, without the code, and reports any that contradicts the
 brief's goals, what it puts out of scope or its constraints, such as a spec for something the brief
 says the product will not do. A spec or ADR that only adds detail the brief doesn't mention is
@@ -112,7 +111,7 @@ never reported: they always say more than the brief. Each document it names is c
 fresh agent, as drift is, and only confirmed contradictions are reported, with quotes of both. The
 suggested correction is either side: change the spec or supersede the ADR to fit the brief, or
 change the brief if your intent for the product has changed. The brief changes only when you say
-so (see [the lifecycle rules](../lifecycle.md#principles)), so this is where a contradiction
+so (see [the lifecycle rules](../lifecycle.md#brief)), so this is where a contradiction
 appearing after a brief change comes to light. It costs one agent per run, plus one per document
 it names.
 
@@ -130,7 +129,7 @@ read on the branch you have checked out.
 - `/agentic:audit <document>` checks one accepted spec or ADR.
 
 A changed file is any file a window's commits added, changed, renamed or deleted, tests and
-configuration included. For a window, one agent reads the changes beside the text of every
+configuration included. For a window, one agent, the audit picker (`agents/audit-picker.md`), reads the changes beside the text of every
 accepted spec and ADR, and picks the ones the changes could affect; every spec or ADR whose own
 text changed in the window is picked too. Only those are checked, against the code and against the
 brief, except that a window in which the brief changed checks every accepted spec and ADR against

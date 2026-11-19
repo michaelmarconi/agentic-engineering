@@ -655,11 +655,11 @@ class Report(Project):
         self.put("docs/adrs/0001-cents.md", adr())
         self.put("docs/specs/statement-import.spec.md", spec(status="Draft 📝", extra="See ../adrs/0001-cents.md.\n"))
         sys.path.insert(0, os.path.join(HERE, "..", "..", "..", "scripts"))
-        import audit_relay
-        self.relay = audit_relay
+        import agent_relay
+        self.relay = agent_relay
 
     def keep(self, agent, document, kind, text):
-        path = self.relay.record_path(self.data, "s1")
+        path = self.relay.record_path(self.data, "s1", "audit")
         record = self.relay.load(path)
         self.relay.keep(record, {"agent": agent, "document": document, "kind": kind}, text)
         self.relay.save(path, record)

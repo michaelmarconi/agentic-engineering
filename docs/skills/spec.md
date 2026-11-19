@@ -1,7 +1,7 @@
 # `/spec`
 
 `/spec` is the skill for writing and changing specs. It is one step of
-[the lifecycle](../../README.md); read that page first for the documents, skills and agents it
+[the lifecycle](../lifecycle.md); read that page first for the documents, skills and agents it
 mentions.
 
 ## What a spec is
@@ -140,13 +140,13 @@ Run `/spec` and tell it what you want to do:
 
 When there are questions, `/spec` tells you how many there are and asks them one at a
 time, each with its proposal and the reason set apart in a quote, as
-[the lifecycle page](../lifecycle.md#documents) shows; only a
+[the lifecycle page](../lifecycle.md#what-every-document-shares) shows; only a
 question you defer is written into the spec's Open questions. If you say you would rather not
 answer now, it defers them all.
 
 ## Review
 
-Before you see a spec, `/spec` has its reviewer agent check it against a short list of pass-or-fail
+Before you see a spec, `/spec` has its reviewer agent (`agents/spec-reviewer.md`) check it against a short list of pass-or-fail
 checks: the sections are all there, each requirement has one EARS rule, its examples add real cases,
 How we'll check names a method, the first requirement states the story's outcome, the spec covers
 one capability, every open question has a proposed answer, and the spec refers to no other spec, nor
@@ -156,14 +156,11 @@ since those can change without the spec being touched and the reference would go
 hook also refuses any such hyperlink or path. The reviewer also reads the brief, but raises it only
 where the spec contradicts the brief's goals, what it puts out of scope or its constraints, never
 where the spec adds detail the brief doesn't mention. That becomes a question for you: change
-the spec, or change the brief, which `/spec` never does for you. At the same time, a language checker reads it for
-words a newcomer could not follow, by the [Plain words](../lifecycle.md#plain-words) rule: a term
-from your field gets a footnote, and team shorthand is rewritten. `/spec` corrects what both find,
-once, and has the corrections checked (see [Review process](../lifecycle.md#review-process)); then
-you get the spec with the reports. After that, `/spec` puts each question to you with four choices, Accept its proposal, give your
-own answer, Ignore or Defer, and only deferred ones go into Open questions. Each round of answers
-is checked on only what it changed, and the whole review runs again only when you ask, after a
-change you make yourself, or in a new conversation.
+the spec, or change the brief, which `/spec` never does for you. Beside the reviewer, the language checker agent (`agents/language-checker.md`) reads it for
+words a newcomer could not follow, by the [Plain words](../lifecycle.md#plain-words) rule. The
+review then runs as [Review process](../lifecycle.md#review-process) says: `/spec` corrects what
+both find once, the correction checker agent (`agents/correction-checker.md`) checks the
+corrections, and you get the spec with the reports and each question to settle.
 
 [^ears]: Mavin, Wilkinson, Harwood and Novak, "Easy Approach to Requirements Syntax (EARS)",
     17th IEEE International Requirements Engineering Conference, 2009,

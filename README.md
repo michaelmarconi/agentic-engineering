@@ -131,9 +131,10 @@ flowchart LR
     Spec --> Plan
     ADR --> Plan
     Plan --> Build
-    Build --> Branch[A reviewed branch]
-    Branch --> Verify
-    Verify -->|you merge| Code[Code on the main branch]
+    Build --> Verify
+    Verify --> Release
+    Release --> Deploy
+    Deploy --> Audit
 ```
 
 ## What it changes in your repository
@@ -143,6 +144,13 @@ flowchart LR
   request template you agree to, and only when you run a skill or ask for one.
 - `/agentic:build` commits to a branch of its own and pushes it. It never commits to the main
   branch, never opens a pull request and never merges: those steps stay with you.
+- `/agentic:release` writes the version and release notes into the files your releasing practice
+  names, commits them, never to the main branch, and pushes. It publishes only when the practice
+  records a publish command and you say yes.
+- `/agentic:deploy` runs your deploying practice's commands only on your yes, and its roll back at
+  once if the recorded check fails.
+- `/agentic:practices` adds an `@AGENTS.md` line to `CLAUDE.md`, creating it if there is none, so
+  Claude reads the recorded practices.
 - Review reports, and the report files `/agentic:build`, `/agentic:audit` and `/agentic:verify` end with, are kept in the
   session's scratchpad, a temporary folder Claude Code gives each session, outside your
   repository, until Claude Code clears it.
@@ -163,28 +171,11 @@ documents, its entry says what they are.
 
 ### If you installed it as `sdlc@sdlc`
 
-The plugin was called `sdlc` and listed in this repository's own catalog. That catalog still
-works, and moves your install to the new name:
-
-1. Finish any review, build or spike in progress first: the plugin's saved records of them are
-   kept under the old name and are not carried over.
-2. Run `claude plugin marketplace update sdlc`. This rewrites `sdlc@sdlc` to `agentic@sdlc` in
-   your settings, including a repository's `.claude/settings.json`, which you then commit.
-3. Run `claude plugin install agentic@sdlc`, adding `--scope project` if you installed it that
-   way, so the install record matches.
-4. Use `/agentic:<name>` from now on, and change any notes or scheduled commands that use the
-   old `sdlc` prefix.
-
-When convenient, move to the new catalog, again with no review, build or spike in progress, since
-the saved records move to a new folder once more:
-
-1. Run `claude plugin marketplace remove sdlc`. This also takes `agentic@sdlc` out of your
-   settings, including a repository's `.claude/settings.json`.
-2. Install as above, adding `--scope project` if you installed it that way, and commit the
-   settings change.
-
-Never enable both `agentic@sdlc` and `agentic@michaelmarconi`: with two plugins of the same name,
-Claude Code drops one copy's hooks. Your documents need no change.
+The plugin used to be called `sdlc`. Run `claude plugin marketplace remove sdlc`, which also takes
+it out of your settings, including a repository's `.claude/settings.json`. Then install as above,
+adding `--scope project` if you installed it that way, commit the settings change, and use
+`/agentic:<name>` from now on. Never enable both `agentic@sdlc` and `agentic@michaelmarconi`: with
+two plugins of the same name, Claude Code drops one copy's hooks. Your documents need no change.
 
 ## Feedback
 

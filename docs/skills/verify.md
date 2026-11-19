@@ -4,7 +4,7 @@
 product, uses it the way a person would, and says for each example in the specs whether the product
 does what the example says. It begins by agreeing with you what to check: requirements of one or more
 accepted specs, whenever they were built. Its usual place
-in [the lifecycle](../../README.md) is after [`/build`](build.md) and before you merge, but you can
+in [the lifecycle](../lifecycle.md) is after [`/build`](build.md) and before you merge, but you can
 run it at any time. Read that page first for the documents, skills and agents it mentions.
 
 ```mermaid
@@ -97,13 +97,13 @@ the list says why.
 1. **What to check.** Claude agrees the list of requirements with you, as above, notes the commit
    being checked, for the report, and refuses to start while there are uncommitted changes, since
    the report could then not say which version of the product was checked.
-2. **The verifier.** One fresh agent per spec, starting without your conversation. It is given the
+2. **The verifier.** One fresh agent per spec (`agents/verifier.md`), starting without your conversation. It is given the
    path to that spec, the requirements to check in it, and the practices, and nothing else: not the code, the tests, the plan
    or any other document. It starts the product as the practice says, turns each example into
    steps, carries them out against the product's real interfaces, and records a verdict and its
    evidence. It may write throwaway tools to do so, in a temporary folder outside your repository.
    Specs are checked one after another, since each verifier starts and stops the product.
-3. **The verify-checker.** For each spec, one more fresh agent, with the same limits, tries to
+3. **The verify-checker.** For each spec, one more fresh agent (`agents/verify-checker.md`), with the same limits, tries to
    disprove the verifier's verdicts, as Claude Code's own `/code-review` checks what its
    problem-finding agents report.[^codereview] It repeats each pass and tries the edges of its
    example; it reruns each fail once, to rule out a one-off; and it tries again any example left
