@@ -20,13 +20,16 @@ flowchart LR
     subgraph Ship[Ship it]
         Release --> Deploy
     end
+    subgraph Drift[Check for drift]
+        Audit
+    end
     Spec --> Plan
     ADR --> Plan
     Verify --> Release
     Spike -.- Spec
     Spike -.- ADR
-    Ship ~~~ Audit
-    Decide <-.- Audit
+    Ship ~~~ Drift
+    Decide <-.- Drift
 ```
 
 Solid arrows show the usual order, each step using what the one before it wrote. Dotted lines show
