@@ -108,8 +108,8 @@ line when an answer opens or settles others; the context it needs; a block quote
 reason; and the question itself, last, in one line.
 With no question tool but a decision card, as in a Claude project thread, ask in words as the skill
 says, then post it on a card offering the choices that need no typing, your proposal recommended.
-Where one reply asks several questions, follow each with its card or question tool, and a line
-holding only `---` before the next.
+Ask one question per reply, then end your turn until the person answers it, even when your
+question tool or card returns at once.
 
 Write every new record as `Draft 📝`, named for today's date and two to five words of its title; then
 run the design review.

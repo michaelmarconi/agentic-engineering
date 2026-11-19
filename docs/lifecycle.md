@@ -79,9 +79,9 @@ kept**", then the context, the quote, and the question itself last. The first nu
 questions asked or settled in the session, across every document, the one being asked included, so it only goes up; the
 total adds those still open, and the skill says in one line when an answer opens or settles others.
 Where Claude has no question tool but can post a decision card, as in a Claude project thread, it
-asks in words as above, then posts the same question on a card you answer with a tap. When one reply
-asks several questions, each is followed straight away by its own card, or the question tool, and a
-horizontal rule comes before the next, so you always know which card answers which question.
+asks in words as above, then posts the same question on a card you answer with a tap. A skill asks
+one question per reply and then waits for your answer before asking the next, even where its card
+or question tool returns at once, so only one question is ever waiting on you.
 
 ## Steps
 

@@ -167,9 +167,9 @@ ASK_RULE = (
     "block quote holding a \"**Proposed:**\" line with your answer, a line holding only `>`, and a "
     "\"**Why:**\" line with the reason; and the question itself, last, in one line. With no question "
     "tool but a decision card, as in a Claude project thread, ask in words as the skill says, then "
-    "post it on a card offering the choices that need no typing, your proposal recommended. Where "
-    "one reply asks several questions, follow each with its card or question tool, and a line "
-    "holding only `---` before the next."
+    "post it on a card offering the choices that need no typing, your proposal recommended. Ask "
+    "one question per reply, then end your turn until the person answers it, even when your "
+    "question tool or card returns at once."
 )
 # How /build asks before building a plan that is not signed off.
 BUILD_ASK_RULE = (
