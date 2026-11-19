@@ -1,13 +1,13 @@
 # The lifecycle
 
-The lifecycle is how this plugin builds software with a coding agent: a few short documents say
-what to build and why, a plan says how, and the plugin's skills, sets of instructions Claude
-follows, each run as a slash command such as `/agentic:spec`, write them and act on them. It fixes
-the shape of those documents and leaves how you work to you. This page holds the whole of it, for
-you and for Claude: Claude is given it at the start of every session in a repository that has a
-brief or a spec, and every skill opens it for the rules it shares with the others. The
-[README](../README.md) introduces the plugin and how to install it. This page leaves out the
-`agentic:` prefix of each skill's name.
+The lifecycle is how this plugin builds software with a coding agent. A few short documents say
+what to build and why, a plan says how, and skills, instructions Claude follows that you run as
+slash commands such as `/agentic:spec`, write and act on them. It fixes the shape of the documents
+and leaves how you work to you.
+
+Claude is given this page at the start of every session in a repository with a brief or a spec, and
+every skill reads it for the rules they share. Skills appear here without their `agentic:` prefix.
+The [README](../README.md) covers installing the plugin.
 
 ```mermaid
 flowchart LR
@@ -31,16 +31,14 @@ flowchart LR
     Deploy --> Audit
 ```
 
-Each step uses what the one before it wrote. Not every piece of work needs every step: a spike runs
-only when there is an unknown to settle, and an audit, shown last, can run at any time. Each phase
-has its own, more detailed diagram under [Skills](#skills).
+Each step uses what the one before it wrote, though not every piece of work needs every step: a
+spike runs only when there is an unknown to settle, and an audit can run at any time. Each phase has
+a more detailed diagram under [Skills](#skills).
 
-This is the order within one small piece of work, not a project plan done once from top to bottom.
-You go round it many times: each round decides only what the next piece needs, such as one new
-requirement in a spec or one decision, plans a change small enough to review in one go, builds it
-and checks it. What you learn feeds the next round. A spec is a living document, edited whenever
-you learn what a capability should do; a decision that turns out wrong is superseded by a new ADR;
-a plan is thrown away once built.
+This is the order within one small piece of work, not a plan for the whole project. You go round it
+many times, each round deciding only what the next change needs, then building and checking it.
+What you learn feeds the next round: specs are edited as you learn, a wrong decision is superseded
+by a new ADR, and a plan is thrown away once built.
 
 ```mermaid
 flowchart LR
