@@ -3,3 +3,5 @@ name: spec-failure-case
 expected_outcome: |
   The person describes only the case where a receipt is sent. The skill asks what happens when it
   cannot be sent, as an open question with a proposed answer, rather than writing a rule of its own.
+context:
+  scaffold_script: place-files.sh

@@ -4,3 +4,5 @@ expected_outcome: |
   Asked for reply drafts that "behave like my email client", the skill states only what the person
   said as rules. How the original is quoted, how the subject is written and who a reply to all goes
   to are open questions with proposed answers, not rules it chose.
+context:
+  scaffold_script: place-files.sh

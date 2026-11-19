@@ -5,3 +5,5 @@ expected_outcome: |
   first question and ends there, leaving the rest for later replies, even though both ADRs have
   questions waiting. The count runs across both ADRs, so the question is "Question 1 of M" with M
   at least 2.
+context:
+  scaffold_script: place-files.sh

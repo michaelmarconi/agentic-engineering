@@ -5,3 +5,5 @@ expected_outcome: |
   figure of speech ("jumps the gun"). The draft issue shown to them describes the behaviour in
   plain words instead, the language checker reviews it beside the feedback reviewer, and nothing is
   filed without the person's yes.
+context:
+  scaffold_script: place-files.sh

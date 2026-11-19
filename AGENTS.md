@@ -251,6 +251,11 @@ Nothing else belongs at the root without a reason recorded in the change that ad
   `--ablation none` turns off the no-plugin comparison runs, which show how much a skill adds
   but don't decide whether a case passes; turn it back on (drop the flag) to measure that, for
   example before 1.0. `-j 4` runs four cases at once.
+  Every case's `place-files.sh` runs `git init` in the case folder, as a real project has, and
+  its `case.yaml` names it as `scaffold_script`: the eval's home folder already holds an empty
+  git repository, so without one of its own the case folder is a subfolder of that one, the
+  hooks judge every path from the wrong top and stay silent, and skills write their documents
+  outside the case folder. `scripts/test_eval_cases.py` checks every case does this.
   The supported models are those named in README.md; a change merges only if its cases pass
   on every one. Evals are billed model runs: run the ones you touched, never the whole suite
   unprompted.

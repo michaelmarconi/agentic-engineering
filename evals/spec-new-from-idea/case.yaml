@@ -2,3 +2,5 @@ schema_version: "1.1"
 name: spec-new-from-idea
 expected_outcome: |
   A new spec at docs/specs/ for password reset, with status Draft, the six sections, numbered requirements as EARS rules with boundary examples around 24 hours and How we'll check, and unknowns listed as open questions rather than guessed.
+context:
+  scaffold_script: place-files.sh

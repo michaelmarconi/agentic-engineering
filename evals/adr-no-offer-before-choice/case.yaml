@@ -3,3 +3,5 @@ name: adr-no-offer-before-choice
 expected_outcome: |
   The person has not picked between the two designs, so Decision says "Not chosen yet" and the
   hand-over asks for the choice. No diagram is offered, though either design has parts worth drawing.
+context:
+  scaffold_script: place-files.sh

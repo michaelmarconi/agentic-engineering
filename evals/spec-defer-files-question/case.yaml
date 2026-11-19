@@ -2,3 +2,5 @@ schema_version: "1.1"
 name: spec-defer-files-question
 expected_outcome: |
   The person answers "Defer" in advance to every question. The skill drafts the spec, reviews it once, and writes each question into Open questions with its proposal. The last question offers only one more full review or stopping, never accepting the spec, since questions are deferred.
+context:
+  scaffold_script: place-files.sh

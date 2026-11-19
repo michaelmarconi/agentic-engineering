@@ -4,3 +4,5 @@ expected_outcome: |
   The person asks for a spec without asking for it to be written straight away. Before drafting any
   requirement, the skill plays back the story and what is in and out of scope, and asks whether it has
   them right.
+context:
+  scaffold_script: place-files.sh
