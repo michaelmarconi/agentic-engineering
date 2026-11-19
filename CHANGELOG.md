@@ -6,6 +6,20 @@ What changed in each version of the plugin, newest first. Versions follow
 past a major version: it says what you need to change in your documents. Until 1.0.0, any
 minor version may need such a change, and its entry says so.
 
+## [0.79.0] - 2026-11-19
+
+### Changed
+
+- Document skills keep their questions out of the document until you defer them: the rule now
+  sits beside the step that writes a gap as a question, and the templates' Open questions
+  placeholder names a deferred question.
+- A deferred or ignored question needs no correction check; only an answer you give is checked.
+- After a failed correction check, the skill quotes each of the check's findings as given, even
+  when you said not to ask, and writing in what you defer is the one change it still makes.
+- /spike corrects crashing experiment code once a run shows the fault, and never before, ahead of
+  the next run; a design leaves Next steps empty.
+- The /build, /audit and /verify hand-over counts each bullet's bold label in its 15 words.
+
 ## [0.78.0] - 2026-11-19
 
 ### Changed
