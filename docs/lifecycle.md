@@ -1,10 +1,11 @@
 # The lifecycle
 
 The lifecycle is how this plugin builds software with a coding agent: a few short documents say
-what to build and why, a plan says how, and each step has a skill, a set of instructions Claude
-follows, run as a slash command such as `/agentic:spec`. This page holds the whole of it, for you
-and for Claude: Claude is given it at the start of every session in a repository that has a brief
-or a spec, and every skill opens it for the rules it shares with the others. The
+what to build and why, a plan says how, and the plugin's skills, sets of instructions Claude
+follows, each run as a slash command such as `/agentic:spec`, write them and act on them. It fixes
+the shape of those documents and leaves how you work to you. This page holds the whole of it, for
+you and for Claude: Claude is given it at the start of every session in a repository that has a
+brief or a spec, and every skill opens it for the rules it shares with the others. The
 [README](../README.md) introduces the plugin and how to install it. This page leaves out the
 `agentic:` prefix of each skill's name.
 
@@ -240,6 +241,14 @@ flowchart LR
   skills gets something wrong or could work better. It writes nothing in your repository.
 
 ## Principles
+
+### Your way of working
+
+- **The skills set the shape; your practices set the rules.** The lifecycle fixes only what makes
+  its documents worth trusting: what each one holds, that it is reviewed, and that a person signs
+  it off. Everything else is yours to choose, such as how you test, branch, review code, release
+  and deploy, and how strict to be. You record those choices once as practices, and every skill
+  follows them. The plugin never asks you to work its way where you have already chosen your own.
 
 ### The brief
 
