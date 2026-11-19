@@ -16,8 +16,8 @@ Before writing, read [references/rubric.md](references/rubric.md): it is the lis
 reviewer will apply, so writing to it leaves less to correct. Write in plain words, as the Plain
 words section of [the lifecycle page](../../docs/lifecycle.md#plain-words) says: a language
 checker holds every document to it. New plans start from
-[assets/template.md](assets/template.md). Read these with the Read tool, not the shell, so the
-person is not asked to approve a command.
+[assets/template.md](assets/template.md). Read these with the Read tool, not the shell, so no
+command needs approving.
 
 The template's frontmatter holds `type: Plan`, which says what the document is. A plan written
 before it has no `type:`, so add it with your next edit. The title never names the document's type,
@@ -72,7 +72,7 @@ Each question's proposal is one answer that also says where it belongs, such as 
 choosing the Redis the app already uses", and its reason covers both. When you ask the person to settle a question in the
 conversation, lay it out in four parts, so they can find your proposal at a glance: a bold line
 naming it and its place in the count, such as "**Question 2 of 7: how often a failed pull is
-retried**", where the first number counts the questions asked or settled in this conversation, this
+retried**", where the first number counts the questions asked or settled in this conversation, across every document, this
 one included, and the total adds those still open, so the first number only goes up, saying in one
 line when an answer opens or settles others; the context it needs; a block quote holding a
 "**Proposed:**" line with your answer, a line holding only `>`, and a "**Why:**" line with the
