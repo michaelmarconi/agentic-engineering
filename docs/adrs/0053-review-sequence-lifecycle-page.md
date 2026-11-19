@@ -87,7 +87,7 @@ question to the person with the four choices. The sentences `scripts/skill_check
 in each skill for those steps (`ANSWER_RULES`, `CORRECT_RULES` and `REVIEW_RULE`) move there
 unchanged. One of them tells Claude to end a question with "Accept, give your own answer, ignore or
 defer?", the line `scripts/review_relay.py` looks for in Claude's replies to save the person's
-answer, so the line must not change. `SHOW_RULE` stays in each skill, as ADR 0025 requires. Each
+answer, so the line must not change. `SHOW_RULE` stays in each skill, as [ADR 0025](0025-document-review-display.md) requires. Each
 skill keeps any step only it has, such as the diagram offer in /adr and /plan.
 
 **What the check script checks.** `skill_check.py` checks that each reviewing skill holds the one
