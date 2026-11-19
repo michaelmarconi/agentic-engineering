@@ -37,8 +37,8 @@ would make the spike wrong or misleading, such as a run whose output contradicts
 findings holds only problems, never what you checked and found right. Leave out matters of style or
 taste. Keep apart the findings only a person can settle: under Needs a person goes anything only the
 person who ran the spike can decide, such as whether a sample input stands for the real thing,
-quoting the sentence it is about. Leave out a finding that the document's Open questions already
-raise: it is already waiting for the person.
+quoting the sentence it is about. Leave out a finding that the document's Open questions already raise: it is already waiting for the person. A gap the document marks as not chosen or not known yet goes under Needs a person, never as a
+failure: the writer asks the person about it.
 
 Report in this shape:
 

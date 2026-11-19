@@ -38,7 +38,7 @@ instead, because two specs for one capability will drift apart. If `docs/brief.m
 so the spec fits the product. A spec says far more than the brief, and detail the brief doesn't
 mention is never a reason to raise it. Only an outright contradiction with the brief's Goals, Out of
 scope or Constraints is, such as a rule for something the brief puts out of scope (rubric check 15).
-Write it into Open questions, proposing one of its two answers: change the spec to fit, or the
+Ask about it, proposing one of its two answers: change the spec to fit, or the
 person changes the brief with `/brief`. Never edit the brief, or offer to: it changes only when the
 person changes the product's intent. If they choose to change the brief, the question goes once the
 brief no longer contradicts the spec.
@@ -77,25 +77,30 @@ say so when you hand the spec over.
 Then ask about what the draft or the review leaves open: say how many questions there are, ask only
 the first (a conflict with another spec, or a decision the review says needs the person, comes
 first), and do not mention any of the others anywhere in that reply, not even in passing or in a
-report of what you or the review changed (they are in the spec); ask the next once it is settled,
+report of what you or the review changed; ask the next once it is settled,
 playing back what you have understood. When you ask the person to settle a question in the
 conversation, lay it out in four parts, so they can find your proposal at a glance: a bold line
 naming it and its place in the count, such as "**Question 2 of 7: how often a failed pull is
-retried**", where the first number counts the questions asked or settled in this conversation, this
+retried**", where the first number counts the questions asked or settled in this conversation, across every document, this
 one included, and the total adds those still open, so the first number only goes up, saying in one
 line when an answer opens or settles others; the context it needs; a block quote holding a
 "**Proposed:**" line with your answer, a line holding only `>`, and a "**Why:**" line with the
-reason; and the question itself, last, in one line. If the person has
-said not to ask now, give the count and leave the questions in Open questions. Settle each answer
+reason; and the question itself, last, in one line.
+With no question tool but a decision card, as in a Claude project thread, ask in words as the skill
+says, then post it on a card offering the choices that need no typing, your proposal recommended.
+Where one reply asks several questions, follow each with its card or question tool, and a line
+holding only `---` before the next.
+If the person has
+said not to ask now, give the count and defer the questions. Settle each answer
 before moving on: if the person answers part of what you asked, take that part and ask again about
 the rest, because silence is not agreement; if they ask what you think, recommend something and wait
-for them to accept it. If they would rather not answer now, leave the rest in Open questions.
+for them to accept it. If they would rather not answer now, defer the rest.
 
 Never fill a gap with a guess, including who the Story is about, their situation and the outcome: if
 the person has not told you, write only what you were told, without adding a purpose or detail of
-your own, say the rest is not known yet and ask in Open questions. A default you would choose, such
-as how a reply quotes the message it answers, is never written as a rule: it goes into Open
-questions, with the default as the proposed answer. Write each open question as a heading, `### 1.
+your own, say the rest is not known yet and ask. A default you would choose, such
+as how a reply quotes the message it answers, is never written as a rule: it is a question,
+with the default as the proposed answer. Write each open question as a heading, `### 1.
 <what is to be settled>`, numbered in order, then the context it needs, then a block quote holding a
 line starting `> **Proposed:**` with the answer you would choose, then a line holding only `>`, then
 a line starting `> **Why:**` with the reason, so the person can find the proposal at a glance and
@@ -106,7 +111,7 @@ answer, "Proposed:" says what would settle it instead, never a guess. Who the St
 a question (rubric check 14). Words whose meaning is plain from the conversation or the product,
 such as "reply" in an email tool, are settled from that context, not asked about. Use only people
 the person named, anywhere in the spec; example values such as `user@example.com` need no name. An
-unknown goes into Open questions, worded so it can be answered. When the person names how something
+unknown is a question for the person, worded so it can be answered. When the person names how something
 should be built (a library, a service, a named bucket or database, a design), keep the behaviour it
 serves and leave the choice out of every section, even when they state it as settled: the spec
 should still hold if the choice changes, and tell the person you left it out. If it is already
@@ -123,9 +128,9 @@ tell them it can change or vanish without the spec being touched.
 
 Add only behaviour the person asked for or agreed to. A case they have not covered, such as who
 may not use the feature, what happens on an error, or what happens when a rule's condition does
-not hold, is an open question, not a rule you choose: a rule for paid invoices says nothing
+not hold, is a question for the person, not a rule you choose: a rule for paid invoices says nothing
 about unpaid ones. For each requirement, ask yourself what happens when it cannot be met, such as
-when a service it needs cannot be reached, and unless the person has said, make that an open
+when a service it needs cannot be reached, and unless the person has said, make that a
 question. Write each requirement as rubric checks 5 to 8 describe: a numbered heading, one EARS
 rule about something someone can see, example tables that add concrete cases, and How we'll
 check.
@@ -221,6 +226,9 @@ giving any examples as possible answers rather than further questions; if the pe
 ask now, ask nothing. Name the count only, not the items: each comes up when you reach it. List the
 reviewers' suggestions separately, as optional: they never hold the spec back. Leave committing
 to them.
+
+While drafting, keep your own questions out of the document: ask them with the review's, once where
+both raise the same point, so only a deferred one reaches Open questions.
 
 Put each question to the person one at a time, by the asking rule: open questions, decisions for the
 person and what a check finds. Offer four choices on your question tool: "Accept" your proposal, "My

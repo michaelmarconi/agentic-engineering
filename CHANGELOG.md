@@ -6,6 +6,41 @@ What changed in each version of the plugin, newest first. Versions follow
 past a major version: it says what you need to change in your documents. Until 1.0.0, any
 minor version may need such a change, and its entry says so.
 
+## [0.75.0] - 2026-11-19
+
+### Changed
+
+- /brief, /spec, /adr, /plan and /spike keep the questions they raise while drafting out of the
+  document. They ask them one at a time with the review's questions, asking once where both raise
+  the same point, and write a question into Open questions only when you defer it, as ADR 0049
+  already says. An ADR whose choice isn't made yet says "Not chosen yet." in Decision. Reviewers
+  report a gap the document marks as not chosen or not known yet as a question for you, not a
+  failure. A plan still lists the ADRs, spec changes and practices it waits on under Open
+  questions. Nothing in your documents needs changing: an older ADR's "Not chosen yet; see Open
+  questions." still passes, and is shortened the next time the skill edits it.
+
+## [0.73.1] - 2026-11-19
+
+### Fixed
+
+- When one reply asks questions about several documents, such as the first open question of each
+  of two ADRs, the "Question N of M" count runs across all of them, so each question has its own
+  number.
+
+## [0.73.0] - 2026-11-19
+
+### Changed
+
+- Where Claude has no question tool but can post a decision card, as in a Claude project thread,
+  /brief, /spec, /adr, /plan, /spike and /practices now ask each question in words as before and
+  then post it on a card, with the proposal recommended, so you can answer with a tap. /build does
+  the same for its "Build anyway" and "Accept the build" questions.
+- When one reply asks several questions, such as the first open question of each of two ADRs,
+  each question is followed straight away by its own card, or the question tool, with a
+  horizontal rule before the next, so it is clear which card answers which question.
+- The answer you tap on a card is kept for the check of what changed against that card's own
+  question, so each of several cards keeps its own answer.
+
 ## [0.72.0] - 2026-11-19
 
 ### Changed

@@ -81,7 +81,7 @@ Unit tests for both examples.
 
 `/spec` never writes a default it chose as a rule. Where you have not said what should happen,
 such as how a reply quotes the message it answers, or what happens when a requirement cannot be
-met, it asks in Open questions, with the answer it would choose, so you can accept it in a word.
+met, it asks you, with the answer it would choose, so you can accept it in a word.
 
 ## Statuses
 
@@ -138,11 +138,11 @@ Run `/spec` and tell it what you want to do:
   words and never refers to the record, which may be deleted.
 - **Accept:** mark a spec `Accepted 👍`.
 
-When the spec has open questions, `/spec` tells you how many there are and asks them one at a
+When there are questions, `/spec` tells you how many there are and asks them one at a
 time, each with its proposal and the reason set apart in a quote, as
-[the lifecycle page](../lifecycle.md#documents) shows; the rest wait in the spec's Open questions
-section. If you say you would rather not
-answer now, it leaves them there.
+[the lifecycle page](../lifecycle.md#documents) shows; only a
+question you defer is written into the spec's Open questions. If you say you would rather not
+answer now, it defers them all.
 
 ## Review
 
@@ -155,7 +155,7 @@ except a web page, such as a requirements document you handed over, by hyperlink
 since those can change without the spec being touched and the reference would go stale. A plugin
 hook also refuses any such hyperlink or path. The reviewer also reads the brief, but raises it only
 where the spec contradicts the brief's goals, what it puts out of scope or its constraints, never
-where the spec adds detail the brief doesn't mention. That becomes an open question for you: change
+where the spec adds detail the brief doesn't mention. That becomes a question for you: change
 the spec, or change the brief, which `/spec` never does for you. At the same time, a language checker reads it for
 words a newcomer could not follow, by the [Plain words](../lifecycle.md#plain-words) rule: a term
 from your field gets a footnote, and team shorthand is rewritten. `/spec` corrects what both find,

@@ -90,8 +90,8 @@ must actually exercise the thing in question.
 - **A step only the person can do,** such as trying something on their own phone, is a run they
   report: write `- Command: None.` when every run is theirs, and describe what they will do.
 
-Anything only the person can settle, such as what result counts as success, goes into Open
-questions. Write each open question as a heading, `### 1. <what is to be settled>`, numbered in
+Anything only the person can settle, such as what result counts as success, is a question for
+them. Write each open question as a heading, `### 1. <what is to be settled>`, numbered in
 order, then the context it needs, then a block quote holding a line starting `> **Proposed:**` with
 the answer you would choose, then a line holding only `>`, then a line starting `> **Why:**` with
 the reason, so the
@@ -101,11 +101,15 @@ questions laid out any other way. Where only the person can know the answer, "Pr
 would settle it instead, never a guess. When you ask the person to settle a question in the
 conversation, lay it out in four parts, so they can find your proposal at a glance: a bold line
 naming it and its place in the count, such as "**Question 2 of 7: how often a failed pull is
-retried**", where the first number counts the questions asked or settled in this conversation, this
+retried**", where the first number counts the questions asked or settled in this conversation, across every document, this
 one included, and the total adds those still open, so the first number only goes up, saying in one
 line when an answer opens or settles others; the context it needs; a block quote holding a
 "**Proposed:**" line with your answer, a line holding only `>`, and a "**Why:**" line with the
 reason; and the question itself, last, in one line.
+With no question tool but a decision card, as in a Claude project thread, ask in words as the skill
+says, then post it on a card offering the choices that need no typing, your proposal recommended.
+Where one reply asks several questions, follow each with its card or question tool, and a line
+holding only `---` before the next.
 
 Write every new record as `Draft 📝`, named for today's date and two to five words of its title; then
 run the design review.
@@ -251,6 +255,9 @@ the reviewers' suggestions apart, as optional. The last question's next status s
 design, or confirms the verdict, naming the status it would get. After the
 verdict, tell them which spec or ADR to take the finding to next. Leave committing to them: to hand
 an unfinished spike to a teammate, they commit the record.
+
+While drafting, keep your own questions out of the document: ask them with the review's, once where
+both raise the same point, so only a deferred one reaches Open questions.
 
 Put each question to the person one at a time, by the asking rule: open questions, decisions for the
 person and what a check finds. Offer four choices on your question tool: "Accept" your proposal, "My

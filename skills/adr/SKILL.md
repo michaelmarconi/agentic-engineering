@@ -15,8 +15,8 @@ Before writing, read [references/rubric.md](references/rubric.md): it is the lis
 reviewer will apply, so writing to it leaves less to correct. Write in plain words, as the Plain
 words section of [the lifecycle page](../../docs/lifecycle.md#plain-words) says: a language
 checker holds every document to it. New ADRs start from
-[assets/template.md](assets/template.md). Read these with the Read tool, not the shell, so the
-person is not asked to approve a command.
+[assets/template.md](assets/template.md). Read these with the Read tool, not the shell, so no
+command needs approving.
 
 The template's frontmatter holds `type: ADR`, which says what the document is. An ADR written
 before it has no `type:`, so add it with your next edit. The title never names the document's type,
@@ -35,10 +35,8 @@ python3 "${CLAUDE_SKILL_DIR}/scripts/adr.py" words <the ADR's path>
 ```
 
 Aim for sentences under 25 words and paragraphs of up to three sentences, with the Question in up
-to three sentences and the reason for the choice in up to two. These counts are a guide for you,
-not checks: never split, merge or rewrite text that already reads clearly just to meet them. The
-review checks that a newcomer can follow every sentence in one reading, and lists a long sentence
-or paragraph only as a suggestion.
+to three sentences and the reason for the choice in up to two. These counts are a guide: never
+rewrite clear text to meet them.
 
 ## Find what exists
 
@@ -60,16 +58,16 @@ say so to the person, who can rename it once the review has ended.
 
 ## Shape it with the person
 
-Usually the person has already talked the decision through in this conversation. Draft from
-that, and from whatever they point you to; research what else you need, such as how the options
+Usually the person has already talked the decision through in the conversation. Draft from
+that and whatever they point you to; research what else you need, such as how the options
 compare. Where the conversation changed its mind, the latest word wins. Given a finished
 spike record from `docs/spikes/`, put its measurements into the ADR's own words, such as "read all
 12 of 12 transactions": a line in Options says what they showed, and Technical detail gives them in
-full. A spike record may be deleted at any time, so the ADR never names it. Only when there is nothing to draw on, ask what needs deciding first.
+full. A spike record may be deleted, so the ADR never names it. With nothing to draw on, ask what needs deciding first.
 
 Write the Question first: the one choice to make, briefly. Until the person
-has picked an option, Decision says only "Not chosen yet; see Open questions.", every row in
-Options is Open, and Open questions asks for the choice. Once they pick, write "Chosen:" and the
+has picked an option, Decision says only "Not chosen yet.", every row in Options is Open, and
+the choice is a question for the person. Once they pick, write "Chosen:" and the
 option in full, so the sentence reads on its own, with the reason; mark that row Chosen and the
 others Rejected, each with why.
 
@@ -83,16 +81,16 @@ A choice can rest on an untried claim: something about how a system behaves that
 says the choice depends on and that nobody has tried, such as "this only works if the provider sends
 a payment's events in order". Anything else untested that the person mentions, such as a caveat, is
 a limit: keep it under Out of scope as they gave it. Decide which it is yourself, never by asking
-the person, and add no limits nobody raised. Put each such claim first in Open questions, ahead of
-the choice that waits on it, proposing a spike (`/agentic:spike`) that tests it, and never leave it to
-be proven later, such as in the build. It stays open until the spike's finding comes back. If the
+the person, and add no limits nobody raised. Ask about each such claim first, ahead of the choice that waits on it, proposing a spike (`/agentic:spike`) that tests it, and never leave it to
+be proven later, such as in the build. Taking the spike defers the question,
+written first in Open questions, until the spike's finding comes back. If the
 finding refutes the claim, remove its question and open the choice again: Decision returns to "Not
 chosen yet" and every row in Options to Open. Only if the person explicitly chooses to go ahead
 without a spike, which a request not to be asked anything is not, write the claim as a `Bad:` line
 under Consequences, saying it is untested at their word, and remove the question.
 
 Never fill a gap with a guess. An option nobody named, a reason nobody gave, or a choice not yet
-made goes into Open questions as a question the person can answer, never as an invented answer.
+made is a question for the person, never an invented answer.
 Write each open question as a heading, `### 1. <what is to be settled>`, numbered in order, then the
 context it needs, then a block quote holding a line starting `> **Proposed:**` with the answer you
 would choose, then a line holding only `>`, then a line starting `> **Why:**` with the reason, so
@@ -100,21 +98,23 @@ the person can find the
 proposal at a glance and accept it in a word or give another. Each question holds one proposal, so a
 question with two answers is two questions, and a plugin hook refuses Open questions laid out any
 other way. Where only the person can know the answer, "Proposed:" says what would settle it instead,
-never a guess. For a choice not yet made, propose the option you would recommend; for a reason only
-the person knows, say what would settle it. Write the draft with what you have, review it as below
-even if sections are thin, then say how many questions there are and ask only the first. The others
-wait, so leave them out of that reply entirely: describe the draft by what it says, never by what it
-lacks, and do not list the questions or their topics (they are in the ADR). Ask the next once the
+never a guess. For a choice not yet made, propose the option you would recommend. Write the draft with what you have, review it as below
+even if sections are thin, then say how many questions there are and ask only the first. The others wait: describe the draft by what it says, not what it lacks,
+and list no questions or topics. Ask the next once the
 first is settled, playing back what you have understood. When you ask the person to settle a
 question in the conversation, lay it out in four parts, so they can find your proposal at a glance:
 a bold line naming it and its place in the count, such as "**Question 2 of 7: how often a failed
 pull is retried**", where the first number counts the questions asked or settled in this
-conversation, this one included, and the total adds those still open, so the first number only goes
+conversation, across every document, this one included, and the total adds those still open, so the first number only goes
 up, saying in one line when an answer opens or settles others; the context it needs; a block quote
 holding a "**Proposed:**" line with your answer, a line holding only `>`, and a "**Why:**" line with
-the reason; and the question itself, last, in one line. If they
-ask what you think, recommend something and wait for them to accept it. If they would rather not
-answer now, leave the rest in Open questions. Write each answer into the section it is about, then
+the reason; and the question itself, last, in one line.
+With no question tool but a decision card, as in a Claude project thread, ask in words as the skill
+says, then post it on a card offering the choices that need no typing, your proposal recommended.
+Where one reply asks several questions, follow each with its card or question tool, and a line
+holding only `---` before the next.
+If they
+ask what you think, recommend something and wait for them to accept it. If they would rather not answer now, defer the rest. Write each answer into the section it is about, then
 remove the question.
 
 Background states the need in words. Name an earlier ADR by its number, linked to its file in
@@ -122,7 +122,7 @@ Background states the need in words. Name an earlier ADR by its number, linked t
 through; a plugin hook refuses a link to a file that is not there. Never refer to a spec, the brief,
 a plan or a spike record in any way, by hyperlink, path or title, and never edit them, even when the
 person asks you to note the decision there: they change while an ADR does not, so the reference
-would go stale, and the lifecycle allows no references between them. Tell the person so. Material
+would go stale. Tell the person so. Material
 they hand over that is not a web page, such as a requirements document or notes, is drawn on but
 never referred to (rubric check 14): state what matters from it in the ADR's own words, and tell
 them it can change or vanish without the ADR being touched. If the decision answers a spec's open
@@ -247,6 +247,9 @@ person picks or declines them, then not again for that ADR. A picked diagram goe
 the reason, which still reads on its own without it, and is checked with the next check of what
 changed, or, with no review in this conversation, reviewed in full. The last question, asked only
 once the offer is settled, offers `Accepted 👍` or `Rejected ❌` as the next status. Leave committing to them.
+
+While drafting, keep your own questions out of the document: ask them with the review's, once where
+both raise the same point, so only a deferred one reaches Open questions.
 
 Put each question to the person one at a time, by the asking rule: open questions, decisions for the
 person and what a check finds. Offer four choices on your question tool: "Accept" your proposal, "My

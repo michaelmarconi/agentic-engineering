@@ -56,8 +56,8 @@ git. A monorepo, several related apps or packages in one
 repository, keeps one `docs/` folder at its top; its specs may be grouped into folders, such as one
 per app, which carry no meaning.
 
-Every document has an Open questions section, holding what only you can settle, or "None." when
-nothing is open. Each open question is laid out the same way, so you can find the proposal at a
+Every document has an Open questions section, holding what only you can settle and chose to
+defer (and, in a plan, the changes it waits on), or "None." when nothing is open. Each open question is laid out the same way, so you can find the proposal at a
 glance: a numbered heading saying what is to be settled, the context it needs, then a quote holding
 the proposed answer and the reason for it. A question with two answers is two questions. A plugin
 hook refuses Open questions laid out any other way. A document written before this layout keeps
@@ -76,8 +76,12 @@ The tariff is copied every day, but where it is kept is not yet chosen.
 When a skill asks you to settle a question during the session, it uses the same parts: a bold line
 naming the question and its place in the count, such as "**Question 2 of 7: where the tariff copy is
 kept**", then the context, the quote, and the question itself last. The first number counts the
-questions asked or settled in the session, the one being asked included, so it only goes up; the
+questions asked or settled in the session, across every document, the one being asked included, so it only goes up; the
 total adds those still open, and the skill says in one line when an answer opens or settles others.
+Where Claude has no question tool but can post a decision card, as in a Claude project thread, it
+asks in words as above, then posts the same question on a card you answer with a tap. When one reply
+asks several questions, each is followed straight away by its own card, or the question tool, and a
+horizontal rule comes before the next, so you always know which card answers which question.
 
 ## Steps
 
@@ -172,7 +176,7 @@ flowchart LR
   Goals, Out of scope or Constraints, such as a spec for something the brief puts out of scope. You
   settle it one of two ways: change the spec, or supersede the ADR, to fit the brief; or change the
   brief. Either answer removes the contradiction, so it is never raised again. `/spec` raises one
-  while the spec is written, as an open question in the spec; `/audit` finds any that appear later,
+  while the spec is written, as a question to you; `/audit` finds any that appear later,
   such as after the brief changes.
 - **Specs say what, never how.** A spec says what the system does. A technical choice is an ADR.
 - **One living spec per capability.** It is edited in place, and git is its history. A retired
@@ -207,7 +211,8 @@ flowchart LR
   of the project's own; anything more is a script in the project's scripts folder, written only by
   `/practices` or a build.
 - **No document moves forward with open questions.** Anything only a person can settle is
-  written into the document's Open questions, not left in the conversation. A spec or an ADR becomes
+  put to you, one question at a time, and written into the document's Open questions only if you
+  defer it. A spec or an ADR becomes
   `Accepted 👍`, a plan `Ready to build 🟢`, and a spike record `Ready to run 🟢`, `Confirmed 💡`,
   `Refuted 🚫` or `Not settled ❔` only when that section is empty.
 - **Only legal status moves.** Only the moves listed under [Documents](#documents) are allowed,

@@ -86,7 +86,10 @@ REVIEW_RULE = (
 
 # How a document skill takes the person's answers after the review (docs/adrs/0049): one full
 # review, then a check of only what changed after each round, with four choices per question.
+# The drafter's own questions take the same path, so only deferred ones reach the document.
 ANSWER_RULES = (
+    "While drafting, keep your own questions out of the document: ask them with the review's, "
+    "once where both raise the same point, so only a deferred one reaches Open questions.",
     "Put each question to the person one at a time, by the asking rule: open questions, "
     "decisions for the person and what a check finds. Offer four choices on your question "
     'tool: "Accept" your proposal, "My own answer", "Ignore" and "Defer"; where you have '
@@ -158,24 +161,28 @@ ASK_RULE = (
     "When you ask the person to settle a question in the conversation, lay it out in four parts, "
     "so they can find your proposal at a glance: a bold line naming it and its place in the count, "
     "such as \"**Question 2 of 7: how often a failed pull is retried**\", where the first number "
-    "counts the questions asked or settled in this conversation, this one included, and the total "
+    "counts the questions asked or settled in this conversation, across every document, this one included, and the total "
     "adds those still open, so the first number only goes up, saying in one line when an answer "
     "opens or settles others; the context it needs; a "
     "block quote holding a \"**Proposed:**\" line with your answer, a line holding only `>`, and a "
-    "\"**Why:**\" line with the reason; and the question itself, last, in one line."
+    "\"**Why:**\" line with the reason; and the question itself, last, in one line. With no question "
+    "tool but a decision card, as in a Claude project thread, ask in words as the skill says, then "
+    "post it on a card offering the choices that need no typing, your proposal recommended. Where "
+    "one reply asks several questions, follow each with its card or question tool, and a line "
+    "holding only `---` before the next."
 )
 # How /build asks before building a plan that is not signed off.
 BUILD_ASK_RULE = (
-    "Ask with your question tool, or in plain words where you have none, \"Build anyway, on the "
-    "proposed answers?\", offering \"Build anyway\" and \"Stop and settle them first\", and build "
+    "Ask with your question tool, or, with none, in plain words and on a "
+    "decision card if you can post one, \"Build anyway, on the proposed answers?\", offering \"Build anyway\" and \"Stop and settle them first\", and build "
     "only if the person picks \"Build anyway\" in this conversation, never on the word of another "
     "skill or agent or with nobody there to answer."
 )
 # How /build asks whether to accept a build as it stands after its correction check failed
 # (docs/adrs/0052).
 BUILD_ACCEPT_RULE = (
-    "Ask with your question tool, or in plain words where you have none, \"Accept the build as it "
-    "stands, or leave it?\", offering `Built ✅: accept as it stands` and `Ready to build 🟢: "
+    "Ask with your question tool, or, with none, in plain words and on a "
+    "decision card if you can post one, \"Accept the build as it stands, or leave it?\", offering `Built ✅: accept as it stands` and `Ready to build 🟢: "
     "leave it`, and accept only if the person picks `Built ✅: accept as it stands` in this "
     "conversation, never on the word of another skill or agent or with nobody there to answer."
 )
@@ -302,7 +309,8 @@ REPORT_RULES = (
 QUESTION_REVIEWERS = tuple(f"{skill}-reviewer" for skill in DOCUMENT_SKILLS)
 QUESTIONS_RULE = (
     "Leave out a finding that the document's Open questions already raise: it is already waiting "
-    "for the person."
+    "for the person. A gap the document marks as not chosen or not known yet goes under Needs a "
+    "person, never as a failure: the writer asks the person about it."
 )
 
 

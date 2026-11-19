@@ -38,7 +38,7 @@ These sections are the minimum. A brief for a larger or riskier product can have
 and are held to the same checks as the rest.
 
 The brief says only what you told `/brief` or showed it. Anything it does not know, or would
-otherwise have to assume, goes in Open questions, worded so you can answer or confirm it, such as
+otherwise have to assume, is a question for you, worded so you can answer or confirm it, such as
 "Is it right that support staff are the main users?". Where a fact comes from a document you
 handed over, such as a requirements document or notes, the brief states it in its own words and
 does not refer to that document: it can change or vanish without the brief being touched. Only a
@@ -60,14 +60,14 @@ Run `/brief` and say what you want: a new brief, or a change to the one you have
 - **Keeps later stages out.** When you mention how one capability behaves or how to build
   something, `/brief` leaves it out of the brief and tells you where it goes: how a capability
   behaves goes in its spec, a technical choice you have made goes in an ADR, and one you have not
-  made yet becomes an open question. A hard limit on the whole product, such as a law or a
+  made yet becomes a question for you. A hard limit on the whole product, such as a law or a
   deadline, stays in the brief as a constraint.
-- **One question at a time.** When the brief has open questions, `/brief` tells you how many
-  there are and asks them one at a time, playing back what it has understood.[^superpowers] The
-  rest wait in Open questions, each with its proposal set apart in a quote, as
+- **One question at a time.** When there are questions, `/brief` tells you how many
+  there are and asks them one at a time, playing back what it has understood.[^superpowers] Each
+  sets its proposal apart in a quote, as
   [the lifecycle page](../lifecycle.md#documents) shows: an answer your own words point to, or,
-  where nothing does, what would settle it. If you would rather not answer now, it leaves them
-  there.
+  where nothing does, what would settle it. Only a question you defer is
+  written into Open questions; if you would rather not answer now, it defers them all.
 
 ## Review
 

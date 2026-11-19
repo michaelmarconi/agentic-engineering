@@ -45,8 +45,8 @@ fact they gave that the brief's sections hold, such as who does what; where the
 conversation changed its mind, the latest word wins. Only when there is nothing to draw on, ask
 what they are building and for whom first.
 
-Write only what they said or showed you, as rubric check 8 describes. What they haven't said becomes
-an open question, each asking one thing: "What do they do today, and how long does it take?" is two
+Write only what they said or showed you, as rubric check 8 describes. Where they haven't said something, write in its section
+that it is not known yet, and ask them about it, each question asking one thing: "What do they do today, and how long does it take?" is two
 questions. Write each open question as a heading, `### 1. <what is to be settled>`, numbered in
 order, then the context it needs, then a block quote holding a line starting `> **Proposed:**` with
 the answer you would choose, then a line holding only `>`, then a line starting `> **Why:**` with
@@ -65,7 +65,7 @@ referred to (check 9): state what matters from it in the brief's own words, and 
 change or vanish without the brief being touched. When they mention something that belongs to a
 later stage (rubric checks 2 and 7), leave it out and tell them where it goes: how one capability
 behaves goes in its spec, so suggest `/spec`; a technology or design they have decided goes in an
-ADR, and one they have not becomes an open question.
+ADR, and one they have not becomes a question for them.
 
 Add a section beyond the template's, such as "Safety and security", only when the person asks
 for one, and place it as rubric check 1 says.
@@ -75,12 +75,16 @@ only the first, as one question rather than two joined together, with any exampl
 answers rather than further questions. When you ask the person to settle a question in the
 conversation, lay it out in four parts, so they can find your proposal at a glance: a bold line
 naming it and its place in the count, such as "**Question 2 of 7: how often a failed pull is
-retried**", where the first number counts the questions asked or settled in this conversation, this
+retried**", where the first number counts the questions asked or settled in this conversation, across every document, this
 one included, and the total adds those still open, so the first number only goes up, saying in one
 line when an answer opens or settles others; the context it needs; a block quote holding a
 "**Proposed:**" line with your answer, a line holding only `>`, and a "**Why:**" line with the
-reason; and the question itself, last, in one line. The others wait in
-the brief, so leave them out of that reply entirely: describe the draft by what it says, never by
+reason; and the question itself, last, in one line.
+With no question tool but a decision card, as in a Claude project thread, ask in words as the skill
+says, then post it on a card offering the choices that need no typing, your proposal recommended.
+Where one reply asks several questions, follow each with its card or question tool, and a line
+holding only `---` before the next.
+The others wait, so leave them out of that reply entirely: describe the draft by what it says, never by
 what it lacks ("nothing yet on who else is involved" names a question), and report what you or the
 review changed without naming the gaps that remain. Ask the next once the first is settled, playing
 back what you have understood. Settle each answer before moving on: take the part they answered and
@@ -146,6 +150,9 @@ question, giving any examples as possible answers rather than further questions;
 said not to ask now, ask nothing. Name the count only, not the items: each comes up when you reach
 it. List the reviewers' suggestions separately, as optional: they never hold the brief back. Leave
 committing to them.
+
+While drafting, keep your own questions out of the document: ask them with the review's, once where
+both raise the same point, so only a deferred one reaches Open questions.
 
 Put each question to the person one at a time, by the asking rule: open questions, decisions for the
 person and what a check finds. Offer four choices on your question tool: "Accept" your proposal, "My

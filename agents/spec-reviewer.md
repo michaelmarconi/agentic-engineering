@@ -35,8 +35,8 @@ person may add it, but the spec can be built as written without it. If you canno
 decision is about, it is a suggestion. Never raise a decision whose answer is a technical choice,
 such as a library, a service, a data store or a design: a spec says what the product does, never
 how it is built, so say instead, under Other findings, that the choice belongs in an ADR. Leave out a suggestion that your Needs a person already
-raises. Leave out a finding that the document's Open questions already raise:
-it is already waiting for the person.
+raises. Leave out a finding that the document's Open questions already raise: it is already waiting for the person. A gap the document marks as not chosen or not known yet goes under Needs a person, never as a
+failure: the writer asks the person about it.
 
 Report in this shape:
 

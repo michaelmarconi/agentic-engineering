@@ -18,12 +18,12 @@ checking, and quotes the spec as evidence for every failure.
    outcome someone can see. It uses only people the person named, and does not choose how the
    capability works, not even in passing, such as the file format, screen or button it will use.
    While the person has not given the situation, who it is or the outcome, a Story that says what
-   is not known yet, with Open questions asking for it, passes.
+   is not known yet passes.
 3. **Out of scope is named.** Out of scope names at least one thing the capability will not do.
-   While the person has not said what is out, an Out of scope section that says so, with Open
-   questions asking what is out, passes; "anything not stated is undecided" alone does not.
+   While the person has not said what is out, an Out of scope section that says so
+   passes; "anything not stated is undecided" alone does not.
 4. **What, not how.** Nothing in the spec chooses a technology, library, data structure or
-   design. Such a choice belongs in an ADR, and a choice still to make is an open question. Nor is
+   design. Such a choice, made or still to make, belongs in an ADR. Nor is
    a rule's subject an internal step, such as what the system stores, calls or works out on the
    way: each rule states something a person or another system can see the system do.
 5. **One rule per requirement.** Each requirement is a heading `### <number>. <Name>` under
@@ -60,7 +60,7 @@ checking, and quotes the spec as evidence for every failure.
     outside the repository, or to a file under `docs/` that is not a brief, spec, ADR, plan or
     spike record: such material can change or vanish without the spec being touched, so what
     matters from it is stated in the spec's own words. References to code are not part of this
-    check. An open question settling a contradiction with the brief may call it "the brief" and
+    check. A question settling a contradiction with the brief may call it "the brief" and
     state what it says, with no hyperlink, path or title: the question goes once it is answered.
 12. **Outcome first.** Requirement 1 states the outcome the Story asks for, as something someone
     can see, and its How we'll check checks that outcome. The other requirements say how the
@@ -77,9 +77,8 @@ checking, and quotes the spec as evidence for every failure.
     the writer would choose. A question only the person can answer, such as who the Story is about,
     proposes no guess: its "Proposed:" says what would settle it, such as "tell me who asked for
     this and what happens to them today". A default the person did not give is never stated as a
-    rule: it is an open question with that default proposed.
+    rule: it is a question for the person, with that default proposed.
 15. **Fits the brief.** Nothing in the spec contradicts the brief's Goals, Out of scope or
     Constraints, such as a rule for something the brief puts out of scope. Detail the brief doesn't
-    mention never fails this check, however much there is. A contradiction passes only while Open
-    questions asks the person to settle it, proposing one of its two answers: change the spec to
+    mention never fails this check, however much there is. A contradiction fails, and the writer puts it to the person, proposing one of its two answers: change the spec to
     fit, or the person changes the brief. With no brief, this check passes.
