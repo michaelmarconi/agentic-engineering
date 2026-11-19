@@ -30,9 +30,8 @@ flowchart LR
     Deploy --> Audit
 ```
 
-Each step uses what the one before it wrote. Two steps sit outside this line: a spike settles an
-unknown for a spec or an ADR when one is needed, and an audit can run at any time, not only at the
-end. Each phase has its own, more detailed diagram under [Steps](#steps).
+Each step uses what the one before it wrote. The audit is shown last, but it can run at any time. A
+spike, left out here, settles an unknown for a spec or an ADR when one is needed. Each phase has its own, more detailed diagram under [Steps](#steps).
 
 ## Documents
 
