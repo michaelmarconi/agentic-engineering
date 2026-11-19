@@ -1,7 +1,7 @@
 ---
 type: regex
 target: trace
-pattern: 'subagent_type[^,]{0,8}agentic:correction-checker[\s\S]*"name":"(Edit|Write|MultiEdit)"(?![^\n]*"old_string":"(?:## Open questions|> \*\*Why:\*\*|### \d+\. ))[^\n]*docs/brief\.md'
+pattern: 'subagent_type[^,]{0,8}agentic:correction-checker[\s\S]*"name":"(Edit|Write|MultiEdit)"(?![^\n]*"old_string":"(?:## Open questions|> \*\*(?:Proposed|Why):\*\*|### \d+\. ))[^\n]*docs/brief\.md'
 match: not_contains
 weight: 1
 ---
