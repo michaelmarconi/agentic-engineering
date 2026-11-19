@@ -165,13 +165,14 @@ There are four kinds:
 | The states one thing moves through | State diagram |
 | Records and how they relate | Entity-relationship diagram |
 
-It asks "Would you like to add any of these diagrams to the ADR, or propose another?" and draws
-nothing you don't pick. A decision with nothing to draw, such as storing money as whole numbers of
-the smallest unit, gets no offer at all. A picked diagram is a [Mermaid](https://mermaid.js.org/)
-block, which GitHub shows as a picture, placed in Decision after the reason. It may show only what
-the text says, so it can never slip in a choice of its own; the reviewer checks every box and arrow
-against the text. A diagram in Decision doesn't count towards the 500 words. For an ADR choosing to
-receive customs updates by webhook, the flowchart might be:
+It asks "Would you like to add any of these diagrams to the ADR, or propose another?", under the
+heading "Optional: diagrams" rather than as a numbered question, and draws nothing you don't pick. A
+decision with nothing to draw, such as storing money as whole numbers of the smallest unit, gets no
+offer at all. A picked diagram is a [Mermaid](https://mermaid.js.org/) block, which GitHub shows as
+a picture, placed in Decision after the reason. It may show only what the text says, so it can never
+slip in a choice of its own; the reviewer checks every box and arrow against the text. A diagram in
+Decision doesn't count towards the 500 words. For an ADR choosing to receive customs updates by
+webhook, the flowchart might be:
 
 ```mermaid
 flowchart LR
