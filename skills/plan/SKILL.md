@@ -7,10 +7,10 @@ description: Plan one piece of work that builds requirements of settled specs or
 
 A plan says how one piece of work will build part of what the specs and ADRs have already settled:
 the requirements it delivers, the decisions the code must follow, and how the work will be done.
-Plans live in one flat folder, `docs/plans/`, as `YYYY-MM-DD-<subject>.md`, dated the day the plan is
-first written, where the subject is two to five lowercase words of its title joined by hyphens.
-A plan is temporary: `/build` marks it `Built ✅`, after which it is frozen, never
-edited, and may be deleted whenever nobody needs it, so it never holds anything later work needs.
+Plans live in one flat folder, `docs/plans/`, as `YYYY-MM-DD-<subject>.md`, dated the day the plan
+is first written, where the subject is two to five lowercase words of its title joined by hyphens. A
+plan is temporary: `/build` marks it `Built ✅`, after which it is frozen, never edited, and may be
+deleted whenever nobody needs it, so it never holds anything later work needs.
 
 Before writing, read [references/rubric.md](references/rubric.md): it is the list of checks the
 reviewer will apply, so writing to it leaves less to correct. Write in plain words, as the Plain
@@ -45,16 +45,16 @@ earlier version of the plugin: tell the person first that no plan on it can be s
 
 ## Keep to the practices
 
-Before exploring, read the `## Practices` section of `AGENTS.md` and of `CLAUDE.md`, whichever
-have one, and any file under `docs/practices/` they name that bears on planning or splitting work,
+Before exploring, read the `## Practices` section of `AGENTS.md` and of `CLAUDE.md`, whichever have
+one, and any file under `docs/practices/` they name that bears on planning or splitting work,
 whatever task its line names. Where they say how work is split or how big one plan may be, plan
 within that. If the work asked for is bigger, or exploring shows it is, say so, quoting the
 practice, propose how to split it into several plans that can each be built and reviewed on their
-own, and ask which to plan first. Ask this before any decision, since the decisions depend on
-what this plan covers. If the person keeps the work whole, give it a line under Decisions saying
-it was kept as one plan against the practice, quoting the practice, and the person's reason.
-Where the practices say neither, or there are none, plan as below. Never edit the practices from
-here: that belongs to `/practices`.
+own, and ask which to plan first. Ask this before any decision, since the decisions depend on what
+this plan covers. If the person keeps the work whole, give it a line under Decisions saying it was
+kept whole against the practice, quoting it, and the person's reason. Where the practices say
+neither, or there are none, plan as below. Never edit the practices from here: that belongs to
+`/practices`.
 
 ## Explore
 
@@ -111,9 +111,8 @@ The plan's sections:
   **ADRs** each ADR the code must follow, as a table; either says "None." when there are none,
   but not both. Keep each line in the template's form, since the hook reads only that: a spec as
   `- [<title>](<path>)`, each requirement beneath it as `  - [<name>](<path>#<anchor>)`, a link
-  to its heading whose anchor is the one GitHub gives the heading (lowercased, every character
-  but letters, digits, `_`, `-` and spaces dropped, each space made `-`, so `### 2. Reply to all`
-  is `#2-reply-to-all`), and each ADR as a row `| [<NNNN>](<path>) | <the ADR's title> |` under
+  to its heading whose anchor is the one GitHub gives the heading (so `### 2. Reply to all` is
+  `#2-reply-to-all`), and each ADR as a row `| [<NNNN>](<path>) | <the ADR's title> |` under
   the `| ADR | Decision |` header. If the hook refuses an anchor, its message gives the right
   one. To explain a term there, add a footnote mark after the link, never a line of prose.
 - **Decisions** holds one line for each decision whose reason nobody needs once the work is
@@ -243,20 +242,21 @@ diagram. Offer a shape only when the text names at least three of its things and
 connections between them, such as three parts and two calls; otherwise say nothing about diagrams.
 Name each offer in one line, saying what it would show; the offer's question, asked word for word
 even for a single offer, is "Would you like to add any of these diagrams to the plan, or propose
-another?" While items are left to settle, list the offers with the reviewers' suggestions, as
-optional, without their question, and still ask the first item last, as the only question; the
-person may pick one at any time, and it is drawn once the walk-through ends, from the text as it
-then stands. Once nothing is left, ask the offer's question before the last question, unless the
-person has said not to ask now. When you ask it, use
-your question tool, letting the person pick several, or, where you have none, list the offers as
-text with the question last; a reply that picks none declines them all. Nothing is drawn unless the
-person picks it, and an offer never holds the plan back from its next status. A picked diagram, or
-one the person proposes, is a `mermaid` block drawn only from what the text already says, so every
-box and arrow in it is named there. Offer each plan's diagrams until the person picks or declines
-them, then not again for that plan. A picked diagram goes in the Plan section, after its opening
-paragraph, and is checked with the next check of what changed, or, with no review in this
-conversation, reviewed in full. The last question, asked only once the offer is settled, offers
-`Ready to build 🟢` as the next status. Leave committing to them.
+another?" Ask the offer unnumbered, outside the question count, under a bold line reading
+"**Optional: diagrams**". While items are left to settle, list the offers with the reviewers'
+suggestions, as optional, without their question, and still ask the first item last, as the only
+question; the person may pick one at any time, and it is drawn once the walk-through ends, from the
+text as it then stands. Once nothing is left, ask the offer's question before the last question,
+unless the person has said not to ask now. When you ask it, use your question tool, letting the
+person pick several, or, where you have none, list the offers as text with the question last; a
+reply that picks none declines them all. Nothing is drawn unless the person picks it, and an offer
+never holds the plan back from its next status. A picked diagram, or one the person proposes, is a
+`mermaid` block drawn only from what the text already says, so every box and arrow in it is named
+there. Offer each plan's diagrams until the person picks or declines them, then not again for that
+plan. A picked diagram goes in the Plan section, after its opening paragraph, and is checked with
+the next check of what changed, or, with no review in this conversation, reviewed in full. The last
+question, asked only once the offer is settled, offers `Ready to build 🟢` as the next status. Leave
+committing to them.
 
 While drafting, keep your own questions out of the document: ask them with the review's, once where
 both raise the same point, so only a deferred one reaches Open questions.

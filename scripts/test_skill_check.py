@@ -10,7 +10,7 @@ ROOT = os.path.join(HERE, "..")
 sys.path.insert(0, HERE)
 from skill_check import (AGENT_RULE, SHELL_AGENT_RULE, ASK_RULE, BUILD_ACCEPT_RULE, BUILD_ASK_RULE, BUILD_PATH_RULE, BUILD_REREAD_RULE, REPORT_RULE, SCRATCHPAD_RULE, ASK_SKILLS, CORRECT_RULES, DOCUMENT_SKILLS, PATH_RULE, PROPOSED_RULE,  # noqa: E402
                          QUESTIONS_RULE, REPORT_RULES, REVIEW_RULE, SHOW_RULE, ANSWER_RULES,
-                         SIGNOFF_RULE, STATUS_SKILLS, TYPE_RULE, DATE_RULE, RENAME_RULE, DIAGRAM_SKILLS,
+                         SIGNOFF_RULE, STATUS_SKILLS, TYPE_RULE, DATE_RULE, RENAME_RULE, DIAGRAM_SKILLS, DIAGRAM_RULES,
                          diagram_rules, holds)
 
 DESCRIPTION = "Write a thing. Use whenever someone wants a thing."
@@ -471,6 +471,14 @@ class SkillCheck(unittest.TestCase):
         self.put("brief", skill_md(name="brief", body=f"# Brief\n\n{TYPE_RULE}\n\n{PROPOSED_RULE}\n\n{RENAME_RULE}\n\n{ASK_RULE}\n"))
         done = self.check()
         self.assertEqual((done.returncode, done.stdout), (0, ""))
+
+    def test_diagram_offer_sits_outside_the_question_count(self):
+        # The offer comes after every counted question is settled, so numbering it would run past
+        # the count the person was given ("of 3", then a fourth).
+        rules = " ".join(DIAGRAM_RULES)
+        self.assertIn("Ask the offer unnumbered", rules)
+        self.assertIn('"**Optional: diagrams**"', rules)
+        self.assertIn("outside the question count", rules)
 
     def test_every_diagram_skill_names_a_document_skill(self):
         self.assertTrue(set(DIAGRAM_SKILLS) <= set(DOCUMENT_SKILLS))
