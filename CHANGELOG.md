@@ -6,6 +6,14 @@ What changed in each version of the plugin, newest first. Versions follow
 past a major version: it says what you need to change in your documents. Until 1.0.0, any
 minor version may need such a change, and its entry says so.
 
+## [0.74.0] - 2026-11-19
+
+### Changed
+
+- When one reply asks questions about several documents, such as the first open question of each
+  of two ADRs, the "Question N of M" count runs across all of them, so each question has its own
+  number.
+
 ## [0.73.0] - 2026-11-19
 
 ### Changed

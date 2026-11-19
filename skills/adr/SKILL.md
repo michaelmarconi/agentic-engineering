@@ -15,8 +15,8 @@ Before writing, read [references/rubric.md](references/rubric.md): it is the lis
 reviewer will apply, so writing to it leaves less to correct. Write in plain words, as the Plain
 words section of [the lifecycle page](../../docs/lifecycle.md#plain-words) says: a language
 checker holds every document to it. New ADRs start from
-[assets/template.md](assets/template.md). Read these with the Read tool, not the shell, so the
-person is not asked to approve a command.
+[assets/template.md](assets/template.md). Read these with the Read tool, not the shell, so no
+command needs approving.
 
 The template's frontmatter holds `type: ADR`, which says what the document is. An ADR written
 before it has no `type:`, so add it with your next edit. The title never names the document's type,
@@ -58,7 +58,7 @@ say so to the person, who can rename it once the review has ended.
 
 ## Shape it with the person
 
-Usually the person has already talked the decision through in this conversation. Draft from
+Usually the person has already talked the decision through here. Draft from
 that, and from whatever they point you to; research what else you need, such as how the options
 compare. Where the conversation changed its mind, the latest word wins. Given a finished
 spike record from `docs/spikes/`, put its measurements into the ADR's own words, such as "read all
@@ -106,7 +106,7 @@ first is settled, playing back what you have understood. When you ask the person
 question in the conversation, lay it out in four parts, so they can find your proposal at a glance:
 a bold line naming it and its place in the count, such as "**Question 2 of 7: how often a failed
 pull is retried**", where the first number counts the questions asked or settled in this
-conversation, this one included, and the total adds those still open, so the first number only goes
+conversation, across every document, this one included, and the total adds those still open, so the first number only goes
 up, saying in one line when an answer opens or settles others; the context it needs; a block quote
 holding a "**Proposed:**" line with your answer, a line holding only `>`, and a "**Why:**" line with
 the reason; and the question itself, last, in one line.
