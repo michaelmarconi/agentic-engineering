@@ -5,11 +5,11 @@ description: Record one technical decision as an ADR (architecture decision reco
 
 # ADR
 
-An ADR (architecture decision record) records one technical decision and why it was made, so
-later work can follow it and nobody reopens it by accident. ADRs live in one flat folder,
-`docs/adrs/`, as `NNNN-<subject>.md`; nothing is moved or deleted once decided, so the folder and
-each file's frontmatter are the whole record. Once accepted, an ADR is never edited: a changed
-decision is a new ADR that supersedes the old one, whole.
+An ADR (architecture decision record) records one technical decision and why it was made, so later
+work can follow it and nobody reopens it by accident. ADRs live in one flat folder, `docs/adrs/`, as
+`NNNN-<subject>.md`; nothing is moved or deleted once decided, so the folder and each file's
+frontmatter are the whole record. Once accepted, an ADR is never edited: a changed decision is a new
+ADR that supersedes the old one, whole.
 
 Before writing, read [references/rubric.md](references/rubric.md): it is the list of checks the
 reviewer will apply, so writing to it leaves less to correct. Write in plain words, as the Plain
@@ -40,17 +40,17 @@ rewrite clear text to meet them.
 
 ## Find what exists
 
-List `docs/adrs/` and read the frontmatter of each ADR. If a `Draft 📝` or `Accepted 👍` ADR
-already decides the same thing, say so: change the draft, or, for an accepted one, write a new ADR that
+List `docs/adrs/` and read the frontmatter of each ADR. If a `Draft 📝` or `Accepted 👍` ADR already
+decides the same thing, say so: change the draft, or, for an accepted one, write a new ADR that
 supersedes it. A new file takes the number one above the highest in the folder, four digits,
 starting at `0001`, then a subject: two to five lowercase words joined by hyphens, each a word of
 the ADR's title, naming what the decision is about, such as `0004-session-data-redis.md` for "Keep
 session data in Redis". The title states the decision; a plugin hook refuses a name that breaks
 this, and an edit that drops one of the subject's words from the title. An ADR that supersedes
-another may share its subject. The frontmatter's `number:` repeats the file's four digits, so a
-reader sees the number; a plugin hook refuses one that does not match, and an ADR written before
-the field may go without it. If `docs/specs/` exists, read the Open questions of its specs, so
-you can tell the person which ones the decision answers.
+another may share its subject. The frontmatter's `number:` repeats the file's four digits; a plugin
+hook refuses one that does not match, and an ADR written before the field may go without it. If
+`docs/specs/` exists, read the Open questions of its specs, so you can say which ones the decision
+answers.
 
 Never rename a document once its review has started: the review hook keeps the review under the
 document's path, so a renamed document's corrections can't be checked. If the name no longer fits,
@@ -71,11 +71,10 @@ the choice is a question for the person. Once they pick, write "Chosen:" and the
 option in full, so the sentence reads on its own, with the reason; mark that row Chosen and the
 others Rejected, each with why.
 
-One ADR holds one decision, because a decision is superseded whole: if part of a record could
-change while the rest stands, the two parts would have to be untangled later. When the
-conversation holds several decisions, say how many and write one ADR for each, even when they
-were made together or the person asks for one record. Split them yourself: never leave an open
-question asking whether part of an ADR should be an ADR of its own.
+One ADR holds one decision, because a decision is superseded whole, never in part. When the
+conversation holds several decisions, say how many and write one ADR for each, even when they were
+made together or the person asks for one record. Split them yourself: never leave an open question
+asking whether part of an ADR should be an ADR of its own.
 
 A choice can rest on an untried claim: something about how a system behaves that the conversation
 says the choice depends on and that nobody has tried, such as "this only works if the provider sends
@@ -232,21 +231,23 @@ drawn as a state diagram; or records and how they relate, drawn as an entity-rel
 Offer a shape only when the text names at least three of its things and at least two connections
 between them, such as three parts and two calls; otherwise say nothing about diagrams. Name each
 offer in one line, saying what it would show; the offer's question, asked word for word even for a
-single offer, is "Would you like to add any of these diagrams to the ADR, or propose another?" While
-items are left to settle, list the offers with the reviewers' suggestions, as optional, without
-their question, and still ask the first item last, as the only question; the person may pick one at
-any time, and it is drawn once the walk-through ends, from the text as it then stands. Once nothing
-is left, ask the offer's question as the only question, unless the person has already said to accept
-or reject the ADR: then list the offers as optional and ask about that, as the Status section says.
-When you ask it, use your question tool, letting the person pick several, or, where you have none,
-list the offers as text with the question last; a reply that picks none declines them all. Nothing
-is drawn unless the person picks it, and an offer never holds the ADR back from its next status. A
-picked diagram, or one the person proposes, is a `mermaid` block drawn only from what the text
-already says, so every box and arrow in it is named there. Offer each ADR's diagrams until the
-person picks or declines them, then not again for that ADR. A picked diagram goes in Decision, after
-the reason, which still reads on its own without it, and is checked with the next check of what
-changed, or, with no review in this conversation, reviewed in full. The last question, asked only
-once the offer is settled, offers `Accepted 👍` or `Rejected ❌` as the next status. Leave committing to them.
+single offer, is "Would you like to add any of these diagrams to the ADR, or propose another?" Ask
+the offer unnumbered, outside the question count, under a bold line reading "**Optional:
+diagrams**". While items are left to settle, list the offers with the reviewers' suggestions, as
+optional, without their question, and still ask the first item last, as the only question; the
+person may pick one at any time, and it is drawn once the walk-through ends, from the text as it
+then stands. Once nothing is left, ask the offer's question as the only question, unless the person
+has already said to accept or reject the ADR: then list the offers as optional and ask about that,
+as the Status section says. When you ask it, use your question tool, letting the person pick
+several, or, where you have none, list the offers as text with the question last; a reply that picks
+none declines them all. Nothing is drawn unless the person picks it, and an offer never holds the
+ADR back from its next status. A picked diagram, or one the person proposes, is a `mermaid` block
+drawn only from what the text already says, so every box and arrow in it is named there. Offer each
+ADR's diagrams until the person picks or declines them, then not again for that ADR. A picked
+diagram goes in Decision, after the reason, which still reads on its own without it, and is checked
+with the next check of what changed, or, with no review in this conversation, reviewed in full. The
+last question, asked only once the offer is settled, offers `Accepted 👍` or `Rejected ❌` as the next
+status. Leave committing to them.
 
 While drafting, keep your own questions out of the document: ask them with the review's, once where
 both raise the same point, so only a deferred one reaches Open questions.

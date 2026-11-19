@@ -6,6 +6,14 @@ What changed in each version of the plugin, newest first. Versions follow
 past a major version: it says what you need to change in your documents. Until 1.0.0, any
 minor version may need such a change, and its entry says so.
 
+## [0.77.1] - 2026-11-19
+
+### Fixed
+
+- /adr and /plan ask their offer of diagrams under a bold "Optional: diagrams" line, outside the
+  question count. Before, the offer could come as a fourth question after the count had said
+  "of 3".
+
 ## [0.77.0] - 2026-11-19
 
 ### Changed

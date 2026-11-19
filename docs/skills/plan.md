@@ -186,12 +186,13 @@ three things and two connections between them. There are four kinds, the same as
 | The states one thing moves through | State diagram |
 | Records and how they relate | Entity-relationship diagram |
 
-It asks "Would you like to add any of these diagrams to the plan, or propose another?" and draws
-nothing you don't pick. A plan with nothing to draw gets no offer at all. A picked diagram is a
+It asks "Would you like to add any of these diagrams to the plan, or propose another?", under the
+heading "Optional: diagrams" rather than as a numbered question, and draws nothing you don't pick. A
+plan with nothing to draw gets no offer at all. A picked diagram is a
 [Mermaid](https://mermaid.js.org/) block, which GitHub shows as a picture, placed in the Plan
-section after its opening paragraph. It may show only what the text says, so it can never slip in
-a decision of its own; the reviewer checks every box and arrow against the text. For the example
-plan above, the flowchart might be:
+section after its opening paragraph. It may show only what the text says, so it can never slip in a
+decision of its own; the reviewer checks every box and arrow against the text. For the example plan
+above, the flowchart might be:
 
 ```mermaid
 flowchart LR
