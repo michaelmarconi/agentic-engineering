@@ -1,8 +1,9 @@
 ---
 # Change status only through the agentic plugin's skills, which check each change; a change made by hand is not checked.
 type: ADR
-status: Accepted 👍
-date: 2026-11-14
+status: Superseded ↪️
+date: 2026-11-19
+superseded-by: 0051
 ---
 
 # Write the build and audit reports to a file in the plugin's data folder, with a short reply

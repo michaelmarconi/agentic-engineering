@@ -650,7 +650,8 @@ class Report(Project):
 
     def setUp(self):
         super().setUp()
-        self.data = os.path.join(self.tmp.name, "data")
+        self.data = os.path.join(self.tmp.name, "s1", "scratchpad", "agentic")
+        os.makedirs(os.path.dirname(self.data), exist_ok=True)
         self.put("docs/adrs/0001-cents.md", adr())
         self.put("docs/specs/statement-import.spec.md", spec(status="Draft 📝", extra="See ../adrs/0001-cents.md.\n"))
         sys.path.insert(0, os.path.join(HERE, "..", "..", "..", "scripts"))
@@ -664,7 +665,7 @@ class Report(Project):
         self.relay.save(path, record)
 
     def report(self, own="", *extra):
-        done = subprocess.run([sys.executable, SCRIPT, "report", "--data", self.data, "--session", "s1",
+        done = subprocess.run([sys.executable, SCRIPT, "report", "--scratchpad", os.path.dirname(self.data), "--session", "s1",
                                "--now", NOW, *extra], input=own, capture_output=True, text=True,
                               cwd=self.project, env={**os.environ, **GIT_ENV})
         return done
@@ -727,10 +728,17 @@ class Report(Project):
 
     def test_start_clears_the_record(self):
         self.keep("auditor", "x", "", "left from an audit that stopped")
-        done = self.run_audit("start", "--data", self.data, "--session", "s1")
+        done = self.run_audit("start", "--scratchpad", os.path.dirname(self.data), "--session", "s1")
         self.assertEqual(done.returncode, 0, done.stderr)
         _, text = self.written(self.report("", "--scope", "all"))
         self.assertNotIn("left from an audit", text)
+
+    def test_another_sessions_scratchpad_refused(self):
+        other = os.path.join(self.tmp.name, "s0", "scratchpad")
+        os.makedirs(other)
+        done = self.run_audit("start", "--scratchpad", other, "--session", "s1")
+        self.assertEqual(done.returncode, 1)
+        self.assertIn("is not the scratchpad of session s1", done.stderr)
 
     def test_nothing_written_in_the_project(self):
         self.init()

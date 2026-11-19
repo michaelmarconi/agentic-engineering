@@ -77,7 +77,8 @@ class Repo(unittest.TestCase):
         self.tmp = tempfile.TemporaryDirectory()
         self.addCleanup(self.tmp.cleanup)
         self.repo = os.path.join(self.tmp.name, "repo")
-        self.data = os.path.join(self.tmp.name, "data")
+        self.data = os.path.join(self.tmp.name, "s1", "scratchpad", "agentic")
+        os.makedirs(os.path.dirname(self.data), exist_ok=True)
         os.makedirs(self.repo)
         self.git("init", "-q", "-b", "main")
         self.put("docs/specs/mail-pull.spec.md", SPEC.format(status="Accepted 👍"))
@@ -111,11 +112,11 @@ class Repo(unittest.TestCase):
         return code, out.getvalue(), err.getvalue()
 
     def start(self, *specs):
-        return self.run_script("start", *specs, "--project", self.repo, "--data", self.data, "--session", "s1")
+        return self.run_script("start", *specs, "--project", self.repo, "--scratchpad", os.path.dirname(self.data), "--session", "s1")
 
     def report(self, own, scope="mail-pull", commit=None):
         commit = commit or self.git("rev-parse", "HEAD")
-        return self.run_script("report", "--scope", scope, "--commit", commit, "--project", self.repo, "--data", self.data,
+        return self.run_script("report", "--scope", scope, "--commit", commit, "--project", self.repo, "--scratchpad", os.path.dirname(self.data),
                                "--session", "s1", "--now", "2026-11-16T10:00:00+00:00", stdin=own)
 
 
@@ -199,7 +200,7 @@ class Start(Repo):
         self.assertIn("notes.txt", err)
 
     def test_not_a_repository_refused(self):
-        code, _, err = self.run_script("start", "--project", self.tmp.name, "--data", self.data, "--session", "s1")
+        code, _, err = self.run_script("start", "--project", self.tmp.name, "--scratchpad", os.path.dirname(self.data), "--session", "s1")
         self.assertEqual(code, 1)
         self.assertIn("git", err)
 

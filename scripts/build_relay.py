@@ -36,7 +36,7 @@ can choose even when the skill asks for the foreground: its PostToolUse event th
 was launched, with its id, so the hook keeps the report from the event with that id that says
 the agent finished: in auto mode its SubagentHandback call's PostToolUse, whose report is final,
 and otherwise SubagentStop (see subagent_report.py). It holds a report that arrives first until the launch is seen. Records live in
-$CLAUDE_PLUGIN_DATA/builds/<session>.json and are deleted once hand_over.py has copied their
+builds/<session>.json in the plugin's folder (plugin_folder.py: `agentic/` in the session's scratchpad), and are deleted once hand_over.py has copied their
 reports into the build's report file, or once unchanged for 30 days (see saved_records.py), not
 when the session ends, since a resumed session carries on. Anything else,
 and any input it cannot read, is left alone.
@@ -59,6 +59,7 @@ import build_session
 import repository
 import saved_records
 import subagent_report
+import plugin_folder
 
 ROOT = os.environ.get("CLAUDE_PLUGIN_ROOT") or os.path.normpath(
     os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
@@ -90,7 +91,7 @@ def head(folder):
 
 
 def record_path(session, data=None):
-    data = data if data is not None else os.environ.get("CLAUDE_PLUGIN_DATA")
+    data = data if data is not None else plugin_folder.current()
     if not data:
         return None
     safe = re.sub(r"[^A-Za-z0-9_-]", "_", session)
@@ -373,6 +374,7 @@ def main(argv=None):
         event = json.load(sys.stdin)
     except ValueError:
         return 0
+    plugin_folder.use_event(event)
     try:
         out = handle(event) if isinstance(event, dict) else None
     except Exception:  # never block a step over a fault in this hook

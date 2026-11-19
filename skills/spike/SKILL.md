@@ -129,8 +129,10 @@ experiment's code any other way, never retype or summarise a result into the rec
 edit Runs: a plugin hook refuses it. For each run:
 
 ```
-python3 "${CLAUDE_SKILL_DIR}/scripts/spike.py" run <the record's path> --data "${CLAUDE_PLUGIN_DATA}"
+python3 "${CLAUDE_SKILL_DIR}/scripts/spike.py" run <the record's path> --scratchpad "<your scratchpad folder>" --session "${CLAUDE_SESSION_ID}"
 ```
+
+Give as `--scratchpad` the scratchpad folder your instructions name, exactly as they write it, so the file is somewhere the person's app can open; leave the option out only when they name none.
 
 Give the shell command a 10-minute timeout: the script stops a run still going after 9 minutes
 and records that. Run it once per call, as many times as `- Runs:` says, counting the runs already in Runs whose
@@ -145,7 +147,7 @@ it, and make sure each edit succeeded before the next run.
   name: correct the Code, tell the person what you changed, and run the corrected code the full
   number of times. Earlier runs stay in Runs but no longer count.
 - **A step only the person can do:** ask them to do it, then pass their answer unchanged:
-  `python3 "${CLAUDE_SKILL_DIR}/scripts/spike.py" run <path> --data "${CLAUDE_PLUGIN_DATA}" --observation "<their words>"`.
+  `python3 "${CLAUDE_SKILL_DIR}/scripts/spike.py" run <path> --scratchpad "<your scratchpad folder>" --session "${CLAUDE_SESSION_ID}" --observation "<their words>"`.
 - **A secret is not set:** the script records that it did not run. Tell the person how to set it
   in Claude Code's environment, and that otherwise the spike ends `Not settled ❔`.
 - **The experiment can't run or settles nothing:** stop running; the verdict says so.

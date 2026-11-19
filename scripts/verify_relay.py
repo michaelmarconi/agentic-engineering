@@ -10,9 +10,9 @@ that script's code: in a Claude project thread the report is the one the agent h
 agent that runs in the background is kept from the event that says it finished, joined to its
 launch by its id.
 
-Records live in $CLAUDE_PLUGIN_DATA/verifies/<session>.json and are deleted once unchanged for 30
-days (see saved_records.py), or when `verify.py start` or `verify.py report` clears them. Without
-$CLAUDE_PLUGIN_DATA nothing is kept. It changes no request, refuses nothing and prints nothing.
+Records live in verifies/<session>.json in the plugin's folder (plugin_folder.py: `agentic/` in the session's scratchpad), and are deleted once unchanged for 30
+days (see saved_records.py), or when `verify.py start` or `verify.py report` clears them. With no
+usable folder nothing is kept. It changes no request, refuses nothing and prints nothing.
 """
 
 import argparse
@@ -22,6 +22,7 @@ import re
 import sys
 
 import subagent_report
+import plugin_folder
 from audit_relay import keep, load, locked, save
 from build_relay import text_of
 
@@ -98,7 +99,7 @@ def returned(record, tool_input, response):
 
 
 def handle(event):
-    path = record_path(os.environ.get("CLAUDE_PLUGIN_DATA"), event.get("session_id") or "unknown")
+    path = record_path(plugin_folder.current(), event.get("session_id") or "unknown")
     if not path:
         return
     if subagent_report.finished(event):
@@ -130,6 +131,7 @@ def main(argv=None):
         event = json.load(sys.stdin)
     except ValueError:
         return 0
+    plugin_folder.use_event(event)
     try:
         if isinstance(event, dict):
             handle(event)

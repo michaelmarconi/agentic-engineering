@@ -5,7 +5,7 @@ requirements, and write the report file.
 /verify runs `start` before it agrees with the person what to check, and `report` once every agent
 has reported. Neither changes anything in the repository.
 
-start [<spec path> ...] --data <folder> --session <id> [--project <folder>]
+start [<spec path> ...] [--scratchpad <folder>] --session <id> [--project <folder>]
     Refuses while anything is uncommitted, with the same check /build makes (scripts/uncommitted.py),
     since the report must name the version of the product it checked. Otherwise notes the commit
     checked out, clears what the verify hook (scripts/verify_relay.py) kept of an earlier run in this
@@ -19,9 +19,9 @@ start [<spec path> ...] --data <folder> --session <id> [--project <folder>]
     repository's full path), commit, and specs [{path, status, accepted, old_layout, requirements
     [{number, name, examples}]}].
 
-report --scope <what was checked> --commit <commit> --data <folder> --session <id> [--project <folder>]
-    Writes the run's report file (ADRs 0033 and 0034) with scripts/run_report.py, outside the
-    repository, and clears what the hook kept. Claude's own sections arrive on stdin as Markdown
+report --scope <what was checked> --commit <commit> [--scratchpad <folder>] --session <id> [--project <folder>]
+    Writes the run's report file (ADRs 0051 and 0034) with scripts/run_report.py, in the session's
+    scratchpad, and clears what the hook kept. Claude's own sections arrive on stdin as Markdown
     under the report's `## ` headings. The script fills the rest: "Commit checked", the commit
     `start` printed, given as --commit; "What each agent reported", each verifier's and verify-checker's report word for
     word, by spec; and "The repository after the run", which says whether that commit is still
@@ -43,6 +43,7 @@ import sys
 
 # The plugin's scripts/ folder holds the status hook, the verify hook and the shared checks.
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "..", "scripts"))
+import plugin_folder  # noqa: E402
 import run_report  # noqa: E402
 import uncommitted  # noqa: E402
 import verify_relay  # noqa: E402
@@ -231,7 +232,7 @@ def main(argv=None):
     start_parser.add_argument("specs", nargs="*", help="the specs to list (default: every spec under docs/specs/)")
     report_parser = commands.add_parser(
         "report", help="write the run's report file",
-        description="Write the run's report file outside the repository, from Claude's sections on stdin "
+        description="Write the run's report file in the session's scratchpad, from Claude's sections on stdin "
                     "(Markdown under the report's `## ` headings), the commit `start` printed, the reports the "
                     "verify hook kept, copied word for word, and what changed in the repository during the run; "
                     "then clear the kept reports. Output: the file's path on the first line, then each heading "
@@ -242,11 +243,17 @@ def main(argv=None):
     report_parser.add_argument("--commit", required=True, help="the commit `start` printed")
     report_parser.add_argument("--now", help="the report's date, in ISO 8601; for tests (default: now)")
     for sub in (start_parser, report_parser):
-        sub.add_argument("--data", required=True, help='the plugin\'s data folder: "${CLAUDE_PLUGIN_DATA}"')
+        sub.add_argument("--scratchpad", default="",
+                         help="the session's scratchpad folder, as your instructions name it; leave it out when "
+                              "they name none, and a private temporary folder is used")
         sub.add_argument("--session", required=True, help='the session\'s id: "${CLAUDE_SESSION_ID}"')
         sub.add_argument("--project", default=".", help="the repository's folder (default: the current folder)")
     args = parser.parse_args(argv)
     try:
+        try:
+            args.data = plugin_folder.root(args.scratchpad, args.session)
+        except plugin_folder.FolderError as error:
+            raise Refused(str(error))
         if args.command == "start":
             out = start(args.project, args.specs, args.data, args.session)
             print(json.dumps(out, ensure_ascii=False, indent=2))

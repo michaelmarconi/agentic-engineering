@@ -22,6 +22,7 @@ import subprocess
 import sys
 
 import build_session
+import plugin_folder
 
 REASON = (
     "/build never commits or pushes to the default branch, `{branch}`, so your main line only "
@@ -134,6 +135,7 @@ def main(argv=None):
         event = json.load(sys.stdin)
     except ValueError:
         return 0
+    plugin_folder.use_event(event)
     reason = problem(event) if isinstance(event, dict) else None
     if reason:
         print(json.dumps({"hookSpecificOutput": {"hookEventName": "PreToolUse",

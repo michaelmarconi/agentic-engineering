@@ -45,7 +45,7 @@ class Relay(unittest.TestCase):
         self.tmp = tempfile.TemporaryDirectory()
         self.addCleanup(self.tmp.cleanup)
         self.project = os.path.join(self.tmp.name, "project")
-        self.data = os.path.join(self.tmp.name, "data")
+        self.data = os.path.join(self.tmp.name, "scratchpad", "agentic")
         os.makedirs(self.project)
         self.session = "s1"
 
@@ -56,10 +56,12 @@ class Relay(unittest.TestCase):
             f.write(text)
 
     def run_hook(self, event, raw=None, data=True):
-        env = dict(os.environ, CLAUDE_PLUGIN_DATA=self.data, CLAUDE_PROJECT_DIR=self.project,
-                   CLAUDE_PLUGIN_ROOT=ROOT)
-        if not data:
-            del env["CLAUDE_PLUGIN_DATA"]
+        temp = os.path.join(self.tmp.name, "system-temp")
+        os.makedirs(temp, exist_ok=True)
+        env = dict(os.environ, CLAUDE_PROJECT_DIR=self.project, CLAUDE_PLUGIN_ROOT=ROOT, TMPDIR=temp)
+        env.pop("CLAUDE_PLUGIN_DATA", None)
+        if data and isinstance(event, dict):
+            event = dict(event, scratchpad_dir=os.path.dirname(self.data))
         done = subprocess.run([sys.executable, SCRIPT], input=raw if raw is not None else json.dumps(event),
                               capture_output=True, text=True, env=env)
         self.assertEqual(done.returncode, 0, done.stderr)

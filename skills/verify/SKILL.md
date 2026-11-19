@@ -19,11 +19,13 @@ The verify script does the exact checks. Run it with Bash, from the repository's
 python3 "${CLAUDE_SKILL_DIR}/scripts/verify.py" <command> ...
 ```
 
-- `start [<spec path> ...] --data "${CLAUDE_PLUGIN_DATA}" --session "${CLAUDE_SESSION_ID}"` refuses
+- `start [<spec path> ...] --scratchpad "<your scratchpad folder>" --session "${CLAUDE_SESSION_ID}"` refuses
   while anything is uncommitted, since the report must name the version it checked; otherwise it
   prints the commit, and each spec named, or every spec when none is, with its status and its
   requirements, each with how many examples it holds. Run it first in every run, before any agent.
 - `report` writes the report file, as Report says.
+
+Give as `--scratchpad` the scratchpad folder your instructions name, exactly as they write it, so the file is somewhere the person's app can open; leave the option out only when they name none.
 
 If a command exits with 1, or Claude Code doesn't let it run, stop and give the person its reason:
 check nothing. Never work its checks out yourself instead.
@@ -128,7 +130,7 @@ Give your sections to the script on standard input, with `--commit` set to the c
 printed and `--scope` set to a few words naming what was checked, such as the spec's name:
 
 ```
-python3 "${CLAUDE_SKILL_DIR}/scripts/verify.py" report --scope "<scope>" --commit <commit> --data "${CLAUDE_PLUGIN_DATA}" --session "${CLAUDE_SESSION_ID}" <<'EOF'
+python3 "${CLAUDE_SKILL_DIR}/scripts/verify.py" report --scope "<scope>" --commit <commit> --scratchpad "<your scratchpad folder>" --session "${CLAUDE_SESSION_ID}" <<'EOF'
 ## Overall result
 
 ...
@@ -142,8 +144,9 @@ in the reply if one did.
 
 End with a short reply, under 150 words: the outcome in a sentence or two, then at most five
 bullets of at most 15 words each, with the main findings and any question or action for the
-person, then the report file's full path; if the app you run in can show them a file in a viewer,
-show the report file there; never paste the report or its sections into the reply, since the file
+person, then the report file's full path, copied from the script's output rather than typed,
+since it is long; if the app you run in can show them a file in a viewer, show the report file
+there; never paste the report or its sections into the reply, since the file
 holds them.
 
 Make no correction. The run writes, edits and deletes nothing in the repository, sets no status

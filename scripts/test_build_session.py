@@ -11,6 +11,7 @@ from contextlib import redirect_stdout
 from unittest import mock
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import plugin_folder  # noqa: E402
 import build_session  # noqa: E402
 
 
@@ -37,9 +38,9 @@ class Hooks(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
         self.addCleanup(self.tmp.cleanup)
-        patcher = mock.patch.dict(os.environ, {"CLAUDE_PLUGIN_DATA": self.tmp.name})
-        patcher.start()
-        self.addCleanup(patcher.stop)
+        self.scratchpad = os.path.join(self.tmp.name, "scratchpad")
+        plugin_folder.use_event({"scratchpad_dir": self.scratchpad})
+        self.addCleanup(plugin_folder.reset)
         self.transcript = os.path.join(self.tmp.name, "session.jsonl")
 
     def record(self, *lines, raw=None):
@@ -50,7 +51,8 @@ class Hooks(unittest.TestCase):
                 f.write(json.dumps(line) + "\n")
 
     def hook(self, event, session="s1"):
-        event = dict(event, session_id=session, transcript_path=self.transcript)
+        event = dict({"scratchpad_dir": self.scratchpad}, **event, session_id=session,
+                     transcript_path=self.transcript)
         out = io.StringIO()
         with mock.patch("sys.stdin", io.StringIO(json.dumps(event))), redirect_stdout(out):
             code = build_session.main([])
@@ -177,9 +179,10 @@ class Skill(Hooks):
         self.assertIn("could not be measured", text)
         self.assertNotIn("0 tokens", text)
 
-    def test_never_refused_without_a_data_folder(self):
+    def test_never_refused_without_a_folder(self):
         self.record(reply(50000), reply(90000))
-        with mock.patch.dict(os.environ, {"CLAUDE_PLUGIN_DATA": ""}):
+        self.scratchpad = ""
+        with mock.patch.object(plugin_folder, "private", side_effect=plugin_folder.FolderError("x")):
             self.context(self.skill(), "PreToolUse")
 
 
@@ -249,7 +252,7 @@ class Building(Hooks):
 
     def test_saving_a_record_deletes_another_sessions_once_it_is_a_month_old(self):
         self.skill(session="old")
-        sessions = os.path.join(self.tmp.name, "sessions")
+        sessions = os.path.join(self.scratchpad, "agentic", "sessions")
         month = time.time() - 31 * 24 * 60 * 60
         os.utime(os.path.join(sessions, "old.json"), (month, month))
         self.skill()

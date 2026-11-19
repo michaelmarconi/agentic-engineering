@@ -11,6 +11,7 @@ from contextlib import redirect_stdout
 from unittest import mock
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import plugin_folder  # noqa: E402
 import branch_guard  # noqa: E402
 import build_session  # noqa: E402
 
@@ -26,9 +27,9 @@ class Guard(unittest.TestCase):
         self.data = os.path.join(self.tmp.name, "data")
         self.repo = os.path.join(self.tmp.name, "repo")
         os.makedirs(self.repo)
-        patcher = mock.patch.dict(os.environ, {"CLAUDE_PLUGIN_DATA": self.data})
-        patcher.start()
-        self.addCleanup(patcher.stop)
+        self.scratchpad = os.path.join(self.tmp.name, "scratchpad")
+        plugin_folder.use_event({"scratchpad_dir": self.scratchpad})
+        self.addCleanup(plugin_folder.reset)
         self.git("init", "-q", "-b", "main")
         self.git("commit", "-q", "--allow-empty", "-m", "Start")
 
@@ -40,6 +41,7 @@ class Guard(unittest.TestCase):
 
     def bash(self, command, session="s1"):
         event = {"hook_event_name": "PreToolUse", "session_id": session, "cwd": self.repo,
+                 "scratchpad_dir": self.scratchpad,
                  "tool_name": "Bash", "tool_input": {"command": command}}
         out = io.StringIO()
         with mock.patch("sys.stdin", io.StringIO(json.dumps(event))), redirect_stdout(out):

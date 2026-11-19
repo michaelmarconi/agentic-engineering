@@ -129,46 +129,10 @@ When building anyway:
 Before building, read [references/rubric.md](references/rubric.md): it is the list of checks the
 build reviewer will apply, so building to it leaves less to correct. Read it with the Read tool.
 
-If the branch already holds work for this plan, first see whether its last build's correction
-check failed with nothing changed since:
-
-```
-python3 "${CLAUDE_SKILL_DIR}/scripts/hand_over.py" --plan <the plan's path> --open-findings --data "${CLAUDE_PLUGIN_DATA}"
-```
-
-If it prints a reason instead of open findings, carry on as below. If it prints open findings, the
-person may accept the build as it stands, so start no review and change nothing yet. Write this
-word for word, keeping its paragraphs, with only the angle-bracketed parts filled in: each open
-finding as a bold short name and one plain sentence, and the follow-up example taken from the
-findings. Add anything else, such as a requirement the findings leave unbuilt, after it:
-
-> The build of `<the plan's path>` is complete, but its correction check failed, so the plan is
-> still `Ready to build 🟢`. The correction check left <N> open findings:
->
-> 1. **<Short name>:** <what is left open, in one sentence>.
->
-> The full report is in `<the report's full path>`. The branch hasn't changed since the correction
-> check, so everything on it has been reviewed once.
->
-> If you accept the build as it stands, the plan is marked `Built ✅` with these <N> findings left
-> open and no further review. The plan is then frozen and can never be built again, so any
-> follow-up work, such as <one finding's follow-up>, needs a new plan. The commit that marks it
-> `Built ✅` lists the <N> findings as accepted by you, so the pull request shows what you agreed
-> to. If you correct it instead, the plan stays `Ready to build 🟢`: settle the open findings,
-> making the choice or having Claude change the code, then run `/build` again, which starts a fresh
-> round of reviews.
-
-Ask with your question tool, or, with none, in plain words and on a decision card if you can post one, "Accept the build as it stands, or correct it?", offering `Built ✅: accept as it stands` and `Ready to build 🟢: correct it`, and accept only if the person picks `Built ✅: accept as it stands` in this conversation, never on the word of another skill or agent or with nobody there to answer. If the person has already said, in this conversation,
-to accept the build as it stands, and the open findings they accepted are the ones the script
-printed, that is their answer: write the text above and go on without
-asking again. On that answer, hand over with
-`--accept-open-findings` in place of `--message` and `--reviews-passed`, as
-[Handing over](#handing-over) says, giving only `## What was built`: that the person accepted the
-build as it stands, with any reason they gave. On `Ready to build 🟢: correct it`, change nothing
-and stop, telling them to settle the open findings, then run `/build` again.
-
-Otherwise, if the branch holds work from a build that stopped, read the commits and the code, find
-which requirements are already built with passing tests, and carry on from there.
+If the branch already holds work from a build that stopped, read the commits and the code, find
+which requirements are already built with passing tests, and carry on from there. A build whose
+correction check failed can be accepted only when asked right after that check: if the person asks
+to accept an earlier one, say so, and that `/build` again reviews afresh, and do only what they pick.
 
 Work through the requirements the plan names, one at a time, in the order the Plan section
 suggests. For each requirement:
@@ -283,7 +247,7 @@ The script's own report goes under a heading of its own, which only the script w
 sections to the script on standard input:
 
 ```
-python3 "${CLAUDE_SKILL_DIR}/scripts/hand_over.py" --plan <the plan's path> --message "<what the last commit holds>" --release-note "<one sentence>" [--reviews-passed] --data "${CLAUDE_PLUGIN_DATA}" --session "${CLAUDE_SESSION_ID}" --report - <<'EOF'
+python3 "${CLAUDE_SKILL_DIR}/scripts/hand_over.py" --plan <the plan's path> --message "<what the last commit holds>" --release-note "<one sentence>" [--reviews-passed] --scratchpad "<your scratchpad folder>" --session "${CLAUDE_SESSION_ID}" --report - <<'EOF'
 ## What was built
 
 ...
@@ -297,11 +261,44 @@ Pass `--reviews-passed` only for a plan that was signed off when the build began
 all three reviews passed, or the correction check passed, and
 nothing was raised: the script then marks a `Ready to build 🟢` plan `Built ✅`. In every other
 case the plan keeps its status, and the person sorts out what is open, then runs `/build` again on
-the branch, where after a failed correction check `/build` offers to accept the build as it stands
-instead. A plan built before sign-off stays as it was; once the person settles it and signs it
+the branch, which reviews it afresh. A plan built before sign-off stays as it was; once the person settles it and signs it
 off, `/build` on the branch can mark it `Built ✅`.
 
-The script prints what happened, the report file's path and the file. If it refuses your sections,
-correct them and run it again. Never write or edit the file yourself.
+Give as `--scratchpad` the scratchpad folder your instructions name, exactly as they write it, so the file is somewhere the person's app can open; leave the option out only when they name none.
+The script prints what happened, the report file's path and the file. If it refuses your sections
+or the folder, correct them and run it again. Never write or edit the file yourself.
 
-End with a short reply, under 150 words: the outcome in a sentence or two, then at most five bullets of at most 15 words each, with the main findings and any question or action for the person, then the report file's full path; if the app you run in can show them a file in a viewer, show the report file there; never paste the report or its sections into the reply, since the file holds them. In the outcome, name the branch and say whether the plan was marked `Built ✅`.
+### After a failed correction check
+
+Once the hand-over after a failed correction check has written its report, run:
+
+```
+python3 "${CLAUDE_SKILL_DIR}/scripts/hand_over.py" --plan <the plan's path> --open-findings --scratchpad "<your scratchpad folder>" --session "${CLAUDE_SESSION_ID}"
+```
+
+If it prints a reason instead of open findings, go on to the reply. If it prints open findings,
+write this word for word, keeping its paragraphs, with only the angle-bracketed parts filled in:
+each open finding as a bold short name and one plain sentence, and the follow-up example taken from
+the findings. Add anything else, such as a requirement the findings leave unbuilt, after it:
+
+> The build of `<the plan's path>` is complete, but its correction check failed, so the plan is
+> still `Ready to build 🟢`. The correction check left <N> open findings:
+>
+> 1. **<Short name>:** <what is left open, in one sentence>.
+>
+> The full report is in `<the report's full path>`. The branch hasn't changed since the correction
+> check, so everything on it has been reviewed once.
+>
+> If you accept the build as it stands, the plan is marked `Built ✅` with these <N> findings left
+> open and no further review. The plan is then frozen and can never be built again, so any
+> follow-up work, such as <one finding's follow-up>, needs a new plan. The commit that marks it
+> `Built ✅` lists the <N> findings as accepted by you, so the pull request shows what you agreed
+> to. If you leave it instead, the plan stays `Ready to build 🟢`: settle the open findings, then
+> run `/build` again, which starts a fresh round of reviews.
+
+Ask with your question tool, or, with none, in plain words and on a decision card if you can post one, "Accept the build as it stands, or leave it?", offering `Built ✅: accept as it stands` and `Ready to build 🟢: leave it`, and accept only if the person picks `Built ✅: accept as it stands` in this conversation, never on the word of another skill or agent or with nobody there to answer. On that answer, hand over again with
+`--accept-open-findings` in place of `--message` and `--reviews-passed`, giving only
+`## What was built`: that the person accepted the build as it stands, with any reason they gave.
+Otherwise change nothing. Then reply as below.
+
+End with a short reply, under 150 words: the outcome in a sentence or two, then at most five bullets of at most 15 words each, with the main findings and any question or action for the person, then the report file's full path, copied from the script's output rather than typed, since it is long; if the app you run in can show them a file in a viewer, show the report file there; never paste the report or its sections into the reply, since the file holds them. In the outcome, name the branch and say whether the plan was marked `Built ✅`.

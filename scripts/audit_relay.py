@@ -13,9 +13,9 @@ launch by its id, as build_relay.py does (see subagent_report.py). A report that
 its launch is held until the launch is seen; once an agent has handed its report back, a later
 stop is left alone.
 
-Records live in $CLAUDE_PLUGIN_DATA/audits/<session>.json and are deleted once unchanged for 30
-days (see saved_records.py), or when `audit.py start` or `audit.py report` clears them. Without
-$CLAUDE_PLUGIN_DATA nothing is kept. It changes no request, refuses nothing and prints nothing.
+Records live in audits/<session>.json in the plugin's folder (plugin_folder.py: `agentic/` in the session's scratchpad), and are deleted once unchanged for 30
+days (see saved_records.py), or when `audit.py start` or `audit.py report` clears them. With no
+usable folder nothing is kept. It changes no request, refuses nothing and prints nothing.
 """
 
 import argparse
@@ -32,6 +32,7 @@ except ImportError:  # Windows: run without the lock rather than fail every agen
 
 import saved_records
 import subagent_report
+import plugin_folder
 from build_relay import text_of
 
 AGENTS = ("audit-picker", "auditor", "brief-checker", "audit-checker")
@@ -151,7 +152,7 @@ def returned(record, tool_input, response):
 
 
 def handle(event):
-    path = record_path(os.environ.get("CLAUDE_PLUGIN_DATA"), event.get("session_id") or "unknown")
+    path = record_path(plugin_folder.current(), event.get("session_id") or "unknown")
     if not path:
         return
     if subagent_report.finished(event):
@@ -183,6 +184,7 @@ def main(argv=None):
         event = json.load(sys.stdin)
     except ValueError:
         return 0
+    plugin_folder.use_event(event)
     try:
         if isinstance(event, dict):
             handle(event)

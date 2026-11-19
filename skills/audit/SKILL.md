@@ -27,8 +27,10 @@ python3 "${CLAUDE_SKILL_DIR}/scripts/audit.py" <command> ...
 
 - `start` clears what the plugin kept of an earlier audit's agents in this session. Run it first
   in every audit, before any agent starts:
-  `python3 "${CLAUDE_SKILL_DIR}/scripts/audit.py" start --data "${CLAUDE_PLUGIN_DATA}" --session "${CLAUDE_SESSION_ID}"`.
+  `python3 "${CLAUDE_SKILL_DIR}/scripts/audit.py" start --scratchpad "<your scratchpad folder>" --session "${CLAUDE_SESSION_ID}"`.
 - `report` writes the report file, as Report says.
+
+Give as `--scratchpad` the scratchpad folder your instructions name, exactly as they write it, so the file is somewhere the person's app can open; leave the option out only when they name none.
 
 `documents` and `window` print JSON. If a command exits with 1, or Claude Code doesn't let it run, as in a routine
 whose permissions don't allow it, stop and give the person the reason: without the script you
@@ -169,7 +171,7 @@ words, or the named document's path, and `--stopped` added when the audit stoppe
 above, so no document checks are added, and `--project` as for the other commands:
 
 ```
-python3 "${CLAUDE_SKILL_DIR}/scripts/audit.py" report --scope "<scope>" --data "${CLAUDE_PLUGIN_DATA}" --session "${CLAUDE_SESSION_ID}" <<'EOF'
+python3 "${CLAUDE_SKILL_DIR}/scripts/audit.py" report --scope "<scope>" --scratchpad "<your scratchpad folder>" --session "${CLAUDE_SESSION_ID}" <<'EOF'
 ## Drift
 
 ...
@@ -191,7 +193,7 @@ contradiction and each problem:
   person's intent for the product has changed;
 - for a problem with a document, the edit that corrects it.
 
-End with a short reply, under 150 words: the outcome in a sentence or two, then at most five bullets of at most 15 words each, with the main findings and any question or action for the person, then the report file's full path; if the app you run in can show them a file in a viewer, show the report file there; never paste the report or its sections into the reply, since the file holds them.
+End with a short reply, under 150 words: the outcome in a sentence or two, then at most five bullets of at most 15 words each, with the main findings and any question or action for the person, then the report file's full path, copied from the script's output rather than typed, since it is long; if the app you run in can show them a file in a viewer, show the report file there; never paste the report or its sections into the reply, since the file holds them.
 
 Make none of them. The audit writes, edits and deletes nothing in the repository, sets no status
 and makes no commit, so the person chooses every correction. If they then ask for one, such as

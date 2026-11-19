@@ -6,9 +6,9 @@ experiment produced and never retyped (ADR 0020). It writes the record itself, s
 which refuses every other change to Runs, never sees it.
 
 Each call is one run. It refuses unless the record is `Ready to run 🟢`. It builds a fresh working
-folder at <data>/spikes/<hash of the project path>-<record name>/, outside the repository, or, when
-the data folder can't be written, as in a sandbox, in a folder only this user can open in the
-system's temporary folder, agentic-spikes-<user id>/:
+folder at <root>/spikes/<hash of the project path>-<record name>/, outside the repository, where
+<root> is `agentic/` in the session's scratchpad given by --scratchpad (docs/adrs/0051), or, with
+none given, a folder only this user can open in the system's temporary folder, agentic-<user id>/:
 
 1. When the Experiment names a commit (`- Starts from commit:`), the folder is filled with
    `git archive <commit>`, so neither the working tree nor .git is ever changed, and any ```diff
@@ -65,6 +65,7 @@ import urllib.request
 # The record is read with the status hook's own parsing, so the two always agree on where each
 # section ends and what the status is. The hook lives in the plugin's scripts/ folder.
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "..", "scripts"))
+import plugin_folder  # noqa: E402
 from status_check import (DESIGN_LIMIT, FENCE, FINISHED, READY_TO_RUN,  # noqa: E402
                           SPIKE_STATUSES, VERDICT_LIMIT, headings_allowed, lifecycle_status, section,
                           spike_size_problems, spike_words)
@@ -159,38 +160,14 @@ def project_key(project):
     return hashlib.sha256(os.path.abspath(project).encode("utf-8")).hexdigest()[:12]
 
 
-def fallback_root():
-    """The folder used when the data folder can't be written: one in the system's temporary
-    folder that only this user can open, so other users can neither read the experiment nor
-    put anything in its place."""
-    return os.path.join(tempfile.gettempdir(), f"agentic-spikes-{os.getuid()}")
-
-
-def writable(folder):
+def spikes_root(root):
+    """<root>/spikes, made if need be."""
+    folder = os.path.join(os.path.abspath(root), "spikes")
     try:
         os.makedirs(folder, exist_ok=True)
-        os.rmdir(tempfile.mkdtemp(dir=folder))
-        return True
-    except OSError:
-        return False
-
-
-def spikes_root(data):
-    """<data>/spikes, or fallback_root() when that can't be written, as in a sandbox that blocks
-    the plugin's own folders."""
-    root = os.path.join(os.path.abspath(data), "spikes")
-    if writable(root):
-        return root
-    fallback = fallback_root()
-    try:
-        os.makedirs(fallback, mode=0o700, exist_ok=True)
-        info = os.lstat(fallback)
     except OSError as error:
-        raise RecordError(f"neither {root} nor {fallback} can be written ({error})")
-    if not os.path.isdir(fallback) or os.path.islink(fallback) or info.st_uid != os.getuid() \
-            or info.st_mode & 0o077:
-        raise RecordError(f"{fallback} is not a folder only you can open; delete it and run again")
-    return fallback
+        raise RecordError(f"the working folders' place {folder} can't be made ({error.strerror or error})")
+    return folder
 
 
 def work_folder(data, record_path, root=None):
@@ -332,24 +309,24 @@ def where():
 
 
 def remove_leftovers(data, record_path):
-    """Delete this project's working folders, in either place, whose records are finished or gone."""
+    """Delete this project's working folders whose records are finished or gone."""
     prefix = project_key(project_of(record_path)) + "-"
     folder = os.path.dirname(os.path.abspath(record_path))
-    for spikes in (os.path.join(os.path.abspath(data), "spikes"), fallback_root()):
-        try:
-            names = sorted(os.listdir(spikes)) if os.path.isdir(spikes) and not os.path.islink(spikes) else []
-        except OSError:
+    spikes = os.path.join(os.path.abspath(data), "spikes")
+    try:
+        names = sorted(os.listdir(spikes)) if os.path.isdir(spikes) and not os.path.islink(spikes) else []
+    except OSError:
+        return
+    for name in names:
+        if not name.startswith(prefix):
             continue
-        for name in names:
-            if not name.startswith(prefix):
-                continue
-            record = os.path.join(folder, name[len(prefix):] + ".md")
-            try:
-                status = status_of(read_record(record)) if os.path.exists(record) else None
-            except RecordError:
-                continue
-            if status is None or status in FINISHED:
-                shutil.rmtree(os.path.join(spikes, name), ignore_errors=True)
+        record = os.path.join(folder, name[len(prefix):] + ".md")
+        try:
+            status = status_of(read_record(record)) if os.path.exists(record) else None
+        except RecordError:
+            continue
+        if status is None or status in FINISHED:
+            shutil.rmtree(os.path.join(spikes, name), ignore_errors=True)
 
 
 def append_run(path, heading_line, body):
@@ -443,8 +420,6 @@ def hidden_note(hidden):
 def run(record_path, data, observation=None):
     """Run the experiment once, or record an observation; return the Runs entry added."""
     deadline = time.monotonic() + TIME_LIMIT
-    if not data:
-        raise RecordError('the plugin\'s data folder is empty: pass --data "${CLAUDE_PLUGIN_DATA}"')
     text = read_record(record_path)
     steps = plan(text)
     steps["deadline"] = deadline
@@ -540,7 +515,10 @@ def main(argv=None):
         ),
     )
     run_parser.add_argument("record", help="the spike record, a .md file in docs/spikes/")
-    run_parser.add_argument("--data", required=True, help='the plugin\'s data folder: "${CLAUDE_PLUGIN_DATA}"')
+    run_parser.add_argument("--scratchpad", default="",
+                            help="the session's scratchpad folder, as your instructions name it; leave it out when "
+                                 "they name none, and a private temporary folder is used")
+    run_parser.add_argument("--session", required=True, help='the session\'s id: "${CLAUDE_SESSION_ID}"')
     run_parser.add_argument("--observation", metavar="TEXT",
                             help="record the person's own words as this run, for a step only they can do")
     words_parser = commands.add_parser(
@@ -559,7 +537,11 @@ def main(argv=None):
     if args.command == "words":
         return words(args.record)
     try:
-        entry = run(args.record, args.data, args.observation)
+        try:
+            root = plugin_folder.root(args.scratchpad, args.session)
+        except plugin_folder.FolderError as error:
+            raise RecordError(str(error))
+        entry = run(args.record, root, args.observation)
     except RecordError as error:
         print(f"{os.path.basename(args.record)}: {error}", file=sys.stderr)
         return 1

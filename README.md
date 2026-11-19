@@ -144,7 +144,8 @@ flowchart LR
 - `/agentic:build` commits to a branch of its own and pushes it. It never commits to the main
   branch, never opens a pull request and never merges: those steps stay with you.
 - Review reports, and the report files `/agentic:build`, `/agentic:audit` and `/agentic:verify` end with, are kept in the
-  plugin's own data folder, outside your repository.
+  session's scratchpad, a temporary folder Claude Code gives each session, outside your
+  repository, until Claude Code clears it.
 - Nothing else is added, unless you install the plugin with `--scope project`.
 
 ## Update

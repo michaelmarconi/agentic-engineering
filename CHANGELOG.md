@@ -6,6 +6,21 @@ What changed in each version of the plugin, newest first. Versions follow
 past a major version: it says what you need to change in your documents. Until 1.0.0, any
 minor version may need such a change, and its entry says so.
 
+## [0.76.0] - 2026-11-19
+
+### Changed
+
+- Every file the plugin writes outside your repository now goes in the session's scratchpad, the
+  temporary folder Claude Code gives each session, under `agentic/`: the build, audit and verify
+  reports, spike runs and the records the hooks keep. The desktop app's file pane can open the
+  reports, which it could not do in the plugin's data folder. They are temporary: Claude Code
+  clears the scratchpad when it chooses, so keep anything you need elsewhere. Where a session has
+  no scratchpad, they go in a folder of the session's own that only you can open, inside the
+  system's temporary folder (ADR 0051, superseding ADR 0033).
+- When a build's correction check fails, /build asks at once, in the same conversation, whether
+  to accept the build as it stands or leave it. Running `/build` again on the branch no longer
+  offers to accept an earlier failed build: it reviews afresh (ADR 0052, superseding ADR 0038).
+
 ## [0.75.0] - 2026-11-19
 
 ### Changed
