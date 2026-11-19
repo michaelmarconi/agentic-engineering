@@ -17,6 +17,9 @@ minor version may need such a change, and its entry says so.
 - When one reply asks several questions, such as the first open question of each of two ADRs,
   each question is followed straight away by its own card, or the question tool, with a
   horizontal rule before the next, so it is clear which card answers which question.
+- The answer you tap on a card is kept for the check of what changed even when Claude adds a note
+  after the card. When one reply asked several questions, the answer is kept against all of them,
+  since a tap does not say which card it answers.
 
 ## [0.72.0] - 2026-11-19
 
