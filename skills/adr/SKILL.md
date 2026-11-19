@@ -58,8 +58,8 @@ say so to the person, who can rename it once the review has ended.
 
 ## Shape it with the person
 
-Usually the person has already talked the decision through here. Draft from
-that, and from whatever they point you to; research what else you need, such as how the options
+Usually the person has already talked the decision through in the conversation. Draft from
+that and whatever they point you to; research what else you need, such as how the options
 compare. Where the conversation changed its mind, the latest word wins. Given a finished
 spike record from `docs/spikes/`, put its measurements into the ADR's own words, such as "read all
 12 of 12 transactions": a line in Options says what they showed, and Technical detail gives them in
