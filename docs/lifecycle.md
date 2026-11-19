@@ -32,7 +32,7 @@ flowchart LR
 
 Each step uses what the one before it wrote. Not every piece of work needs every step: a spike runs
 only when there is an unknown to settle, and an audit, shown last, can run at any time. Each phase
-has its own, more detailed diagram under [Steps](#steps).
+has its own, more detailed diagram under [Skills](#skills).
 
 This is the order within one small piece of work, not a project plan done once from top to bottom.
 You go round it many times: each round decides only what the next piece needs, such as one new
@@ -171,9 +171,10 @@ repository, wherever in it the session started, or from the session's folder in 
 git. A monorepo, several related apps or packages in one repository, keeps one `docs/` folder at
 its top; its specs may be grouped into folders, such as one per app, which carry no meaning.
 
-## Steps
+## Skills
 
-Each step has a skill. Most belong to one of three phases; the rest you run whenever you need them.
+The plugin has twelve skills. Most belong to one of three phases; the rest you run whenever you
+need them.
 
 **Deciding what to build**
 
