@@ -69,14 +69,11 @@ will know it does. Any change returns it to `Draft 📝`.
 ```mermaid
 stateDiagram-v2
     direction LR
-    Draft --> Accepted
+    state "Draft 📝" as Draft
+    state "Accepted 👍" as Accepted
+    Draft --> Accepted : you sign off the reviewed text, nothing open
     Accepted --> Draft : any change
 ```
-
-| Status | Meaning |
-| --- | --- |
-| `Draft 📝` | Being written or changed; plans cannot build on it yet. |
-| `Accepted 👍` | You signed off its reviewed text, with no open questions left. Plans may build on it. |
 
 ### ADR
 
@@ -87,17 +84,14 @@ technical decision and why it was made. Once decided it is never edited, apart f
 ```mermaid
 stateDiagram-v2
     direction LR
-    Draft --> Accepted
-    Draft --> Rejected
-    Accepted --> Superseded
+    state "Draft 📝" as Draft
+    state "Accepted 👍" as Accepted
+    state "Rejected ❌" as Rejected
+    state "Superseded ↪️" as Superseded
+    Draft --> Accepted : you sign off the reviewed text, nothing open
+    Draft --> Rejected : you decide against it
+    Accepted --> Superseded : a newer ADR replaces it
 ```
-
-| Status | Meaning |
-| --- | --- |
-| `Draft 📝` | Being written: the decision is open, or chosen but not yet signed off. |
-| `Accepted 👍` | You signed off its reviewed text. The code follows it, and it is never edited. |
-| `Rejected ❌` | You decided against it. It stays as the record of why. |
-| `Superseded ↪️` | A newer accepted ADR, named in its `superseded-by:` field, replaces it whole. |
 
 ### Plan
 
@@ -109,17 +103,13 @@ nobody needs it.
 ```mermaid
 stateDiagram-v2
     direction LR
-    state "Ready to build" as Ready
-    Draft --> Ready
+    state "Draft 📝" as Draft
+    state "Ready to build 🟢" as Ready
+    state "Built ✅" as Built
+    Draft --> Ready : you sign off, its specs and ADRs accepted, nothing open
     Ready --> Draft : any change
-    Ready --> Built : only /build
+    Ready --> Built : /build builds it and its review passes or you accept it
 ```
-
-| Status | Meaning |
-| --- | --- |
-| `Draft 📝` | Being written or changed. |
-| `Ready to build 🟢` | You signed it off, every spec and ADR it touches is accepted, and nothing is open. `/build` may build it. |
-| `Built ✅` | `/build` built it and its reviews passed, or you accepted the build as it stood. Never changed again. |
 
 ### Spike record
 
@@ -131,22 +121,17 @@ again, and it may be deleted whenever nobody needs it.
 ```mermaid
 stateDiagram-v2
     direction LR
-    state "Ready to run" as Ready
-    state "Not settled" as NotSettled
-    Draft --> Ready
+    state "Draft 📝" as Draft
+    state "Ready to run 🟢" as Ready
+    state "Confirmed 💡" as Confirmed
+    state "Refuted 🚫" as Refuted
+    state "Not settled ❔" as NotSettled
+    Draft --> Ready : you sign off the design, which is then fixed
     Ready --> Draft : only before the first run
-    Ready --> Confirmed
-    Ready --> Refuted
-    Ready --> NotSettled
+    Ready --> Confirmed : the runs give the agreed result
+    Ready --> Refuted : the runs show it false
+    Ready --> NotSettled : the runs settle neither way
 ```
-
-| Status | Meaning |
-| --- | --- |
-| `Draft 📝` | The experiment is being designed. |
-| `Ready to run 🟢` | You signed off the design, which is now fixed; the run script adds each run. |
-| `Confirmed 💡` | The runs produced the result agreed before the first run. |
-| `Refuted 🚫` | The runs showed the hypothesis is false. |
-| `Not settled ❔` | The runs settled it neither way. |
 
 ### What every document shares
 
