@@ -3,7 +3,7 @@
 `/release` is the skill for making a release: one numbered version of the product, with release
 notes that say what it gives the people who use it, tied to one exact commit. If your project
 publishes its releases, such as a library sent to a package index or an image sent to a registry,
-publishing is part of releasing too. Its usual place in [the lifecycle](../../README.md) is after
+publishing is part of releasing too. Its usual place in [the lifecycle](../lifecycle.md) is after
 enough work has been built, checked with [`/verify`](verify.md) and merged; it never merges
 anything itself. Read that page first for the documents, skills and agents it mentions.
 
@@ -64,7 +64,7 @@ only what every release needs, whatever the method:
 - every release names the one commit it came from;
 - `/release` says plainly when that commit is not on your repository's default branch.
 
-Every step it runs is one command, as [the lifecycle rules](../lifecycle.md#principles) require,
+Every step it runs is one command, as [the lifecycle rules](../lifecycle.md#practices) require,
 and `/release` never writes or changes a command. Before it does anything, it runs the practices
 skill's check, `practice_complete.py`, on `releasing.md`. If the file is missing, or a required
 heading is missing, empty or still holds a default Claude proposed, it changes nothing, shows the
@@ -96,12 +96,11 @@ needs that has no command, such as a publish step written as prose.
    the top of `CHANGELOG.md`. They are written for the people who use the product: what they can
    now do, drawn from the gathered notes, never from the code.
 6. **Review.** The release notes are reviewed like every document a skill writes (see
-   [the review process](../lifecycle.md#review-process)). The `release-reviewer` agent checks
+   [the review process](../lifecycle.md#review-process)). The release reviewer agent (`agents/release-reviewer.md`) checks
    that every gathered note, and every item drawn from history you chose to include, is
    covered; that nothing is claimed that no note says; that the notes are written for the people
    who use the product, in the recorded form; and that no plan names, file paths or code details
-   appear. The shared language checker reads them beside it. Then come one correction and the
-   correction check. The version number is not reviewed: it follows from the recorded scheme,
+   appear. The language checker agent (`agents/language-checker.md`) reads them beside it. Then come one correction and the correction check, by the correction checker agent (`agents/correction-checker.md`). The version number is not reviewed: it follows from the recorded scheme,
    and you sign it off with the notes.
 7. **Sign-off.** You read the version and the notes, with the reviews, and sign them off or ask for
    changes. Nothing is committed before you do.

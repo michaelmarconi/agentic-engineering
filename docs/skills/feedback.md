@@ -1,7 +1,7 @@
 # `/feedback`
 
 `/feedback` is the skill for telling the plugin's maintainers that something went wrong or could be
-better. It is not a step of [the lifecycle](../../README.md) itself; it is how the plugin that
+better. It is not a step of [the lifecycle](../lifecycle.md) itself; it is how the plugin that
 encodes the lifecycle improves. Read that page first for the skills, agents and documents it
 mentions.
 
@@ -62,12 +62,14 @@ happened in its own words, rebuilds any example from stand-ins such as "a web ap
 `docs/specs/example.spec.md`, and quotes nothing from your repository. The draft is never
 written into your repository.
 
-Before you see the draft, a reviewer agent checks it against
+Before you see the draft, its reviewer agent (`agents/feedback-reviewer.md`) checks it against
 [the feedback rubric](../../skills/feedback/references/rubric.md). Among other things, it searches
 your repository for every name and phrase in the draft, since anything found there is a leak.
-At the same time, a language checker reads it for words the plugin's maintainers could not
-follow, by the [Plain words](../lifecycle.md#plain-words) rule. The skill corrects what both find, once, and has the corrections checked (see
-[Review process](../lifecycle.md#review-process)).
+Beside it, the language checker agent (`agents/language-checker.md`) reads it for words the
+plugin's maintainers could not follow, by the [Plain words](../lifecycle.md#plain-words) rule. The
+review then runs as [Review process](../lifecycle.md#review-process) says: the skill corrects what
+both find once, and the correction checker agent (`agents/correction-checker.md`) checks the
+corrections.
 
 ## Filing
 

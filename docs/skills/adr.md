@@ -1,7 +1,7 @@
 # `/adr`
 
 `/adr` is the skill for recording technical decisions. It is one step of
-[the lifecycle](../../README.md); read that page first for the documents, skills and agents it
+[the lifecycle](../lifecycle.md); read that page first for the documents, skills and agents it
 mentions.
 
 ## What an ADR is
@@ -48,7 +48,7 @@ what matters in its own words, and a plugin hook refuses any other hyperlink or 
 ## Anatomy
 
 An ADR is written for a person first. It reads from plain to technical: the top part says what
-had to be chosen, what was chosen, why and what it costs, in at most 500 words of prose; the exact
+had to be chosen, what was chosen, why and what it costs, in at most 500 words, tables included; the exact
 mechanism and evidence sit at the foot, for whoever builds and checks it. The layout is based on
 MADR (Markdown Architectural Decision Records), a widely used template, with every one of its
 core parts kept, reordered and tightened.[^madr]
@@ -111,7 +111,7 @@ Run `/adr` and say what you want: record a decision, accept or reject one, or re
   drafts from that, and where you changed your mind, the latest word wins. What is missing, such as an option nobody named or why one was rejected, it keeps
   out of the ADR: it tells you how many questions there are and asks them one at a time, with the
   review's. Each sets its proposal apart in a
-  quote, as [the lifecycle page](../lifecycle.md#documents) shows: the answer `/adr` would choose,
+  quote, as [the lifecycle page](../lifecycle.md#what-every-document-shares) shows: the answer `/adr` would choose,
   such as the option it recommends, or, where only you can know, what would settle it, with the
   reason beside it. Your answer goes into the ADR; only a question you defer is written into Open questions.
 - **Spikes before untested assumptions.** If the choice depends on something nobody has tried,
@@ -132,7 +132,7 @@ Run `/adr` and say what you want: record a decision, accept or reject one, or re
 
 ## Review
 
-Before you see an ADR, `/adr` has its reviewer agent check it against a short list of
+Before you see an ADR, `/adr` has its reviewer agent (`agents/adr-reviewer.md`) check it against a short list of
 pass-or-fail checks: one decision, a plain title and question, a decision that reads on its own,
 real options with reasons, good and bad consequences, each limit stated once, checks that can
 really be carried out, technical detail kept at the foot, references only to other ADRs, and no
@@ -140,14 +140,11 @@ clash with another ADR. Before each review, `/adr` counts the words in the plain
 to fit. That word count is the only length limit: sentence and paragraph lengths are a guide for
 the writer, and the reviewer judges instead whether a newcomer can follow each sentence in one
 reading. The reviewer sees only the ADRs, not your conversation, so it judges
-the page as a newcomer would. At the same time, a language checker reads it for words a newcomer
-could not follow, by the [Plain words](../lifecycle.md#plain-words) rule: a term from your field
-gets a footnote, and team shorthand is rewritten. `/adr` corrects what both find, once, and
-has the corrections checked (see [Review process](../lifecycle.md#review-process)); then you get the ADR
-with the reports. After that, `/adr` puts each question to you with four choices, Accept its proposal, give your
-own answer, Ignore or Defer, and only deferred ones go into Open questions. Each round of answers
-is checked on only what it changed, and the whole review runs again only when you ask, after a
-change you make yourself, or in a new conversation.
+the page as a newcomer would. Beside the reviewer, the language checker agent (`agents/language-checker.md`) reads it for
+words a newcomer could not follow, by the [Plain words](../lifecycle.md#plain-words) rule. The
+review then runs as [Review process](../lifecycle.md#review-process) says: `/adr` corrects what
+both find once, the correction checker agent (`agents/correction-checker.md`) checks the
+corrections, and you get the ADR with the reports and each question to settle.
 
 ## Diagrams
 

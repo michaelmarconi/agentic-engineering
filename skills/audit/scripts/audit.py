@@ -78,7 +78,7 @@ window <words>
     window older than the history the clone holds; it never falls back to every commit.
 
 start [--scratchpad <folder>] --session <id>
-    Clears what the audit hook (scripts/audit_relay.py) kept of this session's audit agents, so an
+    Clears what the audit hook (scripts/agent_relay.py) kept of this session's audit agents, so an
     earlier audit that stopped part way leaves nothing in this one's report. Run it first in every
     audit. Prints nothing.
 
@@ -113,7 +113,7 @@ from status_check import (ACCEPTED, ADR_STATUSES, BUILT, DRAFT, FINISHED,  # noq
                           field, frontmatter, has_open_questions, open_questions_problem, real_date, lifecycle_status, listed, emoji_first,
                           OLD_LAYOUT, name_problem, old_layout, reference_problem, requirements, status_of)
 from doc_references import targets  # noqa: E402
-import audit_relay  # noqa: E402
+import agent_relay  # noqa: E402
 import plugin_folder  # noqa: E402
 import run_report  # noqa: E402
 
@@ -525,13 +525,13 @@ def report(project, scope, data, session, own_text, now, stopped=False):
     project = os.path.realpath(project)
     try:
         own = run_report.parse("audit", own_text)
-        copied = copied_reports(project, audit_relay.reports(data, session),
+        copied = copied_reports(project, agent_relay.reports(data, session, "audit"),
                                 [] if stopped else check_documents(project)["problems"])
         _, lines = run_report.write("audit", scope_name(scope), project, data, own, copied,
                                     date=now.date().isoformat())
     except run_report.ReportError as error:
         raise Refused(str(error))
-    audit_relay.clear(data, session)
+    agent_relay.clear(data, session, "audit")
     return lines
 
 
@@ -683,7 +683,7 @@ def main(argv=None):
             except plugin_folder.FolderError as error:
                 raise Refused(str(error))
         if args.command == "start":
-            audit_relay.clear(args.data, args.session)
+            agent_relay.clear(args.data, args.session, "audit")
             return 0
         if args.command == "report":
             lines = report(args.project, args.scope, args.data, args.session, sys.stdin.read(),

@@ -1,7 +1,7 @@
 # `/spike`
 
 `/spike` is the skill for settling an unknown by trying something. It is one step of
-[the lifecycle](../../README.md); read that page first for the documents, skills and agents it
+[the lifecycle](../lifecycle.md); read that page first for the documents, skills and agents it
 mentions.
 
 ## What a spike is
@@ -205,7 +205,7 @@ Spike code is never copied into the product, even when it works. When the work i
 ## Review
 
 A spike record is reviewed twice: once when its design is written, and once when its verdict is.
-Each time, a reviewer agent checks it against a short list of pass-or-fail checks, and the checks
+Each time, its reviewer agent (`agents/spike-reviewer.md`) checks it against a short list of pass-or-fail checks, and the checks
 that apply depend on the status the record is moving to.
 
 - **Before `Ready to run 🟢`:** it tests one hypothesis; How we'll know is concrete enough to
@@ -221,12 +221,11 @@ that apply depend on the status the record is moving to.
   ADR, as the reviewer finds them in `docs/specs/` and `docs/adrs/`.
 
 The reviewer sees the record and those folders, not your conversation, so it judges the spike as
-a newcomer would. At the same time, a language checker reads it for words a newcomer could not
-follow, by the [Plain words](../lifecycle.md#plain-words) rule. Each time, `/spike` corrects what
-both find, once, and has the corrections checked (see
-[Review process](../lifecycle.md#review-process)). After that, `/spike` puts each question to you
-with four choices, Accept its proposal, give your own answer, Ignore or Defer, and only deferred
-ones go into Open questions. Each round of answers is checked on only what it changed. The top part's length is counted by a script,
+a newcomer would. Beside the reviewer, the language checker agent (`agents/language-checker.md`) reads it for
+words a newcomer could not follow, by the [Plain words](../lifecycle.md#plain-words) rule. The
+review then runs as [Review process](../lifecycle.md#review-process) says: `/spike` corrects what
+both find once, the correction checker agent (`agents/correction-checker.md`) checks the
+corrections, and you get the spike record with the reports and each question to settle. The top part's length is counted by a script,
 not judged by the reviewer.
 
 [^beck]: Kent Beck's spike solution in Extreme Programming, described on the

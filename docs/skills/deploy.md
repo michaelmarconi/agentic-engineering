@@ -3,7 +3,7 @@
 `/deploy` is the skill for putting one release into one environment, such as staging or
 production, and making sure it works there. It ends one of two ways: the new release is running
 and its check has passed, or the previous release is back and you know why. Its usual place in
-[the lifecycle](../../README.md) is after [`/release`](release.md), or after a merge for a project
+[the lifecycle](../lifecycle.md) is after [`/release`](release.md), or after a merge for a project
 that deploys any commit, but you can run it whenever your practice allows. Read that page first
 for the documents, skills and agents it mentions.
 
@@ -54,7 +54,7 @@ Two optional headings sit at the top: `## Where it runs`, the machine and where 
 live, and `## How deploys start`, by hand or by the pipeline, and by whom. Where `Where it runs` is
 missing, `/deploy` assumes this machine, with its credentials already set up, and says so.
 
-Every step it runs is one command, as [the lifecycle rules](../lifecycle.md#principles) require.
+Every step it runs is one command, as [the lifecycle rules](../lifecycle.md#practices) require.
 Writing or changing one is the practices skill's job, never `/deploy`'s.
 
 ## How a run goes

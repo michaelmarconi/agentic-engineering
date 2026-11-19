@@ -1426,5 +1426,27 @@ class Relay(unittest.TestCase):
         self.assertIn("correction checker", done.stdout)
 
 
+class LifecyclePage(unittest.TestCase):
+    """The words the hook looks for are the words the lifecycle page tells skills to write."""
+
+    def setUp(self):
+        with open(os.path.join(ROOT, "docs", "lifecycle.md"), encoding="utf-8") as f:
+            page = f.read()
+        section = page[page.index("\n## Review process\n") + 1:]
+        section = section[:section.index("\n## ")] if "\n## " in section else section
+        self.review = " ".join(section.split())
+
+    def test_review_section_asks_with_the_line_the_hook_finds(self):
+        self.assertIn(f'"Accept, give your own answer, {review_relay.MARKER}"', self.review)
+
+    def test_review_section_offers_every_choice_the_hook_reads(self):
+        for choice in review_relay.CHOICES:
+            self.assertIn(choice, self.review.lower())
+
+    def test_review_section_names_the_lines_the_hook_reads_in_a_request(self):
+        for line in (review_relay.DRAFT_START.strip(), review_relay.DRAFT_END, "`Document:`"):
+            self.assertIn(line, self.review)
+
+
 if __name__ == "__main__":
     unittest.main()

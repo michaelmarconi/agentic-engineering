@@ -289,7 +289,7 @@ class Push(Repo):
 
 
 class Report(Repo):
-    """The build's report file (ADRs 0033 and 0034)."""
+    """The build's report file (ADRs 0051 and 0034)."""
 
     def keep(self, plan_path, reports):
         record = {"commit": "abc", "repository": self.dir, "plan": plan_path, "reports": reports, "started": {}}

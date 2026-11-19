@@ -1,4 +1,4 @@
-"""Tests for audit_relay.py, fed recorded hook inputs."""
+"""Tests for agent_relay.py's /verify records, fed recorded hook inputs."""
 
 import io
 import json
@@ -11,15 +11,12 @@ from unittest import mock
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import plugin_folder  # noqa: E402
-import audit_relay  # noqa: E402
+import agent_relay  # noqa: E402
 
-AUDITOR = ("agentic:auditor", "Document: /r/docs/adrs/0001-a.md\nRepository: /r\nAudit it.")
-CHECKER = ("agentic:audit-checker", "Document: /r/docs/adrs/0001-a.md\nRepository: /r\n"
-           "=== AUDIT REPORT ===\nx\n=== END AUDIT REPORT ===")
-BRIEF_CHECKER_OF_A = ("agentic:audit-checker", "Document: /r/docs/adrs/0001-a.md\nRepository: /r\n"
-                      "=== BRIEF REPORT ===\nx\n=== END BRIEF REPORT ===")
-BRIEF = ("agentic:brief-checker", "Document: /r/docs/brief.md\nRepository: /r\nDocuments:\n...")
-PICKER = ("agentic:audit-picker", "Repository: /r\nCommits:\nabc 2026-11-14 Change")
+VERIFIER = ("agentic:verifier", "Document: /r/docs/specs/mail.spec.md\nRepository: /r\nRequirements:\n1. Pull")
+CHECKER = ("agentic:verify-checker", "Document: /r/docs/specs/mail.spec.md\nRepository: /r\n"
+           "=== VERIFIER REPORT ===\nx\n=== END VERIFIER REPORT ===")
+OTHER_SPEC = ("agentic:verifier", "Document: /r/docs/specs/send.spec.md\nRepository: /r\nRequirements:\n2. Send")
 
 
 class Relay(unittest.TestCase):
@@ -35,7 +32,7 @@ class Relay(unittest.TestCase):
         event = dict({"scratchpad_dir": self.scratchpad}, **event, session_id=session)
         out = io.StringIO()
         with mock.patch("sys.stdin", io.StringIO(json.dumps(event))), redirect_stdout(out):
-            self.assertEqual(audit_relay.main([]), 0)
+            self.assertEqual(agent_relay.main([]), 0)
         self.assertEqual(out.getvalue(), "", "the hook never answers")
 
     def agent(self, kind, report, session="s1", handed_back=False):
@@ -64,47 +61,48 @@ class Relay(unittest.TestCase):
                   session)
 
     def reports(self, session="s1"):
-        return audit_relay.reports(self.data, session)
+        return agent_relay.reports(self.data, session, "verify")
+
 
 
 class Keeps(Relay):
-    def test_each_agent_kept_by_type_document_and_kind(self):
-        self.agent(AUDITOR, "Drift: one")
-        self.agent(CHECKER, "Confirmed")
-        self.agent(BRIEF_CHECKER_OF_A, "Rejected")
-        self.agent(BRIEF, "Contradicts: one")
-        self.agent(PICKER, "Pick: 0001")
-        got = {(r["agent"], r["document"], r["kind"]): r["text"] for r in self.reports()}
+    def test_each_agent_kept_by_type_and_spec(self):
+        self.agent(VERIFIER, "1.1 pass")
+        self.agent(CHECKER, "1.1 confirmed")
+        self.agent(OTHER_SPEC, "2.1 fail")
+        got = {(r["agent"], r["document"]): r["text"] for r in self.reports()}
         self.assertEqual(got, {
-            ("auditor", "/r/docs/adrs/0001-a.md", ""): "Drift: one",
-            ("audit-checker", "/r/docs/adrs/0001-a.md", "AUDIT REPORT"): "Confirmed",
-            ("audit-checker", "/r/docs/adrs/0001-a.md", "BRIEF REPORT"): "Rejected",
-            ("brief-checker", "/r/docs/brief.md", ""): "Contradicts: one",
-            ("audit-picker", "", ""): "Pick: 0001",
+            ("verifier", "/r/docs/specs/mail.spec.md"): "1.1 pass",
+            ("verify-checker", "/r/docs/specs/mail.spec.md"): "1.1 confirmed",
+            ("verifier", "/r/docs/specs/send.spec.md"): "2.1 fail",
         })
 
     def test_report_kept_word_for_word(self):
         report = "Result\n\n| a | \"b\" |\n  indented\n"
-        self.agent(AUDITOR, report)
+        self.agent(VERIFIER, report)
         self.assertEqual(self.reports()[0]["text"], report)
 
-    def test_rerun_keeps_last_report(self):
-        self.agent(AUDITOR, "first")
-        self.agent(AUDITOR, "second")
+    def test_rerun_replaces_earlier_report(self):
+        self.agent(VERIFIER, "first")
+        self.agent(VERIFIER, "second")
         self.assertEqual([r["text"] for r in self.reports()], ["second"])
 
     def test_handed_back_report_kept(self):
-        self.agent(AUDITOR, "Drift: one", handed_back=True)
-        self.assertEqual(self.reports()[0]["text"], "Drift: one")
+        self.agent(VERIFIER, "1.1 pass", handed_back=True)
+        self.assertEqual(self.reports()[0]["text"], "1.1 pass")
 
     def test_other_agents_ignored(self):
         self.agent(("general-purpose", "Document: x\nDo something"), "nope")
-        self.agent(("agentic:adr-reviewer", "Document: x\nReview this ADR."), "nope")
+        self.agent(("agentic:auditor", "Document: x\nRepository: /r"), "nope")
         self.assertEqual(self.reports(), [])
 
+    def test_audit_records_ignore_verify_agents(self):
+        self.agent(VERIFIER, "1.1 pass")
+        self.assertEqual(agent_relay.reports(self.data, "s1", "audit"), [])
+
     def test_sessions_kept_apart(self):
-        self.agent(AUDITOR, "mine", session="s1")
-        self.agent(AUDITOR, "theirs", session="s2")
+        self.agent(VERIFIER, "mine", session="s1")
+        self.agent(VERIFIER, "theirs", session="s2")
         self.assertEqual([r["text"] for r in self.reports("s1")], ["mine"])
 
     def test_kept_in_the_private_folder_without_a_scratchpad(self):
@@ -112,42 +110,42 @@ class Keeps(Relay):
         os.makedirs(temp)
         self.scratchpad = ""
         with mock.patch.object(plugin_folder.tempfile, "gettempdir", return_value=temp):
-            self.agent(AUDITOR, "x")
+            self.agent(VERIFIER, "x")
             fallback = plugin_folder.root("", "s1")
         self.assertFalse(os.path.exists(self.data))
-        self.assertEqual([r["text"] for r in audit_relay.reports(fallback, "s1")], ["x"])
+        self.assertEqual([r["text"] for r in agent_relay.reports(fallback, "s1", "verify")], ["x"])
 
     def test_clear(self):
-        self.agent(AUDITOR, "x")
-        audit_relay.clear(self.data, "s1")
+        self.agent(VERIFIER, "x")
+        agent_relay.clear(self.data, "s1", "verify")
         self.assertEqual(self.reports(), [])
 
 
 class Background(Relay):
     def test_background_report_from_stop(self):
-        self.launch(AUDITOR, "a1")
-        self.stopped("agentic:auditor", "a1", "Drift: one")
-        self.assertEqual(self.reports()[0]["text"], "Drift: one")
+        self.launch(VERIFIER, "a1")
+        self.stopped("agentic:verifier", "a1", "1.1 pass")
+        self.assertEqual(self.reports()[0]["text"], "1.1 pass")
 
     def test_stop_before_launch_is_seen(self):
-        self.stopped("agentic:auditor", "a1", "Drift: one")
-        self.launch(AUDITOR, "a1")
-        self.assertEqual(self.reports()[0]["text"], "Drift: one")
+        self.stopped("agentic:verifier", "a1", "1.1 pass")
+        self.launch(VERIFIER, "a1")
+        self.assertEqual(self.reports()[0]["text"], "1.1 pass")
 
     def test_hand_back_stays_final(self):
-        self.launch(AUDITOR, "a1")
-        self.hand_back("agentic:auditor", "a1", "Drift: one")
-        self.stopped("agentic:auditor", "a1", "Handing back my report.")
-        self.assertEqual(self.reports()[0]["text"], "Drift: one")
+        self.launch(VERIFIER, "a1")
+        self.hand_back("agentic:verifier", "a1", "1.1 pass")
+        self.stopped("agentic:verifier", "a1", "Handing back my report.")
+        self.assertEqual(self.reports()[0]["text"], "1.1 pass")
 
-    def test_hand_back_before_launch(self):
-        self.hand_back("agentic:auditor", "a1", "Drift: one")
-        self.stopped("agentic:auditor", "a1", "Handing back my report.")
-        self.launch(AUDITOR, "a1")
-        self.assertEqual(self.reports()[0]["text"], "Drift: one")
+    def test_hand_back_from_project_thread_before_launch(self):
+        self.hand_back("agentic:verify-checker", "a2", "1.1 confirmed")
+        self.stopped("agentic:verify-checker", "a2", "Handing back my report.")
+        self.launch(CHECKER, "a2")
+        self.assertEqual(self.reports()[0]["text"], "1.1 confirmed")
 
     def test_launch_alone_keeps_nothing(self):
-        self.launch(AUDITOR, "a1")
+        self.launch(VERIFIER, "a1")
         self.assertEqual(self.reports(), [])
 
 

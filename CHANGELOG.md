@@ -6,6 +6,26 @@ What changed in each version of the plugin, newest first. Versions follow
 past a major version: it says what you need to change in your documents. Until 1.0.0, any
 minor version may need such a change, and its entry says so.
 
+## [0.78.0] - 2026-11-19
+
+### Changed
+
+- The lifecycle page, `docs/lifecycle.md`, is rewritten in two parts: how it works, for reading
+  top to bottom, then the rules in full. The rules are the same; nothing you need to change.
+- The review steps that /brief, /spec, /adr, /plan, /spike, /practices, /feedback and /release
+  share are written once, in the lifecycle page's Review process section, and each skill reads
+  them there, keeping only its own reviewer and requests. Reviews run as before (ADR 0053),
+  with two points made explicit: /feedback's and /release's drafts, never saved as files, keep
+  their own `Document:` line, and each of a spike's two reviews is a full review.
+- When you tell a document skill not to ask you anything until the review passes, it writes each
+  question into Open questions with its proposed answer, even after a failed correction check, and
+  tells you how many there are.
+- The README says what /release, /deploy and /practices change in your repository, its skills
+  diagram follows the lifecycle's, and the steps for moving from an `sdlc@sdlc` install are
+  shorter.
+- Each skill's page links the lifecycle page, names the files of the agents it starts, and points
+  to the Review process section instead of repeating it.
+
 ## [0.77.1] - 2026-11-19
 
 ### Fixed

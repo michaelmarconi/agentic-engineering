@@ -1,7 +1,7 @@
 # `/brief`
 
 `/brief` is the skill for writing and changing the product brief. It is one step of
-[the lifecycle](../../README.md); read that page first for the documents, skills and agents it
+[the lifecycle](../lifecycle.md); read that page first for the documents, skills and agents it
 mentions.
 
 ## What a brief is
@@ -65,26 +65,23 @@ Run `/brief` and say what you want: a new brief, or a change to the one you have
 - **One question at a time.** When there are questions, `/brief` tells you how many
   there are and asks them one at a time, playing back what it has understood.[^superpowers] Each
   sets its proposal apart in a quote, as
-  [the lifecycle page](../lifecycle.md#documents) shows: an answer your own words point to, or,
+  [the lifecycle page](../lifecycle.md#what-every-document-shares) shows: an answer your own words point to, or,
   where nothing does, what would settle it. Only a question you defer is
   written into Open questions; if you would rather not answer now, it defers them all.
 
 ## Review
 
-Before you see the brief, `/brief` has its reviewer agent check it against a short list of
+Before you see the brief, `/brief` has its reviewer agent (`agents/brief-reviewer.md`) check it against a short list of
 pass-or-fail checks: the sections are all there, it speaks for the whole product, the goals can
 be measured, nothing is guessed or chooses how to build it. It also checks that the brief refers to no spec,
 ADR or plan, nor to any material outside the lifecycle's documents except a web page, by
 hyperlink, path or title, since those can change without the brief being touched and the
 reference would go stale. A plugin hook also refuses any such hyperlink or path. The reviewer
-sees only the brief, not your conversation, so it judges the page as a newcomer would. At
-the same time, a language checker reads it for words a newcomer could not follow, by the
-[Plain words](../lifecycle.md#plain-words) rule: a term from your field gets a footnote, and
-team shorthand is rewritten. `/brief` corrects what both find, once, and has the corrections checked (see
-[Review process](../lifecycle.md#review-process)); then you get the brief with the reports. After that, `/brief` puts each question to you with four choices, Accept its proposal, give your
-own answer, Ignore or Defer, and only deferred ones go into Open questions. Each round of answers
-is checked on only what it changed, and the whole review runs again only when you ask, after a
-change you make yourself, or in a new conversation.
+sees only the brief, not your conversation, so it judges the page as a newcomer would. Beside the reviewer, the language checker agent (`agents/language-checker.md`) reads it for
+words a newcomer could not follow, by the [Plain words](../lifecycle.md#plain-words) rule. The
+review then runs as [Review process](../lifecycle.md#review-process) says: `/brief` corrects what
+both find once, the correction checker agent (`agents/correction-checker.md`) checks the
+corrections, and you get the brief with the reports and each question to settle.
 
 The reviewer cannot tell whether the brief matches what you said or showed it, so read the draft
 before you rely on it.

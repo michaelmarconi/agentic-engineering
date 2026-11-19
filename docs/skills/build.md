@@ -1,6 +1,6 @@
 # `/build`
 
-`/build` is the skill for building one plan. It is one step of [the lifecycle](../../README.md); read
+`/build` is the skill for building one plan. It is one step of [the lifecycle](../lifecycle.md); read
 that page first for the documents, skills and agents it mentions.
 
 ## What `/build` does
@@ -179,7 +179,7 @@ seen the conversation:
   the session rather than in a fresh agent of its own, and only an agent's report reliably reaches
   the plugin's hook that hands the reports to the correction check.
 - **Security:** Claude Code's own `/security-review`, looking for security holes.
-- **Plan:** the plugin's build reviewer. It checks that each requirement the plan names is built,
+- **Plan:** the plugin's build reviewer, `agents/build-reviewer.md`. It checks that each requirement the plan names is built,
   with a test that checks each of its examples as the spec words it; that nothing unrequested was
   added; that the code follows the ADRs it must; and that no choice that should have been raised
   was made quietly. This is the review Anthropic suggests writing yourself: against your spec,
@@ -190,8 +190,9 @@ or security hole they report has been corrected. Findings about tidiness or styl
 report but do not stop the plan being marked `Built ✅`.[^specreview]
 
 `/build` corrects what the reviews find, once, and has the corrections checked, the same way
-documents are reviewed (see [Review process](../lifecycle.md#review-process)). It then runs your
-tests and linters again.
+documents are reviewed (see [Review process](../lifecycle.md#review-process)), but with its own
+correction checker, `agents/build-correction-checker.md`, and no language checker, since it writes
+code. It then runs your tests and linters again.
 
 ## Handing over
 

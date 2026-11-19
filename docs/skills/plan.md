@@ -1,7 +1,7 @@
 # `/plan`
 
 `/plan` is the skill for planning a piece of work before it is built. It is one step of
-[the lifecycle](../../README.md); read that page first for the documents, skills and agents it
+[the lifecycle](../lifecycle.md); read that page first for the documents, skills and agents it
 mentions.
 
 ## What a plan is
@@ -203,7 +203,7 @@ flowchart LR
 
 ## Review
 
-Before you see a plan, `/plan` has its reviewer agent check it against a short list of pass-or-fail
+Before you see a plan, `/plan` has its reviewer agent (`agents/plan-reviewer.md`) check it against a short list of pass-or-fail
 checks: the fixed sections are there; every named requirement exists in its spec; the specs and
 ADRs are settled; no other plan that is not `Built ✅` names the same requirement; a plan that
 is `Ready to build 🟢` has no open questions; only specs and ADRs are referred to; the Plan section holds
@@ -211,14 +211,11 @@ no code, and any diagram in it draws only what the text says; no decision is mad
 keeps to any size or way of splitting work your practices record, or says why not. The
 reviewer may suggest how to improve the Plan section itself, but those suggestions never hold a
 plan back. The reviewer sees only the plan, the documents it names and your practices, not your conversation, so it
-judges the page as a newcomer would. At the same time, a language checker reads it for words a
-newcomer could not follow, by the [Plain words](../lifecycle.md#plain-words) rule. `/plan`
-corrects what both find, once, and has the
-corrections checked (see [Review process](../lifecycle.md#review-process)); then you get the plan
-with the reports. After that, `/plan` puts each question to you with four choices, Accept its proposal, give your
-own answer, Ignore or Defer, and only deferred ones go into Open questions. Each round of answers
-is checked on only what it changed, and the whole review runs again only when you ask, after a
-change you make yourself, or in a new conversation.
+judges the page as a newcomer would. Beside the reviewer, the language checker agent (`agents/language-checker.md`) reads it for
+words a newcomer could not follow, by the [Plain words](../lifecycle.md#plain-words) rule. The
+review then runs as [Review process](../lifecycle.md#review-process) says: `/plan` corrects what
+both find once, the correction checker agent (`agents/correction-checker.md`) checks the
+corrections, and you get the plan with the reports and each question to settle.
 
 ## Why not Claude Code's plan mode?
 

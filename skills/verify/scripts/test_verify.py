@@ -12,7 +12,7 @@ from unittest import mock
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import verify  # noqa: E402
-import verify_relay  # noqa: E402  (verify.py puts the plugin's scripts/ on the path)
+import agent_relay  # noqa: E402  (verify.py puts the plugin's scripts/ on the path)
 
 ENV = dict(os.environ, GIT_AUTHOR_NAME="Test", GIT_AUTHOR_EMAIL="test@example.com",
            GIT_COMMITTER_NAME="Test", GIT_COMMITTER_EMAIL="test@example.com",
@@ -205,19 +205,19 @@ class Start(Repo):
         self.assertIn("git", err)
 
     def test_clears_an_earlier_runs_reports(self):
-        path = verify_relay.record_path(self.data, "s1")
+        path = agent_relay.record_path(self.data, "s1", "verify")
         os.makedirs(os.path.dirname(path))
         with open(path, "w", encoding="utf-8") as f:
             json.dump({"reports": {"verifier|x|": {"agent": "verifier", "document": "x", "kind": "", "text": "old"}}}, f)
         self.start("docs/specs/mail-pull.spec.md")
-        self.assertEqual(verify_relay.reports(self.data, "s1"), [])
+        self.assertEqual(agent_relay.reports(self.data, "s1", "verify"), [])
 
 
 class Report(Repo):
     def keep(self, agent, document, text):
-        path = verify_relay.record_path(self.data, "s1")
+        path = agent_relay.record_path(self.data, "s1", "verify")
         os.makedirs(os.path.dirname(path), exist_ok=True)
-        record = verify_relay.load(path)
+        record = agent_relay.load(path)
         record["reports"][f"{agent}|{document}|"] = {"agent": agent, "document": document, "kind": "", "text": text}
         with open(path, "w", encoding="utf-8") as f:
             json.dump(record, f)
@@ -310,7 +310,7 @@ class Report(Repo):
         self.start("docs/specs/mail-pull.spec.md")
         self.keep("verifier", "docs/specs/mail-pull.spec.md", "x")
         self.report("## Overall result\n\nAll passed.\n")
-        self.assertEqual(verify_relay.reports(self.data, "s1"), [])
+        self.assertEqual(agent_relay.reports(self.data, "s1", "verify"), [])
 
 
 class Help(unittest.TestCase):

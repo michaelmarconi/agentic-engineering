@@ -10,21 +10,17 @@ For each skills/<folder>/SKILL.md under the given plugin root (default: this plu
 - `description` is 1-1,024 characters with no angle brackets;
 - the body after the frontmatter is under 500 lines and about 5,000 tokens at most, estimated
   as one token per four characters;
-- a skill that runs the review sequence on a document, which it shows by naming the shared
-  `agentic:correction-checker` agent, holds REVIEW_RULE word for word (line breaks may differ), so
-  every such skill reviews at the same points, as the lifecycle page's Review process says.
-  /build, whose checker is `agentic:build-correction-checker`, reviews code and is not held to it.
-  A document skill (DOCUMENT_SKILLS) holds each of ANSWER_RULES instead, and not REVIEW_RULE, so
-  after one full review it checks only what the person's answers changed (docs/adrs/0049).
-- such a skill that names a document by its path, as `Document: <...>`, holds PATH_RULE word for
-  word, so every review is given the full path the review relay hook finds the repository from
-  (docs/adrs/0046). A draft never saved as a file, `Document: feedback draft` or `Document: release notes`, is not
-  held to it.
-- such a skill also holds SHOW_RULE word for word, so every document is shown to the person the
-  same way, in the app's file viewer where there is one and by its path always (docs/adrs/0025).
-
-- such a skill also holds each of CORRECT_RULES word for word, the sentences of the review
-  sequence every skill shares, so the copies cannot drift apart.
+- the review sequence is written once, in the Review process section of docs/lifecycle.md
+  (docs/adrs/0053), which holds CORRECT_RULES and PATH_RULE in its steps, ANSWER_RULES under its
+  "Ending with your answers" heading and REVIEW_RULE under its "Ending on a failed check" heading,
+  each word for word (line breaks may differ), so every skill reviews the same way.
+- each skill that runs that sequence (REVIEWING_SKILLS) holds the pointer sentence to it, naming
+  the answers ending for a document skill (DOCUMENT_SKILLS) and the failed-check ending for the
+  others, and none holds any of the moved sentences (MOVED_RULES), so no copy can drift.
+  /build, whose checker is `agentic:build-correction-checker`, reviews code and is not one of them.
+- such a skill that names a document file, as `Document: <...>`, also holds SHOW_RULE word for
+  word, so every document is shown to the person the same way, in the app's file viewer where
+  there is one and by its path always (docs/adrs/0025).
 
 - the skills that write a lifecycle document (DOCUMENT_SKILLS) hold TYPE_RULE word for word, so
   none puts the document's type in its title, and PROPOSED_RULE, so no open question is ever left
@@ -76,7 +72,6 @@ ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
 NAME = re.compile(r"[a-z0-9]+(-[a-z0-9]+)*")
 RESERVED = ("anthropic", "claude")
 MAX_NAME, MAX_DESCRIPTION, MAX_LINES, MAX_TOKENS = 64, 1024, 500, 5000
-REVIEWS = "agentic:correction-checker"
 REVIEW_RULE = (
     "While you are walking through questions with the person, do not review after each "
     "answer: run the sequence once when the walk-through ends, either because no questions "
@@ -113,6 +108,29 @@ ANSWER_RULES = (
 
 # The skills that write a lifecycle document, which names its kind in its frontmatter's `type:`.
 DOCUMENT_SKILLS = ("brief", "spec", "adr", "plan", "spike")
+# The skills that run the review sequence on a document. Its shared steps are written once, in the
+# Review process section of the lifecycle page, and each skill holds one sentence pointing there,
+# naming the ending it follows (docs/adrs/0053). /build reviews code by its own sequence.
+REVIEWING_SKILLS = DOCUMENT_SKILLS + ("practices", "feedback", "release")
+LIFECYCLE = os.path.join("docs", "lifecycle.md")
+REVIEW_HEADING = "## Review process"
+ANSWERS_ENDING = "Ending with your answers"
+FAILED_ENDING = "Ending on a failed check"
+POINTER_RULE = (
+    "At the review step, read the Review process section of "
+    "`${{CLAUDE_PLUGIN_ROOT}}/docs/lifecycle.md` and follow its steps, then its \"{ending}\" part, "
+    "with the reviewer and requests below."
+)
+
+
+def ending(folder):
+    """The heading of the ending a reviewing skill follows: document skills take answers."""
+    return ANSWERS_ENDING if folder in DOCUMENT_SKILLS else FAILED_ENDING
+
+
+def pointer(folder):
+    """The sentence a reviewing skill holds, word for word, to send itself to the page."""
+    return POINTER_RULE.format(ending=ending(folder))
 TYPE_RULE = (
     "The title never names the document's type, as \"Spec:\" or \"ADR:\" in front of it would: "
     "the frontmatter's `type:` already says what it is."
@@ -320,6 +338,46 @@ def holds(text, rule):
     return rule in " ".join(text.split())
 
 
+# The sentences that moved from the skills to the lifecycle page, which no skill may hold again.
+MOVED_RULES = ANSWER_RULES + CORRECT_RULES + (REVIEW_RULE, PATH_RULE)
+
+
+def lifecycle_problems(text):
+    """What the lifecycle page's Review process section lacks of the shared review sequence."""
+    if f"\n{REVIEW_HEADING}\n" not in f"\n{text}":
+        return [f'no "{REVIEW_HEADING}" heading']
+    review = f"\n{text}"
+    review = review[review.index(f"\n{REVIEW_HEADING}\n") + 1:]
+    if "\n## " in review:
+        review = review[:review.index("\n## ")]
+    parts = {}
+    found = []
+    for heading in (ANSWERS_ENDING, FAILED_ENDING):
+        marker = f"\n### {heading}\n"
+        if marker not in review:
+            found.append(f'no "### {heading}" heading in {REVIEW_HEADING}')
+            continue
+        rest = review[review.index(marker) + len(marker):]
+        parts[heading] = rest[:rest.index("\n### ")] if "\n### " in rest else rest
+    steps = review[:min((review.index(f"\n### {h}\n") for h in parts), default=len(review))]
+    for number, rule in enumerate(CORRECT_RULES, 1):
+        if not holds(steps, rule):
+            found.append(f"review step rule {number} missing: the steps of {REVIEW_HEADING} must hold "
+                         f"skill_check.CORRECT_RULES[{number - 1}] word for word")
+    if not holds(steps, PATH_RULE):
+        found.append(f"path rule missing: the steps of {REVIEW_HEADING} must hold "
+                     "skill_check.PATH_RULE word for word")
+    if ANSWERS_ENDING in parts:
+        for number, rule in enumerate(ANSWER_RULES, 1):
+            if not holds(parts[ANSWERS_ENDING], rule):
+                found.append(f'answer rule {number} missing: "{ANSWERS_ENDING}" must hold '
+                             f"skill_check.ANSWER_RULES[{number - 1}] word for word")
+    if FAILED_ENDING in parts and not holds(parts[FAILED_ENDING], REVIEW_RULE):
+        found.append(f'review rule missing: "{FAILED_ENDING}" must hold skill_check.REVIEW_RULE '
+                     "word for word")
+    return found
+
+
 def frontmatter(text):
     """Return (fields, body), or None if the text does not open with a frontmatter block."""
     match = re.match(r"---\n(.*?)\n---\n?(.*)", text, re.S)
@@ -368,22 +426,13 @@ def problems(folder, text):
     tokens = len(body) // 4
     if tokens > MAX_TOKENS:
         found.append(f"body is about {tokens:,} tokens, over about 5,000 tokens")
-    if REVIEWS in body and folder in DOCUMENT_SKILLS:
-        for number, rule in enumerate(ANSWER_RULES, 1):
-            if not holds(body, rule):
-                found.append(f"answer rule {number} missing: a document skill that runs the review "
-                             f"sequence must hold skill_check.ANSWER_RULES[{number - 1}] word for word")
-        if holds(body, REVIEW_RULE):
-            found.append("old review rule: a document skill takes answers by ANSWER_RULES, so it "
-                         "must not hold skill_check.REVIEW_RULE")
-    elif REVIEWS in body and not holds(body, REVIEW_RULE):
-        found.append("review rule missing: a skill that runs the review sequence must hold "
-                     "skill_check.REVIEW_RULE word for word")
-    if REVIEWS in body:
-        for number, rule in enumerate(CORRECT_RULES, 1):
-            if not holds(body, rule):
-                found.append(f"review step rule {number} missing: a skill that runs the review "
-                             f"sequence must hold skill_check.CORRECT_RULES[{number - 1}] word for word")
+    if folder in REVIEWING_SKILLS and not holds(body, pointer(folder)):
+        found.append("review pointer missing: a skill that runs the review sequence must hold "
+                     f"skill_check.pointer(\"{folder}\") word for word, naming \"{ending(folder)}\"")
+    for rule in MOVED_RULES:
+        if holds(body, rule):
+            found.append("moved review sentence: the lifecycle page's Review process holds "
+                         f"\"{rule[:50]}...\"; point to it instead of copying it")
     if folder in DOCUMENT_SKILLS and not holds(body, TYPE_RULE):
         found.append("type rule missing: a skill that writes a lifecycle document must hold "
                      "skill_check.TYPE_RULE word for word")
@@ -426,10 +475,10 @@ def problems(folder, text):
                 found.append(f"diagram rule {number} missing: a skill that offers diagrams must hold "
                              f"skill_check.DIAGRAM_RULES[{number - 1}] word for word, naming its "
                              f"document \"{DIAGRAM_SKILLS[folder]}\"")
-    reviews_a_file = REVIEWS in body and "Document: <" in body
-    if reviews_a_file and not holds(body, PATH_RULE):
-        found.append("path rule missing: a skill that reviews a document by its path must hold "
-                     "skill_check.PATH_RULE word for word")
+    if "agentic:correction-checker" in body and folder not in REVIEWING_SKILLS:
+        found.append("starts agentic:correction-checker but is not in REVIEWING_SKILLS: add it there, "
+                     "so it must point to the lifecycle page's Review process")
+    reviews_a_file = folder in REVIEWING_SKILLS and "Document: <" in body
     if reviews_a_file and not holds(body, SHOW_RULE):
         found.append("show rule missing: a skill that writes a document must hold "
                      "skill_check.SHOW_RULE word for word, to show it the same way (ADR 0025)")
@@ -480,20 +529,33 @@ def main(argv=None):
     args = parser.parse_args(argv)
     skills = os.path.join(args.root, "skills")
     failed = False
+    pointing = set()
     for folder in sorted(os.listdir(skills)) if os.path.isdir(skills) else []:
         path = os.path.join(skills, folder, "SKILL.md")
         if not os.path.isfile(path):
             continue
         with open(path, encoding="utf-8") as f:
-            for problem in problems(folder, f.read()):
-                print(f"{folder}/SKILL.md: {problem}")
-                failed = True
+            text = f.read()
+        if folder in REVIEWING_SKILLS and holds(text, pointer(folder)):
+            pointing.add(folder)
+        for problem in problems(folder, text):
+            print(f"{folder}/SKILL.md: {problem}")
+            failed = True
         rubric = os.path.join(skills, folder, "references", "rubric.md")
         if os.path.isfile(rubric):
             with open(rubric, encoding="utf-8") as f:
                 for problem in rubric_problems(f.read()):
                     print(f"{folder}/references/rubric.md: {problem}")
                     failed = True
+    lifecycle = os.path.join(args.root, LIFECYCLE)
+    if pointing and not os.path.isfile(lifecycle):
+        print(f"docs/lifecycle.md missing, yet {', '.join(sorted(pointing))} point to its Review process")
+        failed = True
+    if os.path.isfile(lifecycle):
+        with open(lifecycle, encoding="utf-8") as f:
+            for problem in lifecycle_problems(f.read()):
+                print(f"docs/lifecycle.md: {problem}")
+                failed = True
     agents = os.path.join(args.root, "agents")
     for name in sorted(os.listdir(agents)) if os.path.isdir(agents) else []:
         if not name.endswith(".md"):

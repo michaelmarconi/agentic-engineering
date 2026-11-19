@@ -1,21 +1,21 @@
 #!/usr/bin/env python3
-"""Keep the reports of /audit's agents, so `audit.py report` can put them in the audit's report
-file word for word (ADR 0034).
+"""Keep the reports of /audit's and /verify's agents, so `audit.py report` and `verify.py report`
+can put them in the run's report file word for word (ADR 0034).
 
 Claude Code runs it on PostToolUse for the Agent tool and a subagent's SubagentHandback tool, and
-on SubagentStop. It keeps the report of each `audit-picker`, `auditor`, `brief-checker` and
-`audit-checker` agent, keyed by the agent's type, the document on its request's `Document:` line
-(none for the picker) and, for a checker, which report it was given to check (`AUDIT REPORT` or
-`BRIEF REPORT`), since one document can have both. An agent run again under the same key replaces
-its earlier report. In a Claude project thread the report is the one the agent handed back. An
-agent that runs in the background is kept from the event that says it finished, joined to its
-launch by its id, as build_relay.py does (see subagent_report.py). A report that arrives before
-its launch is held until the launch is seen; once an agent has handed its report back, a later
-stop is left alone.
+on SubagentStop. RUNS names each skill's agents. It keeps the report of each, keyed by the agent's
+type, the document on its request's `Document:` line (none for the audit picker) and, for the
+audit checker, which report it was given to check (`AUDIT REPORT` or `BRIEF REPORT`), since one
+document can have both. An agent run again under the same key replaces its earlier report. In a
+Claude project thread the report is the one the agent handed back. An agent that runs in the
+background is kept from the event that says it finished, joined to its launch by its id, as
+build_relay.py does (see subagent_report.py). A report that arrives before its launch is held
+until the launch is seen; once an agent has handed its report back, a later stop is left alone.
 
-Records live in audits/<session>.json in the plugin's folder (plugin_folder.py: `agentic/` in the session's scratchpad), and are deleted once unchanged for 30
-days (see saved_records.py), or when `audit.py start` or `audit.py report` clears them. With no
-usable folder nothing is kept. It changes no request, refuses nothing and prints nothing.
+Records live in audits/<session>.json or verifies/<session>.json in the plugin's folder
+(plugin_folder.py: `agentic/` in the session's scratchpad), and are deleted once unchanged for 30
+days (see saved_records.py), or when the skill's script clears them at `start` or `report`. With
+no usable folder nothing is kept. It changes no request, refuses nothing and prints nothing.
 """
 
 import argparse
@@ -35,21 +35,26 @@ import subagent_report
 import plugin_folder
 from build_relay import text_of
 
-AGENTS = ("audit-picker", "auditor", "brief-checker", "audit-checker")
-KINDS = ("AUDIT REPORT", "BRIEF REPORT")
-HELD = 50  # an audit starts one auditor and one checker per document
+# For each skill: its agents, the reports its checker can be given, the record folder, and how many
+# early reports to hold. An audit starts one auditor and one checker per document; a verify run
+# one verifier and one checker per spec.
+RUNS = {
+    "audit": {"agents": ("audit-picker", "auditor", "brief-checker", "audit-checker"),
+              "kinds": {"audit-checker": ("AUDIT REPORT", "BRIEF REPORT")}, "folder": "audits", "held": 50},
+    "verify": {"agents": ("verifier", "verify-checker"), "kinds": {}, "folder": "verifies", "held": 20},
+}
 
 
-def record_path(data, session):
+def record_path(data, session, run):
     if not data:
         return None
     safe = re.sub(r"[^A-Za-z0-9_-]", "_", str(session))
-    return os.path.join(data, "audits", safe + ".json")
+    return os.path.join(data, RUNS[run]["folder"], safe + ".json")
 
 
 @contextlib.contextmanager
 def locked(path):
-    """Hold the record's lock: an audit's agents finish side by side.
+    """Hold the record's lock: a run's agents finish side by side.
 
     Untested, since only a race could show it and no test relies on timing (AGENTS.md rule 5)."""
     if not fcntl:
@@ -82,33 +87,35 @@ def save(path, record):
     saved_records.prune(os.path.dirname(path))
 
 
-def reports(data, session):
-    """The session's kept reports, in the order they were first kept: [{agent, document, kind, text}]."""
-    path = record_path(data, session)
+def reports(data, session, run):
+    """The session's kept reports of one skill's agents, in the order they were first kept:
+    [{agent, document, kind, text}]."""
+    path = record_path(data, session, run)
     return list(load(path)["reports"].values()) if path else []
 
 
-def clear(data, session):
-    path = record_path(data, session)
+def clear(data, session, run):
+    path = record_path(data, session, run)
     if path and os.path.exists(path):
         os.remove(path)
 
 
-def agent_type(value):
+def run_of(value):
+    """(skill, agent) for one of RUNS' agents, such as "agentic:auditor", or (None, None)."""
     name = str(value or "").split(":")[-1]
-    return name if name in AGENTS else None
+    return next(((run, name) for run, spec in RUNS.items() if name in spec["agents"]), (None, None))
 
 
 def identity(tool_input):
-    """{agent, document, kind} for an audit agent's request, or None for any other agent."""
-    agent = agent_type(tool_input.get("subagent_type"))
+    """(skill, {agent, document, kind}) for one of RUNS' agents' requests, or (None, None)."""
+    run, agent = run_of(tool_input.get("subagent_type"))
     if not agent:
-        return None
+        return None, None
     prompt = tool_input.get("prompt") if isinstance(tool_input.get("prompt"), str) else ""
     first = prompt.strip().splitlines()[0] if prompt.strip() else ""
     document = first[len("Document:"):].strip() if first.startswith("Document:") else ""
-    kind = next((k for k in KINDS if f"=== {k} ===" in prompt), "") if agent == "audit-checker" else ""
-    return {"agent": agent, "document": document, "kind": kind}
+    kind = next((k for k in RUNS[run]["kinds"].get(agent, ()) if f"=== {k} ===" in prompt), "")
+    return run, {"agent": agent, "document": document, "kind": kind}
 
 
 def keep(record, who, text):
@@ -118,7 +125,7 @@ def keep(record, who, text):
         record["reports"][key] = dict(who, text=text)
 
 
-def finished(record, event):
+def finished(record, event, run):
     agent_id = event.get("agent_id")
     if not isinstance(agent_id, str) or not agent_id:
         return False
@@ -130,16 +137,13 @@ def finished(record, event):
     if isinstance(who, dict):
         keep(record, who, text)
     else:
-        subagent_report.hold(record["stopped"], agent_id, text, limit=HELD)
+        subagent_report.hold(record["stopped"], agent_id, text, limit=RUNS[run]["held"])
     if handed:
         record["final"][agent_id] = True
     return True
 
 
-def returned(record, tool_input, response):
-    who = identity(tool_input)
-    if not who:
-        return False
+def returned(record, who, response):
     launched = subagent_report.launched_id(response)
     if launched is None:
         record["stopped"].pop(str(subagent_report.agent_id(response)), None)
@@ -152,24 +156,28 @@ def returned(record, tool_input, response):
 
 
 def handle(event):
-    path = record_path(plugin_folder.current(), event.get("session_id") or "unknown")
-    if not path:
-        return
+    session = event.get("session_id") or "unknown"
     if subagent_report.finished(event):
-        if not agent_type(event.get("agent_type")):
+        run, _ = run_of(event.get("agent_type"))
+        path = run and record_path(plugin_folder.current(), session, run)
+        if not path:
             return
         with locked(path):
             record = load(path)
-            if finished(record, event):
+            if finished(record, event, run):
                 save(path, record)
         return
     tool_input = event.get("tool_input")
     if (event.get("hook_event_name") != "PostToolUse" or event.get("tool_name") not in ("Agent", "Task")
-            or not isinstance(tool_input, dict) or not identity(tool_input)):
+            or not isinstance(tool_input, dict)):
+        return
+    run, who = identity(tool_input)
+    path = run and record_path(plugin_folder.current(), session, run)
+    if not path:
         return
     with locked(path):
         record = load(path)
-        if returned(record, tool_input, event.get("tool_response")):
+        if returned(record, who, event.get("tool_response")):
             save(path, record)
 
 

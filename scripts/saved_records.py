@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Delete records the plugin's hooks saved for sessions that have long gone quiet.
 
-The review relay, the build relay and the build session hook keep a record per session in
+The review, build and agent relays and the build session hook keep a record per session in
 the plugin's folder (plugin_folder.py: `agentic/` in the session's scratchpad). A session that ends can come back: `claude --resume`, or a cloud container
 restarting, continues the same conversation under the same session id, so a record is not deleted
 when the session ends (issue #37). Instead, each hook calls `prune` on its own folder whenever it

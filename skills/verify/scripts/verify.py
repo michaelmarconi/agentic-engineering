@@ -8,7 +8,7 @@ has reported. Neither changes anything in the repository.
 start [<spec path> ...] [--scratchpad <folder>] --session <id> [--project <folder>]
     Refuses while anything is uncommitted, with the same check /build makes (scripts/uncommitted.py),
     since the report must name the version of the product it checked. Otherwise notes the commit
-    checked out, clears what the verify hook (scripts/verify_relay.py) kept of an earlier run in this
+    checked out, clears what the verify hook (scripts/agent_relay.py) kept of an earlier run in this
     session, and lists each spec named, or every spec under docs/specs/
     when none is: its path, its status as the status hook reads it (scripts/status_check.py),
     whether it is `Accepted 👍`, whether it still heads its requirements `### Requirement: <name>`, as
@@ -46,7 +46,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."
 import plugin_folder  # noqa: E402
 import run_report  # noqa: E402
 import uncommitted  # noqa: E402
-import verify_relay  # noqa: E402
+import agent_relay  # noqa: E402
 from status_check import (ACCEPTED, REQUIREMENT_HEADING, SPEC_STATUSES, headings_allowed,  # noqa: E402
                           lifecycle_status, old_layout, section)
 
@@ -145,7 +145,7 @@ def start(project, specs, data, session):
                       "product it checked; commit or stash them, then run again:\n" + "\n".join(entries))
     paths = [relative(root, p) for p in specs] if specs else all_specs(root)
     listed = [describe(root, p) for p in paths]
-    verify_relay.clear(data, session)
+    agent_relay.clear(data, session, "verify")
     return {"root": root, "commit": commit, "specs": listed}
 
 
@@ -200,11 +200,11 @@ def report(project, scope, commit, data, session, own_text, now):
     try:
         own = run_report.parse("verify", own_text)
         _, lines = run_report.write("verify", scope, root, data, own,
-                                    copied(root, commit, verify_relay.reports(data, session)),
+                                    copied(root, commit, agent_relay.reports(data, session, "verify")),
                                     date=now.date().isoformat())
     except run_report.ReportError as error:
         raise Refused(str(error))
-    verify_relay.clear(data, session)
+    agent_relay.clear(data, session, "verify")
     return lines
 
 
