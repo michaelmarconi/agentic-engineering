@@ -32,8 +32,7 @@ flowchart LR
 ```
 
 Each step uses what the one before it wrote, though not every piece of work needs every step: a
-spike runs only when there is an unknown to settle, and an audit can run at any time. Each phase has
-a more detailed diagram under [Skills](#skills).
+spike runs only when there is an unknown to settle, and an audit can run at any time.
 
 This is the order within one small piece of work, not a plan for the whole project. You go round it
 many times, each round deciding only what the next change needs, then building and checking it.
@@ -101,7 +100,8 @@ stateDiagram-v2
 
 File: `docs/plans/YYYY-MM-DD-<subject>.md`, in one flat folder.
 
-One piece of work that builds part of a spec or an ADR. Any change before it is built returns it to `Draft 📝`, and only `/build` marks it
+One piece of work that builds part of a spec or an ADR. Any change before it is built returns it to
+`Draft 📝`, and only `/build` marks it
 `Built ✅`. It is temporary: once built it is never changed again, and it may be deleted whenever
 nobody needs it.
 
@@ -120,7 +120,8 @@ stateDiagram-v2
 
 File: `docs/spikes/YYYY-MM-DD-<subject>.md`, in one flat folder.
 
-One hypothesis tested by a throwaway experiment, with its code, every run's output and the finding. Once `Ready to run 🟢`, its design
+One hypothesis tested by a throwaway experiment, with its code, every run's output and the finding.
+Once `Ready to run 🟢`, its design
 is fixed and only the run script adds runs. It is temporary: once finished it is never changed
 again, and it may be deleted whenever nobody needs it.
 
@@ -181,71 +182,68 @@ its top; its specs may be grouped into folders, such as one per app, which carry
 
 ## Skills
 
-The plugin has twelve skills. Most belong to one of three phases; the rest you run whenever you
-need them.
+The plugin has twelve skills, listed in the order of the overview above. Each
+heading links to the skill's own page.
 
-**Deciding what to build**
+### [/brief](skills/brief.md)
 
-```mermaid
-flowchart LR
-    Brief --> Spec
-    Spec -->|unknowns| Spike
-    ADR -->|untested assumptions| Spike
-    Spike -->|facts| Spec
-    Spike -->|choices| ADR
-    Spec -->|decisions| ADR
-```
+Writes or changes the brief.
 
-- [`/brief`](skills/brief.md) writes or changes the brief.
-- [`/spec`](skills/spec.md) writes or changes the spec for one capability.
-- [`/spike`](skills/spike.md) settles an unknown by a throwaway experiment, when one is needed. You
-  take its finding to `/spec` (a fact) or `/adr` (a choice); `/spike` edits neither.
-- [`/adr`](skills/adr.md) records one technical decision.
+### [/spec](skills/spec.md)
 
-**Building it**
+Writes or changes the spec for one capability.
 
-```mermaid
-flowchart LR
-    Spec --> Plan
-    ADR --> Plan
-    Plan --> Build --> Verify
-```
+### [/spike](skills/spike.md)
 
-- [`/plan`](skills/plan.md) scopes a piece of work against the specs and ADRs it delivers.
-- [`/build`](skills/build.md) builds a plan on a branch of its own, tests first, has it reviewed
-  and pushes the branch to your remote. It never starts the product, so it can run on any machine,
-  and never opens a pull request or merges.
-- [`/verify`](skills/verify.md) checks the running product against accepted specs from the
-  outside, usually before you merge. It changes nothing: you decide what follows.
+Settles an unknown by a throwaway experiment, when one is needed. You take its finding to `/spec` (a
+fact) or `/adr` (a choice); `/spike` edits neither.
 
-**Shipping it**
+### [/adr](skills/adr.md)
 
-- [`/release`](skills/release.md) makes a numbered release with notes for the product's users,
-  by the steps your releasing practice records. It publishes only where the practice records a
-  publish command, and only on your yes, and it never merges.
-- [`/deploy`](skills/deploy.md) puts one release into one environment by the steps your deploying
-  practice records, deploys only on your yes, and rolls back at once if its check fails. It writes
-  nothing to the repository.
+Records one technical decision.
 
-**Any time**
+### [/plan](skills/plan.md)
 
-```mermaid
-flowchart LR
-    Audit -.->|drift| Spec
-    Audit -.->|drift| ADR
-    Audit -.->|contradiction| Brief
-    Practices -.->|followed by| Plan
-    Practices -.->|followed by| Build
-```
+Scopes a piece of work against the specs and ADRs it delivers.
 
-- [`/audit`](skills/audit.md) finds drift, where the code and its documents disagree, and any
-  spec or ADR that contradicts the brief. It changes nothing: you choose each correction.
-- [`/practices`](skills/practices.md) records how the project does things, such as the commands
-  that check the work, for agents to follow. Practices are not a lifecycle document and have no
-  status: their essentials live in `AGENTS.md`, which Claude Code loads, and longer topics in
-  `docs/practices/`. Every skill sees them, and `/plan` and `/build` follow them.
-- [`/feedback`](skills/feedback.md) drafts a GitHub issue about the plugin itself, when one of its
-  skills gets something wrong or could work better. It writes nothing in your repository.
+### [/build](skills/build.md)
+
+Builds a plan on a branch of its own, tests first, has it reviewed and pushes the branch to your
+remote. It never starts the product, so it can run on any machine, and never opens a pull request or
+merges.
+
+### [/verify](skills/verify.md)
+
+Checks the running product against accepted specs from the outside, usually before you merge. It
+changes nothing: you decide what follows.
+
+### [/release](skills/release.md)
+
+Makes a numbered release with notes for the product's users, by the steps your releasing practice
+records. It publishes only where the practice records a publish command, and only on your yes, and
+it never merges.
+
+### [/deploy](skills/deploy.md)
+
+Puts one release into one environment by the steps your deploying practice records, deploys only on
+your yes, and rolls back at once if its check fails. It writes nothing to the repository.
+
+### [/audit](skills/audit.md)
+
+Finds drift, where the code and its documents disagree, and any spec or ADR that contradicts the
+brief. It changes nothing: you choose each correction.
+
+### [/practices](skills/practices.md)
+
+Records how the project does things, such as the commands that check the work, for agents to follow.
+Practices are not a lifecycle document and have no status: their essentials live in `AGENTS.md`,
+which Claude Code loads, and longer topics in `docs/practices/`. Every skill sees them, and `/plan`
+and `/build` follow them.
+
+### [/feedback](skills/feedback.md)
+
+Drafts a GitHub issue about the plugin itself, when one of its skills gets something wrong or could
+work better. It writes nothing in your repository.
 
 ## Principles
 
