@@ -409,33 +409,17 @@ The sequence is fixed so it always ends with a clear result: further rounds of r
 more, and each round of corrections brings new mistakes.
 
 ```mermaid
-sequenceDiagram
-    participant S as Skill
-    participant H as Plugin hook
-    participant R as Reviewer
-    participant L as Language checker
-    participant C as Correction checker
-    actor P as You
-    par side by side
-        S->>R: request, opening Document: path
-    and
-        S->>L: the same Document: line
-    end
-    Note over H: keeps a copy of the document as reviewed
-    R-->>S: review report
-    L-->>S: wording report
-    S->>S: correct once, only what the reports list
-    S->>C: request
-    Note over H,C: attaches both reports and the copy as reviewed
-    C-->>S: check report
-    alt check fails, in /practices, /feedback and /release
-        S->>P: the check's report, then stop
-    else
-        S->>P: hand-over, then each question, one at a time
-        P-->>S: accept, own answer, ignore or defer
-        S->>C: after a round that wrote anything in
-        Note over H,C: attaches the text as last checked and your answers
-    end
+stateDiagram-v2
+    direction LR
+    state "1. Review" as Review
+    state "2. Correct, once" as Correct
+    state "3. Check the corrections" as Check
+    state "Hand-over and ending" as Ending
+    [*] --> Review
+    Review --> Correct
+    Correct --> Check
+    Check --> Ending
+    Review --> Ending : nothing to correct
 ```
 
 1. **Review.** At the review step, start two agents in the foreground, not in the background,
