@@ -39,7 +39,7 @@ earlier version of the agentic plugin: no plan can be signed off on it until it 
 - If the work builds no requirement and follows no ADR, such as tidying code, a routine upgrade or
   a quick fix, it needs no plan. Say so, suggest doing it from the conversation, and stop.
 - If a spec it builds or an ADR it follows is not `Accepted 👍`, stop and say which one, and
-  what is left to settle in it. A plan builds only on settled documents, and you never change a spec or an ADR from here.
+  what is left to settle in it. A plan builds only on settled documents, and you never change a spec or an ADR.
 - Read the frontmatter and Specs section of each plan in `docs/plans/`. If one that is not
   `Built ✅` already names a requirement this work builds, say so and offer to change that plan
   instead; no two unbuilt plans may name the same requirement.
@@ -117,7 +117,7 @@ The plan's sections:
 - **Decisions** holds one line for each decision whose reason nobody needs once the work is
   built, or only someone changing that code later: what was decided and why, and for the second
   kind, that `/build` leaves the reason as a comment beside the code.
-- **Open questions** holds what the person defers and the changes below. Write each open question as a
+- **Open questions** holds what the person defers and the changes below, not questions. Write each open question as a
   heading, `### 1. <what is to be settled>`, numbered in order, then the context it needs, then a
   block quote holding a line starting `> **Proposed:**` with the answer you would choose, then a
   line holding only `>`, then a line starting `> **Why:**` with the reason, so the person can find
@@ -129,8 +129,7 @@ The plan's sections:
   and accept, proposing its decision. You never write the ADR yourself. Once the person tells you it
   is `Accepted 👍`, list it under ADRs and remove the question. A decision that belongs in a spec or
   in practices goes under **Open questions** the same way, as a change to make with `/spec` or a
-  practice to record with `/practices`, proposing its wording. Name a practice by its topic, such as
-  testing, never by its file, since a plan names no file under `docs/` but specs and ADRs (rubric check 8); a spec change is for a spec the plan lists. Remove the question once the person tells
+  practice to record with `/practices`, proposing its wording. Name a practice by its topic, such as testing, not by its file, since a plan names no file under `docs/` but specs and ADRs (rubric check 8); a spec change is for a spec the plan lists. Remove the question once the person tells
   you the practice is recorded, or that the spec is `Accepted 👍` again after its change.
 - **Plan** says how the work will be done, with headings and length to suit it: start with why the
   work is being done and what it leaves for later, give one recommended approach, and name the

@@ -51,8 +51,8 @@ listed only where you need them to judge a changed sentence, and nothing else.
 1. **Was each correction made?** Every failure in the review report's table, every item under
    its Other findings and every finding in the wording report must now pass, unless only the
    person can settle it, such as a choice they have not made or a fact only they know. Such a
-   finding, like each decision under Needs a person, counts as made when the text it is about is left unchanged for the person, who is asked about it;
-   it is written into Open questions only once they defer it. So
+   finding, like each decision under Needs a person, counts as made when the text it is about is left unchanged for the person, or only marked not known
+   yet, or when it is written into Open questions because they deferred it. So
    does a finding about text the document's rules no longer let anyone change, such as a spike
    record's design once it has run, when that text is left unchanged.
 2. **Did any change break something?** Compare the two versions. Check every sentence that

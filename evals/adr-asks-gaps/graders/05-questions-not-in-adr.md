@@ -1,7 +1,7 @@
 ---
 type: regex
 target: { source: file, path: docs/adrs/0001-session-data-storage.md }
-pattern: "^## Open questions\\s*\\n\\s*[-*]?\\s*[*_]?None\\.[*_]?\\s*($|\\n)"
+pattern: "^## Open questions\\s*\\n\\s*[-*]?\\s*[*_]{0,2}None\\.[*_]{0,2}\\s*($|\\n)"
 flags: m
 weight: 1
 ---

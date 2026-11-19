@@ -27,7 +27,8 @@ reviewer needs to build and check it. Footnotes explaining terms come last, afte
 4. **Question.** Question names the one choice to make, briefly, and describes no option,
    method, version or setting.
 5. **Decision stands alone.** While the person has not chosen, Decision says only "Not chosen
-   yet." (or, in an older draft, "Not chosen yet; see Open questions."), the choice is a question for the person, and the ADR stays `Draft 📝`. Once they
+   yet." (an older draft's "Not chosen yet; see Open questions." also passes, and the writer shortens it with
+   its next edit), the choice is a question for the person, and the ADR stays `Draft 📝`. Once they
    have, its first sentence opens "Chosen:" and names the option in full, so that it makes sense
    with the rest of the ADR hidden, and the reason follows briefly. A bare option name fails. One
    or more `mermaid` diagrams may follow the reason, as check 18 says; Decision still makes sense

@@ -75,7 +75,7 @@ everything else is judgement.
    - A document with a status has an Open questions section, last apart from a spike record's
      Experiment, Code and Runs and an ADR's Technical detail, their technical parts, which follow
      it so the document reads plain first. The skill writes there
-     only what the person defers, each
+     only what the person defers (and a plan the changes it waits on), each
      question laid out with its proposed answer in a block
      quote, as [ADR 0030](docs/adrs/0030-open-questions-layout.md) says (`PROPOSED_RULE`; questions
      asked in the conversation follow `ASK_RULE`), and never moves the document forward while the section holds anything, nor

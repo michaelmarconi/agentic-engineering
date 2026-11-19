@@ -80,5 +80,5 @@ checking, and quotes the spec as evidence for every failure.
     rule: it is a question for the person, with that default proposed.
 15. **Fits the brief.** Nothing in the spec contradicts the brief's Goals, Out of scope or
     Constraints, such as a rule for something the brief puts out of scope. Detail the brief doesn't
-    mention never fails this check, however much there is. A contradiction goes under Needs a person, never as a failure, proposing one of its two answers: change the spec to
+    mention never fails this check, however much there is. A contradiction fails, and the writer puts it to the person, proposing one of its two answers: change the spec to
     fit, or the person changes the brief. With no brief, this check passes.
