@@ -18,9 +18,7 @@ flowchart LR
     Spec -->|decisions| ADR
     Spec --> Plan
     ADR --> Plan
-    Plan --> Build --> Verify -->|you merge| Main[Main branch]
-    Main --> Release --> Deploy
-    Main -.-> Audit
+    Plan --> Build --> Verify --> Release --> Deploy
     Audit -.->|drift| Spec
     Audit -.->|drift| ADR
     Audit -.->|contradiction| Brief
