@@ -111,7 +111,8 @@ The plan's sections:
   **ADRs** each ADR the code must follow, as a table; either says "None." when there are none,
   but not both. Keep each line in the template's form, since the hook reads only that: a spec as
   `- [<title>](<path>)`, each requirement beneath it as `  - [<name>](<path>#<anchor>)`, a link
-  to its heading whose anchor is the one GitHub gives the heading (so `### 2. Reply to all` is `#2-reply-to-all`), and each ADR as a row `| [<NNNN>](<path>) | <the ADR's title> |` under
+  to its heading whose anchor is the one GitHub gives the heading (so `### 2. Reply to all` is
+  `#2-reply-to-all`), and each ADR as a row `| [<NNNN>](<path>) | <the ADR's title> |` under
   the `| ADR | Decision |` header. If the hook refuses an anchor, its message gives the right
   one. To explain a term there, add a footnote mark after the link, never a line of prose.
 - **Decisions** holds one line for each decision whose reason nobody needs once the work is

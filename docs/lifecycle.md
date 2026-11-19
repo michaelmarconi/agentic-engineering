@@ -78,11 +78,12 @@ naming the question and its place in the count, such as "**Question 2 of 7: wher
 kept**", then the context, the quote, and the question itself last. The first number counts the
 questions asked or settled in the session, across every document, the one being asked included, so
 it only goes up; the total adds those still open, and the skill says in one line when an answer
-opens or settles others. An offer of diagrams is not counted: it comes last, under "Optional:
-diagrams". Where Claude has no question tool but can post a decision card, as in a Claude project
-thread, it asks in words as above, then posts the same question on a card you answer with a tap. A
-skill asks one question per reply and then waits for your answer before asking the next, even where
-its card or question tool returns at once, so only one question is ever waiting on you.
+opens or settles others. An offer of diagrams is not counted: it comes once the counted questions
+are settled, under "Optional: diagrams". Where Claude has no question tool but can post a decision
+card, as in a Claude project thread, it asks in words as above, then posts the same question on a
+card you answer with a tap. A skill asks one question per reply and then waits for your answer
+before asking the next, even where its card or question tool returns at once, so only one question
+is ever waiting on you.
 
 ## Steps
 
