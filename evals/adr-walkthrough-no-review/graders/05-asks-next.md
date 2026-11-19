@@ -1,7 +1,7 @@
 ---
 type: regex
 target: last_message
-pattern: "(retr|queue service|which queue|redis)[^\\n]*\\?"
+pattern: "(retr|queue service|which queue|redis)[\\s\\S]*\\?"
 flags: i
 weight: 1
 ---
