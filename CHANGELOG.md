@@ -6,6 +6,16 @@ What changed in each version of the plugin, newest first. Versions follow
 past a major version: it says what you need to change in your documents. Until 1.0.0, any
 minor version may need such a change, and its entry says so.
 
+## [0.77.0] - 2026-11-19
+
+### Changed
+
+- /brief, /spec, /adr, /plan, /spike and /practices ask one question per reply, then end their
+  turn and wait for your answer before asking the next, even where the question tool or decision
+  card returns at once, as in a Claude project thread. Until now they could post the next question
+  straight after the first. A reply no longer lays out several questions with a rule between
+  them (issue #125).
+
 ## [0.76.0] - 2026-11-19
 
 ### Changed
