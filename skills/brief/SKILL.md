@@ -79,7 +79,12 @@ retried**", where the first number counts the questions asked or settled in this
 one included, and the total adds those still open, so the first number only goes up, saying in one
 line when an answer opens or settles others; the context it needs; a block quote holding a
 "**Proposed:**" line with your answer, a line holding only `>`, and a "**Why:**" line with the
-reason; and the question itself, last, in one line. The others wait in
+reason; and the question itself, last, in one line.
+With no question tool but a decision card, as in a Claude project thread, ask in words as the skill
+says, then post it on a card offering the choices that need no typing, your proposal recommended.
+Where one reply asks several questions, follow each with its card or question tool, and a line
+holding only `---` before the next.
+The others wait in
 the brief, so leave them out of that reply entirely: describe the draft by what it says, never by
 what it lacks ("nothing yet on who else is involved" names a question), and report what you or the
 review changed without naming the gaps that remain. Ask the next once the first is settled, playing

@@ -8,10 +8,9 @@ description: Plan one piece of work that builds requirements of settled specs or
 A plan says how one piece of work will build part of what the specs and ADRs have already settled:
 the requirements it delivers, the decisions the code must follow, and how the work will be done.
 Plans live in one flat folder, `docs/plans/`, as `YYYY-MM-DD-<subject>.md`, dated the day the plan is
-first written, where the subject is two to five lowercase words of its title joined by hyphens,
-as a plugin hook checks. A plan is temporary: `/build` marks it `Built ✅`, after which it is frozen, never
-edited, and may be deleted whenever nobody needs it, so it never holds anything later work needs. A
-technical decision later work has to follow belongs in an ADR, not here.
+first written, where the subject is two to five lowercase words of its title joined by hyphens.
+A plan is temporary: `/build` marks it `Built ✅`, after which it is frozen, never
+edited, and may be deleted whenever nobody needs it, so it never holds anything later work needs.
 
 Before writing, read [references/rubric.md](references/rubric.md): it is the list of checks the
 reviewer will apply, so writing to it leaves less to correct. Write in plain words, as the Plain
@@ -24,8 +23,8 @@ The template's frontmatter holds `type: Plan`, which says what the document is. 
 before it has no `type:`, so add it with your next edit. The title never names the document's type,
 as "Spec:" or "ADR:" in front of it would: the frontmatter's `type:` already says what it is.
 
-You never make a technical decision for the person. Explore first, settle every decision with
-them one at a time, and only then write.
+You never make a technical decision for the person: explore, then settle each with them before
+writing.
 
 ## Find the work
 
@@ -33,14 +32,14 @@ Work out which specs, which requirements within them, and which ADRs the work bu
 the person says and from `docs/specs/` and `docs/adrs/`. Each requirement is a
 numbered heading under Requirements in its spec, as `### 2. Reply to all`; name it by the words
 after the number, word for word, and never by its number, which changes when requirements are
-added or removed. A spec that heads its requirements `### Requirement: <name>` was written for an
-earlier version of the agentic plugin: no plan can be signed off on it until it is reworked with
-/spec and accepted again, so tell the person so before planning against it.
+added or removed. A spec that heads its requirements `### Requirement: <name>` comes from an
+earlier version of the plugin: tell the person first that no plan on it can be signed off until
+/spec reworks it and it is accepted again.
 
 - If the work builds no requirement and follows no ADR, such as tidying code, a routine upgrade or
   a quick fix, it needs no plan. Say so, suggest doing it straight from the conversation, and stop.
 - If a spec it builds or an ADR it follows is not `Accepted 👍`, stop and say which one, and
-  what is left to settle in it. A plan builds only on settled documents, and you never change a spec or an ADR from here.
+  what is left to settle in it. A plan builds only on settled documents.
 - Read the frontmatter and Specs section of each plan in `docs/plans/`. If one that is not
   `Built ✅` already names a requirement this work builds, say so and offer to change that plan
   instead; no two unbuilt plans may name the same requirement.
@@ -60,8 +59,8 @@ here: that belongs to `/practices`.
 
 ## Explore
 
-Read the specs, the ADRs and the code the work touches, changing nothing. Use Claude Code's
-Explore and Plan agents to find the code that matters and think through how to build it. This is where you find the decisions: choices with a reasonable
+Read the specs, the ADRs and the code the work touches, changing nothing. Use the Explore
+and Plan agents to find the code that matters and think through how to build it. This is where you find the decisions: choices with a reasonable
 alternative that the specs, the ADRs, the practices and the existing code don't already settle, such as where a
 new piece of data is kept or how an outside system's message is mapped. Following a pattern the
 code already uses is not a decision.
@@ -77,7 +76,12 @@ retried**", where the first number counts the questions asked or settled in this
 one included, and the total adds those still open, so the first number only goes up, saying in one
 line when an answer opens or settles others; the context it needs; a block quote holding a
 "**Proposed:**" line with your answer, a line holding only `>`, and a "**Why:**" line with the
-reason; and the question itself, last, in one line. A plan may be deleted
+reason; and the question itself, last, in one line.
+With no question tool but a decision card, as in a Claude project thread, ask in words as the skill
+says, then post it on a card offering the choices that need no typing, your proposal recommended.
+Where one reply asks several questions, follow each with its card or question tool, and a line
+holding only `---` before the next.
+A plan may be deleted
 once built, so a decision belongs in it only if nobody needs its reason once the work is built. Ask
 of each who would need its reason after the build, in this order, taking the first answer that fits:
 
@@ -98,8 +102,7 @@ questions. With no decisions, say so and go straight to writing.
 
 ## Write
 
-Only when every decision is settled, write the plan from the template, named as above and with the
-template's comments removed.
+Once every decision is settled, write the plan from the template, named as above and with the template's comments removed.
 
 Never rename a document once its review has started: the review hook keeps the review under the
 document's path, so a renamed document's corrections can't be checked. If the name no longer fits,
@@ -118,7 +121,7 @@ The plan's sections:
   one. To explain a term there, add a footnote mark after the link, never a line of prose.
 - **Decisions** holds one line for each decision whose reason nobody needs once the work is
   built, or only someone changing that code later: what was decided and why, and for the second
-  kind, that `/build` leaves the reason as a comment beside the code.
+  kind, that the reason goes in a comment beside the code.
 - **Open questions** holds whatever only the person can settle. Write each open question as a
   heading, `### 1. <what is to be settled>`, numbered in order, then the context it needs, then a
   block quote holding a line starting `> **Proposed:**` with the answer you would choose, then a

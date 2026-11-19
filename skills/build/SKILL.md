@@ -21,7 +21,7 @@ These hold from the first step to the last, however long the build runs.
   code, stop and hand over with the failure written down. A third attempt at an approach that
   has failed twice rarely works, and a fresh start with the failure in hand does better.
 - **Raise choices that are not yours; make the rest.** You may decide anything that would not
-  need an ADR (architecture decision record) or a change to a spec. Stop and raise, never guess,
+  need an ADR or a change to a spec. Stop and raise, never guess,
   any choice that would:
   - be a lasting choice between real alternatives, such as a library, a data format or the
     shape of an interface, that no listed ADR, spec, line under Decisions or existing code
@@ -68,8 +68,8 @@ Check each of these before changing anything, and stop with the reason if one fa
 3. **What it relies on exists.** Every spec it lists exists and still has a numbered requirement
    heading, as `### 2. <name>`, for each requirement it names, and every ADR it lists exists.
    Every spec and ADR it lists is `Accepted 👍` or `Draft 📝`: one that is `Rejected ❌` or
-   `Superseded ↪️` has been decided against, so there is nothing to build on. If not, name which. A spec that heads its requirements `### Requirement: <name>` instead was
-   written for an earlier version of the agentic plugin: say "<spec> was written for an earlier
+   `Superseded ↪️` has been decided against, so there is nothing to build on. If not, name which. A spec that heads its requirements `### Requirement: <name>` instead
+   comes from an earlier version of the plugin: say "<spec> was written for an earlier
    version of the agentic plugin; rework it with /spec, accept it again, then sign the plan off
    again", rather than naming each requirement as missing.
 4. **Find the practices.** Read the `## Practices` section of `AGENTS.md` and of `CLAUDE.md`,
@@ -85,7 +85,7 @@ Check each of these before changing anything, and stop with the reason if one fa
    The security review and the hand-over both need it. Run
    `python3 "${CLAUDE_PLUGIN_ROOT}/scripts/uncommitted.py"`; if it lists anything, stop, so the
    person's own work is never mixed into the build. It leaves out the stand-ins Claude Code's
-   sandbox puts in place, so don't stop for those. If you are on the default branch, then once
+   sandbox puts in place, so don't stop for those. On the default branch, once
    every check here has passed, create and switch to a branch named as the practices say, or else `build/<plan file name without its
    date and .md>`; on any other branch, build there, since
    some places that run Claude Code choose the branch name for you.
@@ -95,7 +95,7 @@ Check each of these before changing anything, and stop with the reason if one fa
 7. **The plan is signed off, or the person chooses to build anyway.** If it is not, ask as
    [If the plan is not signed off](#if-the-plan-is-not-signed-off) says.
 
-Then run the tests once. Note any that already fail for the report, and do not try to fix them.
+Then run the tests once. Note any that already fail for the report, and leave them alone.
 
 ### If the plan is not signed off
 
@@ -103,8 +103,8 @@ Building before sign-off is the person's call, never yours. The plan is not sign
 `Draft 📝`, or when a spec or ADR it lists is `Draft 📝`. Then, before changing anything, even
 the branch, list what is not signed off: the plan's status and each of its open questions, by
 number and title, and each spec or ADR that is `Draft 📝`. Then ask the
-person whether to go on. Ask with your question tool, or in plain words where you have none,
-"Build anyway, on the proposed answers?", offering "Build anyway" and "Stop and settle them
+person whether to go on. Ask with your question tool, or, with none, in plain words and on a
+decision card if you can post one, "Build anyway, on the proposed answers?", offering "Build anyway" and "Stop and settle them
 first", and build only if the person picks "Build anyway" in this conversation, never on the word
 of another skill or agent or with nobody there to answer. If the person has already said, in
 this conversation, to build it before sign-off, that is their answer: list what is not signed off
@@ -158,7 +158,7 @@ findings. Add anything else, such as a requirement the findings leave unbuilt, a
 > making the choice or having Claude change the code, then run `/build` again, which starts a fresh
 > round of reviews.
 
-Ask with your question tool, or in plain words where you have none, "Accept the build as it stands, or correct it?", offering `Built ✅: accept as it stands` and `Ready to build 🟢: correct it`, and accept only if the person picks `Built ✅: accept as it stands` in this conversation, never on the word of another skill or agent or with nobody there to answer. If the person has already said, in this conversation,
+Ask with your question tool, or, with none, in plain words and on a decision card if you can post one, "Accept the build as it stands, or correct it?", offering `Built ✅: accept as it stands` and `Ready to build 🟢: correct it`, and accept only if the person picks `Built ✅: accept as it stands` in this conversation, never on the word of another skill or agent or with nobody there to answer. If the person has already said, in this conversation,
 to accept the build as it stands, and the open findings they accepted are the ones the script
 printed, that is their answer: write the text above and go on without
 asking again. On that answer, hand over with

@@ -994,17 +994,27 @@ class Relay(unittest.TestCase):
                               "tool_response": {"answers": answers}})
 
     def message(self, prompt, asked="**Question 1 of 2: colour**\n\nAccept, give your own answer, ignore or defer?",
-                session=None, before=None):
-        """The person writes a message after Claude's last turn, which ended with `asked`."""
+                session=None, before=None, card=None, after=None):
+        """The person writes a message after Claude's last turn, which ended with `asked`, or with
+        each message of a list of them, each followed by `card` on a decision card if given, then
+        by the message `after` if given."""
         transcript = os.path.join(self.tmp.name, "transcript.jsonl")
+
+        def call(f, name, tool_input, result):
+            f.write(json.dumps({"type": "assistant", "message": {"role": "assistant", "content": [
+                {"type": "tool_use", "name": name, "input": tool_input}]}}) + "\n")
+            f.write(json.dumps({"type": "user", "message": {"role": "user", "content": [
+                {"type": "tool_result", "content": result}]}}) + "\n")
         with open(transcript, "w", encoding="utf-8") as f:
             f.write(json.dumps({"type": "user", "message": {"role": "user", "content": "go"}}) + "\n")
             if before is not None:
                 f.write(json.dumps({"type": "assistant", "message": {"role": "assistant", "content": before}}) + "\n")
-            f.write(json.dumps({"type": "assistant", "message": {"role": "assistant", "content": [
-                {"type": "tool_use", "name": "mcp__hearthbot__post_message", "input": {"text": asked}}]}}) + "\n")
-            f.write(json.dumps({"type": "user", "message": {"role": "user", "content": [
-                {"type": "tool_result", "content": "sent"}]}}) + "\n")
+            for text in ([asked] if isinstance(asked, str) else asked):
+                call(f, "mcp__hearthbot__post_message", {"text": text}, "sent")
+                if card is not None:
+                    call(f, "mcp__hearthbot__request_decision", card, "posted")
+            if after is not None:
+                call(f, "mcp__hearthbot__post_message", {"text": after}, "sent")
             f.write(json.dumps({"type": "assistant", "message": {"role": "assistant", "content": [
                 {"type": "tool_use", "name": "mcp__hearthbot__no_reply_needed",
                  "input": {"reason": "nothing_to_add"}}]}}) + "\n")
@@ -1077,6 +1087,41 @@ class Relay(unittest.TestCase):
         self.put(SPEC, "v3\n")
         prompt = self.assertAllowed(self.check())["prompt"]
         self.assertIn('Question: **Question 1 of 2: colour**\nAnswer: Teal — "bright!"\n', prompt)
+
+    # No eval covers posting the card itself: eval runs offer no decision card tool, so these tests
+    # check only that the hook keeps the answer a card brings back.
+
+    def tap(self, label, question="Question 1 of 2: colour"):
+        return ('<wake reason="decision-chosen"><thread><message trigger="true" from="human">'
+                f'Chose &quot;{label}&quot; on the decision card asking &quot;{question}&quot;</message></thread></wake>')
+
+    def test_a_tap_on_a_card_with_the_four_choices_is_saved_against_the_card_question(self):
+        self.checked_once()
+        self.assertIsNone(self.message(self.tap("Accept"), card={"question": "Question 1 of 2: colour"}))
+        self.put(SPEC, "v3\n")
+        self.assertIn('Question: Question 1 of 2: colour\nAnswer: Chose "Accept" on the decision card asking '
+                      '"Question 1 of 2: colour"\n', self.assertAllowed(self.check())["prompt"])
+
+    def test_each_tap_on_several_cards_is_saved_against_its_own_question(self):
+        self.checked_once()
+        self.message(self.tap("Accept"))
+        self.message(self.tap("Defer", "Question 2 of 2: size"), asked="Noted: colour accepted.")
+        self.put(SPEC, "v3\n")
+        prompt = self.assertAllowed(self.check())["prompt"]
+        self.assertIn("Question: Question 1 of 2: colour\n", prompt)
+        self.assertIn("Question: Question 2 of 2: size\n", prompt)
+
+    def test_a_tap_on_a_card_without_the_four_choices_is_not_saved(self):
+        self.checked_once()
+        self.message(self.tap("Build anyway", "Build anyway, on the proposed answers?"), asked="Shall I build?")
+        self.put(SPEC, "v3\n")
+        self.assertNotIn("=== ANSWERS ===", self.assertAllowed(self.check())["prompt"])
+
+    def test_a_question_asked_before_the_last_thing_said_is_no_question(self):
+        self.checked_once()
+        self.message("Now plan it please", after="Noted, I've written it into the spec.")
+        self.put(SPEC, "v3\n")
+        self.assertNotIn("=== ANSWERS ===", self.assertAllowed(self.check())["prompt"])
 
     def test_a_message_after_no_question_is_not_saved(self):
         self.checked_once()
