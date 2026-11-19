@@ -379,20 +379,20 @@ stateDiagram-v2
 
 ### Who checks
 
-#### The reviewer
+#### The reviewer agent
 
 Each skill has its own, such as `agents/spec-reviewer.md`. It checks the whole document against the
 skill's rubric, a short list of pass-or-fail checks such as "each requirement has exactly one
 rule", which also guides the skill as it writes. It reports pass or fail for each check, quoting
 the words that break it.
 
-#### The language checker
+#### The language checker agent
 
 `agents/language-checker.md`, shared by every skill that writes a document, runs beside the
 reviewer and reads the document by the [Plain words](#plain-words) rule. A checker doing only that
 job finds more unclear words than the same rule added to every rubric.
 
-#### The correction checker
+#### The correction checker agent
 
 `agents/correction-checker.md`, also shared, runs after the corrections and after each round of
 your answers. It judges only what changed since the review or the last check: each correction
