@@ -71,9 +71,10 @@ feedback, practices, spike or release) and the shared language checker, which ch
   and "Defer" among their options; and, where there is no question tool, as in a Claude project
   thread, the person's next message when the last thing Claude said in its turn, as text or as a
   message a tool sends, never a file edit, ends asking "... ignore or defer?", with that message's
-  last "**Question N of M: ...**" line as its question. A
-  message that arrives as a project thread's wake is taken from its `<message trigger="true">`
-  tag.
+  last "**Question N of M: ...**" line as its question. A decision card posted after that
+  message says nothing in this sense, so a tap on it, which arrives as the person's next message,
+  is saved the same way. A message that arrives as a project thread's wake is taken from its
+  `<message trigger="true">` tag.
 - A saved review is kept after its check, and deleted once unchanged for 30 days (see
   saved_records.py), not when the session ends, since a resumed session carries on. A later
   review of the same document, such as a spike record's verdict review after its design review,

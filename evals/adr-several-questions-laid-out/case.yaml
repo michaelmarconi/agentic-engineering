@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: adr-several-questions-laid-out
+expected_outcome: |
+  The person asks for two ADRs at once and for the first open question of each in one reply. The
+  reply lays out each question whole, from its bold line to the question itself, before the next
+  one starts, with a line holding only `---` between them, so each question reads as one unit.

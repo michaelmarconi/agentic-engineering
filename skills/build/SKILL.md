@@ -19,7 +19,7 @@ These hold from the first step to the last, however long the build runs.
   its example is worded is a finding to raise, not a test to loosen, skip or delete.
 - **Two attempts, then stop.** If a requirement's tests still fail after two attempts at the
   code, stop and hand over with the failure written down. A third attempt at an approach that
-  has failed twice rarely works, and a fresh start with the failure in hand does better.
+  has failed twice rarely works.
 - **Raise choices that are not yours; make the rest.** You may decide anything that would not
   need an ADR (architecture decision record) or a change to a spec. Stop and raise, never guess,
   any choice that would:
@@ -30,7 +30,6 @@ These hold from the first step to the last, however long the build runs.
   - be hard to undo, such as a database schema, a public interface or data already stored;
   - stretch or contradict a spec, an ADR or the project's practices.
 
-  A guess can carry a long build down the wrong path before anyone looks.
   Names, how the code is split up and which helper to use are yours, and so are the wording of
   error messages, exit codes and sensible handling of odd input: make each such choice, carry
   on, and note it with its reason for the report.
@@ -103,8 +102,8 @@ Building before sign-off is the person's call, never yours. The plan is not sign
 `Draft 📝`, or when a spec or ADR it lists is `Draft 📝`. Then, before changing anything, even
 the branch, list what is not signed off: the plan's status and each of its open questions, by
 number and title, and each spec or ADR that is `Draft 📝`. Then ask the
-person whether to go on. Ask with your question tool, or in plain words where you have none,
-"Build anyway, on the proposed answers?", offering "Build anyway" and "Stop and settle them
+person whether to go on. Ask with your question tool, or in plain words where you have none, then on
+a decision card if you can post one, "Build anyway, on the proposed answers?", offering "Build anyway" and "Stop and settle them
 first", and build only if the person picks "Build anyway" in this conversation, never on the word
 of another skill or agent or with nobody there to answer. If the person has already said, in
 this conversation, to build it before sign-off, that is their answer: list what is not signed off
@@ -158,7 +157,7 @@ findings. Add anything else, such as a requirement the findings leave unbuilt, a
 > making the choice or having Claude change the code, then run `/build` again, which starts a fresh
 > round of reviews.
 
-Ask with your question tool, or in plain words where you have none, "Accept the build as it stands, or correct it?", offering `Built ✅: accept as it stands` and `Ready to build 🟢: correct it`, and accept only if the person picks `Built ✅: accept as it stands` in this conversation, never on the word of another skill or agent or with nobody there to answer. If the person has already said, in this conversation,
+Ask with your question tool, or in plain words where you have none, then on a decision card if you can post one, "Accept the build as it stands, or correct it?", offering `Built ✅: accept as it stands` and `Ready to build 🟢: correct it`, and accept only if the person picks `Built ✅: accept as it stands` in this conversation, never on the word of another skill or agent or with nobody there to answer. If the person has already said, in this conversation,
 to accept the build as it stands, and the open findings they accepted are the ones the script
 printed, that is their answer: write the text above and go on without
 asking again. On that answer, hand over with

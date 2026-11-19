@@ -35,10 +35,8 @@ python3 "${CLAUDE_SKILL_DIR}/scripts/adr.py" words <the ADR's path>
 ```
 
 Aim for sentences under 25 words and paragraphs of up to three sentences, with the Question in up
-to three sentences and the reason for the choice in up to two. These counts are a guide for you,
-not checks: never split, merge or rewrite text that already reads clearly just to meet them. The
-review checks that a newcomer can follow every sentence in one reading, and lists a long sentence
-or paragraph only as a suggestion.
+to three sentences and the reason for the choice in up to two. These counts are a guide, not
+checks: never rewrite text that already reads clearly to meet them.
 
 ## Find what exists
 
@@ -100,8 +98,7 @@ the person can find the
 proposal at a glance and accept it in a word or give another. Each question holds one proposal, so a
 question with two answers is two questions, and a plugin hook refuses Open questions laid out any
 other way. Where only the person can know the answer, "Proposed:" says what would settle it instead,
-never a guess. For a choice not yet made, propose the option you would recommend; for a reason only
-the person knows, say what would settle it. Write the draft with what you have, review it as below
+never a guess. For a choice not yet made, propose the option you would recommend. Write the draft with what you have, review it as below
 even if sections are thin, then say how many questions there are and ask only the first. The others
 wait, so leave them out of that reply entirely: describe the draft by what it says, never by what it
 lacks, and do not list the questions or their topics (they are in the ADR). Ask the next once the
@@ -112,7 +109,11 @@ pull is retried**", where the first number counts the questions asked or settled
 conversation, this one included, and the total adds those still open, so the first number only goes
 up, saying in one line when an answer opens or settles others; the context it needs; a block quote
 holding a "**Proposed:**" line with your answer, a line holding only `>`, and a "**Why:**" line with
-the reason; and the question itself, last, in one line. If they
+the reason; and the question itself, last, in one line.
+With no question tool but a decision card, as in a Claude project thread, ask in words as the skill
+says, then post it on a card, your proposal recommended. Where one reply asks several questions,
+follow each with its card or question tool, and a line holding only `---` before the next.
+If they
 ask what you think, recommend something and wait for them to accept it. If they would rather not
 answer now, leave the rest in Open questions. Write each answer into the section it is about, then
 remove the question.

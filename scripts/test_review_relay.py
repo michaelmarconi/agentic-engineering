@@ -994,8 +994,9 @@ class Relay(unittest.TestCase):
                               "tool_response": {"answers": answers}})
 
     def message(self, prompt, asked="**Question 1 of 2: colour**\n\nAccept, give your own answer, ignore or defer?",
-                session=None, before=None):
-        """The person writes a message after Claude's last turn, which ended with `asked`."""
+                session=None, before=None, card=None):
+        """The person writes a message after Claude's last turn, which ended with `asked`, then
+        posted `card` on a decision card, if given."""
         transcript = os.path.join(self.tmp.name, "transcript.jsonl")
         with open(transcript, "w", encoding="utf-8") as f:
             f.write(json.dumps({"type": "user", "message": {"role": "user", "content": "go"}}) + "\n")
@@ -1005,6 +1006,11 @@ class Relay(unittest.TestCase):
                 {"type": "tool_use", "name": "mcp__hearthbot__post_message", "input": {"text": asked}}]}}) + "\n")
             f.write(json.dumps({"type": "user", "message": {"role": "user", "content": [
                 {"type": "tool_result", "content": "sent"}]}}) + "\n")
+            if card is not None:
+                f.write(json.dumps({"type": "assistant", "message": {"role": "assistant", "content": [
+                    {"type": "tool_use", "name": "mcp__hearthbot__request_decision", "input": card}]}}) + "\n")
+                f.write(json.dumps({"type": "user", "message": {"role": "user", "content": [
+                    {"type": "tool_result", "content": "posted"}]}}) + "\n")
             f.write(json.dumps({"type": "assistant", "message": {"role": "assistant", "content": [
                 {"type": "tool_use", "name": "mcp__hearthbot__no_reply_needed",
                  "input": {"reason": "nothing_to_add"}}]}}) + "\n")
@@ -1077,6 +1083,16 @@ class Relay(unittest.TestCase):
         self.put(SPEC, "v3\n")
         prompt = self.assertAllowed(self.check())["prompt"]
         self.assertIn('Question: **Question 1 of 2: colour**\nAnswer: Teal — "bright!"\n', prompt)
+
+    def test_a_tap_on_the_card_posted_after_the_question_is_saved_as_its_answer(self):
+        self.checked_once()
+        card = {"question": "Which colour?", "recommended": 0, "options": [
+            {"label": label, "consequence": "."} for label in ("Accept", "My own answer", "Ignore", "Defer")]}
+        wake = '<wake><thread><message trigger="true" from="human">Accept</message></thread></wake>'
+        self.assertIsNone(self.message(wake, card=card))
+        self.put(SPEC, "v3\n")
+        prompt = self.assertAllowed(self.check())["prompt"]
+        self.assertIn("Question: **Question 1 of 2: colour**\nAnswer: Accept\n", prompt)
 
     def test_a_message_after_no_question_is_not_saved(self):
         self.checked_once()
