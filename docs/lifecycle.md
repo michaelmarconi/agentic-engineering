@@ -58,7 +58,17 @@ against it.
 File: `docs/brief.md`, one per product.
 
 What the product is, who it is for and why. It has no status, since it is never built: it states
-the product's intent, is edited in place, and changes only when that intent does.
+the product's intent and is edited in place.
+
+- **The brief is the whole product.** It holds only what is true of the whole product; one
+  capability's behaviour belongs in its spec.
+- **The brief changes only when its intent does.** Specs and ADRs add detail the brief never
+  mentions, and that is never a reason to change it, so no skill or agent proposes an edit to the
+  brief to match one. Only an outright contradiction counts: a spec
+  or ADR that breaks the brief's Goals, Out of scope or Constraints. You settle it by changing the
+  spec or superseding the ADR, or by changing the brief, and it is never raised again. `/spec`
+  raises one while the spec is written, as a question to you; `/audit` finds any that appear later,
+  such as after the brief changes.
 
 ### Spec
 
@@ -66,6 +76,10 @@ File: `docs/specs/**/<subject>.spec.md`, one per capability.
 
 What one capability of the product should do, and how we will know it does. Any change returns it
 to `Draft 📝`.
+
+- **Specs say what, never how.** A technical choice is an ADR.
+- **One living spec per capability.** It is edited in place, and git is its history. A retired spec
+  is deleted.
 
 ```mermaid
 stateDiagram-v2
@@ -80,9 +94,14 @@ stateDiagram-v2
 
 File: `docs/adrs/NNNN-<subject>.md`, in one flat folder.
 
-An architecture decision record: one technical decision and why it was made. Once decided it is
-never edited, apart from the `superseded-by:` field and status that mark it superseded by a newer
-ADR.
+An architecture decision record: one technical decision and why it was made.
+
+- **One decision per ADR.** A decided ADR is never edited or moved, apart from the `superseded-by:`
+  field and status that mark it superseded. A new ADR supersedes it whole, each naming the other by
+  number in its `supersedes:` and `superseded-by:` fields.
+- **Only a person decides an ADR.** A person accepts or rejects it by explicitly signing off its
+  final, reviewed text. No skill or agent does it for them.
+- **No separate design document.** `Accepted 👍` ADRs and the code are the design.
 
 ```mermaid
 stateDiagram-v2
@@ -105,6 +124,14 @@ One piece of work that builds part of a spec or an ADR. Any change before it is 
 `Built ✅`. It is temporary: once built it is never changed again, and it may be deleted whenever
 nobody needs it.
 
+- **A plan builds only on settled documents.** A plan is `Ready to build 🟢` only when each spec and
+  ADR it touches is `Accepted 👍`, and no two plans that are not `Built ✅` name the same
+  requirement. `/build` builds a plan that isn't signed off only when you choose to, building its
+  open questions' proposed answers, and its first commit says what wasn't signed off.
+- **A plan holds nothing later work needs.** A decision later work must follow is an ADR; one a
+  user or caller relies on belongs in the spec; one every piece of work follows is a practice. A
+  reason someone changing the code later needs is a comment beside the code.
+
 ```mermaid
 stateDiagram-v2
     direction LR
@@ -124,6 +151,9 @@ One hypothesis tested by a throwaway experiment, with its code, every run's outp
 Once `Ready to run 🟢`, its design
 is fixed and only the run script adds runs. It is temporary: once finished it is never changed
 again, and it may be deleted whenever nobody needs it.
+
+- **A spike's finding goes to its owner.** `/spike` edits neither spec nor ADR: you take a fact to
+  `/spec` and a choice to `/adr`.
 
 ```mermaid
 stateDiagram-v2
@@ -197,44 +227,6 @@ its top; its specs may be grouped into folders, such as one per app, which carry
 - **Checks change nothing.** `/verify` and `/audit` report what they find; you choose what follows.
 - **Nothing leaves without your yes.** `/release` publishes and `/deploy` deploys only when you
   say so. `/deploy` and `/feedback` write nothing to your repository.
-
-### The brief
-
-- **The brief is the whole product.** It holds only what is true of the whole product; one
-  capability's behaviour belongs in its spec.
-- **The brief changes only when its intent does.** Specs and ADRs add detail the brief never
-  mentions, and that is never a reason to change it, so no skill or agent proposes an edit to the
-  brief to match one. Only an outright contradiction counts: a spec
-  or ADR that breaks the brief's Goals, Out of scope or Constraints. You settle it by changing the
-  spec or superseding the ADR, or by changing the brief, and it is never raised again. `/spec`
-  raises one while the spec is written, as a question to you; `/audit` finds any that appear later,
-  such as after the brief changes.
-
-### Specs and ADRs
-
-- **Specs say what, never how.** A technical choice is an ADR.
-- **One living spec per capability.** It is edited in place, and git is its history. A retired spec
-  is deleted.
-- **One decision per ADR.** A decided ADR is never edited or moved. A new ADR supersedes it whole,
-  each naming the other by number in its `supersedes:` and `superseded-by:` fields.
-- **Only a person decides an ADR.** A person accepts or rejects it by explicitly signing off its
-  final, reviewed text. No skill or agent does it for them.
-- **No separate design document.** `Accepted 👍` ADRs and the code are the design.
-
-### Plans and spikes
-
-- **A plan builds only on settled documents.** A plan is `Ready to build 🟢` only when each spec and
-  ADR it touches is `Accepted 👍`, and no two plans that are not `Built ✅` name the same
-  requirement. `/build` builds a plan that isn't signed off only when you choose to, building its
-  open questions' proposed answers, and its first commit says what wasn't signed off.
-- **A plan holds nothing later work needs.** A decision later work must follow is an ADR; one a
-  user or caller relies on belongs in the spec; one every piece of work follows is a practice. A
-  reason someone changing the code later needs is a comment beside the code.
-- **A spike's finding goes to its owner.** `/spike` edits neither spec nor ADR: you take a fact to
-  `/spec` and a choice to `/adr`.
-- **Only an experiment settles a spike.** Documentation, other people's reports and reasoning help
-  design it, but the finding rests only on what its runs produced, compared with the result agreed
-  before the first run.
 
 ### References
 
@@ -408,11 +400,9 @@ the last check is kept only within one conversation. A status that needs a revie
 only once the last review or check of the text as it stands has run, with every question it raised
 answered or ignored and nothing deferred.
 
-There are no repeated full reviews. We measured this on specs with planted mistakes: one review
-finds nearly every one, each further round of corrections brings new problems, and a full review
-after each round of answers always finds new questions, so the loop never ended. The wording has
-its own checker because we measured that too: a checker that does only that job found more of the
-jargon we added on purpose than the same rule added to each rubric.
+There are no repeated full reviews, and the wording has its own checker, because both were
+measured: [ADR 0010](adrs/0010-correction-check.md), [ADR 0049](adrs/0049-review-once-check-changes.md)
+and [ADR 0013](adrs/0013-language-checker.md) give the figures.
 
 ### The steps
 
@@ -494,12 +484,5 @@ change the person makes or asks for at any other time is reviewed once it is mad
 
 ### Building
 
-/build follows the same sequence for code, correcting what its reviewers find once, with its own
-reviewers and its own correction checker,
-`agents/build-correction-checker.md`, and no language checker, since it writes code. A clean
-review or a passing correction check marks the plan `Built ✅`. When the correction check fails,
-/build shows you the open findings at once and asks whether to accept the build as it stands or
-leave it; if you accept, the plan is marked `Built ✅` and the commit that marks it lists the
-findings you accepted. Running /build again on the branch reviews it afresh. Either way the work
-stays on its branch until you merge it.
-
+/build runs its own review sequence for code, with its own reviewers and correction checker, as
+its [page](skills/build.md) describes. The work stays on its branch until you merge it.

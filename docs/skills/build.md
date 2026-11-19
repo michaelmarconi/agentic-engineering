@@ -190,8 +190,9 @@ or security hole they report has been corrected. Findings about tidiness or styl
 report but do not stop the plan being marked `Built ✅`.[^specreview]
 
 `/build` corrects what the reviews find, once, and has the corrections checked, the same way
-documents are reviewed (see [Review process](../lifecycle.md#review-process)). It then runs your
-tests and linters again.
+documents are reviewed (see [Review process](../lifecycle.md#review-process)), but with its own
+correction checker, `agents/build-correction-checker.md`, and no language checker, since it writes
+code. It then runs your tests and linters again.
 
 ## Handing over
 
