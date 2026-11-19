@@ -56,14 +56,17 @@ against it.
 
 ### Brief
 
-`docs/brief.md`, one per product: what the product is, who it is for and why. It has no status,
-since it is never built: it states the product's intent, is edited in place, and changes only when
-that intent does.
+File: `docs/brief.md`, one per product.
+
+What the product is, who it is for and why. It has no status, since it is never built: it states
+the product's intent, is edited in place, and changes only when that intent does.
 
 ### Spec
 
-`docs/specs/**/<subject>.spec.md`, one per capability: what that capability should do, and how we
-will know it does. Any change returns it to `Draft 📝`.
+File: `docs/specs/**/<subject>.spec.md`, one per capability.
+
+What one capability of the product should do, and how we will know it does. Any change returns it
+to `Draft 📝`.
 
 ```mermaid
 stateDiagram-v2
@@ -76,9 +79,11 @@ stateDiagram-v2
 
 ### ADR
 
-`docs/adrs/NNNN-<subject>.md`, in one flat folder: an architecture decision record, holding one
-technical decision and why it was made. Once decided it is never edited, apart from the
-`superseded-by:` field and status that mark it superseded by a newer ADR.
+File: `docs/adrs/NNNN-<subject>.md`, in one flat folder.
+
+An architecture decision record: one technical decision and why it was made. Once decided it is
+never edited, apart from the `superseded-by:` field and status that mark it superseded by a newer
+ADR.
 
 ```mermaid
 stateDiagram-v2
@@ -94,8 +99,9 @@ stateDiagram-v2
 
 ### Plan
 
-`docs/plans/YYYY-MM-DD-<subject>.md`, in one flat folder: one piece of work that builds part of a
-spec or an ADR. Any change before it is built returns it to `Draft 📝`, and only `/build` marks it
+File: `docs/plans/YYYY-MM-DD-<subject>.md`, in one flat folder.
+
+One piece of work that builds part of a spec or an ADR. Any change before it is built returns it to `Draft 📝`, and only `/build` marks it
 `Built ✅`. It is temporary: once built it is never changed again, and it may be deleted whenever
 nobody needs it.
 
@@ -112,8 +118,9 @@ stateDiagram-v2
 
 ### Spike record
 
-`docs/spikes/YYYY-MM-DD-<subject>.md`, in one flat folder: one hypothesis tested by a throwaway
-experiment, with its code, every run's output and the finding. Once `Ready to run 🟢`, its design
+File: `docs/spikes/YYYY-MM-DD-<subject>.md`, in one flat folder.
+
+One hypothesis tested by a throwaway experiment, with its code, every run's output and the finding. Once `Ready to run 🟢`, its design
 is fixed and only the run script adds runs. It is temporary: once finished it is never changed
 again, and it may be deleted whenever nobody needs it.
 
