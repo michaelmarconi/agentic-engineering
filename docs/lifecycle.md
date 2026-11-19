@@ -53,6 +53,16 @@ repository's `docs/` folder. Every kind but the brief has a status, which says h
 document is, not whether the software does what it says: that is found by checking the software
 against it.
 
+How long each lasts decides what may refer to it:
+
+- **Lasting:** the brief, specs and ADRs, the project's record. They stay while true, and change by
+  being edited (the brief and specs) or superseded (ADRs).
+- **Temporary:** plans and spike records. Once built or finished they are never changed again, and
+  they may be deleted whenever nobody needs them, so nothing refers to them.
+- **Throwaway:** the reports of reviews, `/build`, `/verify` and `/audit`. They never enter the
+  repository: each is given in the reply or written to the session's scratchpad (in a session
+  without one, the system's temporary folder), and lasts only as long as that folder.
+
 ### Brief
 
 File: `docs/brief.md`, one per product.
@@ -118,9 +128,7 @@ stateDiagram-v2
 File: `docs/plans/YYYY-MM-DD-<subject>.md`, in one flat folder.
 
 One piece of work that builds part of a spec or an ADR. Any change before it is built returns it to
-`Draft 📝`, and only `/build` marks it
-`Built ✅`. It is temporary: once built it is never changed again, and it may be deleted whenever
-nobody needs it.
+`Draft 📝`, and only `/build` marks it `Built ✅`.
 
 - **A plan builds only on settled documents.** A plan is `Ready to build 🟢` only when each spec and
   ADR it touches is `Accepted 👍`, and no two plans that are not `Built ✅` name the same
@@ -147,8 +155,7 @@ File: `docs/spikes/YYYY-MM-DD-<subject>.md`, in one flat folder.
 
 One hypothesis tested by a throwaway experiment, with its code, every run's output and the finding.
 Once `Ready to run 🟢`, its design
-is fixed and only the run script adds runs. It is temporary: once finished it is never changed
-again, and it may be deleted whenever nobody needs it.
+is fixed and only the run script adds runs.
 
 - **A spike's finding goes to its owner.** `/spike` edits neither spec nor ADR: you take a fact to
   `/spec` and a choice to `/adr`.
@@ -243,10 +250,9 @@ flowchart LR
 - A plan refers to the specs and ADRs it builds, and a spike record to the document waiting on
   its finding: once built or finished, each is a record of how those documents stood.
 - An ADR refers to other ADRs by number, linked to their files, since a decided ADR never moves.
-- Nothing refers to a plan or a spike record. Otherwise the brief, specs and ADRs never refer to
-  one another in any way: either end could change or be deleted without the other being touched. A
-  spec or ADR
-  that uses a spike's finding states its evidence in its own words.
+- Nothing refers to a temporary document. Otherwise the brief, specs and ADRs never refer to one
+  another in any way: either end could change or be deleted without the other being touched. A
+  spec or ADR that uses a spike's finding states its evidence in its own words.
 - **Documents stand on their own.** Every document refers to outside material only by a web link.
   Material it was drafted from, such as notes, a requirements document or a ticket, is stated in
   its own words, never referred to by hyperlink, path or title, when it was handed over in a
