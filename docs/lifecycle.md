@@ -51,63 +51,76 @@ flowchart LR
 ## Documents
 
 The lifecycle keeps its thinking in five kinds of document, each a Markdown file in your
-repository's `docs/` folder.
+repository's `docs/` folder. Every kind but the brief has a status, which says how far along the
+document is, not whether the software does what it says: that is found by checking the software
+against it.
 
-| Document | Where | What it holds | Statuses |
-| --- | --- | --- | --- |
-| **Brief** | `docs/brief.md` | What the product is, who it is for and why. One per product. | None: it states the product's intent, is edited in place and changes only when that intent does |
-| **Spec** | `docs/specs/**/<subject>.spec.md` | What one capability should do, and how we will know it does. | `Draft 📝`, `Accepted 👍` |
-| **ADR** (architecture decision record) | `docs/adrs/NNNN-<subject>.md`, one flat folder | One technical decision and why it was made. | `Draft 📝`, `Accepted 👍`, `Rejected ❌`, `Superseded ↪️` |
-| **Plan** | `docs/plans/YYYY-MM-DD-<subject>.md`, one flat folder | One piece of work that builds part of a spec or an ADR. Temporary. | `Draft 📝`, `Ready to build 🟢`, `Built ✅` |
-| **Spike record** | `docs/spikes/YYYY-MM-DD-<subject>.md`, one flat folder | One hypothesis tested by a throwaway experiment, with its code, every run's output and the finding. Temporary. | `Draft 📝`, `Ready to run 🟢`, `Confirmed 💡`, `Refuted 🚫`, `Not settled ❔` |
+### Brief
 
-A status says how far along the document is, not whether the software does what it says: that is
-found by checking the software against it.
+`docs/brief.md`, one per product: what the product is, who it is for and why. It has no status,
+since it is never built: it states the product's intent, is edited in place, and changes only when
+that intent does.
+
+### Spec
+
+`docs/specs/**/<subject>.spec.md`, one per capability: what that capability should do, and how we
+will know it does. Any change returns it to `Draft 📝`.
 
 ```mermaid
 stateDiagram-v2
-    state "Spec" as S {
-        [*] --> SDraft
-        SDraft: Draft
-        SAcc: Accepted
-        SDraft --> SAcc
-        SAcc --> SDraft : any change
-    }
-    state "ADR" as A {
-        [*] --> ADraft
-        ADraft: Draft
-        AAcc: Accepted
-        ARej: Rejected
-        ASup: Superseded
-        ADraft --> AAcc
-        ADraft --> ARej
-        AAcc --> ASup
-    }
-    state "Plan" as P {
-        [*] --> PDraft
-        PDraft: Draft
-        PReady: Ready to build
-        PBuilt: Built
-        PDraft --> PReady
-        PReady --> PDraft : any change
-        PReady --> PBuilt : only /build
-    }
-    state "Spike record" as K {
-        [*] --> KDraft
-        KDraft: Draft
-        KReady: Ready to run
-        KDone: Confirmed, Refuted or Not settled
-        KDraft --> KReady
-        KReady --> KDraft : only before the first run
-        KReady --> KDone
-    }
+    direction LR
+    Draft --> Accepted
+    Accepted --> Draft : any change
 ```
 
-Any change returns a spec or a plan to `Draft 📝`. A decided ADR (`Accepted 👍`, `Rejected ❌` or
-`Superseded ↪️`) is never edited, apart from the `superseded-by:` field and status that mark it
-superseded; a `Built ✅` plan and a finished spike record are never changed again. A plan or spike
-record may be deleted whenever nobody needs
-it; nothing refers to either.
+### ADR
+
+`docs/adrs/NNNN-<subject>.md`, in one flat folder: an architecture decision record, holding one
+technical decision and why it was made. Once decided it is never edited, apart from the
+`superseded-by:` field and status that mark it superseded by a newer ADR.
+
+```mermaid
+stateDiagram-v2
+    direction LR
+    Draft --> Accepted
+    Draft --> Rejected
+    Accepted --> Superseded
+```
+
+### Plan
+
+`docs/plans/YYYY-MM-DD-<subject>.md`, in one flat folder: one piece of work that builds part of a
+spec or an ADR. Any change before it is built returns it to `Draft 📝`, and only `/build` marks it
+`Built ✅`. It is temporary: once built it is never changed again, and it may be deleted whenever
+nobody needs it.
+
+```mermaid
+stateDiagram-v2
+    direction LR
+    state "Ready to build" as Ready
+    Draft --> Ready
+    Ready --> Draft : any change
+    Ready --> Built : only /build
+```
+
+### Spike record
+
+`docs/spikes/YYYY-MM-DD-<subject>.md`, in one flat folder: one hypothesis tested by a throwaway
+experiment, with its code, every run's output and the finding. Once `Ready to run 🟢`, its design
+is fixed and only the run script adds runs. It is temporary: once finished it is never changed
+again, and it may be deleted whenever nobody needs it.
+
+```mermaid
+stateDiagram-v2
+    direction LR
+    state "Ready to run" as Ready
+    state "Not settled" as NotSettled
+    Draft --> Ready
+    Ready --> Draft : only before the first run
+    Ready --> Confirmed
+    Ready --> Refuted
+    Ready --> NotSettled
+```
 
 ### What every document shares
 
@@ -286,7 +299,8 @@ flowchart LR
   one question at a time, and written into Open questions only if you defer it. A spec or ADR
   becomes `Accepted 👍`, a plan `Ready to build 🟢`, and a spike record `Ready to run 🟢` or
   finished only when that section is empty.
-- **Only legal status moves.** Only the moves in the status diagram are allowed, and only `/build`
+- **Only legal status moves.** Only the moves in the status diagrams under [Documents](#documents)
+  are allowed, and only `/build`
   sets a plan `Built ✅`.
 - **Drift is a finding, not a status.** `/audit` reports it with a suggested correction: correct
   the code, return the spec to `Draft 📝`, or supersede the ADR.
@@ -304,7 +318,7 @@ flowchart LR
 A hook is a script the plugin runs at set moments, such as before Claude edits a file or starts an
 agent. These refuse an edit made with Claude's file-editing tools, and say why:
 
-- a status change the status diagram does not allow, or one that does not set `date:` to that day;
+- a status change the status diagrams do not allow, or one that does not set `date:` to that day;
 - an edit to a decided ADR or a finished spike record, or to a `Ready to run 🟢` spike record's
   design and runs, which only its run script adds;
 - a new document whose file name breaks the naming rule, or an edit that drops one of its name's
