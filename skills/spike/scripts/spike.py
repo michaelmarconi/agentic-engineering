@@ -312,21 +312,21 @@ def remove_leftovers(data, record_path):
     """Delete this project's working folders whose records are finished or gone."""
     prefix = project_key(project_of(record_path)) + "-"
     folder = os.path.dirname(os.path.abspath(record_path))
-    for spikes in (os.path.join(os.path.abspath(data), "spikes"),):
-        try:
-            names = sorted(os.listdir(spikes)) if os.path.isdir(spikes) and not os.path.islink(spikes) else []
-        except OSError:
+    spikes = os.path.join(os.path.abspath(data), "spikes")
+    try:
+        names = sorted(os.listdir(spikes)) if os.path.isdir(spikes) and not os.path.islink(spikes) else []
+    except OSError:
+        return
+    for name in names:
+        if not name.startswith(prefix):
             continue
-        for name in names:
-            if not name.startswith(prefix):
-                continue
-            record = os.path.join(folder, name[len(prefix):] + ".md")
-            try:
-                status = status_of(read_record(record)) if os.path.exists(record) else None
-            except RecordError:
-                continue
-            if status is None or status in FINISHED:
-                shutil.rmtree(os.path.join(spikes, name), ignore_errors=True)
+        record = os.path.join(folder, name[len(prefix):] + ".md")
+        try:
+            status = status_of(read_record(record)) if os.path.exists(record) else None
+        except RecordError:
+            continue
+        if status is None or status in FINISHED:
+            shutil.rmtree(os.path.join(spikes, name), ignore_errors=True)
 
 
 def append_run(path, heading_line, body):

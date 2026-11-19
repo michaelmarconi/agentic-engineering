@@ -62,11 +62,19 @@ class Given(Base):
         with self.assertRaises(plugin_folder.FolderError):
             plugin_folder.root(self.scratchpad, "")
 
-    def test_none_given_falls_back_to_private_folder(self):
+    def test_none_given_falls_back_to_this_sessions_private_folder(self):
         root = plugin_folder.root("", SESSION)
-        self.assertEqual(root, os.path.join(self.temp, f"agentic-{os.getuid()}"))
+        self.assertEqual(root, os.path.join(self.temp, f"agentic-{os.getuid()}", SESSION))
         self.assertTrue(plugin_folder.is_fallback(root))
-        self.assertEqual(stat.S_IMODE(os.stat(root).st_mode) & 0o077, 0)
+        self.assertEqual(stat.S_IMODE(os.stat(plugin_folder.fallback_root()).st_mode) & 0o077, 0)
+
+    def test_sessions_without_a_scratchpad_get_folders_of_their_own(self):
+        self.assertNotEqual(plugin_folder.root("", SESSION), plugin_folder.root("", "another-session"))
+
+    def test_scratchpad_that_cannot_be_written_falls_back(self):
+        with mock.patch.object(plugin_folder, "writable", return_value=False):
+            root = plugin_folder.root(self.scratchpad, SESSION)
+        self.assertEqual(root, os.path.join(plugin_folder.fallback_root(), SESSION))
 
     def test_scratchpad_is_not_the_fallback(self):
         self.assertFalse(plugin_folder.is_fallback(plugin_folder.root(self.scratchpad, SESSION)))
@@ -97,9 +105,14 @@ class FromEvent(Base):
         plugin_folder.use_event({"scratchpad_dir": self.scratchpad, "session_id": "other"})
         self.assertEqual(plugin_folder.current(), os.path.join(self.scratchpad, "agentic"))
 
-    def test_event_without_scratchpad_falls_back(self):
+    def test_event_without_scratchpad_falls_back_like_a_script(self):
         plugin_folder.use_event({"session_id": SESSION})
-        self.assertEqual(plugin_folder.current(), plugin_folder.fallback_root())
+        self.assertEqual(plugin_folder.current(), plugin_folder.root("", SESSION))
+
+    def test_event_scratchpad_that_cannot_be_written_falls_back_like_a_script(self):
+        with mock.patch.object(plugin_folder, "writable", return_value=False):
+            plugin_folder.use_event({"scratchpad_dir": self.scratchpad, "session_id": SESSION})
+            self.assertEqual(plugin_folder.current(), plugin_folder.root(self.scratchpad, SESSION))
 
     def test_unusable_fallback_keeps_nothing(self):
         os.makedirs(plugin_folder.fallback_root())

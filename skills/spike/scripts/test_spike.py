@@ -547,7 +547,7 @@ class SecondReview(Project):
         self.put(record(command="pwd"))
         done = self.run_spike(data="", env={"TMPDIR": self.tmp.name})
         self.assertEqual(done.returncode, 0, done.stderr)
-        self.assertIn(os.path.join(self.fallback(), "spikes"), "\n".join(self.runs()))
+        self.assertIn(os.path.join(self.fallback(), "s1", "spikes"), "\n".join(self.runs()))
         self.assertEqual(os.stat(self.fallback()).st_mode & 0o777, 0o700)
 
     def test_refuses_a_spikes_folder_that_cannot_be_made(self):

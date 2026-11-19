@@ -112,7 +112,7 @@ class Keeps(Relay):
         self.scratchpad = ""
         with mock.patch.object(plugin_folder.tempfile, "gettempdir", return_value=temp):
             self.agent(VERIFIER, "x")
-            fallback = plugin_folder.fallback_root()
+            fallback = plugin_folder.root("", "s1")
         self.assertFalse(os.path.exists(self.data))
         self.assertEqual([r["text"] for r in verify_relay.reports(fallback, "s1")], ["x"])
 

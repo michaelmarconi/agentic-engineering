@@ -1,7 +1,7 @@
 ---
 type: regex
 target: trace
-pattern: '\"name\":\"(?:Write|Edit|MultiEdit)\",\"input\":\{\"file_path\":\"[^\"]*(?:/reports/|agentic-reports-)'
+pattern: '\"name\":\"(?:Write|Edit|MultiEdit)\",\"input\":\{\"file_path\":\"[^\"]*/reports/'
 match: not_contains
 weight: 1
 ---
