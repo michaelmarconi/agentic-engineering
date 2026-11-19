@@ -10,6 +10,7 @@ from contextlib import redirect_stdout
 from unittest import mock
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import plugin_folder  # noqa: E402
 import audit_relay  # noqa: E402
 
 AUDITOR = ("agentic:auditor", "Document: /r/docs/adrs/0001-a.md\nRepository: /r\nAudit it.")
@@ -25,14 +26,13 @@ class Relay(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
         self.addCleanup(self.tmp.cleanup)
-        self.data = os.path.join(self.tmp.name, "data")
-        patcher = mock.patch.dict(os.environ, {"CLAUDE_PLUGIN_DATA": self.data})
-        patcher.start()
-        self.addCleanup(patcher.stop)
+        self.scratchpad = os.path.join(self.tmp.name, "scratchpad")
+        self.data = os.path.join(self.scratchpad, "agentic")
+        self.addCleanup(plugin_folder.reset)
         self.calls = 0
 
     def hook(self, event, session="s1"):
-        event = dict(event, session_id=session)
+        event = dict({"scratchpad_dir": self.scratchpad}, **event, session_id=session)
         out = io.StringIO()
         with mock.patch("sys.stdin", io.StringIO(json.dumps(event))), redirect_stdout(out):
             self.assertEqual(audit_relay.main([]), 0)
@@ -107,10 +107,15 @@ class Keeps(Relay):
         self.agent(AUDITOR, "theirs", session="s2")
         self.assertEqual([r["text"] for r in self.reports("s1")], ["mine"])
 
-    def test_nothing_saved_without_data_folder(self):
-        with mock.patch.dict(os.environ, {"CLAUDE_PLUGIN_DATA": ""}):
+    def test_kept_in_the_private_folder_without_a_scratchpad(self):
+        temp = os.path.join(self.tmp.name, "system-temp")
+        os.makedirs(temp)
+        self.scratchpad = ""
+        with mock.patch.object(plugin_folder.tempfile, "gettempdir", return_value=temp):
             self.agent(AUDITOR, "x")
+            fallback = plugin_folder.fallback_root()
         self.assertFalse(os.path.exists(self.data))
+        self.assertEqual([r["text"] for r in audit_relay.reports(fallback, "s1")], ["x"])
 
     def test_clear(self):
         self.agent(AUDITOR, "x")

@@ -12,8 +12,8 @@
    the status if the plan has none, changing nothing else in the file, and commits that on its own. It writes the file itself, so the
    status hook, which refuses `Built ✅` from Claude, never sees it;
 4. pushes the branch to `origin`, and names the commit the branch is then at, `Head: <commit>`;
-5. writes the build's report file (docs/adrs/0033 and 0034) with scripts/run_report.py, outside the
-   repository, even when it refused to start: Claude's own sections, read from stdin under the
+5. writes the build's report file (docs/adrs/0051 and 0034) with scripts/run_report.py, in the
+   session's scratchpad given by --scratchpad, even when it refused to start: Claude's own sections, read from stdin under the
    report's `## ` headings, then the four reports build_relay.py kept for this plan in this session
    (code review, security review, build review and correction check, each "No report kept." when
    there is none) and this script's own lines, word for word. Sections it can't use, such as one
@@ -27,9 +27,10 @@ same notes are already on the branch since the default branch. A note must be on
 
 It prints what happened, one line per step, then the report file's path and the file as written.
 
-When a build's correction check failed, the person may accept the build as it stands
-(docs/adrs/0038). Two options serve that, each reading the newest build report for the plan
-(run_report.reports):
+When a build's correction check failed, the build asks the person straight away whether to accept
+it as it stands (docs/adrs/0052). Two options serve that, each reading the newest build report for
+the plan in this session's scratchpad (run_report.reports), so a report from another session is
+never found:
 
 - --open-findings prints the open findings the correction check listed, word for word, and the
   report's path, or the one reason none can be accepted. It changes nothing and writes no report.
@@ -46,8 +47,8 @@ stays the newest.
 Exit codes: 0 when every step that applied succeeded, or --open-findings found findings; 1 when a
 commit, the push or the report file failed, or --reviews-passed was given for a plan that is not
 `Ready to build 🟢` (the plan is then left as it is, and the rest still runs); 2 when it refused to
-start, could not use Claude's sections or was given an unusable release note, changing nothing in
-the repository; 3 when
+start, could not use Claude's sections, was given an unusable release note or a --scratchpad that
+is not this session's, changing nothing in the repository; 3 when
 --open-findings found nothing that can be accepted.
 """
 
@@ -60,6 +61,7 @@ import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "..", "scripts"))
 import build_relay  # noqa: E402
+import plugin_folder  # noqa: E402
 import uncommitted  # noqa: E402
 import run_report  # noqa: E402
 from status_check import BUILT, READY, STATUSES, meant  # noqa: E402
@@ -307,27 +309,27 @@ def findings_in(check):
     return found
 
 
-def newest_report(repo, plan, data):
+def newest_report(repo, plan, root):
     """The path and text of the newest build report whose hand-over names this plan, since another
     plan's name can end like a same-day report's number; raises NotAcceptable when there is none."""
-    for path in run_report.reports("build", os.path.splitext(os.path.basename(plan))[0], repo, data):
+    for path in run_report.reports("build", os.path.splitext(os.path.basename(plan))[0], repo, root):
         with open(path, encoding="utf-8") as f:
             text = f.read()
         output = run_report.subsection(run_report.section("build", text, "The hand-over script's report") or "",
                                        "Output") or ""
         if os.path.normpath(plan) in {os.path.normpath(p) for p in re.findall(r"^Plan: (\S+) ", output, re.M)}:
             return path, text, output
-    raise NotAcceptable("No build report for this plan was found on this computer")
+    raise NotAcceptable("No build report for this plan was found in this session")
 
 
-def open_findings(repo, plan, data):
+def open_findings(repo, plan, root):
     """(report path, open findings) for the plan's newest build report; raises NotAcceptable."""
     with open(os.path.join(repo, plan), encoding="utf-8") as f:
         match = frontmatter_status(f.read())
     status = match.group("value") if match else "no status"
     if not (match and is_ready(status)):
         raise NotAcceptable(f"the plan {plan} is `{status}`, not `{READY}`")
-    path, text, output = newest_report(repo, plan, data)
+    path, text, output = newest_report(repo, plan, root)
     check = run_report.subsection(run_report.section("build", text, "What each review found") or "",
                                   "Correction check", after="Build review") or ""
     result = re.search(r"^\**Result:?\**:?\s*\**(\w+)", check, re.M)
@@ -351,13 +353,13 @@ def open_findings(repo, plan, data):
     return path, findings
 
 
-def accept(repo, plan, data, notes=()):
+def accept(repo, plan, root, notes=()):
     """Mark the plan Built with the open findings in the commit, and push: (code, lines)."""
     refusal = preflight(repo, plan)
     if refusal:
         return 2, [refusal]
     try:
-        path, findings = open_findings(repo, plan, data)
+        path, findings = open_findings(repo, plan, root)
     except NotAcceptable as error:
         return 2, [f"Refused: {error}. Nothing was changed."]
     lines = [f"Branch: {current_branch(repo)}", f"Accepting the build as it stands, from {path}"]
@@ -412,23 +414,30 @@ def main(argv=None):
     parser.add_argument("--report", choices=["-"],
                         help="`-`: read your own sections of the build's report from stdin, as Markdown "
                              "under the report's `## ` headings (needed except with --open-findings)")
-    parser.add_argument("--data", required=True, help='the plugin\'s data folder: "${CLAUDE_PLUGIN_DATA}"')
-    parser.add_argument("--session", help='the session\'s id: "${CLAUDE_SESSION_ID}" (needed except with --open-findings)')
+    parser.add_argument("--scratchpad", default="",
+                        help="the session's scratchpad folder, as your instructions name it; leave it out when "
+                             "they name none, and the report goes in a private temporary folder")
+    parser.add_argument("--session", required=True, help='the session\'s id: "${CLAUDE_SESSION_ID}"')
     args = parser.parse_args(argv)
     repo = os.path.abspath(args.repo)
+    try:
+        root = plugin_folder.root(args.scratchpad, args.session)
+    except plugin_folder.FolderError as error:
+        print(f"Refused: {error}. Nothing was changed.")
+        return 2
     if args.open_findings:
         if not os.path.isfile(os.path.join(repo, args.plan)):
             print(f"No open findings can be accepted: the plan {args.plan} does not exist.")
             return 3
         try:
-            path, findings = open_findings(repo, args.plan, args.data)
+            path, findings = open_findings(repo, args.plan, root)
         except NotAcceptable as error:
             print(f"No open findings can be accepted: {error}.")
             return 3
         print(f"Open findings, from the correction check in {path}:")
         print("\n".join(findings))
         return 0
-    missing = [flag for flag, value in (("--report", args.report), ("--session", args.session),
+    missing = [flag for flag, value in (("--report", args.report),
                                         ("--message", args.message or args.accept_open_findings),
                                         ("--release-note", args.release_note)) if not value]
     if missing:
@@ -444,7 +453,7 @@ def main(argv=None):
               "them and hand over again.")
         return 2
     if args.accept_open_findings:
-        code, lines = accept(repo, args.plan, args.data, args.release_note)
+        code, lines = accept(repo, args.plan, root, args.release_note)
         if not any(line.startswith(f"Plan: {args.plan} is now") for line in lines):
             # No report while the plan is not Built: the failed check must stay the newest report,
             # so the person can still accept it.
@@ -452,14 +461,14 @@ def main(argv=None):
             return code
     else:
         code, lines = hand_over(repo, args.plan, args.message, args.reviews_passed, args.release_note)
-    kept = build_relay.kept_reports(args.data, args.session, args.plan, cwd=repo) or {}
+    kept = build_relay.kept_reports(root, args.session, args.plan, cwd=repo) or {}
     none = NOT_REVIEWED if args.accept_open_findings else NO_REPORT
     copied = {"What each review found": [(title, kept.get(part) or none) for title, part in REVIEWS],
               "The hand-over script's report": [("Output", "\n".join(lines))]}
     name = os.path.splitext(os.path.basename(args.plan))[0]
     try:
-        _, report = run_report.write("build", name, repo, args.data, own, copied, date=today())
-        build_relay.clear(args.data, args.session)
+        _, report = run_report.write("build", name, repo, root, own, copied, date=today())
+        build_relay.clear(root, args.session)
     except run_report.ReportError as error:
         report = [f"Report not written: {error}"]
         code = max(code, 1)

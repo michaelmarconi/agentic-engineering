@@ -23,7 +23,7 @@ Every start of the build skill is recorded, so the branch guard knows a build ma
 includes one the person then chooses not to run here, which only keeps the guard on in that session. The record is
 kept when the session ends or is resumed, since a resumed session carries on, and is deleted once
 unchanged for 30 days (see saved_records.py). Records live in
-$CLAUDE_PLUGIN_DATA/sessions/<session id>.json; without $CLAUDE_PLUGIN_DATA nothing is recorded.
+sessions/<session id>.json in the plugin's folder (plugin_folder.py: `agentic/` in the session's scratchpad); with no usable folder nothing is recorded.
 """
 
 import argparse
@@ -33,6 +33,7 @@ import re
 import sys
 
 import saved_records
+import plugin_folder
 
 BUILD_SKILLS = ("build", "agentic:build")
 TYPED_BUILD = re.compile(r"^\s*/(?:agentic:)?build(?:\s|$)")
@@ -41,7 +42,7 @@ USAGE = ("input_tokens", "cache_read_input_tokens", "cache_creation_input_tokens
 
 
 def folder():
-    data = os.environ.get("CLAUDE_PLUGIN_DATA")
+    data = plugin_folder.current()
     return os.path.join(data, "sessions") if data else None
 
 
@@ -170,6 +171,7 @@ def main(argv=None):
         event = json.load(sys.stdin)
     except ValueError:
         return 0
+    plugin_folder.use_event(event)
     if not isinstance(event, dict):
         return 0
     handler = HANDLERS.get(event.get("hook_event_name"))

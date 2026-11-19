@@ -1,7 +1,6 @@
 """Tests for run_report.py, the shared code that writes a build's or an audit's report file."""
 
 import os
-import stat
 import sys
 import tempfile
 import unittest
@@ -27,50 +26,23 @@ class Names(unittest.TestCase):
 
 
 class Folder(unittest.TestCase):
+    """The reports folder inside the plugin's folder, which plugin_folder.py chooses."""
+
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
         self.addCleanup(self.tmp.cleanup)
-        self.temp = os.path.join(self.tmp.name, "system-temp")
-        os.makedirs(self.temp)
-        patcher = mock.patch.object(run_report.tempfile, "gettempdir", return_value=self.temp)
-        patcher.start()
-        self.addCleanup(patcher.stop)
 
-    def test_data_folder_used(self):
-        data = os.path.join(self.tmp.name, "data")
-        folder, fell_back = run_report.report_folder(data, "/work/my repo")
-        self.assertEqual(folder, os.path.join(data, "reports", "my-repo"))
-        self.assertFalse(fell_back)
+    def test_reports_under_the_plugin_folder(self):
+        root = os.path.join(self.tmp.name, "scratchpad", "agentic")
+        folder = run_report.report_folder(root, "/work/my repo")
+        self.assertEqual(folder, os.path.join(root, "reports", "my-repo"))
         self.assertTrue(os.path.isdir(folder))
 
-    def test_empty_data_falls_back_to_private_folder(self):
-        folder, fell_back = run_report.report_folder("", "/work/repo")
-        root = os.path.join(self.temp, f"agentic-reports-{os.getuid()}")
-        self.assertEqual(folder, os.path.join(root, "repo"))
-        self.assertTrue(fell_back)
-        self.assertEqual(stat.S_IMODE(os.stat(root).st_mode) & 0o077, 0)
-
-    def test_unwritable_data_falls_back(self):
-        data = os.path.join(self.tmp.name, "data")
-        with mock.patch.object(run_report, "writable", side_effect=lambda f: not f.startswith(data)):
-            folder, fell_back = run_report.report_folder(data, "/work/repo")
-        self.assertTrue(fell_back)
-        self.assertTrue(folder.startswith(self.temp))
-
-    def test_fallback_others_can_open_is_refused(self):
-        root = os.path.join(self.temp, f"agentic-reports-{os.getuid()}")
-        os.makedirs(root)
-        os.chmod(root, 0o755)
+    def test_folder_that_cannot_be_made_is_refused(self):
+        blocker = os.path.join(self.tmp.name, "file")
+        open(blocker, "w").close()
         with self.assertRaises(run_report.ReportError):
-            run_report.report_folder("", "/work/repo")
-
-    def test_fallback_symlink_is_refused(self):
-        root = os.path.join(self.temp, f"agentic-reports-{os.getuid()}")
-        elsewhere = os.path.join(self.tmp.name, "elsewhere")
-        os.makedirs(elsewhere, mode=0o700)
-        os.symlink(elsewhere, root)
-        with self.assertRaises(run_report.ReportError):
-            run_report.report_folder("", "/work/repo")
+            run_report.report_folder(blocker, "/work/repo")
 
 
 class Parse(unittest.TestCase):
@@ -115,7 +87,7 @@ class Write(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
         self.addCleanup(self.tmp.cleanup)
-        self.data = os.path.join(self.tmp.name, "data")
+        self.data = os.path.join(self.tmp.name, "scratchpad", "agentic")
 
     def write(self, own=None, copied=None, kind="build", name="add-numbers"):
         return run_report.write(kind, name, "/work/repo", self.data, own or {}, copied or {},
@@ -185,10 +157,15 @@ class Write(unittest.TestCase):
                 run_report.parse("verify", f"## {heading}\n\nmine\n")
 
     def test_fallback_is_said(self):
-        with mock.patch.object(run_report.tempfile, "gettempdir", return_value=self.tmp.name):
-            path, lines = run_report.write("build", "p", "/work/repo", "", {}, {}, date="2026-11-14")
-        self.assertTrue(any("could not be written" in line for line in lines))
+        with mock.patch.object(run_report.plugin_folder.tempfile, "gettempdir", return_value=self.tmp.name):
+            root = run_report.plugin_folder.root("", "s")
+            path, lines = run_report.write("build", "p", "/work/repo", root, {}, {}, date="2026-11-14")
+        self.assertTrue(any("No scratchpad was given" in line for line in lines))
         self.assertTrue(path.startswith(self.tmp.name))
+
+    def test_scratchpad_says_nothing_more(self):
+        _, lines = self.write()
+        self.assertFalse(any("No scratchpad" in line for line in lines))
 
     def test_file_that_cannot_be_written_is_refused(self):
         with mock.patch("builtins.open", side_effect=OSError(36, "File name too long")):
@@ -206,12 +183,7 @@ class Find(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
         self.addCleanup(self.tmp.cleanup)
-        self.data = os.path.join(self.tmp.name, "data")
-        self.temp = os.path.join(self.tmp.name, "system-temp")
-        os.makedirs(self.temp)
-        patcher = mock.patch.object(run_report.tempfile, "gettempdir", return_value=self.temp)
-        patcher.start()
-        self.addCleanup(patcher.stop)
+        self.data = os.path.join(self.tmp.name, "scratchpad", "agentic")
 
     def write(self, date, name="add-numbers", data=None, own=None, copied=None):
         return run_report.write("build", name, "/work/repo", self.data if data is None else data,
@@ -232,19 +204,11 @@ class Find(unittest.TestCase):
     def test_nothing_found(self):
         self.assertEqual(run_report.reports("build", "add-numbers", "/work/repo", self.data), [])
 
-    def test_fallback_read_when_the_data_folder_has_none(self):
-        fallen = self.write("2026-11-14", data="")
-        self.assertEqual(run_report.reports("build", "add-numbers", "/work/repo", self.data), [fallen])
-
-    def test_data_folder_wins_over_the_fallback(self):
-        self.write("2026-11-15", data="")
+    def test_only_the_given_folder_is_read(self):
+        other = os.path.join(self.tmp.name, "other")
+        run_report.write("build", "add-numbers", "/work/repo", other, {}, {}, date="2026-11-15")
         mine = self.write("2026-11-14")
         self.assertEqual(run_report.reports("build", "add-numbers", "/work/repo", self.data), [mine])
-
-    def test_fallback_others_can_open_is_ignored(self):
-        self.write("2026-11-14", data="")
-        os.chmod(run_report.fallback_root(), 0o755)
-        self.assertEqual(run_report.reports("build", "add-numbers", "/work/repo", self.data), [])
 
     def test_sections_read_back(self):
         copied = {"What each review found": [("Build review", "Result: PASS\n"),

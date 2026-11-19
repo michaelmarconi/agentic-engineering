@@ -7,25 +7,25 @@ text that goes into the file word for word, as `###` subsections under the headi
 A heading only a script fills cannot come from Claude, so Claude cannot write its own version of a
 copied report.
 
-The file goes in <data>/reports/<repository>/<date>-<kind>-<name>.md, where <data> is the plugin's
-data folder. When that folder is empty or can't be written, as in the plugin's own test runs, the
-file goes in `agentic-reports-<user id>` in the system's temporary folder instead, which only this
-user can open, and the lines printed for Claude say so. A second report of the same name on the
-same day gets `-2`, `-3` and so on: no report is ever overwritten, and none is deleted.
+The file goes in <root>/reports/<repository>/<date>-<kind>-<name>.md, where <root> is the plugin's
+folder that plugin_folder.py gives: `agentic/` in the session's scratchpad (docs/adrs/0051), or,
+with no scratchpad, a private folder in the system's temporary folder, which the lines printed for
+Claude then name. A second report of the same name on the same day gets `-2`, `-3` and so on: no
+report is ever overwritten, and none is deleted.
 
 The lines printed for Claude give the file's path first, then the headings, each copied report's
 length, and the file as written, between fixed `===` lines, so the run's own record shows exactly
 what the person will read.
 
-`reports` finds a plan's earlier reports, newest first, and `section` and `subsection` read one back,
-so hand_over.py can find a build's failed correction check (docs/adrs/0038). It reads the data
-folder's reports, and the private folder's only when the data folder has none and the private
-folder is one only this user can open.
+`reports` finds a plan's earlier reports in the same folder, newest first, and `section` and
+`subsection` read one back, so hand_over.py can find a build's failed correction check
+(docs/adrs/0052).
 """
 
 import os
 import re
-import tempfile
+
+import plugin_folder
 
 HEADINGS = {
     "build": [
@@ -84,73 +84,27 @@ def safe(name):
     return name or "report"
 
 
-def writable(folder):
+def report_folder(root, repository):
+    """The folder for this repository's reports inside the plugin's folder `root`, made if need be."""
+    folder = os.path.join(os.path.abspath(root), "reports", safe(os.path.basename(os.path.normpath(repository))))
     try:
         os.makedirs(folder, exist_ok=True)
-        os.rmdir(tempfile.mkdtemp(dir=folder))
-        return True
-    except OSError:
-        return False
-
-
-def fallback_root():
-    """The folder used when the data folder can't be written: only this user can open it, so other
-    users can neither read a report nor put anything in its place."""
-    return os.path.join(tempfile.gettempdir(), f"agentic-reports-{os.getuid()}")
-
-
-def private(root):
-    try:
-        os.makedirs(root, mode=0o700, exist_ok=True)
     except OSError as error:
-        raise ReportError(f"neither the plugin's data folder nor {root} can be written ({error})")
-    if not trusted(root):
-        raise ReportError(f"{root} is not a folder only you can open; delete it and run again")
-    return root
+        raise ReportError(f"{folder} can't be made ({error.strerror or error})")
+    return folder
 
 
-def report_folder(data, repository):
-    """The folder for this repository's reports, and whether it is the fallback."""
-    name = safe(os.path.basename(os.path.normpath(repository)))
-    if data:
-        folder = os.path.join(os.path.abspath(data), "reports", name)
-        if writable(folder):
-            return folder, False
-    folder = os.path.join(private(fallback_root()), name)
-    if not writable(folder):
-        raise ReportError(f"{folder} can't be written")
-    return folder, True
-
-
-def trusted(root):
-    """Whether `root` is a real folder that only this user can open, so a report in it was not put
-    there by someone else."""
-    try:
-        info = os.lstat(root)
-    except OSError:
-        return False
-    return os.path.isdir(root) and not os.path.islink(root) and info.st_uid == os.getuid() \
-        and not info.st_mode & 0o077
-
-
-def reports(kind, name, repository, data):
-    """The paths of the reports of this kind and name for the repository, newest first: by date,
-    then by the number added when several share a date. Looks in the data folder, and only when it
-    holds none, in the private fallback folder."""
-    folder = safe(os.path.basename(os.path.normpath(repository)))
+def reports(kind, name, repository, root):
+    """The paths of the reports of this kind and name for the repository in the plugin's folder
+    `root`, newest first: by date, then by the number added when several share a date."""
+    place = os.path.join(os.path.abspath(root), "reports", safe(os.path.basename(os.path.normpath(repository))))
     pattern = re.compile(r"^(\d{4}-\d{2}-\d{2})-" + re.escape(f"{kind}-{safe(name)}") + r"(?:-(\d+))?\.md$")
-    places = [os.path.join(os.path.abspath(data), "reports", folder)] if data else []
-    if trusted(fallback_root()):
-        places.append(os.path.join(fallback_root(), folder))
-    for place in places:
-        try:
-            names = os.listdir(place)
-        except OSError:
-            continue
-        found = [(m.group(1), int(m.group(2) or 1), n) for n in names for m in [pattern.match(n)] if m]
-        if found:
-            return [os.path.join(place, n) for _, _, n in sorted(found, reverse=True)]
-    return []
+    try:
+        names = os.listdir(place)
+    except OSError:
+        return []
+    found = [(m.group(1), int(m.group(2) or 1), n) for n in names for m in [pattern.match(n)] if m]
+    return [os.path.join(place, n) for _, _, n in sorted(found, reverse=True)]
 
 
 def heading_at(text, line, start=0):
@@ -243,7 +197,7 @@ def render(kind, own, copied):
     return "\n".join(parts)
 
 
-def write(kind, name, repository, data, own, copied, date):
+def write(kind, name, repository, root, own, copied, date):
     """Write the report and return (path, the lines to print for Claude).
 
     `own` is Claude's {heading: text}; `copied` is {heading: [(title, text), ...]}, each text
@@ -251,7 +205,7 @@ def write(kind, name, repository, data, own, copied, date):
     unknown = [h for h in copied if h not in HEADINGS[kind]]
     if unknown:
         raise ReportError(f"unknown heading {unknown[0]!r}")
-    folder, fell_back = report_folder(data, repository)
+    folder = report_folder(root, repository)
     base = f"{date}-{kind}-{safe(name)}"
     text = render(kind, own, copied)
     number = 1
@@ -266,8 +220,8 @@ def write(kind, name, repository, data, own, copied, date):
         except OSError as error:
             raise ReportError(f"{path} can't be written: {error.strerror or error}")
     lines = [f"Report written: {path}"]
-    if fell_back:
-        lines.append("The plugin's data folder could not be written, so the report is in a folder only you can open.")
+    if plugin_folder.is_fallback(root):
+        lines.append("No scratchpad was given, so the report is in a folder only you can open.")
     lines.append("Headings: " + "; ".join(HEADINGS[kind]))
     for heading in HEADINGS[kind]:
         for title, body in copied.get(heading, []):

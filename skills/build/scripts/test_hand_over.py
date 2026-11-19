@@ -37,6 +37,7 @@ class Repo(unittest.TestCase):
         self.addCleanup(self.tmp.cleanup)
         self.dir = os.path.join(self.tmp.name, "repo")
         os.makedirs(self.dir)
+        os.makedirs(os.path.join(self.tmp.name, "s1", "scratchpad"))
         self.git("init", "-q", "-b", "main")
         self.put(PLAN, plan())
         self.git("add", "-A")
@@ -75,10 +76,10 @@ class Repo(unittest.TestCase):
 
     def run_it(self, *args, own="", notes=(NOTE,)):
         out = io.StringIO()
-        self.data = os.path.join(self.tmp.name, "data")
+        self.data = os.path.join(self.tmp.name, "s1", "scratchpad", "agentic")
         with redirect_stdout(out), mock.patch("sys.stdin", io.StringIO(own)):
             code = hand_over.main(["--repo", self.dir, "--plan", PLAN, "--message", "Build the thing",
-                                   "--data", self.data, "--session", "s1", "--report", "-",
+                                   "--scratchpad", os.path.dirname(self.data), "--session", "s1", "--report", "-",
                                    *(() if notes is None else [x for n in notes for x in ("--release-note", n)]),
                                    *args])
         return code, out.getvalue()
@@ -292,7 +293,7 @@ class Report(Repo):
 
     def keep(self, plan_path, reports):
         record = {"commit": "abc", "repository": self.dir, "plan": plan_path, "reports": reports, "started": {}}
-        path = build_relay.record_path("s1", os.path.join(self.tmp.name, "data"))
+        path = build_relay.record_path("s1", os.path.join(self.tmp.name, "s1", "scratchpad", "agentic"))
         os.makedirs(os.path.dirname(path), exist_ok=True)
         with open(path, "w", encoding="utf-8") as f:
             json.dump(record, f)
@@ -382,7 +383,7 @@ class OpenFindings(Repo):
 
     def setUp(self):
         super().setUp()
-        self.data = os.path.join(self.tmp.name, "data")
+        self.data = os.path.join(self.tmp.name, "s1", "scratchpad", "agentic")
         self.put("src/thing.py", "print('thing')\n")
         self.git("add", "-A")
         self.git("commit", "-q", "-m", "Build the thing")
@@ -399,18 +400,39 @@ class OpenFindings(Repo):
     def run_open(self):
         out = io.StringIO()
         with redirect_stdout(out):
-            code = hand_over.main(["--repo", self.dir, "--plan", PLAN, "--data", self.data, "--open-findings"])
+            code = hand_over.main(["--repo", self.dir, "--plan", PLAN, "--scratchpad", os.path.dirname(self.data),
+                                   "--session", "s1", "--open-findings"])
         return code, out.getvalue()
 
     def run_accept(self, own="## What was built\n\nAccepted as it stands.\n", *extra):
         out = io.StringIO()
         with redirect_stdout(out), mock.patch("sys.stdin", io.StringIO(own)):
-            code = hand_over.main(["--repo", self.dir, "--plan", PLAN, "--data", self.data, "--session", "s1",
+            code = hand_over.main(["--repo", self.dir, "--plan", PLAN, "--scratchpad", os.path.dirname(self.data), "--session", "s1",
                                    "--report", "-", "--accept-open-findings", "--release-note", NOTE, *extra])
         return code, out.getvalue()
 
     def reports(self):
         return run_report.reports("build", "2026-11-03-thing", self.dir, self.data)
+
+    def test_report_in_another_sessions_scratchpad_is_not_found(self):
+        other = os.path.join(self.tmp.name, "s0", "scratchpad", "agentic")
+        run_report.write("build", "2026-11-03-thing", self.dir, other, {}, {
+            "What each review found": [("Correction check", CHECK)]}, date="2026-11-09")
+        code, out = self.run_open()
+        self.assertEqual(code, 3)
+        self.assertIn("No build report for this plan was found in this session", out)
+
+    def test_mistyped_scratchpad_refused_before_anything_changes(self):
+        self.failed_report()
+        before = self.git("rev-parse", "HEAD")
+        out = io.StringIO()
+        with redirect_stdout(out), mock.patch("sys.stdin", io.StringIO("")):
+            code = hand_over.main(["--repo", self.dir, "--plan", PLAN, "--session", "s1", "--report", "-",
+                                   "--scratchpad", os.path.join(self.tmp.name, "s1-scratchpad"),
+                                   "--accept-open-findings", "--release-note", NOTE])
+        self.assertEqual(code, 2)
+        self.assertIn("does not exist", out.getvalue())
+        self.assertEqual(self.git("rev-parse", "HEAD"), before)
 
     def assert_refused(self, reason):
         before = (self.subjects(), self.read(PLAN), self.reports())

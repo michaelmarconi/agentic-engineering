@@ -77,14 +77,14 @@ window <words>
     the reason, words it can't read, a commit that doesn't exist or isn't on this branch, and a
     window older than the history the clone holds; it never falls back to every commit.
 
-start --data <folder> --session <id>
+start [--scratchpad <folder>] --session <id>
     Clears what the audit hook (scripts/audit_relay.py) kept of this session's audit agents, so an
     earlier audit that stopped part way leaves nothing in this one's report. Run it first in every
     audit. Prints nothing.
 
-report --scope <what was audited> --data <folder> --session <id>
-    Writes the audit's report file (ADRs 0033 and 0034) with scripts/run_report.py, outside the
-    project, and clears the kept reports. Claude's own sections arrive on stdin as Markdown under
+report --scope <what was audited> [--scratchpad <folder>] --session <id>
+    Writes the audit's report file (ADRs 0051 and 0034) with scripts/run_report.py, in the
+    session's scratchpad, and clears the kept reports. Claude's own sections arrive on stdin as Markdown under
     the report's `## ` headings. The script adds the rest word for word: the picker agent's report
     under "Documents checked", each auditor's and its checker's under "Drift", the brief checker's
     and its checkers' under "Contradicts the brief", and the problems `documents` finds under
@@ -114,6 +114,7 @@ from status_check import (ACCEPTED, ADR_STATUSES, BUILT, DRAFT, FINISHED,  # noq
                           OLD_LAYOUT, name_problem, old_layout, reference_problem, requirements, status_of)
 from doc_references import targets  # noqa: E402
 import audit_relay  # noqa: E402
+import plugin_folder  # noqa: E402
 import run_report  # noqa: E402
 
 KINDS = {"spec": SPEC_STATUSES, "ADR": ADR_STATUSES, "plan": STATUSES, "spike record": SPIKE_STATUSES}
@@ -657,7 +658,7 @@ def main(argv=None):
                     "Output: nothing. Exit codes: 0 done.")
     report_parser = commands.add_parser(
         "report", help="write the audit's report file",
-        description="Write the audit's report file outside the project, from Claude's sections on stdin "
+        description="Write the audit's report file in the session's scratchpad, from Claude's sections on stdin "
                     "(Markdown under the report's `## ` headings) and the reports the audit hook kept, "
                     "copied word for word; then clear the kept reports. Output: the file's path on the first "
                     "line, then each heading and each copied report with its length. Exit codes: 0 written; "
@@ -668,12 +669,19 @@ def main(argv=None):
                                help="the audit stopped before checking anything, so no document checks are added")
     report_parser.add_argument("--now", help="the report's date, in ISO 8601; for tests (default: now)")
     for sub in (start_parser, report_parser):
-        sub.add_argument("--data", required=True, help='the plugin\'s data folder: "${CLAUDE_PLUGIN_DATA}"')
+        sub.add_argument("--scratchpad", default="",
+                         help="the session's scratchpad folder, as your instructions name it; leave it out when "
+                              "they name none, and a private temporary folder is used")
         sub.add_argument("--session", required=True, help='the session\'s id: "${CLAUDE_SESSION_ID}"')
     for sub in (documents_parser, window_parser, report_parser):
         sub.add_argument("--project", default=".", help="the project's folder (default: the current folder)")
     args = parser.parse_args(argv)
     try:
+        if args.command in ("start", "report"):
+            try:
+                args.data = plugin_folder.root(args.scratchpad, args.session)
+            except plugin_folder.FolderError as error:
+                raise Refused(str(error))
         if args.command == "start":
             audit_relay.clear(args.data, args.session)
             return 0

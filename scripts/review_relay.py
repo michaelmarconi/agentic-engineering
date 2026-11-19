@@ -79,8 +79,8 @@ feedback, practices, spike or release) and the shared language checker, which ch
   review of the same document, such as a spike record's verdict review after its design review,
   starts a new one.
 
-Saved reviews live in $CLAUDE_PLUGIN_DATA/reviews/<session>/, outside the project, one file per
-document. Without $CLAUDE_PLUGIN_DATA nothing is saved. Any other agent or tool, and any input it
+Saved reviews live in reviews/<session>/ in the plugin's folder (plugin_folder.py: `agentic/` in the session's scratchpad), outside the
+project, one file per document. With no usable folder nothing is saved. Any other agent or tool, and any input it
 cannot read, is left alone, so the hook never blocks anything else.
 """
 
@@ -97,6 +97,7 @@ import tempfile
 import repository as repositories
 import saved_records
 import subagent_report
+import plugin_folder
 
 try:
     import fcntl
@@ -254,7 +255,7 @@ def current_text(repository, paths, prompt):
 
 
 def folder(session):
-    data = os.environ.get("CLAUDE_PLUGIN_DATA")
+    data = plugin_folder.current()
     if not data:
         return None
     safe = session if re.fullmatch(r"[A-Za-z0-9_-]{1,100}", session) else hashlib.sha256(
@@ -721,12 +722,13 @@ def main(argv=None):
         description=__doc__.split("\n\n")[0],
         epilog="Reads one Claude Code hook event as JSON from stdin. Prints a PreToolUse decision "
                "as JSON when it starts or refuses the correction checker, and nothing otherwise. "
-               "Always exits 0. Saved reviews go under $CLAUDE_PLUGIN_DATA/reviews/.")
+               "Always exits 0. Saved reviews go under agentic/reviews/ in the session's scratchpad.")
     parser.parse_args(argv)
     try:
         event = json.load(sys.stdin)
     except ValueError:
         return 0
+    plugin_folder.use_event(event)
     try:
         out = handle(event)
     except Exception:  # never block a step over a fault in this hook

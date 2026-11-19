@@ -12,6 +12,7 @@ from contextlib import redirect_stdout
 from unittest import mock
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import plugin_folder  # noqa: E402
 import build_relay  # noqa: E402
 import build_session  # noqa: E402
 
@@ -29,10 +30,12 @@ class Relay(unittest.TestCase):
         self.addCleanup(self.tmp.cleanup)
         self.repo = os.path.join(self.tmp.name, "repo")
         os.makedirs(self.repo)
-        patcher = mock.patch.dict(os.environ, {"CLAUDE_PLUGIN_DATA": os.path.join(self.tmp.name, "data"),
-                                               "CLAUDE_PROJECT_DIR": self.repo})
+        patcher = mock.patch.dict(os.environ, {"CLAUDE_PROJECT_DIR": self.repo})
         patcher.start()
         self.addCleanup(patcher.stop)
+        self.scratchpad = os.path.join(self.tmp.name, "scratchpad")
+        plugin_folder.use_event({"scratchpad_dir": self.scratchpad})
+        self.addCleanup(plugin_folder.reset)
         self.git("init", "-q", "-b", "main")
         self.commit("Start")
         build_session.save("s1", {"building": True})
@@ -47,7 +50,7 @@ class Relay(unittest.TestCase):
         return self.git("rev-parse", "HEAD")
 
     def hook(self, event, session="s1"):
-        event = dict(event, session_id=session)
+        event = dict({"scratchpad_dir": self.scratchpad}, **event, session_id=session)
         out = io.StringIO()
         with mock.patch("sys.stdin", io.StringIO(json.dumps(event))), redirect_stdout(out):
             self.assertEqual(build_relay.main([]), 0)
@@ -330,7 +333,7 @@ class Corrections(Relay):
     def test_a_stop_outside_a_build_saves_nothing(self):
         build_session.save("s2", {})
         self.stopped("agentic:build-reviewer", "a1", "plan finding", session="s2")
-        self.assertFalse(os.path.exists(os.path.join(self.tmp.name, "data", "builds", "s2.json")))
+        self.assertFalse(os.path.exists(os.path.join(self.tmp.name, "scratchpad", "agentic", "builds", "s2.json")))
 
     def test_an_agent_that_stops_again_has_its_last_report_kept(self):
         self.code_review()
@@ -461,7 +464,7 @@ class KeptForTheReport(Relay):
                    "tool_response": response})
 
     def kept(self, plan=PLAN):
-        return build_relay.kept_reports(os.path.join(self.tmp.name, "data"), "s1", plan, cwd=self.repo)
+        return build_relay.kept_reports(os.path.join(self.tmp.name, "scratchpad", "agentic"), "s1", plan, cwd=self.repo)
 
     def test_reviews_and_check_kept_after_the_check(self):
         self.checked({"content": [{"type": "text", "text": "Result: PASS\nall made"}]})
@@ -529,7 +532,7 @@ class LeftAlone(Relay):
     def test_saving_reports_deletes_another_sessions_once_they_are_a_month_old(self):
         build_session.save("old", {"building": True})
         self.plan_review(session="old")
-        builds = os.path.join(self.tmp.name, "data", "builds")
+        builds = os.path.join(self.tmp.name, "scratchpad", "agentic", "builds")
         month = time.time() - 31 * 24 * 60 * 60
         for name in os.listdir(builds):
             os.utime(os.path.join(builds, name), (month, month))

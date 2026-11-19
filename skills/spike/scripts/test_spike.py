@@ -47,7 +47,9 @@ class Project(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
         self.addCleanup(self.tmp.cleanup)
-        self.data = os.path.join(self.tmp.name, "data")
+        self.scratchpad = os.path.join(self.tmp.name, "s1", "scratchpad")
+        os.makedirs(self.scratchpad)
+        self.data = os.path.join(self.scratchpad, "agentic")
         self.project = self.make_project("project")
 
     def make_project(self, name):
@@ -68,7 +70,8 @@ class Project(unittest.TestCase):
         environment = {k: v for k, v in os.environ.items() if k != "CLAUDE_CODE_REMOTE"}
         environment.update(env or {})
         return subprocess.run(
-            [sys.executable, SCRIPT, "run", self.path(project), "--data", self.data if data is None else data, *args],
+            [sys.executable, SCRIPT, "run", self.path(project), "--session", "s1",
+             *(["--scratchpad", self.scratchpad if data is None else data] if data != "" else []), *args],
             capture_output=True, text=True, env=environment, cwd=cwd or self.tmp.name,
         )
 
@@ -166,7 +169,7 @@ class Refusals(Project):
     def test_help(self):
         done = subprocess.run([sys.executable, SCRIPT, "run", "--help"], capture_output=True, text=True)
         self.assertEqual(done.returncode, 0)
-        for word in ("--data", "--observation", "Exit codes", "export-ignore"):
+        for word in ("--scratchpad", "--observation", "Exit codes", "export-ignore"):
             self.assertIn(word, done.stdout)
 
     def test_refuses_unless_ready_to_run(self):
@@ -178,11 +181,13 @@ class Refusals(Project):
             self.assertIn("Ready to run 🟢", done.stderr)
             self.assertEqual(self.text(), before)
 
-    def test_refuses_an_empty_data_folder(self):
+    def test_refuses_another_sessions_scratchpad(self):
         self.put(record())
-        done = self.run_spike(data="")
+        other = os.path.join(self.tmp.name, "s0", "scratchpad")
+        os.makedirs(other)
+        done = self.run_spike(data=other)
         self.assertEqual(done.returncode, 1)
-        self.assertIn("CLAUDE_PLUGIN_DATA", done.stderr)
+        self.assertIn("is not the scratchpad of session s1", done.stderr)
         self.assertNotIn("### Run", self.text())
 
     def test_refuses_a_record_without_a_command(self):
@@ -421,13 +426,11 @@ class Redaction(Project):
 
 
 class WorkingFolder(Project):
-    def test_falls_back_to_the_temporary_folder_when_data_cannot_be_written(self):
-        blocked = os.path.join(self.tmp.name, "blocked")
-        pathlib.Path(blocked).write_text("a file, so no folder can be made inside it")
+    def test_in_the_scratchpad(self):
         self.put(record(command="pwd"))
-        done = self.run_spike(data=blocked, env={"TMPDIR": self.tmp.name})
+        done = self.run_spike()
         self.assertEqual(done.returncode, 0, done.stderr)
-        self.assertIn(os.path.join(self.tmp.name, "agentic-spikes"), "\n".join(self.runs()))
+        self.assertIn(os.path.join(self.data, "spikes"), "\n".join(self.runs()))
 
     def test_deleted_after_each_run(self):
         self.put(record())
@@ -538,35 +541,29 @@ class SecondReview(Project):
     """Corrections from the second code review."""
 
     def fallback(self):
-        return os.path.join(self.tmp.name, f"agentic-spikes-{os.getuid()}")
+        return os.path.join(self.tmp.name, f"agentic-{os.getuid()}")
 
-    def test_falls_back_to_a_private_folder_of_this_user(self):
-        blocked = os.path.join(self.tmp.name, "blocked")
-        pathlib.Path(blocked).write_text("a file, so no folder can be made inside it")
+    def test_falls_back_to_a_private_folder_of_this_user_without_a_scratchpad(self):
         self.put(record(command="pwd"))
-        done = self.run_spike(data=blocked, env={"TMPDIR": self.tmp.name})
+        done = self.run_spike(data="", env={"TMPDIR": self.tmp.name})
         self.assertEqual(done.returncode, 0, done.stderr)
-        self.assertIn(self.fallback(), "\n".join(self.runs()))
+        self.assertIn(os.path.join(self.fallback(), "spikes"), "\n".join(self.runs()))
         self.assertEqual(os.stat(self.fallback()).st_mode & 0o777, 0o700)
 
-    @unittest.skipIf(os.geteuid() == 0, "root can write to any folder")
-    def test_falls_back_when_the_spikes_folder_exists_but_cannot_be_written(self):
-        os.makedirs(os.path.join(self.data, "spikes"))
-        os.chmod(os.path.join(self.data, "spikes"), 0o500)
-        self.addCleanup(os.chmod, os.path.join(self.data, "spikes"), 0o700)
+    def test_refuses_a_spikes_folder_that_cannot_be_made(self):
+        os.makedirs(self.data)
+        pathlib.Path(os.path.join(self.data, "spikes")).write_text("a file, so no folder can be made here")
         self.put(record(command="pwd"))
-        done = self.run_spike(env={"TMPDIR": self.tmp.name})
-        self.assertEqual(done.returncode, 0, done.stderr)
-        self.assertIn(self.fallback(), "\n".join(self.runs()))
+        done = self.run_spike()
+        self.assertEqual(done.returncode, 1)
+        self.assertNotIn("Traceback", done.stderr)
 
     def test_refuses_a_fallback_folder_that_is_a_link(self):
-        blocked = os.path.join(self.tmp.name, "blocked")
-        pathlib.Path(blocked).write_text("a file")
         elsewhere = os.path.join(self.tmp.name, "elsewhere")
         os.makedirs(elsewhere)
         os.symlink(elsewhere, self.fallback())
         self.put(record(command="pwd"))
-        done = self.run_spike(data=blocked, env={"TMPDIR": self.tmp.name})
+        done = self.run_spike(data="", env={"TMPDIR": self.tmp.name})
         self.assertEqual(done.returncode, 1)
         self.assertNotIn("Traceback", done.stderr)
         self.assertIn(self.fallback(), done.stderr)
@@ -630,15 +627,6 @@ class SecondReview(Project):
         runs = "\n".join(self.runs())
         for piece in ("xyz", "cdef123456"):
             self.assertNotIn(piece, runs)
-
-    def test_removes_leftovers_from_the_other_folder_too(self):
-        self.put(record("Confirmed 💡"), name="finished")
-        key = spike.project_key(self.project)
-        in_temp = os.path.join(self.fallback(), f"{key}-finished")
-        os.makedirs(in_temp)
-        self.put(record())
-        self.run_spike(env={"TMPDIR": self.tmp.name})
-        self.assertFalse(os.path.exists(in_temp))
 
     def test_keeps_windows_line_endings(self):
         pathlib.Path(self.path()).write_bytes(record().replace("\n", "\r\n").encode("utf-8"))
