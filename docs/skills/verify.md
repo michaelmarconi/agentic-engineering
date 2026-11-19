@@ -111,7 +111,7 @@ the list says why.
    evidence. Since it challenges every verdict, passes included, it is a second full run and
    takes about as long as the verifier, so checking only the requirements a change touches keeps
    `/verify` short.
-4. **The report.** Claude writes the full report as a Markdown file in the plugin's data folder,
+4. **The report.** Claude writes the full report as a Markdown file in the session's scratchpad,
    outside your repository, and replies with a short summary of at most five bullets and the
    file's path, as `/build` and `/audit` do (see [What you get](#what-you-get)). In it, a verdict
    the verify-checker confirmed stands; one it rejected is shown with both agents' evidence, as
@@ -167,8 +167,9 @@ clock, which may be worth a requirement of its own.
 As with `/build` and `/audit`, the full report goes in a Markdown file and Claude's reply is short,
 under 150 words: the outcome, at most five bullets of at most 15 words each, then the file's full
 path. The file holds the commit checked and every agent's report copied in word for word by the
-plugin's script. It is kept in the plugin's own data folder, outside your repository, at
-`reports/<repository>/<date>-verify-<what was checked>.md`, until you delete it.
+plugin's script. It is kept in the session's scratchpad, a temporary folder Claude Code gives each session, outside
+your repository, at `agentic/reports/<repository>/<date>-verify-<what was checked>.md`, until
+Claude Code clears it.
 
 You then decide what to do: merge, correct the code through a new plan, or change the spec.
 

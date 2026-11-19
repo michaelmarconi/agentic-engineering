@@ -186,9 +186,10 @@ outcome, then at most five bullets of at most 15 words each, with the main findi
 question or action for you, then the file's full path. The app shows you the file where it
 can. The file holds Claude's sections, such as each finding with its suggested correction,
 and every agent's report copied in word for word by the audit's script, so you read each finding exactly as its agent
-gave it, quotes included. It is kept in the plugin's own data folder, outside your repository, at
-`reports/<repository>/<date>-audit-<scope>.md`, until you delete it; where that folder can't be
-written, it goes in a private folder in your system's temporary folder instead. For a routine, the reply is in
+gave it, quotes included. It is kept in the session's scratchpad, a temporary folder Claude Code gives each session, outside
+your repository, at `agentic/reports/<repository>/<date>-audit-<scope>.md`, until Claude Code
+clears it; where the session has no scratchpad, it goes in a private folder in your system's
+temporary folder instead. For a routine, the reply is in
 the routine's own session.
 
 `/audit` changes nothing in your repository: no file, no status, no commit, just as Spec Kit's analysis step only

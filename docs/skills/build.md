@@ -26,8 +26,7 @@ flowchart LR
     Hand -.->|you| Verify[Verify, then merge]
     Hand -.->|you, if findings are open| Sort[Sort them out, then rerun /build]
     Sort -.-> Check
-    Hand -.->|you, if you accept them as they stand| Accept[Rerun /build and accept the build]
-    Accept -.-> Built
+    Correct -->|failed, and you accept it as it stands| Built
     Verify ~~~ Pad["#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;"]
     style Pad fill:none,stroke:none
 ```
@@ -218,23 +217,22 @@ you: with Claude directly, by changing a spec or ADR, or by deciding a finding i
 `/build` on the branch. It resumes, reviews again, and marks the plan `Built ✅` once every review
 passes. If you think a finding is wrong, say so when you rerun it.
 
-If the correction check failed and you judge the open findings acceptable for now, run `/build`
-again on the branch without changing anything. It starts no review: it lists the open findings,
-explains that accepting marks the plan `Built ✅` with them left open and freezes it, and asks
-"Accept the build as it stands, or correct it?". If you accept, the hand-over script marks the plan
-`Built ✅` in a commit whose message lists the findings you accepted, so the pull request shows
-them, and pushes the branch. The script offers this only when the plan is `Ready to build 🟢`, it
-was signed off before the build, the last build's report shows the failed check, and the branch
-has not changed since; otherwise `/build` reviews again as above. The report has to be on the
-computer you run `/build` on.
+When the correction check fails, the build asks you straight away, in the same conversation,
+whether to accept it as it stands. It lists the open findings, explains that accepting marks the
+plan `Built ✅` with them left open and freezes it, and asks "Accept the build as it stands, or
+leave it?". If you accept, the hand-over script marks the plan `Built ✅` in a commit whose message
+lists the findings you accepted, so the pull request shows them, and pushes the branch. It asks
+only when the plan was signed off before the build and the branch has not changed since the
+check. The question can't be answered later: once the conversation is over, running `/build`
+again on the branch reviews afresh, as above.
 
 It ends with a short reply, under 150 words: the outcome, the branch and whether the plan was
 marked `Built ✅`, then at most five bullets of at most 15 words each, with the main findings and
 any question or action for you, then the full path of the build's report file. Where the app
 you run Claude Code in can show you a file, the report opens there. The file is Markdown, kept outside your repository
-in the plugin's data folder, under `reports/<repository>/`, named by date and plan; where that
-folder can't be written, it goes in a private folder in your system's temporary folder
-instead, until you delete it. It holds:
+in the session's scratchpad, a temporary folder Claude Code gives each session, under
+`agentic/reports/<repository>/`, named by date and plan, until Claude Code clears it; where the
+session has no scratchpad, it goes in a private folder in your system's temporary folder instead. It holds:
 
 - what was built, or why it stopped and what is open;
 - for a build before sign-off, what was not signed off and the answers it built on;

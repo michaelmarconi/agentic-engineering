@@ -175,9 +175,9 @@ exactly what the experiment produced:
 
 - It refuses to run unless the record is `Ready to run 🟢`.
 - It writes each code block to the file it names, and copies in each input the Experiment names,
-  in a working folder in the plugin's own data folder, outside your repository. Where that folder
-  can't be written, as in a sandbox, it uses a folder in the system's temporary folder that only
-  you can open. It runs the
+  in a working folder in the session's scratchpad, a temporary folder Claude Code gives each
+  session, outside your repository. Where the session has none, it uses a folder in the system's
+  temporary folder that only you can open. It runs the
   Experiment's command there with the POSIX shell. When the question is about how an approach
   works in your own code, the working folder holds a copy of the commit the Experiment names,
   with the record's diff applied, so the same copy can be made again in a later session or on a

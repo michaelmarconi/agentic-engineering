@@ -19,11 +19,13 @@ The verify script does the exact checks. Run it with Bash, from the repository's
 python3 "${CLAUDE_SKILL_DIR}/scripts/verify.py" <command> ...
 ```
 
-- `start [<spec path> ...] --data "${CLAUDE_PLUGIN_DATA}" --session "${CLAUDE_SESSION_ID}"` refuses
+- `start [<spec path> ...] --scratchpad "<your scratchpad folder>" --session "${CLAUDE_SESSION_ID}"` refuses
   while anything is uncommitted, since the report must name the version it checked; otherwise it
   prints the commit, and each spec named, or every spec when none is, with its status and its
   requirements, each with how many examples it holds. Run it first in every run, before any agent.
 - `report` writes the report file, as Report says.
+
+Give as `--scratchpad` the scratchpad folder your instructions name, exactly as they write it, so the file is somewhere the person's app can open; leave the option out only when they name none.
 
 If a command exits with 1, or Claude Code doesn't let it run, stop and give the person its reason:
 check nothing. Never work its checks out yourself instead.
@@ -128,7 +130,7 @@ Give your sections to the script on standard input, with `--commit` set to the c
 printed and `--scope` set to a few words naming what was checked, such as the spec's name:
 
 ```
-python3 "${CLAUDE_SKILL_DIR}/scripts/verify.py" report --scope "<scope>" --commit <commit> --data "${CLAUDE_PLUGIN_DATA}" --session "${CLAUDE_SESSION_ID}" <<'EOF'
+python3 "${CLAUDE_SKILL_DIR}/scripts/verify.py" report --scope "<scope>" --commit <commit> --scratchpad "<your scratchpad folder>" --session "${CLAUDE_SESSION_ID}" <<'EOF'
 ## Overall result
 
 ...

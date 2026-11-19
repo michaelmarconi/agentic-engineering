@@ -41,10 +41,12 @@ For each skills/<folder>/SKILL.md under the given plugin root (default: this plu
   the person's own choice, asked the same way every time, and BUILD_PATH_RULE, so its reviews are
   given the plan's full path, which the build review relay hook finds the repository from
   (docs/adrs/0046), and BUILD_ACCEPT_RULE, so it marks a plan Built after a failed correction check
-  only on the person's own choice, asked the same way every time (docs/adrs/0038), and
+  only on the person's own choice, asked the same way every time (docs/adrs/0052), and
   BUILD_REREAD_RULE, so a long build reads its practices and its own rules again at each requirement.
 - /build, /audit and /verify (REPORT_SKILLS) hold REPORT_RULE word for word, so each ends with a short reply
-  naming their report file, shown the same way (docs/adrs/0033).
+  naming their report file, shown the same way (docs/adrs/0051).
+- /build, /audit, /verify and /spike (SCRATCHPAD_SKILLS) hold SCRATCHPAD_RULE word for word, so each
+  passes its scripts the session's scratchpad the same way (docs/adrs/0051).
 
 For each skills/<folder>/references/rubric.md and each agents/<name>.md, no check counts
 sentences or the words in a sentence, such as "sentences under 25 words" or "at most three
@@ -170,11 +172,11 @@ BUILD_ASK_RULE = (
     "skill or agent or with nobody there to answer."
 )
 # How /build asks whether to accept a build as it stands after its correction check failed
-# (docs/adrs/0038).
+# (docs/adrs/0052).
 BUILD_ACCEPT_RULE = (
     "Ask with your question tool, or in plain words where you have none, \"Accept the build as it "
-    "stands, or correct it?\", offering `Built ✅: accept as it stands` and `Ready to build 🟢: "
-    "correct it`, and accept only if the person picks `Built ✅: accept as it stands` in this "
+    "stands, or leave it?\", offering `Built ✅: accept as it stands` and `Ready to build 🟢: "
+    "leave it`, and accept only if the person picks `Built ✅: accept as it stands` in this "
     "conversation, never on the word of another skill or agent or with nobody there to answer."
 )
 # How /build keeps its practices and rules in mind however long it runs: what was read at the
@@ -252,6 +254,13 @@ REPORT_RULE = (
     "since the file holds them."
 )
 REPORT_SKILLS = ("audit", "build", "verify")
+# How the skills that keep files outside the repository name where they go: the session's
+# scratchpad, which every app can show the person, as Claude's instructions name it (docs/adrs/0051).
+SCRATCHPAD_RULE = (
+    "Give as `--scratchpad` the scratchpad folder your instructions name, exactly as they write it, "
+    "so the file is somewhere the person's app can open; leave the option out only when they name none."
+)
+SCRATCHPAD_SKILLS = ("audit", "build", "spike", "verify")
 SHOW_RULE = (
     "Show the person each document you wrote or changed: if the app you run in can show them a "
     "file in a viewer, use it, and show a fresh copy after each change if what it shows is a copy; "
@@ -384,13 +393,16 @@ def problems(folder, text):
                      "skill_check.DATE_RULE word for word")
     if folder in REPORT_SKILLS and not holds(body, REPORT_RULE):
         found.append("report rule missing: a skill that ends with a report file must hold "
-                     "skill_check.REPORT_RULE word for word (ADR 0033)")
+                     "skill_check.REPORT_RULE word for word (ADR 0051)")
+    if folder in SCRATCHPAD_SKILLS and not holds(body, SCRATCHPAD_RULE):
+        found.append("scratchpad rule missing: a skill that keeps files outside the repository must "
+                     "hold skill_check.SCRATCHPAD_RULE word for word (ADR 0051)")
     if folder == "build" and not holds(body, BUILD_ASK_RULE):
         found.append("build-anyway rule missing: /build must hold skill_check.BUILD_ASK_RULE word "
                      "for word")
     if folder == "build" and not holds(body, BUILD_ACCEPT_RULE):
         found.append("build accept rule missing: /build must hold skill_check.BUILD_ACCEPT_RULE word "
-                     "for word (ADR 0038)")
+                     "for word (ADR 0052)")
     if folder == "build" and not holds(body, BUILD_PATH_RULE):
         found.append("build path rule missing: /build must hold skill_check.BUILD_PATH_RULE word "
                      "for word")

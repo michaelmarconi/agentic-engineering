@@ -27,8 +27,10 @@ python3 "${CLAUDE_SKILL_DIR}/scripts/audit.py" <command> ...
 
 - `start` clears what the plugin kept of an earlier audit's agents in this session. Run it first
   in every audit, before any agent starts:
-  `python3 "${CLAUDE_SKILL_DIR}/scripts/audit.py" start --data "${CLAUDE_PLUGIN_DATA}" --session "${CLAUDE_SESSION_ID}"`.
+  `python3 "${CLAUDE_SKILL_DIR}/scripts/audit.py" start --scratchpad "<your scratchpad folder>" --session "${CLAUDE_SESSION_ID}"`.
 - `report` writes the report file, as Report says.
+
+Give as `--scratchpad` the scratchpad folder your instructions name, exactly as they write it, so the file is somewhere the person's app can open; leave the option out only when they name none.
 
 `documents` and `window` print JSON. If a command exits with 1, or Claude Code doesn't let it run, as in a routine
 whose permissions don't allow it, stop and give the person the reason: without the script you
@@ -169,7 +171,7 @@ words, or the named document's path, and `--stopped` added when the audit stoppe
 above, so no document checks are added, and `--project` as for the other commands:
 
 ```
-python3 "${CLAUDE_SKILL_DIR}/scripts/audit.py" report --scope "<scope>" --data "${CLAUDE_PLUGIN_DATA}" --session "${CLAUDE_SESSION_ID}" <<'EOF'
+python3 "${CLAUDE_SKILL_DIR}/scripts/audit.py" report --scope "<scope>" --scratchpad "<your scratchpad folder>" --session "${CLAUDE_SESSION_ID}" <<'EOF'
 ## Drift
 
 ...
