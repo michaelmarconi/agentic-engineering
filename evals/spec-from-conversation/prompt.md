@@ -19,4 +19,4 @@ Here's the conversation we've been having about workspace invites, pasted from e
 > **You:** Should the person who sent the invite be told when it expires?
 > **Me:** Not sure yet, I'll think about it.
 
-I think we've covered it. Please write the spec now and save it as docs/specs/invite-expiry.spec.md.
+I think we've covered it. Please write the spec now and save it as docs/specs/invite-expiry.spec.md. I'm away today, so leave whatever you can't decide as questions.

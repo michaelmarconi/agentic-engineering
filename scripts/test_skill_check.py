@@ -108,6 +108,12 @@ class SkillCheck(unittest.TestCase):
         for choice in ('"Accept"', '"My own answer"', '"Ignore"', '"Defer"', "ignore or defer?"):
             self.assertIn(choice, rules)
 
+    def test_answer_rules_keep_drafting_questions_out_of_the_document(self):
+        rules = " ".join(ANSWER_RULES)
+        self.assertIn("While drafting", rules)
+        self.assertIn("out of the document", rules)
+        self.assertIn("only a deferred one reaches Open questions", rules)
+
     def test_build_checker_needs_no_review_rule(self):
         body = "# Demo\n\nStart the `agentic:build-correction-checker` agent.\n"
         self.put("demo", skill_md(body=body))

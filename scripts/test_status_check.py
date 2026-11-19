@@ -366,7 +366,7 @@ class Adr(AdrWorkspace):
         self.assertIsNone(self.edit("status: Draft 📝", "status: Rejected ❌"))
 
     def test_accepting_without_a_choice_refused(self):
-        self.put(adr(body="Not chosen yet; see Open questions."))
+        self.put(adr(body="Not chosen yet."))
         self.assertIn("Chosen:", self.edit("status: Draft 📝", "status: Accepted 👍"))
 
     def test_accepting_a_bare_chosen_refused(self):
@@ -397,7 +397,7 @@ class Adr(AdrWorkspace):
         self.assertIn("layout", self.edit("status: Draft 📝", "status: Accepted 👍"))
 
     def test_rejecting_without_a_choice_allowed(self):
-        self.put(adr(body="Not chosen yet; see Open questions."))
+        self.put(adr(body="Not chosen yet."))
         self.assertIsNone(self.edit("status: Draft 📝", "status: Rejected ❌"))
 
     def test_adr_plain_words_stop_at_technical_detail(self):

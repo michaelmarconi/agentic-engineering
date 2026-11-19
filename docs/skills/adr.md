@@ -108,14 +108,14 @@ Run `/adr` and say what you want: record a decision, accept or reject one, or re
 - **Question first.** `/adr` writes the question before anything else and leaves the Decision
   empty until you choose, so the draft never claims a choice you have not made.
 - **Drafts from the conversation.** If you have already talked the decision through, `/adr`
-  drafts from that, and where you changed your mind, the latest word wins. It writes what is
-  missing, such as an option nobody named or why one was rejected, into the ADR's Open questions,
-  tells you how many there are and asks them one at a time. Each sets its proposal apart in a
+  drafts from that, and where you changed your mind, the latest word wins. What is missing, such as an option nobody named or why one was rejected, it keeps
+  out of the ADR: it tells you how many questions there are and asks them one at a time, with the
+  review's. Each sets its proposal apart in a
   quote, as [the lifecycle page](../lifecycle.md#documents) shows: the answer `/adr` would choose,
   such as the option it recommends, or, where only you can know, what would settle it, with the
-  reason beside it. Your answer goes into the ADR and the question is removed.
+  reason beside it. Your answer goes into the ADR; only a question you defer is written into Open questions.
 - **Spikes before untested assumptions.** If the choice depends on something nobody has tried,
-  such as how an outside service behaves, `/adr` puts that first in Open questions, ahead of the
+  such as how an outside service behaves, `/adr` asks about that first, ahead of the
   choice, and proposes a [spike](spike.md) to test it, rather than leaving it to be found out
   while the code is built. If you choose to go ahead without one, the ADR says so under
   Consequences.

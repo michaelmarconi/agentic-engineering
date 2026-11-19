@@ -46,7 +46,7 @@ conversation changed its mind, the latest word wins. Only when there is nothing 
 what they are building and for whom first.
 
 Write only what they said or showed you, as rubric check 8 describes. What they haven't said becomes
-an open question, each asking one thing: "What do they do today, and how long does it take?" is two
+a question for them, each asking one thing: "What do they do today, and how long does it take?" is two
 questions. Write each open question as a heading, `### 1. <what is to be settled>`, numbered in
 order, then the context it needs, then a block quote holding a line starting `> **Proposed:**` with
 the answer you would choose, then a line holding only `>`, then a line starting `> **Why:**` with
@@ -65,7 +65,7 @@ referred to (check 9): state what matters from it in the brief's own words, and 
 change or vanish without the brief being touched. When they mention something that belongs to a
 later stage (rubric checks 2 and 7), leave it out and tell them where it goes: how one capability
 behaves goes in its spec, so suggest `/spec`; a technology or design they have decided goes in an
-ADR, and one they have not becomes an open question.
+ADR, and one they have not becomes a question for them.
 
 Add a section beyond the template's, such as "Safety and security", only when the person asks
 for one, and place it as rubric check 1 says.
@@ -79,8 +79,7 @@ retried**", where the first number counts the questions asked or settled in this
 one included, and the total adds those still open, so the first number only goes up, saying in one
 line when an answer opens or settles others; the context it needs; a block quote holding a
 "**Proposed:**" line with your answer, a line holding only `>`, and a "**Why:**" line with the
-reason; and the question itself, last, in one line. The others wait in
-the brief, so leave them out of that reply entirely: describe the draft by what it says, never by
+reason; and the question itself, last, in one line. The others wait, so leave them out of that reply entirely: describe the draft by what it says, never by
 what it lacks ("nothing yet on who else is involved" names a question), and report what you or the
 review changed without naming the gaps that remain. Ask the next once the first is settled, playing
 back what you have understood. Settle each answer before moving on: take the part they answered and
@@ -146,6 +145,9 @@ question, giving any examples as possible answers rather than further questions;
 said not to ask now, ask nothing. Name the count only, not the items: each comes up when you reach
 it. List the reviewers' suggestions separately, as optional: they never hold the brief back. Leave
 committing to them.
+
+While drafting, keep your own questions out of the document: ask them with the review's, once where
+both raise the same point, so only a deferred one reaches Open questions.
 
 Put each question to the person one at a time, by the asking rule: open questions, decisions for the
 person and what a check finds. Offer four choices on your question tool: "Accept" your proposal, "My

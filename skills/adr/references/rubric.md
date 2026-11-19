@@ -26,8 +26,8 @@ reviewer needs to build and check it. Footnotes explaining terms come last, afte
    instead.
 4. **Question.** Question names the one choice to make, briefly, and describes no option,
    method, version or setting.
-5. **Decision stands alone.** While the person has not chosen, Decision says only "Not chosen yet;
-   see Open questions.", Open questions asks for the choice, and the ADR stays `Draft 📝`. Once they
+5. **Decision stands alone.** While the person has not chosen, Decision says only "Not chosen
+   yet.", the choice is a question for the person, and the ADR stays `Draft 📝`. Once they
    have, its first sentence opens "Chosen:" and names the option in full, so that it makes sense
    with the rest of the ADR hidden, and the reason follows briefly. A bare option name fails. One
    or more `mermaid` diagrams may follow the reason, as check 18 says; Decision still makes sense
@@ -45,8 +45,7 @@ reviewer needs to build and check it. Footnotes explaining terms come last, afte
 9. **Limits stated once.** Out of scope names every limit the decision relies on, something it does
    not cover that would not change the choice whichever way it turned out, and each decision left to
    another ADR, or says only "None.". No other section states a limit again. An untried claim the
-   ADR says the choice depends on, such as "this only works if …", is not a limit: it comes first in
-   Open questions, proposing a spike, unless a `Bad:` line under Consequences says the person chose
+   ADR says the choice depends on, such as "this only works if …", is not a limit: it is the first question for the person, proposing a spike, unless a `Bad:` line under Consequences says the person chose
    to go ahead without one. No section leaves it to be proven later. Where something could be
    either, the writer's choice passes.
 10. **How we'll check.** It says what the decision applies to, as a concern such as "any code that

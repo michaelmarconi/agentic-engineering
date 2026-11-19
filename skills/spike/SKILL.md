@@ -90,8 +90,8 @@ must actually exercise the thing in question.
 - **A step only the person can do,** such as trying something on their own phone, is a run they
   report: write `- Command: None.` when every run is theirs, and describe what they will do.
 
-Anything only the person can settle, such as what result counts as success, goes into Open
-questions. Write each open question as a heading, `### 1. <what is to be settled>`, numbered in
+Anything only the person can settle, such as what result counts as success, is a question for
+them. Write each open question as a heading, `### 1. <what is to be settled>`, numbered in
 order, then the context it needs, then a block quote holding a line starting `> **Proposed:**` with
 the answer you would choose, then a line holding only `>`, then a line starting `> **Why:**` with
 the reason, so the
@@ -249,6 +249,9 @@ the reviewers' suggestions apart, as optional. The last question's next status s
 design, or confirms the verdict, naming the status it would get. After the
 verdict, tell them which spec or ADR to take the finding to next. Leave committing to them: to hand
 an unfinished spike to a teammate, they commit the record.
+
+While drafting, keep your own questions out of the document: ask them with the review's, once where
+both raise the same point, so only a deferred one reaches Open questions.
 
 Put each question to the person one at a time, by the asking rule: open questions, decisions for the
 person and what a check finds. Offer four choices on your question tool: "Accept" your proposal, "My

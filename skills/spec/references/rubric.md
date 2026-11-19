@@ -18,12 +18,12 @@ checking, and quotes the spec as evidence for every failure.
    outcome someone can see. It uses only people the person named, and does not choose how the
    capability works, not even in passing, such as the file format, screen or button it will use.
    While the person has not given the situation, who it is or the outcome, a Story that says what
-   is not known yet, with Open questions asking for it, passes.
+   is not known yet passes.
 3. **Out of scope is named.** Out of scope names at least one thing the capability will not do.
-   While the person has not said what is out, an Out of scope section that says so, with Open
-   questions asking what is out, passes; "anything not stated is undecided" alone does not.
+   While the person has not said what is out, an Out of scope section that says so
+   passes; "anything not stated is undecided" alone does not.
 4. **What, not how.** Nothing in the spec chooses a technology, library, data structure or
-   design. Such a choice belongs in an ADR, and a choice still to make is an open question. Nor is
+   design. Such a choice, made or still to make, belongs in an ADR. Nor is
    a rule's subject an internal step, such as what the system stores, calls or works out on the
    way: each rule states something a person or another system can see the system do.
 5. **One rule per requirement.** Each requirement is a heading `### <number>. <Name>` under
@@ -77,7 +77,7 @@ checking, and quotes the spec as evidence for every failure.
     the writer would choose. A question only the person can answer, such as who the Story is about,
     proposes no guess: its "Proposed:" says what would settle it, such as "tell me who asked for
     this and what happens to them today". A default the person did not give is never stated as a
-    rule: it is an open question with that default proposed.
+    rule: it is a question for the person, with that default proposed.
 15. **Fits the brief.** Nothing in the spec contradicts the brief's Goals, Out of scope or
     Constraints, such as a rule for something the brief puts out of scope. Detail the brief doesn't
     mention never fails this check, however much there is. A contradiction passes only while Open

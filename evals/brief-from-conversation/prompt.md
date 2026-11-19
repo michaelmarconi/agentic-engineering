@@ -21,4 +21,4 @@ Here's the conversation we had this morning about our shift-swap app, pasted in:
 > **You:** Should agency nurses use it too?
 > **Me:** Not sure yet.
 
-Please write our product brief now.
+Please write our product brief now. I'm away today, so leave whatever you can't decide as questions.

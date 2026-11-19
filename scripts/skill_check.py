@@ -84,7 +84,10 @@ REVIEW_RULE = (
 
 # How a document skill takes the person's answers after the review (docs/adrs/0049): one full
 # review, then a check of only what changed after each round, with four choices per question.
+# The drafter's own questions take the same path, so only deferred ones reach the document.
 ANSWER_RULES = (
+    "While drafting, keep your own questions out of the document: ask them with the review's, "
+    "once where both raise the same point, so only a deferred one reaches Open questions.",
     "Put each question to the person one at a time, by the asking rule: open questions, "
     "decisions for the person and what a check finds. Offer four choices on your question "
     'tool: "Accept" your proposal, "My own answer", "Ignore" and "Defer"; where you have '
