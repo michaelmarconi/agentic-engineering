@@ -11,31 +11,28 @@ or a spec, and every skill opens it for the rules it shares with the others. The
 ```mermaid
 flowchart LR
     subgraph Decide[Decide what to build]
+        direction LR
         Brief --> Spec --> ADR
-        Spike
     end
     subgraph Make[Build it]
+        direction LR
         Plan --> Build --> Verify
     end
     subgraph Ship[Ship it]
+        direction LR
         Release --> Deploy
     end
     subgraph Drift[Check for drift]
         Audit
     end
-    Spec --> Plan
     ADR --> Plan
     Verify --> Release
-    Spike -.- Spec
-    Spike -.- ADR
-    Ship ~~~ Drift
-    Decide <-.- Drift
+    Deploy --> Audit
 ```
 
-Solid arrows show the usual order, each step using what the one before it wrote. Dotted lines show
-the steps you run when needed: a spike settles an unknown for a spec or an ADR, and an audit checks
-the code against the documents at any time. Each phase has its own diagram under
-[Steps](#steps).
+Each step uses what the one before it wrote. Two steps sit outside this line: a spike settles an
+unknown for a spec or an ADR when one is needed, and an audit can run at any time, not only at the
+end. Each phase has its own, more detailed diagram under [Steps](#steps).
 
 ## Documents
 
