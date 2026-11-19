@@ -31,7 +31,22 @@ flowchart LR
 ```
 
 Each step uses what the one before it wrote. Not every piece of work needs every step: a spike runs
-only when there is an unknown to settle, and an audit, shown last, can run at any time. Each phase has its own, more detailed diagram under [Steps](#steps).
+only when there is an unknown to settle, and an audit, shown last, can run at any time. Each phase
+has its own, more detailed diagram under [Steps](#steps).
+
+This is the order within one small piece of work, not a project plan done once from top to bottom.
+You go round it many times: each round decides only what the next piece needs, such as one new
+requirement in a spec or one decision, plans a change small enough to review in one go, builds it
+and checks it. What you learn feeds the next round. A spec is a living document, edited whenever
+you learn what a capability should do; a decision that turns out wrong is superseded by a new ADR;
+a plan is thrown away once built.
+
+```mermaid
+flowchart LR
+    Decide[Decide a little] --> Make[Build a little] --> Check[Check it]
+    Check -->|what you learn| Decide
+    Check --> Ship[Ship when ready]
+```
 
 ## Documents
 
