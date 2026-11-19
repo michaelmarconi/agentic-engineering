@@ -1432,7 +1432,9 @@ class LifecyclePage(unittest.TestCase):
     def setUp(self):
         with open(os.path.join(ROOT, "docs", "lifecycle.md"), encoding="utf-8") as f:
             page = f.read()
-        self.review = " ".join(page[page.index("## Review process\n"):].split())
+        section = page[page.index("\n## Review process\n") + 1:]
+        section = section[:section.index("\n## ")] if "\n## " in section else section
+        self.review = " ".join(section.split())
 
     def test_review_section_asks_with_the_line_the_hook_finds(self):
         self.assertIn(f'"Accept, give your own answer, {review_relay.MARKER}"', self.review)

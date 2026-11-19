@@ -414,7 +414,7 @@ conversations behind it.
   replaced by the plain statement it stands for. For example, "the order hitchhikes on the nightly
   export" becomes "the order is included in the nightly export".
 
-Issues, plans, spike records and practices are read by people who use the lifecycle, so in them
+Issues, plans, spike records and practices are read by people and agents who use the lifecycle, so in them
 the lifecycle's own terms, such as "spec", "ADR", "requirement" and `Ready to build 🟢`, the
 plugin's commands such as `/agentic:build`, and the marks "(default)" and "(not set up yet)" that
 `/practices` ends a practice with, count as plain too.
@@ -440,7 +440,7 @@ proposal, and the question itself last.
 
 ## Review process
 
-Every skill that writes a document follows these steps, written once, here;
+Every skill that has a document reviewed follows these steps, written once, here;
 [How a document is reviewed](#how-a-document-is-reviewed) explains them. In them "you" is the agent
 running the skill and "the person" is the human it works with. The skill names its own reviewer, its
 requests, its hand-over (the reply that gives the person the finished document and the reports)
@@ -468,9 +468,10 @@ stateDiagram-v2
    both in one message so they run side by side: the skill's reviewer and the
    `agentic:language-checker` agent. Give each the request the skill shows, laid out exactly as
    shown: a plugin hook reads its first line, and for a draft its `=== DRAFT ===` and
-   `=== END DRAFT ===` lines, to keep a copy of the document as reviewed. Give the document's full
-   path on the `Document:` line, the one you wrote it to: the hook works out the document's
-   repository from it, so the review reads the right one whatever folder you started in. If it
+   `=== END DRAFT ===` lines, to keep a copy of the document as reviewed. A draft never saved as a
+   file keeps the `Document:` line its skill shows; for any other document, as follows. Give the
+   document's full path on the `Document:` line, the one you wrote it to: the hook works out the
+   document's repository from it, so the review reads the right one whatever folder you started in. If it
    refuses to start them, do what its reason says. Each reads everything else it needs itself. Wait
    for both reports before changing the document.
    If both pass with nothing under Needs a person, go straight to the skill's hand-over.

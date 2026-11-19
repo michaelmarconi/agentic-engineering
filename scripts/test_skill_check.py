@@ -17,6 +17,16 @@ from skill_check import (AGENT_RULE, SHELL_AGENT_RULE, ASK_RULE, BUILD_ACCEPT_RU
 DESCRIPTION = "Write a thing. Use whenever someone wants a thing."
 
 
+def lifecycle_page(steps=None, answers=None, failed=None):
+    """A lifecycle page whose Review process section holds the given sentences, by default all."""
+    steps = CORRECT_RULES + (PATH_RULE,) if steps is None else steps
+    answers = ANSWER_RULES if answers is None else answers
+    failed = (REVIEW_RULE,) if failed is None else failed
+    return ("# The lifecycle\n\n## Review process\n\n" + "\n\n".join(steps)
+            + f"\n\n### {ANSWERS_ENDING}\n\n" + "\n\n".join(answers)
+            + f"\n\n### {FAILED_ENDING}\n\n" + "\n\n".join(failed) + "\n")
+
+
 def skill_md(name="demo", description=DESCRIPTION, body="# Demo\n\nDo the thing.\n"):
     return f"---\nname: {name}\ndescription: {description}\n---\n\n{body}"
 
@@ -39,6 +49,13 @@ class SkillCheck(unittest.TestCase):
             f.write(text)
 
     def check(self, root=None):
+        # A plugin whose skills point to the lifecycle page needs the page: give it a complete one
+        # unless the test wrote its own or is about the page being missing.
+        page = os.path.join(self.tmp.name, "docs", "lifecycle.md")
+        if root is None and not getattr(self, "no_lifecycle", False) and not os.path.exists(page):
+            os.makedirs(os.path.dirname(page), exist_ok=True)
+            with open(page, "w") as f:
+                f.write(lifecycle_page())
         return subprocess.run([sys.executable, SCRIPT, root or self.tmp.name],
                               capture_output=True, text=True)
 
@@ -128,7 +145,10 @@ class SkillCheck(unittest.TestCase):
     def test_no_skill_holds_a_moved_sentence(self):
         skills = os.path.join(ROOT, "skills")
         for folder in os.listdir(skills):
-            with open(os.path.join(skills, folder, "SKILL.md"), encoding="utf-8") as f:
+            path = os.path.join(skills, folder, "SKILL.md")
+            if not os.path.isfile(path):
+                continue
+            with open(path, encoding="utf-8") as f:
                 text = f.read()
             for rule in MOVED_RULES:
                 self.assertFalse(holds(text, rule), (folder, rule[:40]))
@@ -190,12 +210,7 @@ class SkillCheck(unittest.TestCase):
     # The Review process section of the lifecycle page
 
     def lifecycle(self, steps=None, answers=None, failed=None):
-        steps = CORRECT_RULES + (PATH_RULE,) if steps is None else steps
-        answers = ANSWER_RULES if answers is None else answers
-        failed = (REVIEW_RULE,) if failed is None else failed
-        return ("# The lifecycle\n\n## Review process\n\n" + "\n\n".join(steps)
-                + f"\n\n### {ANSWERS_ENDING}\n\n" + "\n\n".join(answers)
-                + f"\n\n### {FAILED_ENDING}\n\n" + "\n\n".join(failed) + "\n")
+        return lifecycle_page(steps, answers, failed)
 
     def put_lifecycle(self, text):
         path = os.path.join(self.tmp.name, "docs", "lifecycle.md")
@@ -235,6 +250,26 @@ class SkillCheck(unittest.TestCase):
     def test_lifecycle_without_the_review_process_heading_fails(self):
         self.put_lifecycle(self.lifecycle().replace("## Review process", "## Reviews"))
         self.assertFails('docs/lifecycle.md: no "## Review process" heading')
+
+    def test_a_later_section_does_not_count_as_the_review_process(self):
+        text = self.lifecycle(failed=()) + f"\n## Later\n\n{REVIEW_RULE}\n"
+        self.put_lifecycle(text)
+        self.assertFails("docs/lifecycle.md: review rule missing")
+
+    def test_an_earlier_subheading_of_the_same_name_is_not_the_section(self):
+        self.put_lifecycle("# The lifecycle\n\n### Review process\n\nSomething else.\n\n"
+                           + self.lifecycle().split("\n\n", 1)[1])
+        done = self.check()
+        self.assertEqual((done.returncode, done.stdout), (0, ""))
+
+    def test_a_skill_pointing_to_a_missing_lifecycle_page_fails(self):
+        self.no_lifecycle = True
+        self.put("practices", skill_md(name="practices", body=f"# Practices\n\n{pointer('practices')}\n"))
+        self.assertFails("docs/lifecycle.md missing")
+
+    def test_a_skill_starting_the_correction_checker_must_be_a_reviewing_skill(self):
+        self.put("design", skill_md(name="design", body="# Design\n\nStart `agentic:correction-checker`.\n"))
+        self.assertFails("design/SKILL.md: starts agentic:correction-checker but is not in REVIEWING_SKILLS")
 
     def test_reworded_marker_line_fails(self):
         answers = tuple(rule.replace("ignore or defer?", "ignore it or defer it?") for rule in ANSWER_RULES)

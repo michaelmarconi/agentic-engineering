@@ -202,7 +202,8 @@ change, which adds it; a plugin hook refuses a status change without it.
 
 ## Review
 
-A record is reviewed twice: the design before `Ready to run 🟢`, the verdict before it is finished.
+A record is reviewed twice: the design before `Ready to run 🟢`, the verdict before it is finished,
+each a full review of its own.
 At the review step, read the Review process section of `${CLAUDE_PLUGIN_ROOT}/docs/lifecycle.md` and
 follow its steps, then its "Ending with your answers" part, with the reviewer and requests below.
 

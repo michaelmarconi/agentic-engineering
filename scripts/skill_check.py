@@ -346,7 +346,10 @@ def lifecycle_problems(text):
     """What the lifecycle page's Review process section lacks of the shared review sequence."""
     if f"\n{REVIEW_HEADING}\n" not in f"\n{text}":
         return [f'no "{REVIEW_HEADING}" heading']
-    review = text[text.index(f"{REVIEW_HEADING}\n"):]
+    review = f"\n{text}"
+    review = review[review.index(f"\n{REVIEW_HEADING}\n") + 1:]
+    if "\n## " in review:
+        review = review[:review.index("\n## ")]
     parts = {}
     found = []
     for heading in (ANSWERS_ENDING, FAILED_ENDING):
@@ -472,6 +475,9 @@ def problems(folder, text):
                 found.append(f"diagram rule {number} missing: a skill that offers diagrams must hold "
                              f"skill_check.DIAGRAM_RULES[{number - 1}] word for word, naming its "
                              f"document \"{DIAGRAM_SKILLS[folder]}\"")
+    if "agentic:correction-checker" in body and folder not in REVIEWING_SKILLS:
+        found.append("starts agentic:correction-checker but is not in REVIEWING_SKILLS: add it there, "
+                     "so it must point to the lifecycle page's Review process")
     reviews_a_file = folder in REVIEWING_SKILLS and "Document: <" in body
     if reviews_a_file and not holds(body, SHOW_RULE):
         found.append("show rule missing: a skill that writes a document must hold "
@@ -523,14 +529,18 @@ def main(argv=None):
     args = parser.parse_args(argv)
     skills = os.path.join(args.root, "skills")
     failed = False
+    pointing = set()
     for folder in sorted(os.listdir(skills)) if os.path.isdir(skills) else []:
         path = os.path.join(skills, folder, "SKILL.md")
         if not os.path.isfile(path):
             continue
         with open(path, encoding="utf-8") as f:
-            for problem in problems(folder, f.read()):
-                print(f"{folder}/SKILL.md: {problem}")
-                failed = True
+            text = f.read()
+        if folder in REVIEWING_SKILLS and holds(text, pointer(folder)):
+            pointing.add(folder)
+        for problem in problems(folder, text):
+            print(f"{folder}/SKILL.md: {problem}")
+            failed = True
         rubric = os.path.join(skills, folder, "references", "rubric.md")
         if os.path.isfile(rubric):
             with open(rubric, encoding="utf-8") as f:
@@ -538,6 +548,9 @@ def main(argv=None):
                     print(f"{folder}/references/rubric.md: {problem}")
                     failed = True
     lifecycle = os.path.join(args.root, LIFECYCLE)
+    if pointing and not os.path.isfile(lifecycle):
+        print(f"docs/lifecycle.md missing, yet {', '.join(sorted(pointing))} point to its Review process")
+        failed = True
     if os.path.isfile(lifecycle):
         with open(lifecycle, encoding="utf-8") as f:
             for problem in lifecycle_problems(f.read()):
