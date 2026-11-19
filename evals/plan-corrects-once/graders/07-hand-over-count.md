@@ -3,4 +3,6 @@ type: llm
 focus: last_message
 weight: 1
 ---
-The reply states, as a number, how many items the person must settle before the plan can be ready to build.
+The reply gives, as a number in digits or words, how many items or questions are left for the
+person to settle, such as "There are 5 in total" or "three questions". It need not list them
+or say what settling them leads to.
