@@ -12,7 +12,7 @@ or a spec, and every skill opens it for the rules it shares with the others. The
 flowchart LR
     subgraph Decide[Decide what to build]
         direction LR
-        Brief --> Spec --> ADR
+        Brief --> Spec --> Spike --> ADR
     end
     subgraph Make[Build it]
         direction LR
@@ -30,8 +30,8 @@ flowchart LR
     Deploy --> Audit
 ```
 
-Each step uses what the one before it wrote. The audit is shown last, but it can run at any time. A
-spike, left out here, settles an unknown for a spec or an ADR when one is needed. Each phase has its own, more detailed diagram under [Steps](#steps).
+Each step uses what the one before it wrote. Not every piece of work needs every step: a spike runs
+only when there is an unknown to settle, and an audit, shown last, can run at any time. Each phase has its own, more detailed diagram under [Steps](#steps).
 
 ## Documents
 
