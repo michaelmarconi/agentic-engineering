@@ -1088,34 +1088,40 @@ class Relay(unittest.TestCase):
         prompt = self.assertAllowed(self.check())["prompt"]
         self.assertIn('Question: **Question 1 of 2: colour**\nAnswer: Teal — "bright!"\n', prompt)
 
-    def test_a_tap_on_the_card_posted_after_the_question_is_saved_as_its_answer(self):
-        self.checked_once()
-        card = {"question": "Which colour?", "recommended": 0, "options": [
-            {"label": label, "consequence": "."} for label in ("Accept", "My own answer", "Ignore", "Defer")]}
-        wake = '<wake><thread><message trigger="true" from="human">Accept</message></thread></wake>'
-        self.assertIsNone(self.message(wake, card=card))
-        self.put(SPEC, "v3\n")
-        prompt = self.assertAllowed(self.check())["prompt"]
-        self.assertIn("Question: **Question 1 of 2: colour**\nAnswer: Accept\n", prompt)
-
     # No eval covers posting the card itself: eval runs offer no decision card tool, so these tests
     # check only that the hook keeps the answer a card brings back.
 
-    def test_a_note_after_the_card_does_not_lose_the_answer(self):
-        self.checked_once()
-        self.message("Defer", card={"question": "Which colour?"}, after="I've put the question on a card.")
-        self.put(SPEC, "v3\n")
-        self.assertIn("Question: **Question 1 of 2: colour**\nAnswer: Defer\n",
-                      self.assertAllowed(self.check())["prompt"])
+    def tap(self, label, question="Question 1 of 2: colour"):
+        return ('<wake reason="decision-chosen"><thread><message trigger="true" from="human">'
+                f'Chose &quot;{label}&quot; on the decision card asking &quot;{question}&quot;</message></thread></wake>')
 
-    def test_an_answer_after_several_questions_in_one_turn_names_them_all(self):
+    def test_a_tap_on_a_card_with_the_four_choices_is_saved_against_the_card_question(self):
         self.checked_once()
-        ask = "\n\nAccept, give your own answer, ignore or defer?"
-        self.message("Accept", asked=["**Question 1 of 2: colour**" + ask, "---\n\n**Question 2 of 2: size**" + ask],
-                     card={"question": "?"})
+        self.assertIsNone(self.message(self.tap("Accept"), card={"question": "Question 1 of 2: colour"}))
         self.put(SPEC, "v3\n")
-        self.assertIn("Question: One of: **Question 1 of 2: colour**; **Question 2 of 2: size**\nAnswer: Accept\n",
-                      self.assertAllowed(self.check())["prompt"])
+        self.assertIn('Question: Question 1 of 2: colour\nAnswer: Chose "Accept" on the decision card asking '
+                      '"Question 1 of 2: colour"\n', self.assertAllowed(self.check())["prompt"])
+
+    def test_each_tap_on_several_cards_is_saved_against_its_own_question(self):
+        self.checked_once()
+        self.message(self.tap("Accept"))
+        self.message(self.tap("Defer", "Question 2 of 2: size"), asked="Noted: colour accepted.")
+        self.put(SPEC, "v3\n")
+        prompt = self.assertAllowed(self.check())["prompt"]
+        self.assertIn("Question: Question 1 of 2: colour\n", prompt)
+        self.assertIn("Question: Question 2 of 2: size\n", prompt)
+
+    def test_a_tap_on_a_card_without_the_four_choices_is_not_saved(self):
+        self.checked_once()
+        self.message(self.tap("Build anyway", "Build anyway, on the proposed answers?"), asked="Shall I build?")
+        self.put(SPEC, "v3\n")
+        self.assertNotIn("=== ANSWERS ===", self.assertAllowed(self.check())["prompt"])
+
+    def test_a_question_asked_before_the_last_thing_said_is_no_question(self):
+        self.checked_once()
+        self.message("Now plan it please", after="Noted, I've written it into the spec.")
+        self.put(SPEC, "v3\n")
+        self.assertNotIn("=== ANSWERS ===", self.assertAllowed(self.check())["prompt"])
 
     def test_a_message_after_no_question_is_not_saved(self):
         self.checked_once()
