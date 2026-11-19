@@ -303,6 +303,8 @@ these rules:
 
 ## Plain words
 
+This is the rule the skills write to and the language checker applies.
+
 Every document the plugin writes, including an issue it files, is for a reader new to the project:
 someone with a computer science degree but no knowledge of the product's field or of the
 conversations behind it.
