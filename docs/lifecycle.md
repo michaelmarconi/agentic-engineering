@@ -1,11 +1,11 @@
 # The lifecycle
 
 The lifecycle is how this plugin builds software with a coding agent. A few short documents say
-what to build and why, a plan says how, and skills, instructions Claude follows that you run as
+what to build and why, a plan says how, and skills, instructions an agent follows that you run as
 slash commands such as `/agentic:spec`, write and act on them. It fixes the shape of the documents
 and leaves how you work to you.
 
-Claude is given this page at the start of every session in a repository with a brief or a spec, and
+An agent is given this page at the start of every session in a repository with a brief or a spec, and
 every skill reads it for the rules they share. Skills appear here without their `agentic:` prefix.
 The [README](../README.md) covers installing the plugin.
 
@@ -275,7 +275,7 @@ flowchart LR
 ### Practices
 
 - **Practices are not a lifecycle document** and have no status. Their essentials live in
-  `AGENTS.md`, which Claude Code loads, and longer topics in `docs/practices/`. Every skill sees
+  `AGENTS.md`, which coding agents load, and longer topics in `docs/practices/`. Every skill sees
   them, and `/plan` and `/build` follow them.
 - **Every practice step is one command.** A step the practices record, such as running the tests,
   is one line that a skill runs as written, filling in any `{name}`, and judges by its exit code.
@@ -285,8 +285,8 @@ flowchart LR
 
 ## Rules the plugin enforces
 
-Some of the rules above matter too much to rest on Claude remembering them, so the plugin checks
-them itself. Before Claude saves a change to a lifecycle document, a small script the plugin
+Some of the rules above matter too much to rest on an agent remembering them, so the plugin checks
+them itself. Before an agent saves a change to a lifecycle document, a small script the plugin
 installs, called a hook, checks the change and refuses it, saying why, if it would break one of
 these rules:
 
@@ -345,7 +345,7 @@ proposal, and the question itself last.
   the one being asked included, so it only goes up. The total adds those still open. The skill says
   in one line when an answer opens or settles others. An offer of diagrams is not counted: it comes
   once the counted questions are settled, under "Optional: diagrams".
-- Where Claude has no question tool but can post a decision card, as in a Claude project thread, it
+- Where the agent has no question tool but can post a decision card, as in a Claude project thread, it
   asks in words as above, then posts the same question on a card you answer with a tap.
 - A skill asks one question per reply and then waits for your answer before asking the next, even
   where its card or question tool returns at once, so only one question is ever waiting on you.
@@ -410,7 +410,7 @@ back as a question, never a failure.
 
 ### Signing off
 
-At the end you read the document, shown in your Claude app's file viewer where there is one and
+At the end you read the document, shown in your app's file viewer where there is one and
 always named by its path, with the reports, and pick its next status on the last question. A status
 that needs a review, such as `Accepted 👍`, is set only once the last review or check of the text
 as it stands has run, with every question it raised answered or ignored and nothing deferred. The
@@ -419,7 +419,7 @@ review.
 
 ### How a skill runs the review
 
-Every skill that writes a document follows these steps, written once, here. In them "you" is Claude
+Every skill that writes a document follows these steps, written once, here. In them "you" is the agent
 running the skill and "the person" is you, the reader. The skill names its own reviewer, its
 requests, its hand-over (the reply that gives the person the finished document and the reports)
 and anything only it does. A review report lists its failed checks, then Other findings, Needs a
