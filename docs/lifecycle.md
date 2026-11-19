@@ -73,6 +73,11 @@ stateDiagram-v2
     Accepted --> Draft : any change
 ```
 
+| Status | Meaning |
+| --- | --- |
+| `Draft 📝` | Being written or changed; plans cannot build on it yet. |
+| `Accepted 👍` | You signed off its reviewed text, with no open questions left. Plans may build on it. |
+
 ### ADR
 
 `docs/adrs/NNNN-<subject>.md`, in one flat folder: an architecture decision record, holding one
@@ -86,6 +91,13 @@ stateDiagram-v2
     Draft --> Rejected
     Accepted --> Superseded
 ```
+
+| Status | Meaning |
+| --- | --- |
+| `Draft 📝` | Being written: the decision is open, or chosen but not yet signed off. |
+| `Accepted 👍` | You signed off its reviewed text. The code follows it, and it is never edited. |
+| `Rejected ❌` | You decided against it. It stays as the record of why. |
+| `Superseded ↪️` | A newer accepted ADR, named in its `superseded-by:` field, replaces it whole. |
 
 ### Plan
 
@@ -102,6 +114,12 @@ stateDiagram-v2
     Ready --> Draft : any change
     Ready --> Built : only /build
 ```
+
+| Status | Meaning |
+| --- | --- |
+| `Draft 📝` | Being written or changed. |
+| `Ready to build 🟢` | You signed it off, every spec and ADR it touches is accepted, and nothing is open. `/build` may build it. |
+| `Built ✅` | `/build` built it and its reviews passed, or you accepted the build as it stood. Never changed again. |
 
 ### Spike record
 
@@ -121,6 +139,14 @@ stateDiagram-v2
     Ready --> Refuted
     Ready --> NotSettled
 ```
+
+| Status | Meaning |
+| --- | --- |
+| `Draft 📝` | The experiment is being designed. |
+| `Ready to run 🟢` | You signed off the design, which is now fixed; the run script adds each run. |
+| `Confirmed 💡` | The runs produced the result agreed before the first run. |
+| `Refuted 🚫` | The runs showed the hypothesis is false. |
+| `Not settled ❔` | The runs settled it neither way. |
 
 ### What every document shares
 
