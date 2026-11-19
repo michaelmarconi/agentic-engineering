@@ -105,7 +105,7 @@ The status describes the document, not the software, so building the software th
 status about the software would stop being true, without anyone noticing, as the code changes. To
 find out whether the software meets a spec, check the software against it.
 
-Changing a `Accepted 👍` spec returns it to `Draft 📝`. An older spec whose status is
+Changing an `Accepted 👍` spec returns it to `Draft 📝`. An older spec whose status is
 `Ready to build 🟢` or `Built ✅`, which specs no longer use, must be set back to `Draft 📝` before
 it can be accepted. A spec written for an earlier version of the plugin, with Problem, Goal and
 Scope sections and `### Requirement:` headings, breaks nothing while left alone, but no plan
@@ -121,7 +121,7 @@ Two more things keep specs in this shape:
 - **Status.** A hook checks each edit Claude makes to a spec with its file-editing tools and
   refuses one the lifecycle does not allow: a new spec that is not `Draft 📝`,
   `Accepted 👍` while Open questions is not empty or in the same edit as a change to the text, a
-  change to a `Accepted 👍` spec that does not return it to `Draft 📝`, any other status, or a
+  change to an `Accepted 👍` spec that does not return it to `Draft 📝`, any other status, or a
   status without its emoji. ADRs, plans and spike records get the same kind of check; see
   [`/adr`](adr.md), [`/plan`](plan.md) and [`/spike`](spike.md).
 - **Audit.** [`/audit`](audit.md) finds specs and code that no longer agree, and specs left

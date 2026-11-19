@@ -173,7 +173,7 @@ plan mode.
   repository in the blocks the checker's definition names, and point the checker to that file.
   Agents are not allowed to save their reports as files, so copy each report into its file by a script, from
   Claude Code's record of the agent's run, never by retyping it, for the reason
-  [ADR 0011](docs/adrs/0011-review-relay-hook.md) gives.
+  [ADR 0034](docs/adrs/0034-report-copied-by-script.md) gives.
 - Only the maintainer accepts or rejects an ADR, after reading its reviewed text. Each acceptance
   is its own commit that changes only the status.
 
@@ -214,8 +214,11 @@ docs/
   brief.md             # this plugin's own brief
   lifecycle.md         # the lifecycle rules, for people and for Claude at session start
   skills/<name>.md     # one page per skill, linked from README.md
+.gitignore             # leaves out eval results and Python caches
 AGENTS.md              # this file
 CHANGELOG.md           # what each version changed, for the people who use the plugin
+CONTRIBUTING.md        # how outside feedback comes in, and where the rules for working here live
+LICENSE                # MIT
 README.md              # user-facing: what the plugin is, its skills, and how to install it
 ```
 

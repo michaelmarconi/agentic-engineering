@@ -58,8 +58,7 @@ anywhere else Claude names the file's path.
 5. `/agentic:plan` plans a piece of work against the spec and its decisions.
 6. `/agentic:build` builds the plan on a branch, tests first, and has the result reviewed. Start it
    in a new session, or after `/clear`; in a long session it asks first.
-7. `/agentic:verify` starts the product where it can run and checks it against the plan's
-   requirements from the outside, before you merge. It needs the Running the product practice,
+7. `/agentic:verify` starts the product where it can run and checks it against its specs' requirements from the outside, before you merge. It needs the Running the product practice,
    which `/agentic:practices running the product` records.
 8. `/agentic:release`, once enough is merged, makes a numbered version with release notes drafted
    from what each build left behind, and publishes it if your project publishes. It follows the

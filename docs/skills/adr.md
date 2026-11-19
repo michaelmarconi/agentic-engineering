@@ -48,7 +48,7 @@ what matters in its own words, and a plugin hook refuses any other hyperlink or 
 ## Anatomy
 
 An ADR is written for a person first. It reads from plain to technical: the top part says what
-had to be chosen, what was chosen, why and what it costs, in at most 500 words of prose; the exact
+had to be chosen, what was chosen, why and what it costs, in at most 500 words, tables included; the exact
 mechanism and evidence sit at the foot, for whoever builds and checks it. The layout is based on
 MADR (Markdown Architectural Decision Records), a widely used template, with every one of its
 core parts kept, reordered and tightened.[^madr]

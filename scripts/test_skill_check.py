@@ -413,7 +413,7 @@ class SkillCheck(unittest.TestCase):
         self.put("build", skill_md(name="build", body=f"# Build\n\n{BUILD_ASK_RULE}\n\n{BUILD_ACCEPT_RULE}\n\n{BUILD_PATH_RULE}\n\n{rule}\n\n{REPORT_RULE}\n\n{SCRATCHPAD_RULE}\n"))
         self.assertFails("build/SKILL.md: build re-read rule missing")
 
-    # Build and audit end with a report file (ADR 0033)
+    # Build and audit end with a report file (ADR 0051)
 
     def test_build_audit_and_verify_without_the_report_rule_fail(self):
         self.put("build", skill_md(name="build", body=f"# Build\n\n{BUILD_ASK_RULE}\n\n{BUILD_PATH_RULE}\n"))

@@ -1,4 +1,4 @@
-"""Write the report file a build, an audit or a verify run ends with (ADRs 0033 and 0034).
+"""Write the report file a build, an audit or a verify run ends with (ADRs 0051 and 0034).
 
 `hand_over.py`, `audit.py report` and `verify.py report` use this module; it has no command of its own. A report is
 one Markdown file with one `##` heading per item the skill lists, in that order. Claude's own

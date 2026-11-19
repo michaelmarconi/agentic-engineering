@@ -3,7 +3,7 @@
 
 Claude Code can run a review agent in the background even when the request asks for the
 foreground. Its Agent tool then returns at once with a launch notice, so the report never reaches
-the tool's PostToolUse event. The review relay and the build relay read it, with `report`, from one
+the tool's PostToolUse event. The review, build and agent relays read it, with `report`, from one
 of two events that fire as the agent finishes, both carrying its `agent_id` and `agent_type`:
 
 - In auto mode, as in the Claude desktop app and Claude project threads, an agent ends by calling
@@ -16,7 +16,7 @@ of two events that fire as the agent finishes, both carrying its `agent_id` and 
   (`agent_transcript_path`, one JSON entry per line), which Claude Code may not have written yet.
   A transcript that is missing or can't be read gives no hand-back.
 
-Both relays also need `launched_id`, which tells a launch notice from a finished run, and `hold`,
+The relays also need `launched_id`, which tells a launch notice from a finished run, and `hold`,
 which keeps the report of an agent that finished before its launch was seen. Both events fire for
 foreground runs too, whose launch is never seen, so only the last few held reports are kept.
 
