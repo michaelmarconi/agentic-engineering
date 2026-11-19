@@ -476,7 +476,7 @@ class SkillCheck(unittest.TestCase):
         # The offer comes after every counted question is settled, so numbering it would run past
         # the count the person was given ("of 3", then a fourth).
         rules = " ".join(DIAGRAM_RULES)
-        self.assertIn("never numbered", rules)
+        self.assertIn("Ask the offer unnumbered", rules)
         self.assertIn('"**Optional: diagrams**"', rules)
         self.assertIn("outside the question count", rules)
 

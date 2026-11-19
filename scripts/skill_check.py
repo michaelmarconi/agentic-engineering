@@ -223,8 +223,8 @@ DIAGRAM_RULES = (
     "Name each offer in one line, saying what it would show; the offer's question, asked word for "
     "word even for a single offer, is \"Would you like to add any of these diagrams to the "
     "{document}, or propose another?\"",
-    "The offer is never numbered: ask it under a bold line reading \"**Optional: diagrams**\", "
-    "outside the question count.",
+    "Ask the offer unnumbered, outside the question count, under a bold line reading "
+    "\"**Optional: diagrams**\".",
     "While items are left to settle, list the offers with the reviewers' suggestions, as optional, "
     "without their question, and still ask the first item last, as the only question; the person "
     "may pick one at any time, and it is drawn once the walk-through ends, from the text as it then "

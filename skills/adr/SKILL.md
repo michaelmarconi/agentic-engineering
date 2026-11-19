@@ -7,8 +7,9 @@ description: Record one technical decision as an ADR (architecture decision reco
 
 An ADR (architecture decision record) records one technical decision and why it was made, so later
 work can follow it and nobody reopens it by accident. ADRs live in one flat folder, `docs/adrs/`, as
-`NNNN-<subject>.md`; nothing is moved or deleted once decided. Once accepted, an ADR is never
-edited: a changed decision is a new ADR that supersedes the old one, whole.
+`NNNN-<subject>.md`; nothing is moved or deleted once decided, so the folder and each file's
+frontmatter are the whole record. Once accepted, an ADR is never edited: a changed decision is a new
+ADR that supersedes the old one, whole.
 
 Before writing, read [references/rubric.md](references/rubric.md): it is the list of checks the
 reviewer will apply, so writing to it leaves less to correct. Write in plain words, as the Plain
@@ -26,8 +27,8 @@ title down to Technical detail, says what had to be chosen, what was chosen, why
 in at most 500 words, tables included and diagrams in Decision left out; Technical detail below it
 holds the exact mechanism, rules, settings and evidence an agent or reviewer needs. Versions, flags,
 settings and command names go in Technical detail unless the decision is about one of them, and each
-limit is stated once, under Out of scope. Check the plain part's size before each review, and cut it
-to fit:
+limit is stated once, under Out of scope. Check the plain part's size before each review, and fix it
+until it fits:
 
 ```
 python3 "${CLAUDE_SKILL_DIR}/scripts/adr.py" words <the ADR's path>
@@ -70,11 +71,10 @@ the choice is a question for the person. Once they pick, write "Chosen:" and the
 option in full, so the sentence reads on its own, with the reason; mark that row Chosen and the
 others Rejected, each with why.
 
-One ADR holds one decision, because a decision is superseded whole: if part of a record could
-change while the rest stands, the two parts would have to be untangled later. When the
-conversation holds several decisions, say how many and write one ADR for each, even when they
-were made together or the person asks for one record. Split them yourself: never leave an open
-question asking whether part of an ADR should be an ADR of its own.
+One ADR holds one decision, because a decision is superseded whole, never in part. When the
+conversation holds several decisions, say how many and write one ADR for each, even when they were
+made together or the person asks for one record. Split them yourself: never leave an open question
+asking whether part of an ADR should be an ADR of its own.
 
 A choice can rest on an untried claim: something about how a system behaves that the conversation
 says the choice depends on and that nobody has tried, such as "this only works if the provider sends
@@ -231,9 +231,9 @@ drawn as a state diagram; or records and how they relate, drawn as an entity-rel
 Offer a shape only when the text names at least three of its things and at least two connections
 between them, such as three parts and two calls; otherwise say nothing about diagrams. Name each
 offer in one line, saying what it would show; the offer's question, asked word for word even for a
-single offer, is "Would you like to add any of these diagrams to the ADR, or propose another?" The
-offer is never numbered: ask it under a bold line reading "**Optional: diagrams**", outside the
-question count. While items are left to settle, list the offers with the reviewers' suggestions, as
+single offer, is "Would you like to add any of these diagrams to the ADR, or propose another?" Ask
+the offer unnumbered, outside the question count, under a bold line reading "**Optional:
+diagrams**". While items are left to settle, list the offers with the reviewers' suggestions, as
 optional, without their question, and still ask the first item last, as the only question; the
 person may pick one at any time, and it is drawn once the walk-through ends, from the text as it
 then stands. Once nothing is left, ask the offer's question as the only question, unless the person

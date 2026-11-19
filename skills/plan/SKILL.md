@@ -9,8 +9,8 @@ A plan says how one piece of work will build part of what the specs and ADRs hav
 the requirements it delivers, the decisions the code must follow, and how the work will be done.
 Plans live in one flat folder, `docs/plans/`, as `YYYY-MM-DD-<subject>.md`, dated the day the plan
 is first written, where the subject is two to five lowercase words of its title joined by hyphens. A
-plan is temporary: `/build` marks it `Built ✅`, after which it is frozen and may be deleted, so it
-never holds anything later work needs.
+plan is temporary: `/build` marks it `Built ✅`, after which it is frozen, never edited, and may be
+deleted whenever nobody needs it, so it never holds anything later work needs.
 
 Before writing, read [references/rubric.md](references/rubric.md): it is the list of checks the
 reviewer will apply, so writing to it leaves less to correct. Write in plain words, as the Plain
@@ -50,10 +50,11 @@ one, and any file under `docs/practices/` they name that bears on planning or sp
 whatever task its line names. Where they say how work is split or how big one plan may be, plan
 within that. If the work asked for is bigger, or exploring shows it is, say so, quoting the
 practice, propose how to split it into several plans that can each be built and reviewed on their
-own, and ask which to plan first. Ask this before any decision. If the person keeps the work whole,
-give it a line under Decisions saying it was kept whole against the practice, quoting it, and the
-person's reason. Where the practices say neither, or there are none, plan as below. Never edit the
-practices from here: that belongs to `/practices`.
+own, and ask which to plan first. Ask this before any decision, since the decisions depend on what
+this plan covers. If the person keeps the work whole, give it a line under Decisions saying it was
+kept whole against the practice, quoting it, and the person's reason. Where the practices say
+neither, or there are none, plan as below. Never edit the practices from here: that belongs to
+`/practices`.
 
 ## Explore
 
@@ -110,9 +111,7 @@ The plan's sections:
   **ADRs** each ADR the code must follow, as a table; either says "None." when there are none,
   but not both. Keep each line in the template's form, since the hook reads only that: a spec as
   `- [<title>](<path>)`, each requirement beneath it as `  - [<name>](<path>#<anchor>)`, a link
-  to its heading whose anchor is the one GitHub gives the heading (lowercased, every character
-  but letters, digits, `_`, `-` and spaces dropped, each space made `-`, so `### 2. Reply to all`
-  is `#2-reply-to-all`), and each ADR as a row `| [<NNNN>](<path>) | <the ADR's title> |` under
+  to its heading whose anchor is the one GitHub gives the heading (so `### 2. Reply to all` is `#2-reply-to-all`), and each ADR as a row `| [<NNNN>](<path>) | <the ADR's title> |` under
   the `| ADR | Decision |` header. If the hook refuses an anchor, its message gives the right
   one. To explain a term there, add a footnote mark after the link, never a line of prose.
 - **Decisions** holds one line for each decision whose reason nobody needs once the work is
@@ -242,8 +241,8 @@ diagram. Offer a shape only when the text names at least three of its things and
 connections between them, such as three parts and two calls; otherwise say nothing about diagrams.
 Name each offer in one line, saying what it would show; the offer's question, asked word for word
 even for a single offer, is "Would you like to add any of these diagrams to the plan, or propose
-another?" The offer is never numbered: ask it under a bold line reading "**Optional: diagrams**",
-outside the question count. While items are left to settle, list the offers with the reviewers'
+another?" Ask the offer unnumbered, outside the question count, under a bold line reading
+"**Optional: diagrams**". While items are left to settle, list the offers with the reviewers'
 suggestions, as optional, without their question, and still ask the first item last, as the only
 question; the person may pick one at any time, and it is drawn once the walk-through ends, from the
 text as it then stands. Once nothing is left, ask the offer's question before the last question,
