@@ -176,55 +176,32 @@ command per step lets you write, and the pull request template above. Leave the 
 
 ## Review
 
-The changed files are reviewed once, corrected once, and then the corrections are checked. The
-sequence is fixed so it always ends with a clear result: further rounds of review find little more,
-and each round of corrections brings new mistakes. The files of one run are reviewed together,
-since the core and a topic file must agree.
+When the files are written, review them together, since the core and a topic file must agree. At the
+review step, read the Review process section of `${CLAUDE_PLUGIN_ROOT}/docs/lifecycle.md` and follow
+its steps, then its "Ending on a failed check" part, with the reviewer and requests below.
 
-1. **Review.** When the files are written, start two agents in the foreground, not in the
-   background, both in one message so they run side by side: the `agentic:practices-reviewer` agent
-   and the `agentic:language-checker` agent, which checks the wording. Give each this request, its
-   first line exactly as shown, naming `AGENTS.md` and each topic file this run changed, separated
-   by commas, since a plugin hook reads that line to keep a copy of the files as reviewed:
+The reviewer is the `agentic:practices-reviewer` agent. Its request, which the
+`agentic:language-checker` agent gets too, names `AGENTS.md` and each topic file this run changed,
+separated by commas:
 
-   ```
-   Document: <AGENTS.md's full path>, <each topic file's full path>
-   Review these practices. Of AGENTS.md, check only its ## Practices section.
-   ```
+```
+Document: <AGENTS.md's full path>, <each topic file's full path>
+Review these practices. Of AGENTS.md, check only its ## Practices section.
+```
 
-   Give the document's full path on the `Document:` line, the one you wrote it to: the hook works
-   out the document's repository from it, so the review reads the right one whatever folder you
-   started in. If it refuses to start them, do what its reason says.
-   Each reads everything else it needs itself. Wait for both reports before touching the files.
-   If both pass with nothing under Needs a person, go straight to handing over.
-2. **Correct, once.** Read the rubric and the Plain words rule again, then correct only what the
-   reports list: each failed check and each item under Other findings in the review report, and
-   each finding in the wording report. Skip any finding outside the Practices section of
-   `AGENTS.md`, which is the person's. A command outside this run's topic that breaks the
-   one-command rule stays as written for the person to decide, since writing its script needs them. A wording item under Needs a person, whose meaning only the
-   person knows, is a decision like any other. Correct by making the practices accurate, never by
-   dropping or hedging what the person said. A finding only the person can settle, such as a rule
-   they asked for word for word, or anything under Needs a person, stays as written for them to
-   decide. Leave suggestions alone and change nothing else, since an edit beyond the reports is
-   the likeliest way to break something. Wait until every edit has succeeded. If nothing in the
-   reports was yours to correct, there is nothing to check: go straight to handing over.
-3. **Check the corrections.** Start the `agentic:correction-checker` agent in the foreground with
-   this request, its first line the same as the review's, and add nothing to it: the hook attaches
-   both reports and the files as reviewed, word for word.
+The check's request, to the `agentic:correction-checker` agent, with the same first line:
 
-   ```
-   Document: <AGENTS.md's full path>, <each topic file's full path>
-   Check the corrections.
-   ```
+```
+Document: <AGENTS.md's full path>, <each topic file's full path>
+Check the corrections.
+```
 
-   If the hook refuses to start it, do what its reason says. If the check fails, stop: change the
-   files no further, and show the person the check's report. Do not review or correct again; what
-   happens next is their call.
-
-After the sequence, edit the practices only when the person asks. While you are walking through
-questions with the person, do not review after each answer: run the sequence once when the
-walk-through ends, either because no questions are left or because the person stops. A change the
-person makes or asks for at any other time is reviewed once it is made.
+When correcting, skip any finding outside the Practices section of `AGENTS.md`, which is the
+person's. A command outside this run's topic that breaks the one-command rule stays as written for
+the person to decide, since writing its script needs them. Correct by making the practices accurate,
+never by dropping or hedging what the person said. A finding only the person can settle, such as a
+rule they asked for word for word, or anything under Needs a person, stays as written for them to
+decide.
 
 Whether the check passed or failed, end with the hand-over. Show the person each document you wrote
 or changed: if the app you run in can show them a file in a viewer, use it, and show a fresh copy

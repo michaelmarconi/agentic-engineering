@@ -174,56 +174,33 @@ the build nor a new session yourself.
 
 ## Review
 
-Every plan is reviewed once, corrected once, and then the corrections are checked. The sequence
-is fixed so it always ends with a clear result: further rounds of review find little more, and
-each round of corrections brings new mistakes.
+When the plan is written, review it. At the review step, read the Review process section of
+`${CLAUDE_PLUGIN_ROOT}/docs/lifecycle.md` and follow its steps, then its "Ending with your answers"
+part, with the reviewer and requests below.
 
-1. **Review.** When the plan is written, start two agents in the foreground, not in the
-   background, both in one message so they run side by side: the `agentic:plan-reviewer` agent and
-   the `agentic:language-checker` agent, which checks the wording. Give each this request, its first
-   line exactly as shown, since a plugin hook reads that line to keep a copy of the plan as
-   reviewed:
+The reviewer is the `agentic:plan-reviewer` agent. Its request, which the `agentic:language-checker`
+agent gets too:
 
-   ```
-   Document: <the plan's full path>
-   Review this plan.
-   ```
+```
+Document: <the plan's full path>
+Review this plan.
+```
 
-   Give the document's full path on the `Document:` line, the one you wrote it to: the hook works
-   out the document's repository from it, so the review reads the right one whatever folder you
-   started in. If it refuses to start them, do what its reason says.
-   Each reads everything else it needs itself. Wait for both reports before touching the plan.
-   If both pass with nothing under Needs a person, go straight to handing over.
-2. **Correct, once.** Read the rubric and the Plain words rule again, then correct only what the
-   reports list: each failed check and each item under Other findings in the review report, and each
-   finding in the wording report. A wording item under Needs a person, whose meaning only the person
-   knows, is a decision like any other. A decision under Needs a person, such as a technical choice
-   the Plan section makes that is not under Decisions, or whether to split a plan bigger than the
-   practices allow or keep it whole, becomes a question for the person, with its "Proposed:",
-   never a guess at the answer: leave the text it concerns as it is. A Decisions line
-   that fails rubric check 5 because it belongs in an ADR, the spec or the practices is never
-   reworded or deleted, since the person agreed it: it becomes a question naming the ADR, spec
-   change or practice the report names, with the decision as its "Proposed:", and any doubt the
-   reports or the code raise before that. A line that fails only because it lacks the
-   comment wording keeps its place and gains the sentence that `/build` leaves the reason as a
-   comment beside the code. Leave suggestions alone and change nothing else, since an edit beyond
-   the reports is the likeliest way to break something. Wait until every edit has succeeded. If
-   nothing in the reports was yours to correct, there is nothing to check: go straight to handing
-   over.
-3. **Check the corrections.** Start the `agentic:correction-checker` agent in the foreground with
-   this request, and add nothing to it: the hook attaches both reports and the plan as reviewed,
-   word for word.
+The check's request, to the `agentic:correction-checker` agent:
 
-   ```
-   Document: <the plan's full path>
-   Check the corrections.
-   ```
+```
+Document: <the plan's full path>
+Check the corrections.
+```
 
-   If the hook refuses to start it, do what its reason says. If the check fails, change the
-   plan no further: show the person the check's report, whose findings become questions, as below.
-   Do not review or correct again; what happens next is their call.
-
-After the sequence, edit the plan only by the person's answers or requests.
+When correcting, a decision under Needs a person includes a technical choice the Plan section makes
+that is not under Decisions, or whether to split a plan bigger than the practices allow or keep it
+whole; leave the text it concerns as it is. A Decisions line that fails rubric check 5 because it
+belongs in an ADR, the spec or the practices is never reworded or deleted, since the person agreed
+it: it becomes a question naming the ADR, spec change or practice the report names, with the
+decision as its "Proposed:", and any doubt the reports or the code raise before that. A line that
+fails only because it lacks the comment wording keeps its place and gains the sentence that `/build`
+leaves the reason as a comment beside the code.
 
 Whether the check passed or failed, end with the hand-over. It is what the person acts on, so make
 it hard to miss anything. Show the person each document you wrote or changed: if the app you run in
@@ -257,27 +234,3 @@ plan. A picked diagram goes in the Plan section, after its opening paragraph, an
 the next check of what changed, or, with no review in this conversation, reviewed in full. The last
 question, asked only once the offer is settled, offers `Ready to build 🟢` as the next status. Leave
 committing to them.
-
-While drafting, keep your own questions out of the document: ask them with the review's, once where
-both raise the same point, so only a deferred one reaches Open questions.
-
-Put each question to the person one at a time, by the asking rule: open questions, decisions for the
-person and what a check finds. Offer four choices on your question tool: "Accept" your proposal, "My
-own answer", "Ignore" and "Defer"; where you have none, end it with this line, word for word, since
-a plugin hook looks for it to keep the answer: "Accept, give your own answer, ignore or defer?". If
-the person has said not to ask now, or stops, defer the questions left.
-
-Accept and My own answer write the answer in as the person gave it, removing the question from Open
-questions if it is there; Ignore writes nothing and removes it; Defer leaves it there, or writes it
-there with its proposal. Nothing else is written into Open questions. An ignored fault you cannot
-fix leaves the document as it is: say which rubric check it fails.
-
-When a round of questions ends and anything was written in, start the `agentic:correction-checker`
-agent again with the same request: the hook attaches the text as last checked and the answers, so it
-checks only what changed. Put what it raises to the person the same way. Never run a full review for
-answers.
-
-Once nothing is left to ask, the last question offers the next status, where there is one, one more
-full review, or stopping; while any question is deferred, only the last two. Run a full review again
-only when the person asks, after their own change, on a document rewritten to a new layout, or in a
-new conversation.

@@ -202,49 +202,32 @@ change, which adds it; a plugin hook refuses a status change without it.
 
 ## Review
 
-A record is reviewed twice, each time once, corrected once, and then the corrections are checked:
-the design before `Ready to run 🟢`, the verdict before it is finished. The sequence is fixed so it
-always ends with a clear result: further rounds of review find little more, and each round of
-corrections brings new mistakes.
+A record is reviewed twice: the design before `Ready to run 🟢`, the verdict before it is finished.
+At the review step, read the Review process section of `${CLAUDE_PLUGIN_ROOT}/docs/lifecycle.md` and
+follow its steps, then its "Ending with your answers" part, with the reviewer and requests below.
 
-1. **Review.** Start two agents in the foreground, not in the background, both in one message so
-   they run side by side: the `agentic:spike-reviewer` agent and the `agentic:language-checker` agent.
-   Give each this request, its first line exactly as shown, since a plugin hook reads that line to
-   keep a copy of the record as reviewed, and its second naming the review:
+The reviewer is the `agentic:spike-reviewer` agent. Its request, which the
+`agentic:language-checker` agent gets too, names the review on its second line:
 
-   ```
-   Document: <the record's full path>
-   Review this spike record's design.
-   ```
+```
+Document: <the record's full path>
+Review this spike record's design.
+```
 
-   Give the document's full path on the `Document:` line, the one you wrote it to: the hook works
-   out the document's repository from it, so the review reads the right one whatever folder you
-   started in. If it refuses to start them, do what its reason says. For the verdict, the second
-   line is `Review this spike record's verdict.` Ask the language checker to leave out the Code and
-   Runs, which are the experiment's own text, and at the verdict review to check only the title,
-   Finding, Next steps, Results and Surprises: the rest was checked at the design review and is
-   fixed now, so a finding there could never be corrected. Each reads everything else it needs itself. Wait for
-   both reports before touching the record. If both pass with nothing under Needs a person, go
-   straight to handing over.
-2. **Correct, once.** Read the rubric and the Plain words rule again, then correct only what the
-   reports list: each failed check and each item under Other findings in the review report, and each
-   finding in the wording report. A wording item under Needs a person, whose meaning only the person
-   knows, is a decision like any other. A decision only the person can make, such as what result
-   counts as success, becomes a question for the person, with its "Proposed:", never a guess:
-   leave the text it concerns as it is. Leave suggestions alone and change nothing else, since an edit
-   beyond the reports is the likeliest way to break something. Wait until every edit has succeeded.
-   If nothing was yours to correct, go straight to handing over.
-3. **Check the corrections.** Start the `agentic:correction-checker` agent in the foreground with
-   this request, and add nothing to it: the hook attaches both reports and the record as reviewed.
+For the verdict, the second line is `Review this spike record's verdict.` Ask the language checker
+to leave out the Code and Runs, which are the experiment's own text, and at the verdict review to
+check only the title, Finding, Next steps, Results and Surprises: the rest was checked at the design
+review and is fixed now, so a finding there could never be corrected.
 
-   ```
-   Document: <the record's full path>
-   Check the corrections.
-   ```
+The check's request, to the `agentic:correction-checker` agent:
 
-   If the hook refuses to start it, do what its reason says. If the check fails, change the
-   record no further: show the person the check's report, whose findings become questions, as
-   below. Do not review or correct again; what happens next is their call.
+```
+Document: <the record's full path>
+Check the corrections.
+```
+
+When correcting, a decision only the person can make, such as what result counts as success, is
+theirs to settle like a decision under Needs a person; leave the text it concerns as it is.
 
 End with the hand-over. Show the person each document you wrote or changed: if the app you run in
 can show them a file in a viewer, use it, and show a fresh copy after each change if what it shows
@@ -255,27 +238,3 @@ the reviewers' suggestions apart, as optional. The last question's next status s
 design, or confirms the verdict, naming the status it would get. After the
 verdict, tell them which spec or ADR to take the finding to next. Leave committing to them: to hand
 an unfinished spike to a teammate, they commit the record.
-
-While drafting, keep your own questions out of the document: ask them with the review's, once where
-both raise the same point, so only a deferred one reaches Open questions.
-
-Put each question to the person one at a time, by the asking rule: open questions, decisions for the
-person and what a check finds. Offer four choices on your question tool: "Accept" your proposal, "My
-own answer", "Ignore" and "Defer"; where you have none, end it with this line, word for word, since
-a plugin hook looks for it to keep the answer: "Accept, give your own answer, ignore or defer?". If
-the person has said not to ask now, or stops, defer the questions left.
-
-Accept and My own answer write the answer in as the person gave it, removing the question from Open
-questions if it is there; Ignore writes nothing and removes it; Defer leaves it there, or writes it
-there with its proposal. Nothing else is written into Open questions. An ignored fault you cannot
-fix leaves the document as it is: say which rubric check it fails.
-
-When a round of questions ends and anything was written in, start the `agentic:correction-checker`
-agent again with the same request: the hook attaches the text as last checked and the answers, so it
-checks only what changed. Put what it raises to the person the same way. Never run a full review for
-answers.
-
-Once nothing is left to ask, the last question offers the next status, where there is one, one more
-full review, or stopping; while any question is deferred, only the last two. Run a full review again
-only when the person asks, after their own change, on a document rewritten to a new layout, or in a
-new conversation.

@@ -51,59 +51,43 @@ it to record.
 
 ## Review
 
-The draft is reviewed once, corrected once, and then the corrections are checked. The sequence
-is fixed so it always ends with a clear result: further rounds of review find little more, and
-each round of corrections brings new mistakes. Because the draft is never saved as a file, it
-goes in the requests whole, title and body, word for word, between marker lines; a plugin hook
-reads them to keep a copy of the draft as reviewed, outside the person's repository.
+When the draft is written, review it. At the review step, read the Review process section of
+`${CLAUDE_PLUGIN_ROOT}/docs/lifecycle.md` and follow its steps, then its "Ending on a failed check"
+part, with the reviewer and requests below. Its hand-over is showing the person the draft, under
+File.
 
-1. **Review.** Start two agents in the foreground, not in the background, both in one message
-   so they run side by side: the `agentic:feedback-reviewer` agent and the `agentic:language-checker`
-   agent, which checks the wording. Give each this request, laid out exactly as shown:
+Because the draft is never saved as a file, it goes in the requests whole, title and body, word for
+word, between marker lines; a plugin hook reads them to keep a copy of the draft as reviewed,
+outside the person's repository. The reviewer is the `agentic:feedback-reviewer` agent. Its request,
+which the `agentic:language-checker` agent gets too:
 
-   ```
-   Document: feedback draft
-   Kind: <bug or improvement>
-   === DRAFT ===
-   <title>
+```
+Document: feedback draft
+Kind: <bug or improvement>
+=== DRAFT ===
+<title>
 
-   <body>
-   === END DRAFT ===
-   ```
+<body>
+=== END DRAFT ===
+```
 
-   Each reads everything else it needs itself. Wait for both reports before changing the draft.
-   If both pass with nothing under Needs a person, go straight to showing the person.
-2. **Correct, once.** Read the rubric and the Plain words rule again, then correct only what
-   the reports list: each failed check and each item under Other findings in the review report,
-   and each finding in the wording report. A wording item under Needs a person, whose
-   meaning only the person knows, is a decision like any other. Whether a detail is safe to share is the
-   person's decision, so a finding under Needs a person goes to them as a question, never a
-   guess. Leave suggestions alone and change nothing else, since an edit beyond the reports is
-   the likeliest way to break something. If nothing in the reports was yours to correct, there
-   is nothing to check: go straight to showing the person.
-3. **Check the corrections.** Start the `agentic:correction-checker` agent in the foreground with
-   the same layout, holding the corrected draft, and nothing more: the hook attaches both reports
-   and the draft as reviewed, word for word.
+The check's request, to the `agentic:correction-checker` agent, has the same layout, holding the
+corrected draft, and nothing more:
 
-   ```
-   Document: feedback draft
-   Kind: <bug or improvement>
-   === DRAFT ===
-   <corrected title>
+```
+Document: feedback draft
+Kind: <bug or improvement>
+=== DRAFT ===
+<corrected title>
 
-   <corrected body>
-   === END DRAFT ===
-   ```
+<corrected body>
+=== END DRAFT ===
+```
 
-   If the hook refuses to start it, do what its reason says. If the check fails, stop: change
-   the draft no further, and show the person the draft and the check's report. Do not review or
-   correct again; what happens next is their call.
-
-While you are walking through questions with the person, do not review after each answer: run the
-sequence once when the walk-through ends, either because no questions are left or because the person
-stops. A change the person makes or asks for at any other time is reviewed once it is made. A draft
-whose review or check failed is filed only if the person, with the reports in front of them, says to
-file it anyway: it is their information to share.
+When correcting, remember that whether a detail is safe to share is the person's decision, so a
+finding under Needs a person goes to them as a question, never a guess. A draft whose review or
+check failed is filed only if the person, with the reports in front of them, says to file it anyway:
+it is their information to share.
 
 ## File
 

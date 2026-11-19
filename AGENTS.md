@@ -51,21 +51,21 @@ everything else is judgement.
      them. It also finds the
      document's repository ([ADR 0046](docs/adrs/0046-whole-repository-one-project.md)), names the
      document relative to it and adds a `Repository: <folder>` second line, so a review started
-     from another folder still reads the right one. The skill holds `PATH_RULE`, and each agent
-     `AGENT_RULE`, from `scripts/skill_check.py` word for word; the script checks both. Add the new
+     from another folder still reads the right one. Each agent holds `AGENT_RULE` from
+     `scripts/skill_check.py` word for word; the script checks it. Add the new
      reviewer and its skill's files to the hook's `REVIEWERS` table. A document that must not
      be written to the working tree, such as `/feedback`'s draft, uses `Document: feedback draft` and
      carries the draft between `=== DRAFT ===` and `=== END DRAFT ===` lines.
-   - The correct step reads the rubric and the Plain words rule again, corrects only what the
-     reports list, turns each
-     decision for the person into a question for them, leaves suggestions alone and changes
-     nothing else; there is never a second review of the skill's own corrections. The sentences
-     every skill shares for these steps are `CORRECT_RULES` in `scripts/skill_check.py`, held word
-     for word.
-   - A document skill (brief, spec, ADR, plan, spike) then puts each question to the person with
-     four choices and checks each round of answers, holding `ANSWER_RULES` word for word; the
-     other skills that name `agentic:correction-checker` stop on a failed check and hold
-     `REVIEW_RULE`. The script checks both.
+   - The review sequence itself, reviewing, correcting once, checking the corrections and then
+     either taking the person's answers or stopping on a failed check, is written once, in the
+     Review process section of `docs/lifecycle.md`
+     ([ADR 0053](docs/adrs/0053-review-sequence-lifecycle-page.md)). Its sentences
+     (`CORRECT_RULES`, `PATH_RULE`, `ANSWER_RULES`, `REVIEW_RULE` in `scripts/skill_check.py`) are
+     held there word for word. Each skill that runs it (`REVIEWING_SKILLS`) holds instead the
+     pointer sentence the script builds, naming "Ending with your answers" for a document skill
+     (brief, spec, ADR, plan, spike) and "Ending on a failed check" for the others, and keeps its
+     own reviewer, requests and extras. The script checks both, and that no skill copies the
+     moved sentences back.
    - The hand-over shows the person the document in the app's file viewer where there is one,
      always names its path and never sends them to a code-hosting site
      ([ADR 0025](docs/adrs/0025-document-review-display.md)): the skill holds `SHOW_RULE` from

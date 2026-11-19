@@ -60,56 +60,41 @@ section of [the lifecycle page](../../docs/lifecycle.md#plain-words) says.
 
 ## Review
 
-The notes are reviewed once, corrected once, and then the corrections are checked. The sequence
-is fixed so it always ends with a clear result: further rounds of review find little more, and
-each round of corrections brings new mistakes. The notes may never be written to a file, so they
-go in the requests whole, word for word, between marker lines; a plugin hook reads them to keep a
-copy of the notes as reviewed.
+When the notes are drafted, review them. At the review step, read the Review process section of
+`${CLAUDE_PLUGIN_ROOT}/docs/lifecycle.md` and follow its steps, then its "Ending on a failed check"
+part, with the reviewer and requests below. Its hand-over is sign-off, below.
 
-1. **Review.** Start two agents in the foreground, not in the background, both in one message so
-   they run side by side: the `agentic:release-reviewer` agent and the `agentic:language-checker`
-   agent, which checks the wording. Give each this request, laid out exactly as shown, with the
-   gathered notes, kept history items and left-out items copied from the script's output and
-   the person's answers, and the `## Release notes` section, or "None recorded":
+The notes may never be written to a file, so they go in the requests whole, word for word, between
+marker lines; a plugin hook reads them to keep a copy of the notes as reviewed. The reviewer is the
+`agentic:release-reviewer` agent. Its request, which the `agentic:language-checker` agent gets too,
+holds the gathered notes, kept history items and left-out items copied from the script's output and
+the person's answers, and the `## Release notes` section, or "None recorded":
 
-   ```
-   Document: release notes
-   Version: <version>
-   === NOTES GATHERED ===
-   <one note per line>
-   === END NOTES GATHERED ===
-   === FROM HISTORY ===
-   <one kept item per line, or None>
-   === END FROM HISTORY ===
-   === LEFT OUT ===
-   <each note or item the person said to leave out, or None>
-   === END LEFT OUT ===
-   === FORM ===
-   <the recorded form, or None recorded>
-   === END FORM ===
-   === DRAFT ===
-   <the notes>
-   === END DRAFT ===
-   ```
+```
+Document: release notes
+Version: <version>
+=== NOTES GATHERED ===
+<one note per line>
+=== END NOTES GATHERED ===
+=== FROM HISTORY ===
+<one kept item per line, or None>
+=== END FROM HISTORY ===
+=== LEFT OUT ===
+<each note or item the person said to leave out, or None>
+=== END LEFT OUT ===
+=== FORM ===
+<the recorded form, or None recorded>
+=== END FORM ===
+=== DRAFT ===
+<the notes>
+=== END DRAFT ===
+```
 
-   Each reads everything else it needs itself. Wait for both reports before changing the notes.
-   If both pass with nothing under Needs a person, go straight to sign-off.
-2. **Correct, once.** Read the rubric and the Plain words rule again, then correct only what the
-   reports list: each failed check and each item under Other findings in the review report, and
-   each finding in the wording report. A wording item under Needs a person, whose meaning only
-   the person knows, is a decision like any other. Ask the person each decision. Leave suggestions alone and change
-   nothing else, since an edit beyond the reports is the likeliest way to break something. If
-   nothing was yours to correct, go straight to sign-off.
-3. **Check the corrections.** Start the `agentic:correction-checker` agent in the foreground with
-   the same layout, holding the corrected notes, with any item the person dropped while you corrected
-   moved under `=== LEFT OUT ===`, and nothing more: the hook attaches both reports
-   and the notes as reviewed, word for word. If the hook refuses to start it, do what its reason
-   says. If the check fails, stop: change the notes no further, and show the person the notes and
-   the check's report. Do not review or correct again; what happens next is their call.
+The check's request, to the `agentic:correction-checker` agent, has the same layout, holding the
+corrected notes, with any item the person dropped while you corrected moved under
+`=== LEFT OUT ===`, and nothing more.
 
-While you are walking through questions with the person, do not review after each answer: run the
-sequence once when the walk-through ends, either because no questions are left or because the person
-stops. A change the person makes or asks for at any other time is reviewed once it is made.
+When correcting, ask the person each decision.
 
 ## Sign-off and commit
 
