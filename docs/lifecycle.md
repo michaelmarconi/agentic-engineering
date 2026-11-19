@@ -10,9 +10,28 @@ or a spec, and every skill opens it for the rules it shares with the others. The
 
 ```mermaid
 flowchart LR
-    Decide[Decide what to build] --> Build[Build it] --> Ship[Ship it]
-    Any[Any time: audit, practices, feedback]
+    subgraph Decide[Decide what to build]
+        Brief --> Spec --> ADR
+        Spike
+    end
+    subgraph Make[Build it]
+        Plan --> Build --> Verify
+    end
+    subgraph Ship[Ship it]
+        Release --> Deploy
+    end
+    Spec --> Plan
+    ADR --> Plan
+    Verify --> Release
+    Spike -.- Spec
+    Spike -.- ADR
+    Audit -.-> Decide
 ```
+
+Solid arrows show the usual order, each step using what the one before it wrote. Dotted lines show
+the steps you run when needed: a spike settles an unknown for a spec or an ADR, and an audit checks
+the code against the documents at any time. Each phase has its own diagram under
+[Steps](#steps).
 
 ## Documents
 
