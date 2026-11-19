@@ -17,8 +17,7 @@ Before writing, read [references/rubric.md](references/rubric.md): it is the lis
 reviewer will apply, so writing to it leaves less to correct. Write in plain words, as the Plain
 words section of [the lifecycle page](../../docs/lifecycle.md#plain-words) says: a language
 checker holds every document to it. New plans start from
-[assets/template.md](assets/template.md). Read these with the Read tool, not the shell, so the
-person is not asked to approve a command.
+[assets/template.md](assets/template.md). Read these with the Read tool, not the shell, so no command needs approval.
 
 The template's frontmatter holds `type: Plan`, which says what the document is. A plan written
 before it has no `type:`, so add it with your next edit. The title never names the document's type,
@@ -118,7 +117,7 @@ The plan's sections:
 - **Decisions** holds one line for each decision whose reason nobody needs once the work is
   built, or only someone changing that code later: what was decided and why, and for the second
   kind, that `/build` leaves the reason as a comment beside the code.
-- **Open questions** holds what the person defers. Write each open question as a
+- **Open questions** holds what the person defers and the changes below. Write each open question as a
   heading, `### 1. <what is to be settled>`, numbered in order, then the context it needs, then a
   block quote holding a line starting `> **Proposed:**` with the answer you would choose, then a
   line holding only `>`, then a line starting `> **Why:**` with the reason, so the person can find

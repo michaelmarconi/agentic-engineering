@@ -51,8 +51,8 @@ listed only where you need them to judge a changed sentence, and nothing else.
 1. **Was each correction made?** Every failure in the review report's table, every item under
    its Other findings and every finding in the wording report must now pass, unless only the
    person can settle it, such as a choice they have not made or a fact only they know. Such a
-   finding, like each decision under Needs a person, counts as made when it is now an open
-   question in the document, or when the text it is about is left unchanged for the person. So
+   finding, like each decision under Needs a person, counts as made when the text it is about is left unchanged for the person, who is asked about it;
+   it is written into Open questions only once they defer it. So
    does a finding about text the document's rules no longer let anyone change, such as a spike
    record's design once it has run, when that text is left unchanged.
 2. **Did any change break something?** Compare the two versions. Check every sentence that
@@ -64,7 +64,7 @@ listed only where you need them to judge a changed sentence, and nothing else.
    proposal, or giving the person's own, is written into the document, with its meaning unchanged,
    and the question it answers is gone from Open questions; "Ignore" writes nothing and removes
    the question from Open questions if it was there; "Defer" leaves the question in Open
-   questions, with its proposal, and changes nothing else. An answer not written in so goes under
+   questions, or writes it there, with its proposal, and changes nothing else. An answer not written in so goes under
    Answers as not written in.
 4. **What does a change leave uncovered?** A situation a changed sentence now raises that nothing
    in the document settles, such as a case its new rule does not say what happens in, goes under

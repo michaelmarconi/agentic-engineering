@@ -56,8 +56,8 @@ git. A monorepo, several related apps or packages in one
 repository, keeps one `docs/` folder at its top; its specs may be grouped into folders, such as one
 per app, which carry no meaning.
 
-Every document has an Open questions section, holding what only you can settle, or "None." when
-nothing is open. Each open question is laid out the same way, so you can find the proposal at a
+Every document has an Open questions section, holding what only you can settle and chose to
+defer, or "None." when nothing is open. Each open question is laid out the same way, so you can find the proposal at a
 glance: a numbered heading saying what is to be settled, the context it needs, then a quote holding
 the proposed answer and the reason for it. A question with two answers is two questions. A plugin
 hook refuses Open questions laid out any other way. A document written before this layout keeps

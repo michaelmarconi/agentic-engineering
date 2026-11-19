@@ -1,7 +1,7 @@
 ---
 type: regex
 target: { source: file, path: docs/brief.md }
-pattern: "^## Open questions\\s*\\n\\s*_?None\\._?\\s*($|\\n)"
+pattern: "^## Open questions\\s*\\n\\s*[-*]?\\s*[*_]?None\\.[*_]?\\s*($|\\n)"
 flags: m
 weight: 1
 ---

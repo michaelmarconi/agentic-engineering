@@ -295,7 +295,8 @@ REPORT_RULES = (
 QUESTION_REVIEWERS = tuple(f"{skill}-reviewer" for skill in DOCUMENT_SKILLS)
 QUESTIONS_RULE = (
     "Leave out a finding that the document's Open questions already raise: it is already waiting "
-    "for the person."
+    "for the person. A gap the document marks as not chosen or not known yet goes under Needs a "
+    "person, never as a failure: the writer asks the person about it."
 )
 
 
