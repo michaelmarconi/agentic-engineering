@@ -3,8 +3,15 @@
 What changed in each version of the plugin, newest first. Versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html), and this file follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Read the entry before you update
-past a major version: it says what you need to change in your documents. Until 1.0.0, any
-minor version may need such a change, and its entry says so.
+past a major version: it says what you need to change in your documents. Before 1.0.0, a
+minor version could need such a change, and its entry said so.
+
+## [1.0.0] - 2026-11-20
+
+### Changed
+
+- The plugin is now stable. Nothing changes in how the skills work since 0.79.0, and nothing in
+  your documents needs to change.
 
 ## [0.79.0] - 2026-11-20
 

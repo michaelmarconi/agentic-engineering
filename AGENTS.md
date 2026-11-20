@@ -275,9 +275,7 @@ Nothing else belongs at the root without a reason recorded in the change that ad
   since installed copies only update when the version string changes. Follow
   [Semantic Versioning](https://semver.org/spec/v2.0.0.html): patch for a fix, minor for a new
   skill or new behaviour, major for a change that breaks documents people already have or the
-  lifecycle itself. Stay below 1.0.0 until someone other than the maintainer installs the
-  plugin; until then a breaking change bumps the minor version, and its changelog entry says
-  what breaks.
+  lifecycle itself, and its changelog entry says what breaks.
 - Bump in the branch's last commit, after bringing main into the branch and just before merging,
   so branches never compete for the next number and the bump survives any way of merging. In
   that commit, add an entry headed `## [X.Y.Z] - YYYY-MM-DD` at the top of `CHANGELOG.md`,
