@@ -13,6 +13,11 @@ date, which would pass on that day only. Its graders read it through a link the 
 makes once it knows the date. The date is the one when the case starts, so a run that crosses
 midnight cannot find its document; no grader can follow a pattern of names instead.
 
+A case tagged `known-flaky` fails some runs through the model's own judgement, not a fault in the
+case, and says so in a `# Flaky:` comment in its front matter giving why and how often, so a
+later run can tell an expected failure from a new one. A note without the tag, or the tag without
+a note, is reported.
+
 A case whose session folder deliberately holds its repository one level down, as in a Claude
 project thread, starts that repository itself, so any `git init` counts.
 """
@@ -59,7 +64,42 @@ def problems(path):
     for name in DATED.findall(read(os.path.join(path, "prompt.md"))):
         if not os.path.exists(os.path.join(path, "files", name)):
             found.append(f"prompt names a new document with a fixed date: {name}")
+    found.extend(flaky_problems(read(os.path.join(path, "prompt.md"))))
     return found
+
+
+FRONT = re.compile(r"\A---\n(.*?)\n---\n", re.S)
+TAGS = re.compile(r"^tags:[ \t]*\[([^\]]*)\]", re.M)
+FLAKY_NOTE = re.compile(r"^#[ \t]*Flaky:[ \t]*\S", re.M)
+
+
+def flaky_problems(prompt):
+    """Why a prompt's known-flaky tag and its # Flaky: note disagree, or an empty list."""
+    front = FRONT.match(prompt)
+    head = front.group(1) if front else ""
+    tags = TAGS.search(head)
+    tagged = bool(tags) and "known-flaky" in [t.strip() for t in tags.group(1).split(",")]
+    noted = bool(FLAKY_NOTE.search(head))
+    if tagged and not noted:
+        return ["tagged known-flaky with no # Flaky: note saying why"]
+    if noted and not tagged:
+        return ["has a # Flaky: note but no known-flaky tag"]
+    return []
+
+
+class FlakyCasesSayWhy(unittest.TestCase):
+    def test_tag_and_note_together(self):
+        note = "---\ntags: [spec, known-flaky]\n# Flaky: the reviewer asks; 1 of 3 runs\n---\nGo.\n"
+        self.assertEqual(flaky_problems(note), [])
+
+    def test_tag_without_note(self):
+        self.assertEqual(len(flaky_problems("---\ntags: [spec, known-flaky]\n---\nGo.\n")), 1)
+
+    def test_note_without_tag(self):
+        self.assertEqual(len(flaky_problems("---\ntags: [spec]\n# Flaky: why\n---\nGo.\n")), 1)
+
+    def test_plain_case(self):
+        self.assertEqual(flaky_problems("---\ntags: [spec]\n---\nGo.\n"), [])
 
 
 class EveryCaseStartsInARepository(unittest.TestCase):
