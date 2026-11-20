@@ -341,12 +341,13 @@ flowchart LR
 - Nothing refers to a temporary document. Otherwise the brief, specs and ADRs never refer to one
   another in any way: either end could change or be deleted without the other being touched. A
   spec or ADR that uses a spike's finding states its evidence in its own words.
-- **Documents stand on their own.** Every document refers to outside material only by a web link.
-  Material it was drafted from, such as notes, a requirements document or a ticket, is stated in
-  its own words, never referred to by hyperlink, path or title, when it was handed over in a
-  conversation, lives outside the repository or sits under `docs/` beside the lifecycle's
-  documents: it can change or vanish without them being touched, and `docs/` holds only the
-  lifecycle's documents.
+- **Documents stand on their own.** Every document links only to the lifecycle's documents, as
+  above, and to the web. Material it was drafted from, such as notes, a requirements document or a
+  ticket, is stated in its own words, never referred to by hyperlink, path or title, when it was
+  handed over in a conversation, lives outside the repository or sits under `docs/` beside the
+  lifecycle's documents. Code is named only as plain text, such as a path in backticks, never
+  linked. Each can change or vanish without the document being edited. A project may keep
+  other files under `docs/`, and the lifecycle leaves them alone.
 
 ### Status changes
 
@@ -386,9 +387,9 @@ these rules:
   words from the title;
 - an ADR whose `number:` does not match its file name;
 - Open questions laid out any other way than above;
-- in any lifecycle document, a hyperlink or path to drafting material: something handed over in a
-  conversation, outside the repository, or under `docs/` beside the lifecycle's documents. Web
-  links and paths to code are allowed.
+- in any lifecycle document, a link to anything but another lifecycle document or the web, such as
+  code, a folder, another page under `docs/`, or something outside the repository. A code file named
+  as plain text is allowed.
 
 ## Plain words
 

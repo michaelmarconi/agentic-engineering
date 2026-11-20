@@ -43,7 +43,8 @@ so a name never has to change once the ADR is written. ADRs refer to each other 
 file, never to specs, the brief or plans: those change while an ADR does not, so a reference to
 them would go stale. Nor does an ADR refer to material you handed over, such as a requirements
 document or notes, or to anything outside the lifecycle's documents except a web page: it states
-what matters in its own words, and a plugin hook refuses any other hyperlink or path.
+what matters in its own words, and a plugin hook refuses any link to something other than a lifecycle document or a
+web page, code included.
 
 ## Anatomy
 

@@ -153,7 +153,8 @@ one capability, every open question has a proposed answer, and the spec refers t
 the brief, an ADR, a plan or a spike record, nor any material outside the lifecycle's documents
 except a web page, such as a requirements document you handed over, by hyperlink, path or title,
 since those can change without the spec being touched and the reference would go stale. A plugin
-hook also refuses any such hyperlink or path. The reviewer also reads the brief, but raises it only
+hook also refuses any link to something other than a lifecycle document or a web page, code
+included. The reviewer also reads the brief, but raises it only
 where the spec contradicts the brief's goals, what it puts out of scope or its constraints, never
 where the spec adds detail the brief doesn't mention. That becomes a question for you: change
 the spec, or change the brief, which `/spec` never does for you. Beside the reviewer, the language checker agent (`agents/language-checker.md`) reads it for

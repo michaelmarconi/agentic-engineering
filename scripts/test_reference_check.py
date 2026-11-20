@@ -57,16 +57,8 @@ class AllowedReferences(Workspace):
         text = "[a](0002-cache.md) [b](../plans/2026-11-05-login.md) [c](../spikes/2026-11-05-speed.md)\n"
         self.assertIsNone(self.write(text, self.adr))
 
-    def test_a_reference_to_code_is_not_checked(self):
-        self.put(self.at("src/app.py"))
-        self.assertIsNone(self.write("Checked in [app.py](../../src/app.py).\n", self.adr))
-
     def test_a_protocol_relative_web_link_passes(self):
         self.assertIsNone(self.write("[RFC](//www.rfc-editor.org/rfc/rfc9110)\n"))
-
-    def test_a_link_to_a_folder_passes(self):
-        os.makedirs(self.at("docs/plans"))
-        self.assertIsNone(self.write("See [the plans](../plans/) and [here](./).\n", self.adr))
 
     def test_a_heading_in_the_same_document_passes(self):
         self.assertIsNone(self.write("See [goals](#goals).\n"))
@@ -103,14 +95,32 @@ class RefusedReferences(Workspace):
     def test_a_path_that_leaves_the_repository_is_refused(self):
         self.assertRefused(self.write("From [the PRD](../../prd.md).\n"), "../../prd.md")
 
-    def test_a_document_under_docs_that_is_not_a_lifecycle_document_is_refused(self):
+    def test_any_file_in_the_repository_that_is_not_a_lifecycle_document_is_refused(self):
         self.put(self.at("docs/prd.md"))
         self.assertRefused(self.write("From [the PRD](prd.md).\n"), "prd.md")
-
-    def test_any_file_under_docs_that_is_not_a_lifecycle_document_is_refused(self):
         self.assertRefused(self.write("From [notes](notes/kickoff.pdf).\n", self.brief), "notes/kickoff.pdf")
         self.assertRefused(self.write("See [it](../../docs/adrs/sketch.txt).\n", self.spec),
                            "../../docs/adrs/sketch.txt")
+        self.assertRefused(self.write("See [the guide](../README.md).\n"), "../README.md")
+
+    def test_a_link_to_code_is_refused(self):
+        self.put(self.at("src/app.py"))
+        self.assertRefused(self.write("Checked in [app.py](../../src/app.py).\n", self.adr), "../../src/app.py")
+        self.assertRefused(self.write("Lives in [the app](../../src/app.py#L3).\n", self.spec), "../../src/app.py#L3")
+
+    def test_a_link_to_a_folder_is_refused(self):
+        os.makedirs(self.at("docs/plans"))
+        os.makedirs(self.at("src"))
+        reason = self.write("See [the plans](../plans/), [here](./) and [code](../../src).\n", self.adr)
+        for target in ("../plans/", "./", "../../src"):
+            self.assertRefused(reason, target)
+
+    def test_the_refusal_says_why_and_how_to_name_a_file(self):
+        reason = self.write("Checked in [app.py](../../src/app.py).\n", self.adr)
+        self.assertIn("links only to other lifecycle documents and to the web", reason)
+        self.assertIn("without the ADR being edited", reason)
+        self.assertIn("plain text", reason)
+        self.assertNotIn("is a file under docs/", reason)
 
     def test_a_reference_definition_is_checked(self):
         self.assertRefused(self.write("[prd]: /tmp/prd.md\n"), "/tmp/prd.md")
@@ -128,11 +138,12 @@ class RefusedReferences(Workspace):
         self.assertIn("The plan stands", self.write("[prd](/tmp/prd.md)\n", plan))
         self.assertIn("The spike record stands", self.write("[prd](/tmp/prd.md)\n", spike))
 
-    def test_a_plan_may_refer_to_specs_adrs_and_code(self):
+    def test_a_plan_may_refer_to_specs_and_adrs_but_not_code(self):
         plan = self.at("docs/plans/2026-11-05-x.md")
         self.assertIsNone(self.write(
-            "[Login](../specs/login.spec.md) [ADR 1](../adrs/0001-database.md) [code](../../src/app.py)\n",
+            "[Login](../specs/login.spec.md) [ADR 1](../adrs/0001-database.md) and `src/app.py`\n",
             plan))
+        self.assertRefused(self.write("[code](../../src/app.py)\n", plan), "../../src/app.py")
 
     def test_the_brief_is_checked_whatever_the_folders_case(self):
         self.assertRefused(self.write("[prd](/tmp/prd.md)\n", self.at("Docs/Brief.md")), "/tmp/prd.md")
@@ -238,8 +249,10 @@ class MissingADRs(Workspace):
         })
         self.assertIsNone(reason)
 
-    def test_a_link_to_a_missing_file_outside_docs_adrs_is_not_checked(self):
-        self.assertIsNone(self.write("Checked in [app.py](../../src/app.py).\n", self.adr))
+    def test_a_missing_file_outside_docs_adrs_is_not_called_a_missing_adr(self):
+        reason = self.write("Checked in [app.py](../../src/app.py).\n", self.adr)
+        self.assertIsNotNone(reason)
+        self.assertNotIn(reference_check.MISSING_ADR, reason)
 
 
 class Robustness(Workspace):

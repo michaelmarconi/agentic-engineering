@@ -36,7 +36,8 @@ checking, and quotes the brief as evidence for every failure.
    refers, by hyperlink, path or title, to material handed over in the conversation, to anything
    outside the repository, or to a file under `docs/` that is not a brief, spec, ADR, plan or spike
    record: such material can change or vanish without the brief being touched, so what matters from
-   it is stated in the brief's own words. References to code are not part of this check.
+   it is stated in the brief's own words. Code is named only as plain text, such as a path in
+   backticks, never linked.
 10. **Proposed answers.** Each open question's "**Proposed:**" line makes one proposal, a single
     decision the person can accept in a word or replace, and its "**Why:**" line gives the reason,
     which the proposal does not repeat; a second proposal hidden in either line fails, since it

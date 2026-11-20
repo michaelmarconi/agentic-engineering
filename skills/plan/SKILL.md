@@ -140,7 +140,8 @@ The plan's sections:
   person picked at the hand-over, and no decision that is not under Decisions or ADRs; a new one
   found while writing goes back to the person as a question first.
 
-The plan refers only to the specs and ADRs it lists, and to the code. Never refer to the brief,
+The plan refers only to the specs and ADRs it lists, and names files in the code as plain text,
+never by a link. Never refer to the brief,
 another plan or a spike record, and never edit a spec or an ADR, even when the person asks you to
 note something there: tell them it belongs in that document's own skill. Material the person hands
 over that is not a web page, such as a ticket or notes, is drawn on but never referred to (rubric

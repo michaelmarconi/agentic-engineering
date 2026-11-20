@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: spec-no-docs-page-link
+expected_outcome: |
+  The project keeps a brief, an architecture page under docs/ and some code. The person asks for a spec that links to the architecture page and to the code. The spec states what it needs from them in its own words, links to neither, at most naming a code file as plain text, and the reply tells the person the links were left out because those files can change or vanish without the spec being edited.
+context:
+  scaffold_script: place-files.sh
