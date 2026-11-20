@@ -18,7 +18,8 @@ minor version may need such a change, and its entry says so.
   when you said not to ask, and writing in what you defer is the one change it still makes.
 - /spike corrects crashing experiment code once a run shows the fault, and never before, ahead of
   the next run; a design leaves Next steps empty.
-- The /build, /audit and /verify hand-over counts each bullet's bold label in its 15 words.
+- The /build, /audit and /verify hand-over reply may run to 175 words, up from 150, and each
+  bullet's bold label counts toward its 15 words.
 
 ## [0.78.0] - 2026-11-19
 

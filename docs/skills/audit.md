@@ -179,7 +179,7 @@ the skill that makes it:
 - **Supersede the ADR**, through [`/adr`](adr.md), when the decision no longer holds;
 - for a problem with a document, the edit that corrects it.
 
-The full report goes in a Markdown file, and Claude's reply is short, under 150 words: the
+The full report goes in a Markdown file, and Claude's reply is short, under 175 words: the
 outcome, then at most five bullets of at most 15 words each, with the main findings and any
 question or action for you, then the file's full path. The app shows you the file where it
 can. The file holds Claude's sections, such as each finding with its suggested correction,

@@ -34,7 +34,7 @@ check. "The run" is one `/verify` from the person's request to its reply.
 8. **The report holds it all.** The report file is written by the script's `report` command, with
    the commit `start` printed and the overall result, then the failed, disputed, not checked and
    passed verdicts, in that order, grouped by spec.
-9. **Short reply.** The reply is under 150 words: the outcome, at most five bullets of at most 15
+9. **Short reply.** The reply is under 175 words: the outcome, at most five bullets of at most 15
    words each, and the report file's full path. It never pastes the report.
 10. **Changes nothing.** The run writes, edits and deletes nothing in the repository, sets no
     status and makes no commit. It never reads the code or tests itself to judge a verdict.
