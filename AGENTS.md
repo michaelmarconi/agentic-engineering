@@ -259,6 +259,12 @@ Nothing else belongs at the root without a reason recorded in the change that ad
   The supported models are those named in README.md; a change merges only if its cases pass
   on every one. Evals are billed model runs: run the ones you touched, never the whole suite
   unprompted.
+  A case tagged `known-flaky` fails some runs through the model's own judgement rather than a
+  fault in the case, and a `# Flaky:` comment in its front matter says why and how often;
+  `claude plugin eval . --tag known-flaky` runs just those. A failure counts as a flake only
+  when the case carries that tag, or when it passes on one rerun and then gets the tag and its
+  note; any other failure is a fault to fix. `scripts/test_eval_cases.py` checks that each tag
+  has its note.
 - The correction checker is a model, so no ordinary case can make it fail on demand. The cases in
   `evals-failed-check/` run against a temporary copy of the plugin in which the stand-in agents
   in `evals-failed-check/agents/` replace the agents they are named after: each reviewer always
