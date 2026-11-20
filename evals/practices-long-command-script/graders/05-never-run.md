@@ -1,7 +1,7 @@
 ---
 type: regex
 target: trace
-pattern: '"command":"(?!(?:[^"\\]|\\.)*<<)(?:[^"]*docker exec|(?:[^"]*(?:&&|;|\|)\s*)?(?:\./|sh |bash )?script/)'
+pattern: '"command":"(?!(?:[^"\\]|\\.)*>\s*(?:\./)?script/[^\s"]+\s*<<)(?:[^"]*docker exec|(?:[^"]*(?:&&|;|\|)\s*)?(?:\./|sh |bash )?script/)'
 match: not_contains
 weight: 1
 ---

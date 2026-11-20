@@ -1,7 +1,7 @@
 ---
 type: regex
 target: { source: file, path: docs/adrs/0001-session-data-storage.md }
-pattern: "^## Decision\\s*\\n\\s*Chosen:(?=(?:(?!^## )[\\s\\S])*?Redis)(?:(?!^## )(?!appendonly|maxmemory|volatile-|allkeys-|session:|sess:)[\\s\\S])*^## "
+pattern: "^## Decision\\s*\\n\\s*Chosen:(?=(?:(?!^## )[\\s\\S])*?Redis)(?:(?!^## )(?!appendonly|maxmemory|volatile-|allkeys-|session:|sess:)[\\s\\S])*(?:^## |(?![\\s\\S]))"
 flags: m
 weight: 1
 ---
