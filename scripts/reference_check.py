@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Refuse a lifecycle document that refers to material outside the lifecycle's own documents.
+"""Refuse a lifecycle document that links to anything but another lifecycle document or the web.
 
 Claude Code runs this as a PreToolUse hook on Write, Edit and MultiEdit, from status_check.sh.
 It reads the hook's JSON from stdin and, for the project's docs/brief.md, a *.spec.md under its
@@ -12,16 +12,16 @@ outside code spans and fenced code blocks, and refuses the edit if it adds a tar
 - an address with a scheme other than `http`, `https` or `mailto`, such as `file:`;
 - an absolute path, or one starting `~`;
 - a relative path that leaves the project;
-- a relative path to a file under docs/ that is not a lifecycle document: the brief, a spec, an
-  ADR, a plan or a spike record;
+- a relative path to anything in the project, file or folder, code included, that is not a
+  lifecycle document: the brief, a spec, an ADR, a plan or a spike record;
 - in an ADR, a relative path to an ADR under docs/adrs/ with no file of exactly that name, so
   that a link to an earlier ADR, such as `[ADR 0001](0001-example-subject.md)`, leads to it on
   every system, whatever its file names' case rules.
 
-These documents stand on their own: what matters from material they were drafted from is stated
-in their own words, and outside material is referred to only by a web link. Any other target,
-such as a path to code, a folder, a `#heading` of the same document or a web link starting `//`,
-is not checked. Which lifecycle documents may refer to which is left to the reviewers, as are
+These documents stand on their own (docs/adrs/0054): they link only to each other and to the
+web, since anything else can change or vanish without them being edited, so what matters from it
+is stated in their own words, and a code file is named as plain text. A `#heading` of the same document
+or a web link starting `//` is not checked. Which lifecycle documents may refer to which is left to the reviewers, as are
 references by title, paths written as plain text and reference definitions whose target is on
 the next line. A target the
 document already held before the edit is not refused again, so a document written before this
@@ -107,10 +107,8 @@ def problem(source, target):
     parts = os.path.relpath(repository.full_path(full), repository.repository_of(source)).split(os.sep)
     if parts[0] == os.pardir:
         return "is outside the repository"
-    if path.endswith("/") or os.path.isdir(full):
-        return None
-    if parts[0].lower() == "docs" and not is_lifecycle_document(full):
-        return "is a file under docs/ that is not a lifecycle document"
+    if path.endswith("/") or os.path.isdir(full) or not is_lifecycle_document(full):
+        return "is not a lifecycle document"
     if status_check.is_adr(source) and status_check.is_adr(full) and not exists_exactly(full):
         return MISSING_ADR
     return None
@@ -152,11 +150,11 @@ def check(payload):
     reasons = []
     if outside:
         reasons.append(
-            f"The {kind} stands on its own, so it refers to outside material "
-            "only by a web link. Material handed over in the conversation, kept outside the repository "
-            "or under docs/ beside the lifecycle's documents can change or vanish without the "
-            f"{kind} being touched. State what matters from it in the {kind}'s own words, remove "
-            "these references and tell the person why:\n" + "\n".join(outside)
+            f"The {kind} stands on its own, so it links only to other lifecycle documents and "
+            "to the web. Anything else, such as code, another page under docs/, material handed over "
+            "in the conversation or a file outside the repository, can change or vanish without the "
+            f"{kind} being edited. State what matters from it in the {kind}'s own words, naming a "
+            "code file as plain text if it must be named, remove these links and tell the person why:\n" + "\n".join(outside)
         )
     if missing:
         reasons.append(

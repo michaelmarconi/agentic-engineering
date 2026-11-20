@@ -78,7 +78,8 @@ reviewer needs to build and check it. Footnotes explaining terms come last, afte
     refers, by hyperlink, path or title, to material handed over in the conversation, to anything
     outside the repository, or to a file under `docs/` that is not a brief, spec, ADR, plan or spike
     record: such material can change or vanish without the ADR being touched, so what matters from
-    it is stated in the ADR's own words. References to code are not part of this check.
+    it is stated in the ADR's own words. Code is named only as plain text, such as a path in
+    backticks, never linked.
 15. **No overlap.** No other `Draft 📝` or `Accepted 👍` ADR in `docs/adrs/` decides the same thing or
     contradicts this one, unless this one supersedes it.
 16. **Accepted means settled.** A `Accepted 👍` or `Superseded ↪️` ADR has no open questions: its

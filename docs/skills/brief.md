@@ -76,7 +76,8 @@ pass-or-fail checks: the sections are all there, it speaks for the whole product
 be measured, nothing is guessed or chooses how to build it. It also checks that the brief refers to no spec,
 ADR or plan, nor to any material outside the lifecycle's documents except a web page, by
 hyperlink, path or title, since those can change without the brief being touched and the
-reference would go stale. A plugin hook also refuses any such hyperlink or path. The reviewer
+reference would go stale. A plugin hook also refuses any link to something other than a lifecycle document or a
+web page, code included. The reviewer
 sees only the brief, not your conversation, so it judges the page as a newcomer would. Beside the reviewer, the language checker agent (`agents/language-checker.md`) reads it for
 words a newcomer could not follow, by the [Plain words](../lifecycle.md#plain-words) rule. The
 review then runs as [Review process](../lifecycle.md#review-process) says: `/brief` corrects what

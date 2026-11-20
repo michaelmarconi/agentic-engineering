@@ -50,7 +50,8 @@ checking, and quotes the plan as evidence for every failure.
    case you cannot judge from the page goes under Needs a person.
 7. **No code.** The Plan section holds no code: no code blocks other than `mermaid` diagrams, as
    check 13 says, and no lines of code, though it may name files, functions and commands.
-8. **References.** The plan refers only to the specs and ADRs it lists, and to files in the code.
+8. **References.** The plan links only to the specs and ADRs it lists, and names files in the
+   code only as plain text, such as a path in backticks, never by a link.
    It does not refer to the brief, to another plan or to a spike record in any way: no
    hyperlink, path or title. It refers to outside material only by a web link, never to material
    handed over in the conversation, to anything outside the repository, or to a file under
