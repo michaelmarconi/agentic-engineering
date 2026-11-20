@@ -5,3 +5,5 @@ name: spec-settles-obvious-words
 expected_outcome: |
   Words whose meaning is plain from the product, such as "unread" in an email app, are settled from
   context, not asked about.
+context:
+  scaffold_script: place-files.sh

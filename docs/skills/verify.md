@@ -165,7 +165,7 @@ Each example not checked says what would make it checkable, such as a way to set
 clock, which may be worth a requirement of its own.
 
 As with `/build` and `/audit`, the full report goes in a Markdown file and Claude's reply is short,
-under 150 words: the outcome, at most five bullets of at most 15 words each, then the file's full
+under 175 words: the outcome, at most five bullets of at most 15 words each, then the file's full
 path. The file holds the commit checked and every agent's report copied in word for word by the
 plugin's script. It is kept in the session's scratchpad, a temporary folder Claude Code gives each session, outside
 your repository, at `agentic/reports/<repository>/<date>-verify-<what was checked>.md`, until

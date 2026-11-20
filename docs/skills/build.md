@@ -227,7 +227,7 @@ only when the plan was signed off before the build and the branch has not change
 check. The question can't be answered later: once the conversation is over, running `/build`
 again on the branch reviews afresh, as above.
 
-It ends with a short reply, under 150 words: the outcome, the branch and whether the plan was
+It ends with a short reply, under 175 words: the outcome, the branch and whether the plan was
 marked `Built ✅`, then at most five bullets of at most 15 words each, with the main findings and
 any question or action for you, then the full path of the build's report file. Where the app
 you run Claude Code in can show you a file, the report opens there. The file is Markdown, kept outside your repository

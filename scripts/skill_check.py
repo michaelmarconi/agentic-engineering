@@ -96,9 +96,10 @@ ANSWER_RULES = (
     " leaves it there, or writes it there with its proposal. Nothing else is written into "
     "Open questions. An ignored fault you cannot fix leaves the document as it is: say which "
     "rubric check it fails.",
-    "When a round of questions ends and anything was written in, start the "
+    "When a round of questions ends and an answer was written in, start the "
     "`agentic:correction-checker` agent again with the same request: the hook attaches the "
-    "text as last checked and the answers, so it checks only what changed. Put what it raises"
+    "text as last checked and the answers, so it checks only what changed. A deferred or "
+    "ignored question changes nothing else, so it needs no check. Put what it raises"
     " to the person the same way. Never run a full review for answers.",
     "Once nothing is left to ask, the last question offers the next status, where there is "
     "one, one more full review, or stopping; while any question is deferred, only the last "
@@ -164,6 +165,8 @@ DATE_RULE = (
     "status change, which adds it; a plugin hook refuses a status change without it."
 )
 PROPOSED_RULE = (
+    "A question goes into Open questions only when the person defers it or has said not to ask "
+    "now; until then it stays out of the document and is asked in the conversation. "
     "Write each open question as a heading, `### 1. <what is to be settled>`, numbered in order, "
     "then the context it needs, then a block quote holding a line starting `> **Proposed:**` with "
     "the answer you would choose, then a line holding only `>`, then a line starting `> **Why:**` "
@@ -274,9 +277,9 @@ BUILD_PATH_RULE = (
     "folder you started in."
 )
 REPORT_RULE = (
-    "End with a short reply, under 150 words: the outcome in a sentence or two, then at most five"
-    " bullets of at most 15 words each, with the main findings and any question or action for the"
-    " person, then the report file's full path, copied from the script's output rather than typed,"
+    "End with a short reply, under 175 words: the outcome in a sentence or two, then at most five"
+    " bullets, each one sentence of at most 15 words counting its bold label, with the main findings"
+    " and any question or action for the person, then the report file's full path, copied from the script's output rather than typed,"
     " since it is long; if the app you run in can show them a file in a "
     "viewer, show the report file there; never paste the report or its sections into the reply, "
     "since the file holds them."

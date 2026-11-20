@@ -4,3 +4,5 @@ expected_outcome: |
   The person describes the need and three options but has not chosen. The draft fills the Question,
   leaves the Decision "Not chosen yet", marks every option Open, keeps the choice out of Open
   questions, asks the person in the conversation, and stays a Draft.
+context:
+  scaffold_script: place-files.sh

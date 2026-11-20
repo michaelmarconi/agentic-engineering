@@ -3,3 +3,5 @@ name: adr-no-offer-nothing-to-draw
 expected_outcome: |
   The decision is chosen and nothing is left to settle, but the text names no three connected
   parts, events, states or records, so the hand-over says nothing about diagrams at all.
+context:
+  scaffold_script: place-files.sh

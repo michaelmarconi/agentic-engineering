@@ -118,9 +118,9 @@ stateDiagram-v2
   Until the first run, changing any of it returns the record to `Draft 📝`, for you to sign off
   again; after it, it can't change at all, and a different hypothesis is a new spike record.
   Fixing How we'll know before seeing any results stops a spike from changing, after seeing the
-  results, the result that counts as success. The Code may still be corrected when the experiment
-  itself is at fault, for example when it crashes for a reason other than one the Experiment names
-  as a result. Earlier runs then stay in Runs but no longer count: the finding rests only on runs
+  results, the result that counts as success. The Code may still be corrected once a run shows the
+  experiment itself is at fault, for example when it crashes for a reason other than one the
+  Experiment names as a result, and before the next run. Earlier runs then stay in Runs but no longer count: the finding rests only on runs
   of the latest code, which must reach the full number of runs again.
 - `Confirmed 💡`: the runs showed the hypothesis holds, and you confirmed the reviewed verdict.
 - `Refuted 🚫`: the runs showed it doesn't, and you confirmed that. A refuted hypothesis is as

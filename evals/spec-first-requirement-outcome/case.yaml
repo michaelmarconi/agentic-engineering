@@ -3,3 +3,5 @@ name: spec-first-requirement-outcome
 expected_outcome: |
   Given a story and the steps that serve it, the skill makes requirement 1 the outcome the story asks
   for, not the first step.
+context:
+  scaffold_script: place-files.sh

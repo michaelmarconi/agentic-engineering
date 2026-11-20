@@ -91,7 +91,9 @@ must actually exercise the thing in question.
   report: write `- Command: None.` when every run is theirs, and describe what they will do.
 
 Anything only the person can settle, such as what result counts as success, is a question for
-them. Write each open question as a heading, `### 1. <what is to be settled>`, numbered in
+them. A question goes into Open questions only when the person defers it or has said not to ask now;
+until then it stays out of the document and is asked in the conversation. Write each open question
+as a heading, `### 1. <what is to be settled>`, numbered in
 order, then the context it needs, then a block quote holding a line starting `> **Proposed:**` with
 the answer you would choose, then a line holding only `>`, then a line starting `> **Why:**` with
 the reason, so the
@@ -144,8 +146,8 @@ The run script writes the record itself, so read the record again after each run
 it, and make sure each edit succeeded before the next run.
 
 - **The experiment itself is at fault,** for example it crashes for a reason the Experiment doesn't
-  name: correct the Code, tell the person what you changed, and run the corrected code the full
-  number of times. Earlier runs stay in Runs but no longer count.
+  name: once a run shows it, and never before, correct the Code before the next run, tell the
+  person what you changed, and run the corrected code the full number of times. Earlier runs stay in Runs but no longer count.
 - **A step only the person can do:** ask them to do it, then pass their answer unchanged:
   `python3 "${CLAUDE_SKILL_DIR}/scripts/spike.py" run <path> --scratchpad "<your scratchpad folder>" --session "${CLAUDE_SESSION_ID}" --observation "<their words>"`.
 - **A secret is not set:** the script records that it did not run. Tell the person how to set it

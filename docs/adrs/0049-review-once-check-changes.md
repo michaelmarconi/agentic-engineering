@@ -103,7 +103,7 @@ checks the document against the skill's rubric, and a language checker that chec
 The Claude that wrote the document corrects it once. The correction
 checker, a Claude that checks only the corrections, then checks. The correct step no longer files
 the review's questions as open questions: they are put to the person as below. After that, each
-round of questions ends with one check if anything was written in. A check judges only the changed
+round of questions ends with one check if an answer was written in. A check judges only the changed
 text, but reads the whole document, the other documents of its kind and the document that says what
 the whole product is for. It asks whether each answer was written in as the person gave it, whether
 each changed sentence passes the rubric and keeps every term a newcomer would not know footnoted or

@@ -5,3 +5,5 @@ expected_outcome: |
   a figure of speech ("the import keeps tripping over itself") and a payments term ("settlement
   file"). The ADR keeps the meaning but says each in plain words, footnoting the payments term
   where it first appears, and the language checker reviews it beside the ADR reviewer.
+context:
+  scaffold_script: place-files.sh

@@ -28,7 +28,7 @@ type: Brief
 
 ## Open questions
 
-### 1. <What is still to settle; or "None." in place of every entry when nothing is open>
+### 1. <A question the person deferred; or "None." in place of every entry when none is>
 
 <The context the question needs.>
 

@@ -4,3 +4,5 @@ expected_outcome: |
   The chosen option works only if the payment provider sends a payment's events in order, which
   nobody has tried. The ADR does not defer that claim to the build or list it as a limit: its first
   open question proposes settling it with a spike.
+context:
+  scaffold_script: place-files.sh

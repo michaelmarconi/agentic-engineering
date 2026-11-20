@@ -1,5 +1,7 @@
 ---
-type: file_exists
-path: docs/plans/2026-11-10-coordinator-release-email.md
+type: regex
+target: { source: file, path: .eval/document.md }
+pattern: '\S'
 weight: 1
 ---
+The document was written under today's date; a link the setup script makes points to it.

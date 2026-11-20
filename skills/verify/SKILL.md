@@ -142,8 +142,8 @@ sections and run it again. Never write or edit the file yourself. Its last secti
 file in the repository changed during the run, such as a lock file the product rewrote; mention it
 in the reply if one did.
 
-End with a short reply, under 150 words: the outcome in a sentence or two, then at most five
-bullets of at most 15 words each, with the main findings and any question or action for the
+End with a short reply, under 175 words: the outcome in a sentence or two, then at most five
+bullets, each one sentence of at most 15 words counting its bold label, with the main findings and any question or action for the
 person, then the report file's full path, copied from the script's output rather than typed,
 since it is long; if the app you run in can show them a file in a viewer, show the report file
 there; never paste the report or its sections into the reply, since the file

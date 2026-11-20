@@ -24,9 +24,9 @@ date: <YYYY-MM-DD>
 
 ## Next steps
 
-<!-- Written after the runs. -->
+<!-- Written after the runs, as two lines, and empty until then:
 - Spec: <what should change in which spec, or "Nothing">
-- ADR: <which choice an ADR should record, or "Nothing">
+- ADR: <which choice an ADR should record, or "Nothing"> -->
 
 ## How we'll know
 
@@ -61,7 +61,7 @@ date: <YYYY-MM-DD>
 
 ## Open questions
 
-<!-- What only the person can settle about the spike, each a heading `### 1. <what is to be
+<!-- Each question about the spike that the person deferred, as a heading `### 1. <what is to be
      settled>`, numbered in order; the context it needs; then a block quote, last, holding
      `> **Proposed:** <the answer you would choose, or, if only the person can know, what would
      settle it>`, `>` alone on the next line, then `> **Why:** <the reason>`. "None." before it moves on. -->

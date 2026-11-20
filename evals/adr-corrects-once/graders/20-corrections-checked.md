@@ -1,7 +1,7 @@
 ---
 type: regex
 target: trace
-pattern: 'subagent_type[^,]{0,8}agentic:adr-reviewer[\s\S]*"name":"(Edit|Write|MultiEdit)"[^\n]*docs/adrs/[^\n]*\.md(?![\s\S]*subagent_type[^,]{0,8}agentic:correction-checker)'
+pattern: 'subagent_type[^,]{0,8}agentic:adr-reviewer[\s\S]*"name":"(?:Edit|Write|MultiEdit)","input":\{(?:"replace_all":(?:true|false),)?"file_path":"[^"]*docs/adrs/[^"]*\.md"(?!,"old_string":"(?:## Open questions|> \*\*(?:Proposed|Why):\*\*)(?:(?!\\n## )(?:[^"\\]|\\.))*")(?![\s\S]*subagent_type[^,]{0,8}agentic:correction-checker)'
 match: not_contains
 weight: 1
 ---

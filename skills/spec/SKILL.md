@@ -100,7 +100,9 @@ Never fill a gap with a guess, including who the Story is about, their situation
 the person has not told you, write only what you were told, without adding a purpose or detail of
 your own, say the rest is not known yet and ask. A default you would choose, such
 as how a reply quotes the message it answers, is never written as a rule: it is a question,
-with the default as the proposed answer. Write each open question as a heading, `### 1.
+with the default as the proposed answer. A question goes into Open questions only when the person
+defers it or has said not to ask now; until then it stays out of the document and is asked in the
+conversation. Write each open question as a heading, `### 1.
 <what is to be settled>`, numbered in order, then the context it needs, then a block quote holding a
 line starting `> **Proposed:**` with the answer you would choose, then a line holding only `>`, then
 a line starting `> **Why:**` with the reason, so the person can find the proposal at a glance and

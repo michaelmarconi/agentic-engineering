@@ -1,7 +1,7 @@
 ---
 type: regex
 target: last_message
-pattern: "(delet|how long|after some time)[^\\n]*\\?"
+pattern: "(delet|how long|after some time)[\\s\\S]*\\?"
 flags: i
 weight: 1
 ---

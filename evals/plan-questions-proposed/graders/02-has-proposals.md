@@ -1,6 +1,6 @@
 ---
 type: regex
-target: { source: file, path: docs/plans/2026-11-10-coordinator-release-email.md }
+target: { source: file, path: .eval/document.md }
 pattern: '^## Open questions\s*\n(?:(?!^## )[\s\S])*?^### 1\. \S[^\n]*\n(?:(?!^## )[\s\S])*?^> \*\*Proposed:\*\* *\S(?:(?!^## )[\s\S])*?^>[ \t]*\n> \*\*Why:\*\* *\S'
 flags: m
 weight: 1

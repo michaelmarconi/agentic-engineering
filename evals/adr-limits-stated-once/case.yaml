@@ -7,3 +7,5 @@ expected_outcome: |
 # Also the boundary for untried claims: untested failover is a caveat the person names, not a claim
 # they say the choice depends on, so it stays a limit. An ADR that proposes a spike for it shows the
 # untried-claim rule firing too readily.
+context:
+  scaffold_script: place-files.sh

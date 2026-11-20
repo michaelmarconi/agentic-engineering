@@ -90,7 +90,9 @@ under Consequences, saying it is untested at their word, and remove the question
 
 Never fill a gap with a guess. An option nobody named, a reason nobody gave, or a choice not yet
 made is a question for the person, never an invented answer.
-Write each open question as a heading, `### 1. <what is to be settled>`, numbered in order, then the
+A question goes into Open questions only when the person defers it or has said not to ask now; until
+then it stays out of the document and is asked in the conversation. Write each open question as a
+heading, `### 1. <what is to be settled>`, numbered in order, then the
 context it needs, then a block quote holding a line starting `> **Proposed:**` with the answer you
 would choose, then a line holding only `>`, then a line starting `> **Why:**` with the reason, so
 the person can find the

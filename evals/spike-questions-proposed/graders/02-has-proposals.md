@@ -1,6 +1,6 @@
 ---
 type: regex
-target: { source: file, path: docs/spikes/2026-11-10-geocoding-free-tier-limit.md }
+target: { source: file, path: .eval/document.md }
 pattern: '^## Open questions\s*\n(?:(?!^## )[\s\S])*?^### 1\. \S[^\n]*\n(?:(?!^## )[\s\S])*?^> \*\*Proposed:\*\* *\S(?:(?!^## )[\s\S])*?^>[ \t]*\n> \*\*Why:\*\* *\S'
 flags: m
 weight: 1

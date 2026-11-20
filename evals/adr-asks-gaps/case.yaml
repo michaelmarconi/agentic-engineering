@@ -2,3 +2,5 @@ schema_version: "1.1"
 name: adr-asks-gaps
 expected_outcome: |
   The person names a choice but no alternatives or reasons. The skill writes the Draft without inventing why other options lost, then keeps the questions out of the ADR, gives their number and asks only the first.
+context:
+  scaffold_script: place-files.sh

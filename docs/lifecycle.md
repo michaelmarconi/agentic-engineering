@@ -495,11 +495,12 @@ After the sequence, edit the document only as the person's answers say, or when 
 ### Ending with your answers
 
 /brief, /spec, /adr, /plan and /spike end this way. If the check fails, change the document no
-further: show the person the check's report, whose findings become questions, as below. After the
-skill's hand-over, every question, including those you raise while drafting, is taken this way.
+further, beyond writing in what the person defers: show the person the check's report, quoting
+each finding as it gives it, and its findings become questions, as below. After the skill's
+hand-over, every question, including those you raise while drafting, is taken this way.
 When the person has said not to ask now, such as "don't ask me anything until it passes", ask
-nothing at the hand-over, even after a failed check: write each question into Open questions with
-its proposal, as Defer does, and give only the count.
+nothing at the hand-over, even after a failed check: still show a failed check's report, then
+write each question into Open questions with its proposal, as Defer does, and give only the count.
 
 While drafting, keep your own questions out of the document: ask them with the review's, once where
 both raise the same point, so only a deferred one reaches Open questions.
@@ -515,9 +516,10 @@ questions if it is there; Ignore writes nothing and removes it; Defer leaves it 
 there with its proposal. Nothing else is written into Open questions. An ignored fault you cannot
 fix leaves the document as it is: say which rubric check it fails.
 
-When a round of questions ends and anything was written in, start the `agentic:correction-checker`
+When a round of questions ends and an answer was written in, start the `agentic:correction-checker`
 agent again with the same request: the hook attaches the text as last checked and the answers, so it
-checks only what changed. Put what it raises to the person the same way. Never run a full review for
+checks only what changed. A deferred or ignored question changes nothing else, so it needs no check.
+Put what it raises to the person the same way. Never run a full review for
 answers.
 
 Once nothing is left to ask, the last question offers the next status, where there is one, one more
