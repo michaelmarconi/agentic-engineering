@@ -6,6 +6,17 @@ What changed in each version of the plugin, newest first. Versions follow
 past a major version: it says what you need to change in your documents. Before 1.0.0, a
 minor version could need such a change, and its entry said so.
 
+## [1.1.0] - 2026-11-20
+
+### Changed
+
+- The brief, specs, ADRs, plans and spike records now link only to each other and to the web.
+  A plugin hook refuses a new link to code, a folder or any other file in your repository, since
+  those can change or vanish without the document being edited; name a code file as plain text,
+  such as a path in backticks, instead. Links your documents already hold are left alone.
+- Other files may live under `docs/` beside the lifecycle's documents: the lifecycle leaves them
+  alone. It no longer says `docs/` must hold only its own documents.
+
 ## [1.0.0] - 2026-11-20
 
 ### Changed
