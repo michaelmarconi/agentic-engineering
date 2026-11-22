@@ -6,6 +6,17 @@ What changed in each version of the plugin, newest first. Versions follow
 past a major version: it says what you need to change in your documents. Before 1.0.0, a
 minor version could need such a change, and its entry said so.
 
+## [1.5.0] - 2026-11-22
+
+### Changed
+
+- The spec reviewer now fails a spec in which two requirements decide the same thing, such as two
+  that say in other words who is sent a reminder (check 10, "No overlap", which looked only at
+  other specs). A requirement that says how another's outcome holds in a particular case still
+  passes. It also fails the same example given under two requirements (check 6, "Examples add
+  cases"): each example sits only under the requirement it is about, so changing one requirement
+  can't leave a copy elsewhere contradicting it. Specs that passed review before may fail it now.
+
 ## [1.3.0] - 2026-11-22
 
 ### Changed
