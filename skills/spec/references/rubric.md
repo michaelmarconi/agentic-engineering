@@ -53,9 +53,10 @@ checking, and quotes the spec as evidence for every failure.
 9. **Accepted means settled.** A spec with status `Accepted 👍` has no open questions: its
    Open questions section is empty or says only "None."
 10. **No overlap.** No other spec under `docs/specs/` covers the same capability or contradicts a
-    requirement here, and no two requirements in this spec decide the same thing, wholly or in
-    part, whatever their names. Two requirements that only meet in the same action, such as one
-    on which words a search matches and one on which dates it covers, do not overlap.
+    requirement here, and no two requirements in this spec decide the same thing, whatever their
+    names, such as two that say in other words who is sent a reminder. A requirement that says how
+    another's outcome holds in a particular case, as check 12 asks, does not overlap it, nor do two
+    that each decide a different part of the same action.
 11. **References.** The spec does not refer to the brief, another spec, an ADR, a plan or a spike
     record in any way: no hyperlink, path or title. Those can change or be deleted without this
     spec being touched, so the reference would go stale. A spike's finding is stated in the spec's

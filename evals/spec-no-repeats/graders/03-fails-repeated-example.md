@@ -1,7 +1,7 @@
 ---
 type: regex
 target: trace
-pattern: '6\.\s*\**Examples add cases\**\s*\|\s*\**fail(?:(?!\\n).){0,1500}?2026-01-31'
+pattern: '6\.\s*\**Examples add cases\**\s*\|\s*\**fail(?:(?!\\n).){0,1500}?(?:2026-01-31|Last day of the range)'
 flags: i
 weight: 1
 ---
