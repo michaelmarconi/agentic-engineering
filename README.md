@@ -96,8 +96,9 @@ The plugin works through three parts:
   use, so the same document gets the same judgement: Sonnet, or Opus for `/agentic:verify`'s
   agents, whose work is harder.
 - **Hooks:** small checks Claude Code runs automatically. They give Claude the lifecycle rules at
-  the start of every session in a repository that has a brief or a spec, and refuse any status
-  change the lifecycle does not allow.
+  the start of every session in a repository that has a brief or a spec, refuse any status
+  change the lifecycle does not allow, and refuse a pull request description with a link too long
+  for GitHub to show as a link.
 
 [The lifecycle rules](docs/lifecycle.md) describe all of it in full. Read them before you edit
 documents by hand.

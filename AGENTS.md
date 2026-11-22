@@ -214,7 +214,7 @@ agents/
   verifier.md          # /verify: starts the product and checks one spec's examples from outside
   verify-checker.md    # /verify: tries to disprove one verifier's verdicts
 hooks/
-  hooks.json           # session map, status checks, the review relay, reads of the plugin's own files, the session check for /build, the build branch guard, the build review relay, the audit and verify report hooks, the practices limits
+  hooks.json           # session map, status checks, the review relay, reads of the plugin's own files, the session check for /build, the build branch guard, the build review relay, the audit and verify report hooks, the practices limits, the pull request link check
 scripts/               # scripts the hooks run, the skill, version, reference and status-name checks, and their tests
 docs/
   adrs/                # this plugin's own architecture decision records

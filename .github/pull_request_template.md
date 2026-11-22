@@ -13,7 +13,9 @@
 <!-- Link the plan this work followed, then copy its Specs list and ADRs table across unchanged.
      For a change with no plan, such as tidying or an upgrade, write "No plan." and delete the rest.
      Make every link a full web address to the file at the commit you are proposing, since the
-     pull request page reads a link like docs/adrs/0001-x.md as a page of its own. -->
+     pull request page reads a link like docs/adrs/0001-x.md as a page of its own. Pin each link to
+     the commit's 7-character id rather than the full one: GitHub can show a link longer than 150
+     characters as plain text, and a plugin hook refuses one. -->
 
 Plan: [<Plan title>](<link to the plan>)
 
