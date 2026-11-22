@@ -16,6 +16,18 @@ minor version could need such a change, and its entry said so.
   passes. It also fails the same example given under two requirements (check 6, "Examples add
   cases"): each example sits only under the requirement it is about, so changing one requirement
   can't leave a copy elsewhere contradicting it. Specs that passed review before may fail it now.
+## [1.4.0] - 2026-11-22
+
+### Added
+
+- Pull request descriptions keep their links working. Before an agent creates or edits a pull
+  request, with a GitHub tool or with `gh pr create` or `gh pr edit`, a plugin hook refuses a
+  description holding a link longer than 150 characters, which GitHub can show as plain text
+  instead of a link, and says how to shorten it: pin file links to the commit's 7-character id.
+  It also refuses a `gh` description it cannot check because it is not written out yet, such as a
+  file the same command writes, so the agent writes the description first and then sends it.
+- The default pull request template that `/agentic:practices` offers says to pin links to the
+  7-character commit id. A template you already have is left alone.
 
 ## [1.3.0] - 2026-11-22
 
