@@ -391,6 +391,11 @@ these rules:
   code, a folder, another page under `docs/`, or something outside the repository. A code file named
   as plain text is allowed.
 
+Another hook runs before an agent creates or edits a pull request, with a GitHub tool or with
+`gh pr create` or `gh pr edit`. It refuses a description holding a link longer than 150 characters,
+since GitHub can show one as plain text instead of a working link. Pin file links to the commit's
+7-character id to keep them short.
+
 ## Plain words
 
 This is the rule the skills write to and the language checker applies.

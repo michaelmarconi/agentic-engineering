@@ -75,6 +75,15 @@
         ]
       },
       {
+        "matcher": "Bash|mcp__.*__(create|update)_pull_request",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/scripts/pr_link_check.py\""
+          }
+        ]
+      },
+      {
         "matcher": "Agent|Task",
         "hooks": [
           {

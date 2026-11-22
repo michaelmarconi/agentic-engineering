@@ -177,7 +177,10 @@ a pull request on its website,[^prtemplate] it shows you the
 yours alone. Either way, the practice gains a rule that descriptions follow the template, so agents
 that open pull requests through their own tools follow it too. With no template, because the
 project is not on GitHub or you said no, that rule lists the sections instead.
-([ADR 0047](../adrs/0047-practices-pull-request-template.md))
+([ADR 0047](../adrs/0047-practices-pull-request-template.md)) The template's links are pinned to
+the commit's 7-character id, because GitHub can show a link longer than 150 characters as plain
+text, and a plugin hook refuses a pull request description holding one.
+([ADR 0056](../adrs/0056-refuse-pull-request-links.md))
 
 ## Using `/practices`
 
