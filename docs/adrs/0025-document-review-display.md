@@ -1,8 +1,9 @@
 ---
 # Change status only through the sdlc plugin's skills, which check each change; a change made by hand is not checked.
 type: ADR
-status: Accepted 👍
-date: 2026-11-09
+status: Superseded ↪️
+date: 2026-11-22
+superseded-by: 0055
 ---
 
 # Show each finished document in the app's file viewer, or name its path
