@@ -7,12 +7,13 @@ On GitHub, a link address over about 150 characters in a pull request descriptio
 as code-formatted text rather than as a working link, so the hook refuses the request before it is
 sent, lists each long link with its length, and says how to shorten it.
 
-For a GitHub tool it reads the `body` argument. For a shell command that runs `gh pr create` or
-`gh pr edit` it reads the whole command, which holds a `--body` value or a here-document, and the
-file named by `--body-file` or `-F`, relative to the event's working folder, when it can be read.
-A link is any `http` or `https` address, in a Markdown link or bare, measured with its heading
-anchor. Every other tool call and command, a request it cannot read, and an unreadable body file
-pass.
+For a GitHub tool it reads the `body` argument. For a shell command it reads each `gh pr create`
+or `gh pr edit` the command runs, on any line and after any variable settings: that command's own
+words, which hold a `--body` value, any here-document on its line, and the file named by
+`--body-file` or `-F`, found from the event's working folder and any `cd` before it, when it can be
+read. Other commands in the same chain are not read. A link is any `http` or `https` address, in a
+Markdown link or bare, measured with its heading anchor. Every other tool call and command, a
+request it cannot read, and an unreadable body file pass.
 """
 
 import argparse
@@ -24,11 +25,9 @@ import sys
 
 LIMIT = 150
 TOOL = re.compile(r"^mcp__.+__(create|update)_pull_request$")
-ADDRESS = re.compile(r"""https?://[^\s<>()\[\]{}"'`\\]+""")
+ADDRESS = re.compile(r"""https?://[^\s<>\[\]{}"'`\\]+""")
 TRAILING = ".,;:!?*_~"
-SEPARATORS = {";", "&&", "||", "|", "&", "(", ")", "\n"}
-GH_FALLBACK = re.compile(r"(?:^|[;&|(\n])\s*(?:\S*/)?gh\s+pr\s+(?:create|edit)\b")
-BODY_FILE = re.compile(r"(?:--body-file|-F)(?:=|\s+)(\"[^\"]*\"|'[^']*'|\S+)")
+HEREDOC = re.compile(r"<<-?\s*(['\"]?)([A-Za-z_][A-Za-z0-9_]*)\1")
 TEMPLATE_SENTENCE = (
     "Pin each link to the commit's 7-character id rather than the full one: GitHub can show a link "
     "longer than 150 characters as plain text, and a plugin hook refuses one.")
@@ -40,57 +39,118 @@ REASON = (
     "the text. Then try again.")
 
 
+def trimmed(address):
+    """The address without trailing punctuation or a closing parenthesis it did not open."""
+    while True:
+        before = address
+        address = address.rstrip(TRAILING)
+        if address.endswith(")") and address.count("(") < address.count(")"):
+            address = address[:-1]
+        if address == before:
+            return address
+
+
 def long_links(text):
     """Each distinct address in text longer than LIMIT, in order of first appearance."""
     found = []
     for match in ADDRESS.finditer(text):
-        address = match.group(0).rstrip(TRAILING)
+        address = trimmed(match.group(0))
         if len(address) > LIMIT and address not in found:
             found.append(address)
     return found
 
 
-def words(command):
-    """The command's shell words, with separators such as && as words of their own, or None."""
+def lines_and_heredocs(command):
+    """The command's lines with here-document bodies taken out, and each line's bodies."""
+    lines, bodies = [], []
+    rows = command.split("\n")
+    i = 0
+    while i < len(rows):
+        line = rows[i]
+        i += 1
+        held = []
+        for match in HEREDOC.finditer(line):
+            text = []
+            while i < len(rows) and rows[i].strip() != match.group(2):
+                text.append(rows[i])
+                i += 1
+            i += 1
+            held.append("\n".join(text))
+        lines.append(line)
+        bodies.append(held)
+    return lines, bodies
+
+
+def segments(line):
+    """The simple commands on one line, split at ;, &, | and && outside quotes."""
+    parts, current, quote, escaped = [], [], None, False
+    for char in line:
+        if escaped:
+            escaped = False
+        elif char == "\\" and quote != "'":
+            escaped = True
+        elif quote:
+            quote = None if char == quote else quote
+        elif char in "'\"":
+            quote = char
+        elif char in ";&|":
+            parts.append("".join(current))
+            current = []
+            continue
+        current.append(char)
+    parts.append("".join(current))
+    return [p for p in parts if p.strip()]
+
+
+def words(segment):
+    """A simple command's words, leaving out variable settings and `env` or `command` in front."""
     try:
-        lexer = shlex.shlex(command, posix=True, punctuation_chars=";&|()")
-        lexer.whitespace_split = True
-        return list(lexer)
+        split = shlex.split(segment)
     except ValueError:
-        return None
+        split = segment.split()
+    while split and (("=" in split[0] and not split[0].startswith("-"))
+                     or split[0] in ("env", "command")):
+        split = split[1:]
+    return split
 
 
-def runs_gh_pr(command, split):
-    """Whether the command runs `gh pr create` or `gh pr edit`."""
-    if split is None:
-        return bool(GH_FALLBACK.search(command))
-    for i, word in enumerate(split):
-        if (os.path.basename(word) == "gh" and (i == 0 or split[i - 1] in SEPARATORS)
-                and split[i + 1:i + 2] == ["pr"] and split[i + 2:i + 3] in (["create"], ["edit"])):
-            return True
-    return False
-
-
-def body_files(command, split):
-    """The paths named by --body-file or -F, leaving out `-` (standard input)."""
+def body_files(split):
+    """The paths a gh command names by --body-file or -F, leaving out `-` (standard input)."""
     paths = []
-    if split is None:
-        paths = [m.group(1).strip("\"'") for m in BODY_FILE.finditer(command)]
-    else:
-        for i, word in enumerate(split):
-            if word in ("--body-file", "-F") and i + 1 < len(split):
-                paths.append(split[i + 1])
-            elif word.startswith("--body-file="):
-                paths.append(word.split("=", 1)[1])
+    for i, word in enumerate(split):
+        if word in ("--body-file", "-F") and i + 1 < len(split):
+            paths.append(split[i + 1])
+        elif word.startswith("--body-file="):
+            paths.append(word.split("=", 1)[1])
     return [p for p in paths if p and p != "-"]
 
 
-def read(path, cwd):
+def read(path, folder):
     try:
-        with open(os.path.join(cwd, os.path.expanduser(path)), encoding="utf-8") as f:
+        path = os.path.expanduser(os.path.expandvars(path))
+        with open(os.path.join(folder, path), encoding="utf-8") as f:
             return f.read()
     except (OSError, ValueError):
         return ""
+
+
+def gh_descriptions(command, cwd):
+    """The text of each `gh pr create` or `gh pr edit` the command runs: its own words, any
+    here-document on its line and any body file, read from the folder an earlier `cd` moved to."""
+    found = []
+    folder = cwd
+    lines, bodies = lines_and_heredocs(command)
+    for line, held in zip(lines, bodies):
+        for segment in segments(line):
+            split = words(segment)
+            if not split:
+                continue
+            if split[0] == "cd" and len(split) > 1:
+                folder = os.path.join(folder, os.path.expanduser(os.path.expandvars(split[1])))
+            elif (os.path.basename(split[0]) == "gh" and split[1:2] == ["pr"]
+                  and split[2:3] in (["create"], ["edit"])):
+                found.append("\n".join([segment] + held + [read(p, folder) for p in body_files(split)]))
+    return found
 
 
 def description(event):
@@ -107,11 +167,9 @@ def description(event):
     command = tool_input.get("command")
     if not isinstance(command, str):
         return None
-    split = words(command)
-    if not runs_gh_pr(command, split):
-        return None
     cwd = event.get("cwd") if isinstance(event.get("cwd"), str) else "."
-    return "\n".join([command] + [read(p, cwd) for p in body_files(command, split)])
+    found = gh_descriptions(command, cwd)
+    return "\n".join(found) if found else None
 
 
 def problem(event):

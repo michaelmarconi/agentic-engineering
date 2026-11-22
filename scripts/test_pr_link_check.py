@@ -60,6 +60,11 @@ class GitHubTool(unittest.TestCase):
     def test_a_short_link_with_a_full_commit_id_passes(self):
         self.assertIsNone(pr_link_check.problem(mcp("[a](%s%s/docs/adrs/0001-a.md)" % (BASE, FULL_ID))))
 
+    def test_parentheses_inside_an_address_are_measured(self):
+        link = BASE + "abc1234/docs/a(b).md#" + "c" * 130
+        reason = pr_link_check.problem(mcp("[x](%s) and (see %s)" % (link, link)))
+        self.assertIn("- %s (%d characters)" % (link, len(link)), reason)
+
     def test_a_bare_long_address_is_refused(self):
         self.assertIsNotNone(pr_link_check.problem(mcp("Plan: %s\n" % LONG)))
 
@@ -119,6 +124,41 @@ class GhCommand(unittest.TestCase):
     def test_short_links_pass(self):
         self.assertIsNone(pr_link_check.problem(
             bash('gh pr create --title T --body "[plan](%sabc1234/p.md)"' % BASE)))
+
+    def test_a_gh_on_a_later_line_is_checked(self):
+        self.assertIsNotNone(pr_link_check.problem(
+            bash("git push -u origin x\ngh pr create -b '%s'" % LONG)))
+
+    def test_a_gh_after_variable_settings_or_env_is_checked(self):
+        self.assertIsNotNone(pr_link_check.problem(bash("GH_REPO=o/r gh pr create -b '%s'" % LONG)))
+        self.assertIsNotNone(pr_link_check.problem(bash("env GH_REPO=o/r gh pr edit 3 -b '%s'" % LONG)))
+
+    def test_other_commands_in_the_chain_are_not_read(self):
+        with tempfile.TemporaryDirectory() as folder:
+            with open(os.path.join(folder, "msg.txt"), "w") as f:
+                f.write(LONG)
+            self.assertIsNone(pr_link_check.problem(
+                bash("git commit -F msg.txt && gh pr create -b short", cwd=folder)))
+        self.assertIsNone(pr_link_check.problem(bash("git push %s && gh pr create -b short" % LONG)))
+
+    def test_a_body_file_after_cd_or_named_by_a_variable_is_read(self):
+        with tempfile.TemporaryDirectory() as folder:
+            os.makedirs(os.path.join(folder, "sub"))
+            with open(os.path.join(folder, "sub", "body.md"), "w") as f:
+                f.write("[plan](%s)\n" % LONG)
+            self.assertIsNotNone(pr_link_check.problem(
+                bash("cd sub && gh pr create -F body.md", cwd=folder)))
+            with mock.patch.dict(os.environ, {"BODY_DIR": os.path.join(folder, "sub")}):
+                self.assertIsNotNone(pr_link_check.problem(
+                    bash('gh pr create -F "$BODY_DIR/body.md"')))
+
+    def test_quoted_text_naming_gh_is_not_a_gh_call(self):
+        command = "echo \"done; gh pr create later\" > notes.txt <<'EOF'\ndon't %s\nEOF" % LONG
+        self.assertIsNone(pr_link_check.problem(bash(command)))
+
+    def test_a_here_document_with_an_apostrophe_is_read(self):
+        command = "gh pr create -t T -F - <<'EOF'\nIt's done: [plan](%s)\nEOF" % LONG
+        self.assertIsNotNone(pr_link_check.problem(bash(command)))
 
     def test_other_commands_pass(self):
         self.assertIsNone(pr_link_check.problem(bash("git commit -m '%s'" % LONG)))
