@@ -238,6 +238,12 @@ class SkillCheck(unittest.TestCase):
                 self.put_lifecycle(self.lifecycle(places=places))
                 self.assertFails(f"docs/lifecycle.md: show place {number + 1} missing")
 
+    def test_a_page_without_either_section_reports_both(self):
+        self.put_lifecycle("# The lifecycle\n\nNothing here.\n")
+        done = self.check()
+        self.assertIn('no "## Review process" heading', done.stdout)
+        self.assertIn(f'no "{SHOW_HEADING}" heading', done.stdout)
+
     def test_a_place_outside_the_show_section_does_not_count(self):
         text = self.lifecycle(places=SHOW_PLACES[1:]) + f"\n## Later\n\n{SHOW_PLACES[0]}\n"
         self.put_lifecycle(text)

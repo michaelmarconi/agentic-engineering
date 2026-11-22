@@ -305,8 +305,9 @@ SHOW_PLACES = (
     "**Claude Code command line:** the agent names the file's full path.",
     "**Claude Code desktop:** the agent opens the file in the Files pane and names its full path.",
     "**Claude project thread:** the agent copies the file into the project's shared files folder, "
-    "`/mnt/project-files/`, attaches the copy to its reply and names the copy's path. After each "
-    "change it copies and attaches the file again, since what you see is a copy.",
+    "`/mnt/project-files/`, under a folder named after the repository, so files of the same name "
+    "from two repositories stay apart, attaches the copy to its reply and names the copy's path. "
+    "After each change it copies and attaches the file again, since what you see is a copy.",
     "**Everywhere:** the agent never sends you to a code-hosting site to read the file.",
 )
 # The sentences SHOW_RULE and REPORT_RULE replaced, which no skill may hold again (docs/adrs/0055).
@@ -365,9 +366,9 @@ MOVED_RULES = ANSWER_RULES + CORRECT_RULES + (REVIEW_RULE, PATH_RULE)
 
 
 def lifecycle_problems(text):
-    """What the lifecycle page's Review process section lacks of the shared review sequence."""
+    """What the lifecycle page lacks of the shared review sequence and of the three places."""
     if f"\n{REVIEW_HEADING}\n" not in f"\n{text}":
-        return [f'no "{REVIEW_HEADING}" heading']
+        return [f'no "{REVIEW_HEADING}" heading'] + show_problems(text)
     review = f"\n{text}"
     review = review[review.index(f"\n{REVIEW_HEADING}\n") + 1:]
     if "\n## " in review:

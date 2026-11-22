@@ -286,7 +286,7 @@ the findings. Add anything else, such as a requirement the findings leave unbuil
 >
 > 1. **<Short name>:** <what is left open, in one sentence>.
 >
-> The full report is in `<the report's full path>`. The branch hasn't changed since the correction
+> The full report is in `<the report's path as shown>`. The branch hasn't changed since the correction
 > check, so everything on it has been reviewed once.
 >
 > If you accept the build as it stands, the plan is marked `Built ✅` with these <N> findings left

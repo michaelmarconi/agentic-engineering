@@ -68,10 +68,10 @@ everything else is judgement.
      moved sentences back.
    - The hand-over shows the person the document as the "Showing a file to you" section of
      `docs/lifecycle.md` says for each place the plugin runs
-     ([ADR 0055](docs/adrs/0055-show-file-lifecycle-page.md)): the skill holds `SHOW_RULE` from
-     `scripts/skill_check.py` word for word, a pointer to that section, and the script checks it. The hand-over also gives
-     the reports and the number of questions for the person; suggestions are listed apart as
-     optional.
+     ([ADR 0055](docs/adrs/0055-show-file-lifecycle-page.md)): the skill holds `SHOW_RULE`, the
+     pointer to that section, from `scripts/skill_check.py` word for word, and the script checks
+     it. The hand-over also gives the reports and the number of questions for the person;
+     suggestions are listed apart as optional.
    - A document with a status has an Open questions section, last apart from a spike record's
      Experiment, Code and Runs and an ADR's Technical detail, their technical parts, which follow
      it so the document reads plain first. The skill writes there

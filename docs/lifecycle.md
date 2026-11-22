@@ -155,8 +155,8 @@ back as a question, never a failure.
 
 #### Signing off
 
-At the end you read the document, shown in your app's file viewer where there is one and
-always named by its path, with the reports, and pick its next status on the last question. A status
+At the end you read the document, shown as [Showing a file to you](#showing-a-file-to-you) says,
+with the reports, and pick its next status on the last question. A status
 that needs a review, such as `Accepted 👍`, is set only once the last review or check of the text
 as it stands has run, with every question it raised answered or ignored and nothing deferred. The
 record of the last check lasts only one conversation, so a new conversation starts with a full
@@ -550,7 +550,8 @@ here, and every skill points to it ([ADR 0055](adrs/0055-show-file-lifecycle-pag
 - **Claude Code command line:** the agent names the file's full path.
 - **Claude Code desktop:** the agent opens the file in the Files pane and names its full path.
 - **Claude project thread:** the agent copies the file into the project's shared files folder,
-  `/mnt/project-files/`, attaches the copy to its reply and names the copy's path. After each
+  `/mnt/project-files/`, under a folder named after the repository, so files of the same name from
+  two repositories stay apart, attaches the copy to its reply and names the copy's path. After each
   change it copies and attaches the file again, since what you see is a copy.
 - **Everywhere:** the agent never sends you to a code-hosting site to read the file.
 
