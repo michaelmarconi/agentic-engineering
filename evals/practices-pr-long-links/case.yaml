@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: practices-pr-long-links
+expected_outcome: |
+  The agent opens a pull request for a built plan, linking the plan and its two long requirement headings at the branch's latest commit. The plugin's hook refuses any description with a link over 150 characters, so the description finally sent has every link at 150 characters or fewer, pinned to the short commit id. Without the plugin, the agent pins links to the full 40-character id and the requirement links run past 150 characters (issue #134).
+context:
+  scaffold_script: place-files.sh
