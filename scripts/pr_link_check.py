@@ -1,19 +1,22 @@
 #!/usr/bin/env python3
-"""Refuse a pull request description holding a link longer than 150 characters.
+"""Refuse a pull request description that is not written out, or that holds a link over 150 characters.
 
 Claude Code runs this as a PreToolUse hook on Bash and on any MCP tool named
-`mcp__<server>__create_pull_request` or `mcp__<server>__update_pull_request`, as ADR 0056 decides.
+`mcp__<server>__create_pull_request` or `mcp__<server>__update_pull_request`, as ADR 0057 decides.
 On GitHub, a link address over about 150 characters in a pull request description was seen saved
 as code-formatted text rather than as a working link, so the hook refuses the request before it is
 sent, lists each long link with its length, and says how to shorten it.
 
-For a GitHub tool it reads the `body` argument. For a shell command it reads each `gh pr create`
-or `gh pr edit` the command runs, on any line and after any variable settings: that command's own
-words, which hold a `--body` value, any here-document on its line, and the file named by
-`--body-file` or `-F`, found from the event's working folder and any `cd` before it, when it can be
-read. Other commands in the same chain are not read. A link is any `http` or `https` address, in a
-Markdown link or bare, measured with its heading anchor. Every other tool call and command, a
-request it cannot read, and an unreadable body file pass.
+For a GitHub tool it reads the `body` argument, which is always written out. For a shell command it
+reads each `gh pr create` or `gh pr edit` the command runs, on any line and after any variable
+settings: that command's own words, which hold a `--body` value, any here-document on its line,
+and the file named by `--body-file` or `-F`, found from the event's working folder and any `cd`
+before it. Other commands in the same chain are not read. A `gh` description is not written out,
+and is refused, when a body file it names cannot be read, when it reads standard input with no
+here-document on its line, or when a link in it is built by the shell, such as `$B/docs/...` or
+`$(git rev-parse HEAD)`; a `$` elsewhere in the text is left alone. A link is any `http` or `https`
+address, in a Markdown link or bare, measured with its heading anchor. Every other tool call and
+command passes.
 """
 
 import argparse
@@ -28,6 +31,11 @@ TOOL = re.compile(r"^mcp__.+__(create|update)_pull_request$")
 ADDRESS = re.compile(r"""https?://[^\s<>\[\]{}"'`\\]+""")
 TRAILING = ".,;:!?*_~"
 HEREDOC = re.compile(r"<<-?\s*(['\"]?)([A-Za-z_][A-Za-z0-9_]*)\1")
+SHELL_LINK = re.compile(r"\]\(\s*\$|https?://[^\s<>\[\]{}\"'`]*\$")
+NOT_WRITTEN_OUT = (
+    "The hook could not check this pull request description's links, because the description is "
+    "not written out yet: {what}. Write the description file in one command and run gh in the "
+    "next, or pass the description inline with every link written out in full, then try again.")
 TEMPLATE_SENTENCE = (
     "Pin each link to the commit's 7-character id rather than the full one: GitHub can show a link "
     "longer than 150 characters as plain text, and a plugin hook refuses one.")
@@ -131,12 +139,13 @@ def read(path, folder):
         with open(os.path.join(folder, path), encoding="utf-8") as f:
             return f.read()
     except (OSError, ValueError):
-        return ""
+        return None
 
 
 def gh_descriptions(command, cwd):
-    """The text of each `gh pr create` or `gh pr edit` the command runs: its own words, any
-    here-document on its line and any body file, read from the folder an earlier `cd` moved to."""
+    """For each `gh pr create` or `gh pr edit` the command runs: its text, from its own words, any
+    here-document on its line and any body file read from the folder an earlier `cd` moved to, and
+    what of it could not be read."""
     found = []
     folder = cwd
     lines, bodies = lines_and_heredocs(command)
@@ -149,19 +158,36 @@ def gh_descriptions(command, cwd):
                 folder = os.path.join(folder, os.path.expanduser(os.path.expandvars(split[1])))
             elif (os.path.basename(split[0]) == "gh" and split[1:2] == ["pr"]
                   and split[2:3] in (["create"], ["edit"])):
-                found.append("\n".join([segment] + held + [read(p, folder) for p in body_files(split)]))
+                texts, missing = [segment] + held, []
+                for path in body_files(split):
+                    text = read(path, folder)
+                    if text is None:
+                        missing.append("the body file %s cannot be read" % path)
+                    else:
+                        texts.append(text)
+                if reads_stdin(split) and not held:
+                    missing.append("it reads standard input with no here-document")
+                found.append(("\n".join(texts), missing))
     return found
 
 
+def reads_stdin(split):
+    for i, word in enumerate(split):
+        if (word in ("--body-file", "-F") and split[i + 1:i + 2] == ["-"]) or word == "--body-file=-":
+            return True
+    return False
+
+
 def description(event):
-    """The text to check, or None when the event is not a pull request being created or edited."""
+    """The text to check and what of it is not written out, or None when the event is not a pull
+    request being created or edited."""
     name = event.get("tool_name")
     tool_input = event.get("tool_input")
     if not isinstance(name, str) or not isinstance(tool_input, dict):
         return None
     if TOOL.match(name):
         body = tool_input.get("body")
-        return body if isinstance(body, str) else None
+        return (body, []) if isinstance(body, str) else None
     if name != "Bash":
         return None
     command = tool_input.get("command")
@@ -169,13 +195,24 @@ def description(event):
         return None
     cwd = event.get("cwd") if isinstance(event.get("cwd"), str) else "."
     found = gh_descriptions(command, cwd)
-    return "\n".join(found) if found else None
+    if not found:
+        return None
+    text = "\n".join(t for t, _ in found)
+    missing = [m for _, ms in found for m in ms]
+    if SHELL_LINK.search(text):
+        missing.append("a link in it is built by the shell, such as from a variable")
+    return text, missing
 
 
 def problem(event):
     """The refusal's reason, or None when the request may go ahead."""
-    text = description(event) if isinstance(event, dict) else None
-    links = long_links(text) if text else []
+    found = description(event) if isinstance(event, dict) else None
+    if not found:
+        return None
+    text, missing = found
+    if missing:
+        return NOT_WRITTEN_OUT.format(what="; ".join(missing))
+    links = long_links(text)
     if not links:
         return None
     count = "a link" if len(links) == 1 else "%d links" % len(links)

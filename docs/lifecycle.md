@@ -394,7 +394,9 @@ these rules:
 Another hook runs before an agent creates or edits a pull request, with a GitHub tool or with
 `gh pr create` or `gh pr edit`. It refuses a description holding a link longer than 150 characters,
 since GitHub can show one as plain text instead of a working link. Pin file links to the commit's
-7-character id to keep them short.
+7-character id to keep them short. It also refuses a `gh` description it cannot check because it is
+not written out yet, such as a file the same command writes or a link built from a shell variable:
+write the description in one command and run `gh` in the next.
 
 ## Plain words
 

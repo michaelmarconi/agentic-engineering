@@ -23,6 +23,7 @@ def link_of(length):
 
 
 LONG = link_of(151)
+NOT_OUT = pr_link_check.NOT_WRITTEN_OUT.split("{what}")[0]
 LIMIT = link_of(150)
 
 
@@ -111,8 +112,36 @@ class GhCommand(unittest.TestCase):
             self.assertIsNotNone(pr_link_check.problem(
                 bash("gh pr create -t T --body-file=body.md", cwd=folder)))
 
-    def test_an_unreadable_body_file_passes(self):
-        self.assertIsNone(pr_link_check.problem(bash("gh pr create -t T --body-file missing.md")))
+    def test_an_unreadable_body_file_is_refused_as_not_written_out(self):
+        reason = pr_link_check.problem(bash("gh pr create -t T --body-file missing.md"))
+        self.assertIn(NOT_OUT, reason)
+        self.assertIn("missing.md", reason)
+
+    def test_a_body_file_written_by_the_same_command_is_refused(self):
+        command = ("cat > body.md <<EOF\n[plan](%s)\nEOF\ngh pr create --body-file body.md" % LIMIT)
+        with tempfile.TemporaryDirectory() as folder:
+            reason = pr_link_check.problem(bash(command, cwd=folder))
+        self.assertIn(NOT_OUT, reason)
+
+    def test_a_link_built_by_the_shell_is_refused_as_not_written_out(self):
+        for body in ('"[plan]($B/docs/plans/p.md)"', '"See https://github.com/o/r/blob/$SHA/p.md"',
+                     '"[plan](https://github.com/o/r/blob/$(git rev-parse HEAD)/p.md)"'):
+            reason = pr_link_check.problem(bash("gh pr create -t T -b " + body))
+            self.assertIn(NOT_OUT, reason, body)
+
+    def test_a_here_document_with_a_link_built_by_the_shell_is_refused(self):
+        command = "gh pr create -t T -F - <<EOF\n[plan](${B}/docs/plans/p.md)\nEOF"
+        self.assertIn(NOT_OUT, pr_link_check.problem(bash(command)))
+
+    def test_standard_input_without_a_here_document_is_refused(self):
+        reason = pr_link_check.problem(bash("cat body.md | gh pr create -t T -F -"))
+        self.assertIn(NOT_OUT, reason)
+
+    def test_a_dollar_outside_a_link_passes(self):
+        self.assertIsNone(pr_link_check.problem(bash("gh pr create -t T -b 'It costs $5 a month.'")))
+
+    def test_the_github_tool_never_counts_as_not_written_out(self):
+        self.assertIsNone(pr_link_check.problem(mcp("[plan]($B/docs/plans/p.md)")))
 
     def test_a_gh_run_by_path_is_checked(self):
         self.assertIsNotNone(pr_link_check.problem(bash("./bin/gh pr create -b '%s'" % LONG)))

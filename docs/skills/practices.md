@@ -180,7 +180,7 @@ project is not on GitHub or you said no, that rule lists the sections instead.
 ([ADR 0047](../adrs/0047-practices-pull-request-template.md)) The template's links are pinned to
 the commit's 7-character id, because GitHub can show a link longer than 150 characters as plain
 text, and a plugin hook refuses a pull request description holding one.
-([ADR 0056](../adrs/0056-refuse-pull-request-links.md))
+([ADR 0057](../adrs/0057-refuse-pull-request-description.md))
 
 ## Using `/practices`
 
