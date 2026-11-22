@@ -40,7 +40,9 @@ checking, and quotes the spec as evidence for every failure.
    otherwise use generic ones such as `user@example.com`. An example that only restates the rule
    fails. So does one whose outcome no rule in the spec states, such as what happens on an error
    or when a rule's condition does not hold: until the person decides that case, it is an open
-   question, or a rule is widened to state it.
+   question, or a rule is widened to state it. An example sits only under the requirement it is
+   about: the same example under two requirements fails, since a change to one leaves the other
+   contradicting it.
 7. **How we'll check.** Each requirement ends with a `#### How we'll check` heading, under which
    the spec names a method (test, demonstration, inspection or analysis) and what it checks, and
    the method can really be carried out: a test that depends on an outside system names the
@@ -51,7 +53,9 @@ checking, and quotes the spec as evidence for every failure.
 9. **Accepted means settled.** A spec with status `Accepted 👍` has no open questions: its
    Open questions section is empty or says only "None."
 10. **No overlap.** No other spec under `docs/specs/` covers the same capability or contradicts a
-    requirement here.
+    requirement here, and no two requirements in this spec decide the same thing, wholly or in
+    part, whatever their names. Two requirements that only meet in the same action, such as one
+    on which words a search matches and one on which dates it covers, do not overlap.
 11. **References.** The spec does not refer to the brief, another spec, an ADR, a plan or a spike
     record in any way: no hyperlink, path or title. Those can change or be deleted without this
     spec being touched, so the reference would go stale. A spike's finding is stated in the spec's
