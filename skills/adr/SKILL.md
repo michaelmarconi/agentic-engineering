@@ -193,15 +193,14 @@ theirs to settle, like a decision under Needs a person; leave the text it concer
 several ADRs, take each through the sequence on its own.
 
 Whether the check passed or failed, end with the hand-over. It is what the person acts on, so make
-it hard to miss anything. Show the person each document you wrote or changed: if the app you run in
-can show them a file in a viewer, use it, and show a fresh copy after each change if what it shows
-is a copy; always name each one's full path; never send them to a code-hosting site to read it. Give
+it hard to miss anything. Show the person each document you wrote or changed as the "Showing a file
+to you" section of `${CLAUDE_PLUGIN_ROOT}/docs/lifecycle.md` says, again after each change. Give
 them the review and wording reports and the check's report, if there was one, leaving out the
 decisions they list for the person and the failures only the person can fix. Then say how many
-questions there are. Take them without asking whether to, giving any
-examples as possible answers rather than further questions; if the person has said not to ask now,
-ask nothing. Name the count only, not the items. List the reviewers' suggestions
-separately, as optional: they never hold the ADR back.
+questions there are. Take them without asking whether to, giving any examples as possible answers
+rather than further questions; if the person has said not to ask now, ask nothing. Name the count
+only, not the items. List the reviewers' suggestions separately, as optional: they never hold the
+ADR back.
 
 Once Decision says "Chosen:", offer diagrams of the chosen option at each hand-over, so a person can
 see how it works at a glance; an ADR not chosen yet gets no offer, and no other option is drawn.

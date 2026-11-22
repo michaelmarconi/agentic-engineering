@@ -6,6 +6,18 @@ What changed in each version of the plugin, newest first. Versions follow
 past a major version: it says what you need to change in your documents. Before 1.0.0, a
 minor version could need such a change, and its entry said so.
 
+## [1.3.0] - 2026-11-22
+
+### Changed
+
+- Every skill now shows you the files it writes the way the place you work in needs. On the
+  Claude Code command line it names the file's full path; in Claude Code desktop it also opens the
+  file in the Files pane; in a Claude project thread it copies the file into the project's shared
+  files folder, `/mnt/project-files/`, under a folder named after the repository, and attaches the
+  copy to its reply, so you can open it. This covers each document at hand-over and the reports
+  of `/build`, `/verify` and `/audit`. The rule is written once, in the lifecycle page's new
+  "Showing a file to you" section.
+
 ## [1.1.0] - 2026-11-20
 
 ### Changed

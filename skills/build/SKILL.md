@@ -286,7 +286,7 @@ the findings. Add anything else, such as a requirement the findings leave unbuil
 >
 > 1. **<Short name>:** <what is left open, in one sentence>.
 >
-> The full report is in `<the report's full path>`. The branch hasn't changed since the correction
+> The full report is in `<the report's path as shown>`. The branch hasn't changed since the correction
 > check, so everything on it has been reviewed once.
 >
 > If you accept the build as it stands, the plan is marked `Built ✅` with these <N> findings left
@@ -301,4 +301,4 @@ Ask with your question tool, or, with none, in plain words and on a decision car
 `## What was built`: that the person accepted the build as it stands, with any reason they gave.
 Otherwise change nothing. Then reply as below.
 
-End with a short reply, under 175 words: the outcome in a sentence or two, then at most five bullets, each one sentence of at most 15 words counting its bold label, with the main findings and any question or action for the person, then the report file's full path, copied from the script's output rather than typed, since it is long; if the app you run in can show them a file in a viewer, show the report file there; never paste the report or its sections into the reply, since the file holds them. In the outcome, name the branch and say whether the plan was marked `Built ✅`.
+End with a short reply, under 175 words: the outcome in a sentence or two, then at most five bullets, each one sentence of at most 15 words counting its bold label, with the main findings and any question or action for the person, then the report file, shown as the "Showing a file to you" section of `${CLAUDE_PLUGIN_ROOT}/docs/lifecycle.md` says, taking its full path from the script's output rather than typing it; never paste the report or its sections into the reply, since the file holds them. In the outcome, name the branch and say whether the plan was marked `Built ✅`.
