@@ -137,6 +137,57 @@ class GhCommand(unittest.TestCase):
         reason = pr_link_check.problem(bash("cat body.md | gh pr create -t T -F -"))
         self.assertIn(NOT_OUT, reason)
 
+    def test_an_existing_body_file_the_same_command_rewrites_is_refused(self):
+        with tempfile.TemporaryDirectory() as folder:
+            with open(os.path.join(folder, "stale.md"), "w") as f:
+                f.write("ok")
+            for write in ("cat > stale.md <<EOF\n[p](%s)\nEOF\n" % LONG,
+                          "echo '[p](%s)' >> stale.md && " % LONG,
+                          "echo '[p](%s)' | tee stale.md; " % LONG):
+                reason = pr_link_check.problem(bash(write + "gh pr create -F stale.md", cwd=folder))
+                self.assertIn(NOT_OUT, reason or "", write)
+
+    def test_a_description_built_by_the_shell_is_refused(self):
+        for body in ('"$(cat body.md)"', '"$BODY"', '`cat body.md`', "$BODY", '"${BODY}"'):
+            self.assertIn(NOT_OUT, pr_link_check.problem(bash("gh pr create -t T -b " + body)) or "",
+                          body)
+
+    def test_a_dollar_the_shell_does_not_expand_passes(self):
+        with tempfile.TemporaryDirectory() as folder:
+            with open(os.path.join(folder, "body.md"), "w") as f:
+                f.write("See https://api.example.com/odata/People?$top=2\n")
+            self.assertIsNone(pr_link_check.problem(bash("gh pr create -t T -F body.md", cwd=folder)))
+        self.assertIsNone(pr_link_check.problem(bash("gh pr create -t T -b 'See https://x.io/?$top=2'")))
+        self.assertIsNone(pr_link_check.problem(
+            bash("gh pr create -t T -F - <<'EOF'\n[plan]($B/p.md)\nEOF")))
+
+    def test_a_cd_the_hook_cannot_follow_is_refused_saying_so(self):
+        reason = pr_link_check.problem(bash('cd "$(git rev-parse --show-toplevel)" && gh pr create -F b.md'))
+        self.assertIn("folder", reason or "")
+        with tempfile.TemporaryDirectory() as home:
+            with open(os.path.join(home, "b.md"), "w") as f:
+                f.write("[p](%s)" % LONG)
+            with mock.patch.dict(os.environ, {"HOME": home}):
+                self.assertIn(LONG, pr_link_check.problem(bash("cd && gh pr create -F b.md")) or "")
+
+    def test_a_here_document_fed_to_another_command_does_not_count_for_gh(self):
+        command = "cat <<EOF > b.md; gh pr create -F -\nhi\nEOF"
+        self.assertIn(NOT_OUT, pr_link_check.problem(bash(command)) or "")
+
+    def test_standard_input_by_another_path_or_redirect_is_refused(self):
+        for command in ("gh pr create -t T -F /dev/stdin < body.md",
+                        "gh pr create -t T -F - < body.md",
+                        "gh pr create -t T --body-file /proc/self/fd/0"):
+            self.assertIn(NOT_OUT, pr_link_check.problem(bash(command)) or "", command)
+
+    def test_a_variable_in_another_flag_passes(self):
+        self.assertIsNone(pr_link_check.problem(bash("gh pr create -R https://github.com/$ORG/r -t T -b hi")))
+
+    def test_a_here_string_is_read(self):
+        self.assertIsNone(pr_link_check.problem(bash("gh pr create -t T -F - <<<'[p](https://x.io/a)'")))
+        self.assertIn(LONG, pr_link_check.problem(bash("gh pr create -t T -F - <<<'[p](%s)'" % LONG)) or "")
+        self.assertIn(NOT_OUT, pr_link_check.problem(bash('gh pr create -t T -F - <<<"$BODY"')) or "")
+
     def test_a_dollar_outside_a_link_passes(self):
         self.assertIsNone(pr_link_check.problem(bash("gh pr create -t T -b 'It costs $5 a month.'")))
 

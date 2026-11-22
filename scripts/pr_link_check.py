@@ -9,12 +9,14 @@ sent, lists each long link with its length, and says how to shorten it.
 
 For a GitHub tool it reads the `body` argument, which is always written out. For a shell command it
 reads each `gh pr create` or `gh pr edit` the command runs, on any line and after any variable
-settings: that command's own words, which hold a `--body` value, any here-document on its line,
-and the file named by `--body-file` or `-F`, found from the event's working folder and any `cd`
-before it. Other commands in the same chain are not read. A `gh` description is not written out,
-and is refused, when a body file it names cannot be read, when it reads standard input with no
-here-document on its line, or when a link in it is built by the shell, such as `$B/docs/...` or
-`$(git rev-parse HEAD)`; a `$` elsewhere in the text is left alone. A link is any `http` or `https`
+settings: its `--body` values, the here-document or here-string that feeds it, and the file named
+by `--body-file` or `-F`, found from the event's working folder and any `cd` before it. Other
+commands in the same chain are read only for the files they write. A `gh` description is not
+written out, and is refused, when the shell would build any of it (a `$NAME`, `${...}`, `$(...)` or
+backticks the shell expands), when its body file cannot be read, is named by a variable, sits in a
+folder a `cd` hides, or is written by the same command, or when it reads standard input from
+anything but its own here-document or here-string. A `$` the shell leaves alone, such as in single
+quotes, a quoted here-document, a body file or "$5", is text. A link is any `http` or `https`
 address, in a Markdown link or bare, measured with its heading anchor. Every other tool call and
 command passes.
 """
@@ -23,7 +25,6 @@ import argparse
 import json
 import os
 import re
-import shlex
 import sys
 
 LIMIT = 150
@@ -31,7 +32,6 @@ TOOL = re.compile(r"^mcp__.+__(create|update)_pull_request$")
 ADDRESS = re.compile(r"""https?://[^\s<>\[\]{}"'`\\]+""")
 TRAILING = ".,;:!?*_~"
 HEREDOC = re.compile(r"<<-?\s*(['\"]?)([A-Za-z_][A-Za-z0-9_]*)\1")
-SHELL_LINK = re.compile(r"\]\(\s*\$|https?://[^\s<>\[\]{}\"'`]*\$")
 NOT_WRITTEN_OUT = (
     "The hook could not check this pull request description's links, because the description is "
     "not written out yet: {what}. Write the description file in one command and run gh in the "
@@ -69,7 +69,7 @@ def long_links(text):
 
 
 def lines_and_heredocs(command):
-    """The command's lines with here-document bodies taken out, and each line's bodies."""
+    """The command's lines with here-document bodies taken out, and each line's bodies in order."""
     lines, bodies = [], []
     rows = command.split("\n")
     i = 0
@@ -89,93 +89,213 @@ def lines_and_heredocs(command):
     return lines, bodies
 
 
-def segments(line):
-    """The simple commands on one line, split at ;, &, | and && outside quotes."""
-    parts, current, quote, escaped = [], [], None, False
-    for char in line:
-        if escaped:
-            escaped = False
-        elif char == "\\" and quote != "'":
-            escaped = True
-        elif quote:
-            quote = None if char == quote else quote
+class Word:
+    """One shell word: its value with quotes removed, and whether the shell would expand any of it."""
+
+    def __init__(self):
+        self.value, self.expands, self.quoted = "", False, False
+
+
+def tokens(line):
+    """The line's words and operators, quote-aware: a Word, or an operator string such as "&&",
+    "|", ";", "<", ">", "<<" or "<<<"."""
+    out, word, quote, i = [], None, None, 0
+
+    def finish():
+        nonlocal word
+        if word is not None:
+            out.append(word)
+            word = None
+
+    while i < len(line):
+        char = line[i]
+        if quote == "'":
+            if char == "'":
+                quote = None
+            else:
+                word.value += char
+        elif quote == '"':
+            if char == '"':
+                quote = None
+            elif char == "\\" and i + 1 < len(line):
+                i += 1
+                word.value += line[i]
+            else:
+                word.value += char
+                if char in "$`":
+                    word.expands = True
         elif char in "'\"":
+            if word is None:
+                word = Word()
+            word.quoted = True
             quote = char
-        elif char in ";&|":
-            parts.append("".join(current))
-            current = []
-            continue
-        current.append(char)
-    parts.append("".join(current))
-    return [p for p in parts if p.strip()]
+        elif char == "\\" and i + 1 < len(line):
+            if word is None:
+                word = Word()
+            i += 1
+            word.value += line[i]
+        elif char.isspace():
+            finish()
+        elif char in ";&|<>":
+            finish()
+            op = char
+            while i + 1 < len(line) and line[i + 1] in "&|<>" and len(op) < 3 and (
+                    op + line[i + 1]) in ("&&", "||", "<<", "<<<", ">>", ">&", "&>", ">|"):
+                i += 1
+                op += line[i]
+            out.append(op)
+        else:
+            if word is None:
+                word = Word()
+            word.value += char
+            if char in "$`":
+                word.expands = True
+        i += 1
+    finish()
+    return out
 
 
-def words(segment):
-    """A simple command's words, leaving out variable settings and `env` or `command` in front."""
-    try:
-        split = shlex.split(segment)
-    except ValueError:
-        split = segment.split()
-    while split and (("=" in split[0] and not split[0].startswith("-"))
-                     or split[0] in ("env", "command")):
-        split = split[1:]
-    return split
+SEPARATORS = (";", "&&", "||", "|", "&")
+STDIN_PATHS = ("-", "/dev/stdin", "/dev/fd/0", "/proc/self/fd/0")
+EXPANSION = re.compile(r"\$[A-Za-z_{(]|`")
 
 
-def body_files(split):
-    """The paths a gh command names by --body-file or -F, leaving out `-` (standard input)."""
-    paths = []
-    for i, word in enumerate(split):
-        if word in ("--body-file", "-F") and i + 1 < len(split):
-            paths.append(split[i + 1])
-        elif word.startswith("--body-file="):
-            paths.append(word.split("=", 1)[1])
-    return [p for p in paths if p and p != "-"]
+def simple_commands(line, held):
+    """Each simple command on the line, as (words, separator before it, redirections), with the
+    here-documents on the line handed to the commands whose `<<` they follow."""
+    held = list(held)
+    commands, current, redirects, before = [], [], [], None
+    items = tokens(line)
+    i = 0
+    while i < len(items):
+        item = items[i]
+        if isinstance(item, str) and item in SEPARATORS:
+            commands.append((current, before, redirects))
+            current, redirects, before = [], [], item
+        elif isinstance(item, str):
+            target = items[i + 1] if i + 1 < len(items) and isinstance(items[i + 1], Word) else None
+            if item == "<<":
+                redirects.append(("<<", held.pop(0) if held else "", target is not None and target.quoted))
+            elif target is not None:
+                redirects.append((item, target.value, target.expands))
+            i += 1
+        else:
+            current.append(item)
+        i += 1
+    commands.append((current, before, redirects))
+    return [c for c in commands if c[0] or c[2]]
+
+
+def command_words(words):
+    """The words without variable settings and `env` or `command` in front."""
+    while words and (("=" in words[0].value and not words[0].value.startswith("-"))
+                     or words[0].value in ("env", "command")):
+        words = words[1:]
+    return words
+
+
+def is_gh_pr(words):
+    values = [w.value for w in words]
+    return (bool(values) and os.path.basename(values[0]) == "gh" and values[1:2] == ["pr"]
+            and values[2:3] in (["create"], ["edit"]))
+
+
+def body_args(words):
+    """The gh command's --body values (as Words) and --body-file paths (as Words)."""
+    bodies, files = [], []
+    for i, word in enumerate(words):
+        nxt = words[i + 1] if i + 1 < len(words) else None
+        if word.value in ("-b", "--body") and nxt is not None:
+            bodies.append(nxt)
+        elif word.value.startswith("--body="):
+            part = Word()
+            part.value, part.expands = word.value.split("=", 1)[1], word.expands
+            bodies.append(part)
+        elif word.value in ("-F", "--body-file") and nxt is not None:
+            files.append(nxt)
+        elif word.value.startswith("--body-file="):
+            part = Word()
+            part.value, part.expands = word.value.split("=", 1)[1], word.expands
+            files.append(part)
+    return bodies, files
 
 
 def read(path, folder):
     try:
-        path = os.path.expanduser(os.path.expandvars(path))
-        with open(os.path.join(folder, path), encoding="utf-8") as f:
+        with open(os.path.join(folder, os.path.expanduser(path)), encoding="utf-8") as f:
             return f.read()
     except (OSError, ValueError):
         return None
 
 
+def written_files(words, redirects):
+    """The files a non-gh command writes, by redirection or `tee`."""
+    paths = [target for op, target, _ in redirects if op in (">", ">>", ">|", "&>")]
+    values = [w.value for w in words]
+    if values and os.path.basename(values[0]) == "tee":
+        paths += [v for v in values[1:] if not v.startswith("-")]
+    return paths
+
+
 def gh_descriptions(command, cwd):
-    """For each `gh pr create` or `gh pr edit` the command runs: its text, from its own words, any
-    here-document on its line and any body file read from the folder an earlier `cd` moved to, and
-    what of it could not be read."""
-    found = []
-    folder = cwd
+    """For each `gh pr create` or `gh pr edit` the command runs: the description's text, from its
+    --body values, the here-document or here-string feeding it and its body file, and what of it is
+    not written out."""
+    found, written = [], set()
+    folder, lost = cwd, False
     lines, bodies = lines_and_heredocs(command)
     for line, held in zip(lines, bodies):
-        for segment in segments(line):
-            split = words(segment)
-            if not split:
+        for words, before, redirects in simple_commands(line, held):
+            words = command_words(words)
+            values = [w.value for w in words]
+            if values[:1] == ["cd"]:
+                target = words[1] if len(words) > 1 else None
+                if target is None:
+                    folder = os.path.expanduser("~")
+                elif target.expands or target.value == "-":
+                    lost = True
+                else:
+                    folder = os.path.join(folder, os.path.expanduser(target.value))
                 continue
-            if split[0] == "cd" and len(split) > 1:
-                folder = os.path.join(folder, os.path.expanduser(os.path.expandvars(split[1])))
-            elif (os.path.basename(split[0]) == "gh" and split[1:2] == ["pr"]
-                  and split[2:3] in (["create"], ["edit"])):
-                texts, missing = [segment] + held, []
-                for path in body_files(split):
-                    text = read(path, folder)
+            if not is_gh_pr(words):
+                written.update(os.path.normpath(os.path.join(folder, p))
+                               for p in written_files(words, redirects))
+                continue
+            texts, missing = [], []
+            body_values, files = body_args(words)
+            for body in body_values:
+                if body.expands and EXPANSION.search(body.value):
+                    missing.append("its --body is built by the shell, such as from a variable")
+                else:
+                    texts.append(body.value)
+            stdin = [r for r in redirects if r[0] in ("<", "<<", "<<<")]
+            for path in files:
+                if path.value in STDIN_PATHS:
+                    if before == "|" or any(op == "<" for op, _, _ in stdin):
+                        missing.append("it reads standard input from another command or file")
+                    elif not any(op in ("<<", "<<<") for op, _, _ in stdin):
+                        missing.append("it reads standard input with no here-document")
+                    for op, text, flag in stdin:
+                        expands = (op == "<<" and not flag) or (op == "<<<" and flag)
+                        if expands and EXPANSION.search(text):
+                            missing.append("its here-document is built by the shell, such as "
+                                           "from a variable")
+                        elif op != "<":
+                            texts.append(text)
+                elif path.expands:
+                    missing.append("the body file %s is named by a variable" % path.value)
+                elif lost and not os.path.isabs(os.path.expanduser(path.value)):
+                    missing.append("the folder an earlier cd moves to cannot be worked out")
+                elif os.path.normpath(os.path.join(folder, os.path.expanduser(path.value))) in written:
+                    missing.append("the body file %s is written by the same command" % path.value)
+                else:
+                    text = read(path.value, folder)
                     if text is None:
-                        missing.append("the body file %s cannot be read" % path)
+                        missing.append("the body file %s cannot be read" % path.value)
                     else:
                         texts.append(text)
-                if reads_stdin(split) and not held:
-                    missing.append("it reads standard input with no here-document")
-                found.append(("\n".join(texts), missing))
+            found.append(("\n".join(texts), missing))
     return found
-
-
-def reads_stdin(split):
-    for i, word in enumerate(split):
-        if (word in ("--body-file", "-F") and split[i + 1:i + 2] == ["-"]) or word == "--body-file=-":
-            return True
-    return False
 
 
 def description(event):
@@ -197,11 +317,7 @@ def description(event):
     found = gh_descriptions(command, cwd)
     if not found:
         return None
-    text = "\n".join(t for t, _ in found)
-    missing = [m for _, ms in found for m in ms]
-    if SHELL_LINK.search(text):
-        missing.append("a link in it is built by the shell, such as from a variable")
-    return text, missing
+    return "\n".join(t for t, _ in found), [m for _, ms in found for m in ms]
 
 
 def problem(event):
