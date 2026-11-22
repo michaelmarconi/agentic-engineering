@@ -1,0 +1,11 @@
+schema_version: "1.1"
+name: spec-no-repeats
+expected_outcome: |
+  The spec reviewer fails check 10 because two requirements both decide which notes the search
+  words show, and fails check 6 because the 2026-01-31 date-edge example is copied under the
+  search-words requirement as well as the date-range one. The skill corrects both: one of the two
+  search-words requirements goes (or an open question asks which to keep), the copied example
+  stays only under the date-range requirement, and the search-words and date-range requirements,
+  which only meet in the same search, both stay.
+context:
+  scaffold_script: place-files.sh
