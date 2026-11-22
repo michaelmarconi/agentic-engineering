@@ -144,10 +144,7 @@ in the reply if one did.
 
 End with a short reply, under 175 words: the outcome in a sentence or two, then at most five
 bullets, each one sentence of at most 15 words counting its bold label, with the main findings and any question or action for the
-person, then the report file's full path, copied from the script's output rather than typed,
-since it is long; if the app you run in can show them a file in a viewer, show the report file
-there; never paste the report or its sections into the reply, since the file
-holds them.
+person, then the report file, shown as the "Showing a file to you" section of `${CLAUDE_PLUGIN_ROOT}/docs/lifecycle.md` says, taking its full path from the script's output rather than typing it; never paste the report or its sections into the reply, since the file holds them.
 
 Make no correction. The run writes, edits and deletes nothing in the repository, sets no status
 and makes no commit, so the person chooses what follows: merge, correct the code, or change the

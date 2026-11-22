@@ -206,12 +206,11 @@ fails only because it lacks the comment wording keeps its place and gains the se
 leaves the reason as a comment beside the code.
 
 Whether the check passed or failed, end with the hand-over. It is what the person acts on, so make
-it hard to miss anything. Show the person each document you wrote or changed: if the app you run in
-can show them a file in a viewer, use it, and show a fresh copy after each change if what it shows
-is a copy; always name each one's full path; never send them to a code-hosting site to read it. Give
+it hard to miss anything. Show the person each document you wrote or changed as the "Showing a file
+to you" section of `${CLAUDE_PLUGIN_ROOT}/docs/lifecycle.md` says, again after each change. Give
 them the review and wording reports and the check's report, if there was one, leaving out the
-decisions they list for the person. Then say how many questions there are. List the reviewers' suggestions separately, as optional:
-they never hold the plan back.
+decisions they list for the person. Then say how many questions there are. List the reviewers'
+suggestions separately, as optional: they never hold the plan back.
 
 Offer diagrams of the work at each hand-over of a `Draft 📝` plan, so a person can see how it fits
 together at a glance; a `Ready to build 🟢` or `Built ✅` plan gets no offer, since a diagram would

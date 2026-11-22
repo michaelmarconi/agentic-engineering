@@ -1,0 +1,12 @@
+schema_version: "1.1"
+name: spec-shows-document-project-thread
+expected_outcome: |
+  In a Claude project thread, named in the prompt as the app's own instructions would name it, the
+  skill writes the spec, then copies it into the project's shared files folder, /mnt/project-files/,
+  as the lifecycle page's "Showing a file to you" section says, and sends the person to no
+  code-hosting site. Guard case: Claude makes the copy unaided once the prompt names the folder (1 of
+  1 runs without the section, 22 November 2026), so this catches a change that drops it. The eval's
+  sandbox refuses every write outside the case folder, even with the folder granted, so the copy is
+  checked as attempted and the reply naming it is left to a live trial in a project thread (issue #135).
+context:
+  scaffold_script: place-files.sh

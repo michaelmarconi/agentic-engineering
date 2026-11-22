@@ -66,10 +66,10 @@ everything else is judgement.
      (brief, spec, ADR, plan, spike) and "Ending on a failed check" for the others, and keeps its
      own reviewer, requests and extras. The script checks both, and that no skill copies the
      moved sentences back.
-   - The hand-over shows the person the document in the app's file viewer where there is one,
-     always names its path and never sends them to a code-hosting site
-     ([ADR 0025](docs/adrs/0025-document-review-display.md)): the skill holds `SHOW_RULE` from
-     `scripts/skill_check.py` word for word, and the script checks it. The hand-over also gives
+   - The hand-over shows the person the document as the "Showing a file to you" section of
+     `docs/lifecycle.md` says for each place the plugin runs
+     ([ADR 0055](docs/adrs/0055-show-file-lifecycle-page.md)): the skill holds `SHOW_RULE` from
+     `scripts/skill_check.py` word for word, a pointer to that section, and the script checks it. The hand-over also gives
      the reports and the number of questions for the person; suggestions are listed apart as
      optional.
    - A document with a status has an Open questions section, last apart from a spike record's
@@ -150,6 +150,13 @@ everything else is judgement.
     the words of `Ready to build 🟢` and `Ready to run 🟢` left unformatted; the other words are
     ordinary English too,
     so those are yours to catch.
+15. **Works in each place.** Every skill works as designed in each of the three places the
+    plugin runs: the Claude Code command line, Claude Code desktop and Claude project threads.
+    Where they differ, such as in what the person can open or how they answer, name each place
+    and say what to do there rather than relying on general wording that one of them breaks.
+    Write such a rule once, on the lifecycle page, for the skills to point to, as
+    [ADR 0055](docs/adrs/0055-show-file-lifecycle-page.md) does for showing a file, and try a
+    change that touches one in each place it affects.
 
 ## This repository's own documents
 
