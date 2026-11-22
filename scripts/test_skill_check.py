@@ -12,19 +12,22 @@ from skill_check import (AGENT_RULE, SHELL_AGENT_RULE, ASK_RULE, BUILD_ACCEPT_RU
                          QUESTIONS_RULE, REPORT_RULES, REVIEW_RULE, SHOW_RULE, ANSWER_RULES,
                          SIGNOFF_RULE, STATUS_SKILLS, TYPE_RULE, DATE_RULE, RENAME_RULE, DIAGRAM_SKILLS, DIAGRAM_RULES,
                          diagram_rules, holds, pointer, ending, ANSWERS_ENDING, FAILED_ENDING,
-                         REVIEWING_SKILLS, MOVED_RULES)
+                         REVIEWING_SKILLS, MOVED_RULES, SHOW_HEADING, SHOW_PLACES, OLD_SHOW_RULES)
 
 DESCRIPTION = "Write a thing. Use whenever someone wants a thing."
 
 
-def lifecycle_page(steps=None, answers=None, failed=None):
-    """A lifecycle page whose Review process section holds the given sentences, by default all."""
+def lifecycle_page(steps=None, answers=None, failed=None, places=None):
+    """A lifecycle page whose Review process section holds the given sentences, by default all,
+    followed by a Showing a file to you section holding the given places, by default all."""
     steps = CORRECT_RULES + (PATH_RULE,) if steps is None else steps
     answers = ANSWER_RULES if answers is None else answers
     failed = (REVIEW_RULE,) if failed is None else failed
+    places = SHOW_PLACES if places is None else places
     return ("# The lifecycle\n\n## Review process\n\n" + "\n\n".join(steps)
             + f"\n\n### {ANSWERS_ENDING}\n\n" + "\n\n".join(answers)
-            + f"\n\n### {FAILED_ENDING}\n\n" + "\n\n".join(failed) + "\n")
+            + f"\n\n### {FAILED_ENDING}\n\n" + "\n\n".join(failed)
+            + f"\n\n{SHOW_HEADING}\n\n" + "\n".join(f"- {place}" for place in places) + "\n")
 
 
 def skill_md(name="demo", description=DESCRIPTION, body="# Demo\n\nDo the thing.\n"):
@@ -160,7 +163,7 @@ class SkillCheck(unittest.TestCase):
             self.assertIn(f"`agentic:{folder}-reviewer`", text, folder)
             self.assertIn("Document: ", text, folder)
 
-    # Every document is shown the same way (ADR 0025), found by the list, not by an agent's name
+    # Every document is shown the same way (ADR 0055), found by the list, not by an agent's name
 
     def test_reviewing_skill_with_a_file_and_no_show_rule_fails(self):
         body = self.reviewing("practices", "Document: <the practices files' full paths>")
@@ -168,7 +171,7 @@ class SkillCheck(unittest.TestCase):
         self.assertFails("practices/SKILL.md: show rule missing")
 
     def test_reviewing_skill_with_a_file_and_the_show_rule_passes(self):
-        rule = SHOW_RULE.replace(" a fresh copy ", "\na fresh copy ")
+        rule = SHOW_RULE.replace(" section of ", "\nsection of ")
         self.assertNotEqual(rule, SHOW_RULE)
         body = self.reviewing("practices", "Document: <the practices files' full paths>", rule)
         self.put("practices", skill_md(name="practices", body=body))
@@ -176,7 +179,7 @@ class SkillCheck(unittest.TestCase):
         self.assertEqual(done.returncode, 0, done.stdout)
 
     def test_reworded_show_rule_fails(self):
-        rule = SHOW_RULE.replace("never send them to a code-hosting site", "send them to GitHub")
+        rule = SHOW_RULE.replace("again after each change", "once")
         self.assertNotEqual(rule, SHOW_RULE)
         body = self.reviewing("practices", "Document: <the practices files' full paths>", rule)
         self.put("practices", skill_md(name="practices", body=body))
@@ -198,6 +201,71 @@ class SkillCheck(unittest.TestCase):
         self.put("demo", skill_md(body="# Demo\n\n```\nDocument: <the demo's full path>\n```\n"))
         self.assertEqual(self.check().returncode, 0)
 
+    def test_the_show_rule_points_to_the_lifecycle_section(self):
+        self.assertIn(SHOW_HEADING[3:], SHOW_RULE)
+        self.assertIn("docs/lifecycle.md", SHOW_RULE)
+
+    def test_the_report_rule_points_to_the_lifecycle_section(self):
+        self.assertIn(SHOW_HEADING[3:], REPORT_RULE)
+        self.assertIn("docs/lifecycle.md", REPORT_RULE)
+
+    def test_a_skill_copying_an_old_show_sentence_back_fails(self):
+        for old in OLD_SHOW_RULES:
+            with self.subTest(old=old[:40]):
+                body = self.reviewing("practices", "Document: <the practices files' full paths>", f"{SHOW_RULE}\n\n{old}")
+                self.put("practices", skill_md(name="practices", body=body))
+                self.assertFails("practices/SKILL.md: old show sentence")
+
+    def test_a_report_skill_holding_the_old_report_wording_fails(self):
+        old = [rule for rule in OLD_SHOW_RULES if "report file there" in rule][0]
+        self.put("audit", skill_md(name="audit", body=f"# Audit\n\n{REPORT_RULE}\n\n{SCRATCHPAD_RULE}\n\n{old}\n"))
+        self.assertFails("audit/SKILL.md: old show sentence")
+
+    def test_the_three_places_are_named(self):
+        text = " ".join(SHOW_PLACES)
+        for place in ("Claude Code command line", "Claude Code desktop", "Claude project thread",
+                      "/mnt/project-files/", "code-hosting site"):
+            self.assertIn(place, text)
+
+    def test_lifecycle_missing_the_show_section_fails(self):
+        self.put_lifecycle(self.lifecycle().replace(SHOW_HEADING, "## Showing files"))
+        self.assertFails(f'docs/lifecycle.md: no "{SHOW_HEADING}" heading')
+
+    def test_lifecycle_missing_a_place_fails(self):
+        for number in range(len(SHOW_PLACES)):
+            with self.subTest(number=number):
+                places = SHOW_PLACES[:number] + SHOW_PLACES[number + 1:]
+                self.put_lifecycle(self.lifecycle(places=places))
+                self.assertFails(f"docs/lifecycle.md: show place {number + 1} missing")
+
+    def test_a_page_without_either_section_reports_both(self):
+        self.put_lifecycle("# The lifecycle\n\nNothing here.\n")
+        done = self.check()
+        self.assertIn('no "## Review process" heading', done.stdout)
+        self.assertIn(f'no "{SHOW_HEADING}" heading', done.stdout)
+
+    def test_a_place_outside_the_show_section_does_not_count(self):
+        text = self.lifecycle(places=SHOW_PLACES[1:]) + f"\n## Later\n\n{SHOW_PLACES[0]}\n"
+        self.put_lifecycle(text)
+        self.assertFails("docs/lifecycle.md: show place 1 missing")
+
+    def test_no_skill_names_a_place(self):
+        skills = os.path.join(ROOT, "skills")
+        for name in os.listdir(skills):
+            with open(os.path.join(skills, name, "SKILL.md"), encoding="utf-8") as f:
+                text = f.read()
+            for place in ("/mnt/project-files", "Files pane"):
+                self.assertNotIn(place, text, name)
+
+    def test_every_report_skill_holds_the_report_rule(self):
+        holding = set()
+        skills = os.path.join(ROOT, "skills")
+        for name in os.listdir(skills):
+            with open(os.path.join(skills, name, "SKILL.md"), encoding="utf-8") as f:
+                if holds(f.read(), REPORT_RULE):
+                    holding.add(name)
+        self.assertEqual(holding, {"audit", "build", "verify"})
+
     def test_every_document_skill_holds_the_show_rule(self):
         holding = set()
         skills = os.path.join(ROOT, "skills")
@@ -209,8 +277,8 @@ class SkillCheck(unittest.TestCase):
 
     # The Review process section of the lifecycle page
 
-    def lifecycle(self, steps=None, answers=None, failed=None):
-        return lifecycle_page(steps, answers, failed)
+    def lifecycle(self, steps=None, answers=None, failed=None, places=None):
+        return lifecycle_page(steps, answers, failed, places)
 
     def put_lifecycle(self, text):
         path = os.path.join(self.tmp.name, "docs", "lifecycle.md")

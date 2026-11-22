@@ -19,8 +19,10 @@ For each skills/<folder>/SKILL.md under the given plugin root (default: this plu
   others, and none holds any of the moved sentences (MOVED_RULES), so no copy can drift.
   /build, whose checker is `agentic:build-correction-checker`, reviews code and is not one of them.
 - such a skill that names a document file, as `Document: <...>`, also holds SHOW_RULE word for
-  word, so every document is shown to the person the same way, in the app's file viewer where
-  there is one and by its path always (docs/adrs/0025).
+  word, which points to the lifecycle page's "Showing a file to you" section, so every document is
+  shown to the person the same way in each place the plugin runs (docs/adrs/0055). That section
+  holds each of SHOW_PLACES word for word, and no skill holds either of OLD_SHOW_RULES, the
+  sentences the pointers replaced.
 
 - the skills that write a lifecycle document (DOCUMENT_SKILLS) hold TYPE_RULE word for word, so
   none puts the document's type in its title, and PROPOSED_RULE, so no open question is ever left
@@ -40,7 +42,7 @@ For each skills/<folder>/SKILL.md under the given plugin root (default: this plu
   only on the person's own choice, asked the same way every time (docs/adrs/0052), and
   BUILD_REREAD_RULE, so a long build reads its practices and its own rules again at each requirement.
 - /build, /audit and /verify (REPORT_SKILLS) hold REPORT_RULE word for word, so each ends with a short reply
-  naming their report file, shown the same way (docs/adrs/0051).
+  naming their report file, shown as that same section says (docs/adrs/0051, docs/adrs/0055).
 - /build, /audit, /verify and /spike (SCRATCHPAD_SKILLS) hold SCRATCHPAD_RULE word for word, so each
   passes its scripts the session's scratchpad the same way (docs/adrs/0051).
 
@@ -279,10 +281,10 @@ BUILD_PATH_RULE = (
 REPORT_RULE = (
     "End with a short reply, under 175 words: the outcome in a sentence or two, then at most five"
     " bullets, each one sentence of at most 15 words counting its bold label, with the main findings"
-    " and any question or action for the person, then the report file's full path, copied from the script's output rather than typed,"
-    " since it is long; if the app you run in can show them a file in a "
-    "viewer, show the report file there; never paste the report or its sections into the reply, "
-    "since the file holds them."
+    " and any question or action for the person, then the report file, shown as the \"Showing a file"
+    " to you\" section of `${CLAUDE_PLUGIN_ROOT}/docs/lifecycle.md` says, taking its full path from"
+    " the script's output rather than typing it; never paste the report or its"
+    " sections into the reply, since the file holds them."
 )
 REPORT_SKILLS = ("audit", "build", "verify")
 # How the skills that keep files outside the repository name where they go: the session's
@@ -293,9 +295,27 @@ SCRATCHPAD_RULE = (
 )
 SCRATCHPAD_SKILLS = ("audit", "build", "spike", "verify")
 SHOW_RULE = (
+    "Show the person each document you wrote or changed as the \"Showing a file to you\" section of "
+    "`${CLAUDE_PLUGIN_ROOT}/docs/lifecycle.md` says, again after each change."
+)
+# How a file is shown in each of the three places the plugin runs, written once, in its own section
+# of the lifecycle page, for SHOW_RULE and REPORT_RULE to point to (docs/adrs/0055).
+SHOW_HEADING = "## Showing a file to you"
+SHOW_PLACES = (
+    "**Claude Code command line:** the agent names the file's full path.",
+    "**Claude Code desktop:** the agent opens the file in the Files pane and names its full path.",
+    "**Claude project thread:** the agent copies the file into the project's shared files folder, "
+    "`/mnt/project-files/`, under a folder named after the repository, so files of the same name "
+    "from two repositories stay apart, attaches the copy to its reply and names the copy's path. "
+    "After each change it copies and attaches the file again, since what you see is a copy.",
+    "**Everywhere:** the agent never sends you to a code-hosting site to read the file.",
+)
+# The sentences SHOW_RULE and REPORT_RULE replaced, which no skill may hold again (docs/adrs/0055).
+OLD_SHOW_RULES = (
     "Show the person each document you wrote or changed: if the app you run in can show them a "
     "file in a viewer, use it, and show a fresh copy after each change if what it shows is a copy; "
-    "always name each one's full path; never send them to a code-hosting site to read it."
+    "always name each one's full path; never send them to a code-hosting site to read it.",
+    "if the app you run in can show them a file in a viewer, show the report file there;",
 )
 REPOSITORY_LINE = "`Repository: <folder>`"
 # Every agent given a `Repository:` line: the document reviewers the review relay hook knows (all
@@ -346,9 +366,9 @@ MOVED_RULES = ANSWER_RULES + CORRECT_RULES + (REVIEW_RULE, PATH_RULE)
 
 
 def lifecycle_problems(text):
-    """What the lifecycle page's Review process section lacks of the shared review sequence."""
+    """What the lifecycle page lacks of the shared review sequence and of the three places."""
     if f"\n{REVIEW_HEADING}\n" not in f"\n{text}":
-        return [f'no "{REVIEW_HEADING}" heading']
+        return [f'no "{REVIEW_HEADING}" heading'] + show_problems(text)
     review = f"\n{text}"
     review = review[review.index(f"\n{REVIEW_HEADING}\n") + 1:]
     if "\n## " in review:
@@ -378,7 +398,21 @@ def lifecycle_problems(text):
     if FAILED_ENDING in parts and not holds(parts[FAILED_ENDING], REVIEW_RULE):
         found.append(f'review rule missing: "{FAILED_ENDING}" must hold skill_check.REVIEW_RULE '
                      "word for word")
-    return found
+    return found + show_problems(text)
+
+
+def show_problems(text):
+    """What the lifecycle page's Showing a file to you section lacks of the three places."""
+    page = f"\n{text}"
+    if f"\n{SHOW_HEADING}\n" not in page:
+        return [f'no "{SHOW_HEADING}" heading']
+    section = page[page.index(f"\n{SHOW_HEADING}\n") + 1:]
+    section = section[len(SHOW_HEADING):]
+    if "\n## " in section:
+        section = section[:section.index("\n## ")]
+    return [f'show place {number} missing: "{SHOW_HEADING[3:]}" must hold '
+            f"skill_check.SHOW_PLACES[{number - 1}] word for word"
+            for number, place in enumerate(SHOW_PLACES, 1) if not holds(section, place)]
 
 
 def frontmatter(text):
@@ -432,6 +466,10 @@ def problems(folder, text):
     if folder in REVIEWING_SKILLS and not holds(body, pointer(folder)):
         found.append("review pointer missing: a skill that runs the review sequence must hold "
                      f"skill_check.pointer(\"{folder}\") word for word, naming \"{ending(folder)}\"")
+    for rule in OLD_SHOW_RULES:
+        if holds(body, rule):
+            found.append(f"old show sentence: \"{rule[:50]}...\" was replaced by a pointer to the "
+                         "lifecycle page's Showing a file to you section (ADR 0055); remove it")
     for rule in MOVED_RULES:
         if holds(body, rule):
             found.append("moved review sentence: the lifecycle page's Review process holds "
@@ -484,7 +522,7 @@ def problems(folder, text):
     reviews_a_file = folder in REVIEWING_SKILLS and "Document: <" in body
     if reviews_a_file and not holds(body, SHOW_RULE):
         found.append("show rule missing: a skill that writes a document must hold "
-                     "skill_check.SHOW_RULE word for word, to show it the same way (ADR 0025)")
+                     "skill_check.SHOW_RULE word for word, to show it the same way (ADR 0055)")
     return found
 
 

@@ -204,10 +204,9 @@ rule they asked for word for word, or anything under Needs a person, stays as wr
 decide.
 
 Whether the check passed or failed, end with the hand-over. Show the person each document you wrote
-or changed: if the app you run in can show them a file in a viewer, use it, and show a fresh copy
-after each change if what it shows is a copy; always name each one's full path; never send them to a
-code-hosting site to read it. Give the person the files you changed, the review and wording reports
-and the check's report, if there was one. Then say how many items they must settle, such as a
-finding left for them or a correction the check found not made or broken, and ask the first only, as
-a single question; if the person has said not to ask now, ask nothing. List the reviewers'
-suggestions separately, as optional. Leave committing to them.
+or changed as the "Showing a file to you" section of `${CLAUDE_PLUGIN_ROOT}/docs/lifecycle.md` says,
+again after each change. Give the person the files you changed, the review and wording reports and
+the check's report, if there was one. Then say how many items they must settle, such as a finding
+left for them or a correction the check found not made or broken, and ask the first only, as a
+single question; if the person has said not to ask now, ask nothing. List the reviewers' suggestions
+separately, as optional. Leave committing to them.
