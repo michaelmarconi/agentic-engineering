@@ -26,7 +26,7 @@ places differ too much for one general sentence. The three places:
 | Claude Code desktop | Opens the file in the Files pane and names its full path |
 | Claude project thread[^thread] | Copies the file into the project's shared files folder, attaches the copy to its reply and names the copy's path, again after each change |
 
-In every place, the agent never sends the person to a code-hosting site.
+Everywhere, the agent never sends the person to a code-hosting site.
 
 ## Background
 
@@ -49,7 +49,7 @@ already moved the review steps to the lifecycle page, so each skill points there
 - Good: the person can open every document and report in each of the three places.
 - Good: a change to one place, or a fourth place, means editing one section.
 - Bad: the project-thread case names that app's shared folder, so it must change if the app does.
-- Bad: a skill must read another file at its hand-over, and might skim it.
+- Bad: a skill must read another file before it shows the person a file, and might skim it.
 
 ## Out of scope
 
