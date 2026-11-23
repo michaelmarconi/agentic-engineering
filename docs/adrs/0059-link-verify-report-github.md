@@ -48,12 +48,13 @@ under [ADR 0057](0057-refuse-pull-request-description.md).
 
 - The report's layout, which [ADR 0058](0058-script-lays-out-verify-report.md) decides.
 - A private repository's links, which open only for people allowed to read it.
+- A commit checked before it is pushed, whose links open only once it is on GitHub.
 
 ## How we'll check
 
 Applies to: the links the verify report gives to the spec.
 
-1. Test: unit tests give GitHub remotes in their usual forms and check each link the script builds.
+1. Test: unit tests give GitHub remotes in their usual forms and check each link the verify report's script builds.
 2. Test: unit tests give a remote on another service, and none, and check plain names with line numbers.
 3. Inspection: in a trial run on a GitHub repository, each link in the report opens the right place.
 
@@ -81,7 +82,7 @@ the short commit keeping links under the 150 characters
 **Plain text.** A requirement or an example reads `<name> (line <n>)`, and the header adds:
 "Links to the spec were left out because the repository's `origin` is not on GitHub."
 
-**Lines.** The script reads the spec as it is at the commit checked, with `git show
+**Lines.** `verify.py` reads the spec as it is at the commit checked, with `git show
 <commit>:<path>`, so line numbers and anchors match the linked version.
 
 [^verify]: A verify run is the plugin's step that starts the product and uses it from outside, as a person would, to check it against its specs.
