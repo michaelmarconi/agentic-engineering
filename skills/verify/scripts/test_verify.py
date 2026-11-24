@@ -213,12 +213,62 @@ class Start(Repo):
         self.assertEqual(agent_relay.reports(self.data, "s1", "verify"), [])
 
 
+DOC = "docs/specs/mail-pull.spec.md"
+
+VERIFIER = """Document: {doc}
+Started: `bin/mail serve`, started
+
+1. Pull new mail
+- New mail: pass
+  - Did: Put two messages on the stand-in server, then ran a pull.
+  - Saw: "2 stored"
+- No new mail: not checked
+  - Did: Looked for a way to empty the stand-in server.
+  - Saw: the practice names none
+  - Why: the practice names no way to empty the server; a reset script would make it checkable.
+
+2. Report the count
+- Count: fail
+  - Did: Ran a pull with two new messages waiting.
+  - Saw: "fetched"
+  - Why: it printed no number.
+
+Commands:
+- bin/mail serve --port 8000 --data /tmp/tmp.x1
+- bin/mail pull --port 8000
+"""
+
+CHECKER = """Document: {doc}
+
+1. Pull new mail
+- New mail: confirmed
+  - Did: Pulled with two messages, then with one.
+  - Saw: "2 stored", then "1 stored"
+- No new mail: confirmed
+  - Did: Looked for a way to empty the server.
+  - Saw: none is named
+
+2. Report the count
+- Count: rejected
+  - Did: Ran a pull with two new messages waiting, twice.
+  - Saw: "fetched 2"
+  - Why: it does print the number; verdict: pass
+
+Commands:
+- bin/mail pull --port 8000 --twice
+"""
+
+# Lines of SPEC, counted from 1: the headings and example rows the links point to.
+LINE = {"1. Pull new mail": 15, "New mail": 19, "No new mail": 25, "2. Report the count": 35, "Count": 39}
+
+
 class Report(Repo):
-    def keep(self, agent, document, text):
+    def keep(self, agent, document, text, requested=None):
         path = agent_relay.record_path(self.data, "s1", "verify")
         os.makedirs(os.path.dirname(path), exist_ok=True)
         record = agent_relay.load(path)
-        record["reports"][f"{agent}|{document}|"] = {"agent": agent, "document": document, "kind": "", "text": text}
+        record["reports"][f"{agent}|{document}|"] = {"agent": agent, "document": document, "kind": "",
+                                                     "requested": requested or [], "text": text}
         with open(path, "w", encoding="utf-8") as f:
             json.dump(record, f)
 
@@ -227,90 +277,249 @@ class Report(Repo):
         with open(path, encoding="utf-8") as f:
             return path, f.read()
 
-    def test_report_holds_every_heading_in_order(self):
-        self.start("docs/specs/mail-pull.spec.md")
-        code, out, err = self.report("## Overall result\n\nAll passed.\n")
+    def section(self, text, heading):
+        return text.split(f"## {heading}\n", 1)[1].split("\n## ", 1)[0]
+
+    def both(self, verifier=VERIFIER, checker=CHECKER):
+        full = os.path.join(self.repo, DOC)
+        self.keep("verifier", full, verifier.format(doc=full))
+        if checker is not None:
+            self.keep("verify-checker", full, checker.format(doc=full))
+
+    def run_both(self, own="## What needs doing\n\n1. Add a reset script.\n", **kw):
+        self.start(DOC)
+        self.both(**kw)
+        code, out, err = self.report(own)
+        self.assertEqual(code, 0, err)
+        return self.written(out)[1]
+
+    def github(self):
+        self.git("remote", "add", "origin", "https://github.com/acme/mail.git")
+        short = self.git("rev-parse", "--short=7", "HEAD")
+        return f"https://github.com/acme/mail/blob/{short}/{DOC}"
+
+    def test_spec_lines_the_tests_rely_on(self):
+        lines = SPEC.format(status="Accepted 👍").splitlines()
+        self.assertEqual(lines[LINE["1. Pull new mail"] - 1], "### 1. Pull new mail")
+        self.assertEqual(lines[LINE["New mail"] - 1], "| Example | New mail |")
+        self.assertEqual(lines[LINE["No new mail"] - 1], "| Example | No new mail |")
+        self.assertEqual(lines[LINE["2. Report the count"] - 1], "### 2. Report the count")
+        self.assertEqual(lines[LINE["Count"] - 1], "| Example | Count |")
+
+    def test_headings_in_order_and_file_named(self):
+        self.start(DOC)
+        self.both()
+        code, out, err = self.report("## What needs doing\n\n1. Add a reset script.\n")
         self.assertEqual(code, 0, err)
         path, text = self.written(out)
         self.assertTrue(path.endswith("2026-11-16-verify-mail-pull.md"))
         positions = [text.index(f"## {h}\n") for h in verify.run_report.HEADINGS["verify"]]
         self.assertEqual(positions, sorted(positions))
+        self.assertIn("1. Add a reset script.", self.section(text, "What needs doing"))
 
-    def test_commit_checked_is_the_one_start_printed(self):
-        _, started, _ = self.start("docs/specs/mail-pull.spec.md")
+    def test_header_names_spec_commit_and_how_the_product_started(self):
+        base = self.github()
+        text = self.run_both()
+        top = text.split("\n## Result", 1)[0]
+        self.assertTrue(top.startswith("# Verify report: mail-pull\n"))
+        self.assertIn(f"- **Spec:** [{DOC}]({base})", top)
+        self.assertIn(f"- **Commit:** `{self.git('rev-parse', '--short=7', 'HEAD')}`", top)
+        self.assertIn("- **Product:** `bin/mail serve`, started", top)
+
+    def test_counts_line_and_table(self):
+        base = self.github()
+        result = self.section(self.run_both(), "Result")
+        self.assertIn("**1 passed, 0 failed, 1 disputed, 1 not checked.** The checker rejected 1 verdict.", result)
+        self.assertIn("| # | Requirement | Example | Result |\n|--:|---|---|---|\n", result)
+        self.assertIn(f"| 1 | [Pull new mail]({base}#1-pull-new-mail) | [New mail]({base}?plain=1#L{LINE['New mail']}) "
+                      "| ✅ Pass |", result)
+        self.assertIn(f"| 1 | [Pull new mail]({base}#1-pull-new-mail) | [No new mail]({base}?plain=1#L{LINE['No new mail']}) "
+                      "| ⚠️ Not checked |", result)
+        self.assertIn(f"| 2 | [Report the count]({base}#2-report-the-count) | [Count]({base}?plain=1#L{LINE['Count']}) "
+                      "| ⚠️ Disputed |", result)
+
+    def test_checker_agreeing_with_every_verdict_said(self):
+        checker = CHECKER.replace("- Count: rejected", "- Count: confirmed").replace(
+            "  - Why: it does print the number; verdict: pass\n", "")
+        result = self.section(self.run_both(checker=checker), "Result")
+        self.assertIn("**1 passed, 1 failed, 0 disputed, 1 not checked.** The checker agreed with every verdict.", result)
+        self.assertIn("| ❌ Fail |", result)
+
+    def test_details_give_each_example_both_agents_words(self):
+        base = self.github()
+        details = self.section(self.run_both(), "Details")
+        self.assertIn(f"### 1. [New mail]({base}?plain=1#L{LINE['New mail']}) — ✅ Pass\n\n**Verifier**\n\n"
+                      "- **Did:** Put two messages on the stand-in server, then ran a pull.\n"
+                      "- **Saw:** \"2 stored\"\n\n**Checker** (confirmed)\n\n"
+                      "- **Did:** Pulled with two messages, then with one.\n"
+                      "- **Saw:** \"2 stored\", then \"1 stored\"\n", details)
+        self.assertIn("### 2. [Count]", details)
+        self.assertIn("**Checker** (rejected)", details)
+        self.assertIn("- **Why:** it does print the number; verdict: pass", details)
+
+    def test_every_word_of_each_agents_entries_reaches_the_file(self):
+        text = self.run_both()
+        for report in (VERIFIER, CHECKER):
+            for line in report.splitlines():
+                if line.startswith("  - "):
+                    label, words = line[4:].split(": ", 1)
+                    self.assertIn(f"- **{label}:** {words}", text)
+
+    def test_commands_only_in_collapsed_blocks(self):
+        text = self.run_both()
+        commands = self.section(text, "Commands")
+        self.assertIn("<details>\n<summary>Verifier: docs/specs/mail-pull.spec.md</summary>\n\n```text\n", commands)
+        self.assertIn("<summary>Verify-checker: docs/specs/mail-pull.spec.md</summary>", commands)
+        self.assertIn("- bin/mail serve --port 8000 --data /tmp/tmp.x1\n- bin/mail pull --port 8000\n", commands)
+        self.assertEqual(text.count("bin/mail pull --port 8000\n"), 1)
+        self.assertEqual(text.count("<details>"), text.count("</details>"))
+
+    def test_commands_holding_backticks_get_a_longer_fence(self):
+        verifier = VERIFIER.replace("- bin/mail pull --port 8000\n", "- echo ```x``` | bin/mail pull\n")
+        commands = self.section(self.run_both(verifier=verifier), "Commands")
+        self.assertIn("````text\n", commands)
+        self.assertIn("- echo ```x``` | bin/mail pull\n````\n", commands)
+
+    def test_not_on_github_gives_names_with_line_numbers(self):
+        self.git("remote", "add", "origin", "git@gitlab.com:acme/mail.git")
+        text = self.run_both()
+        self.assertNotIn("https://", text)
+        self.assertIn("- **Links:** Links to the spec were left out because the repository's `origin` is not on GitHub.",
+                      text)
+        result = self.section(text, "Result")
+        self.assertIn(f"| 1 | Pull new mail (line {LINE['1. Pull new mail']}) | New mail (line {LINE['New mail']}) "
+                      "| ✅ Pass |", result)
+        self.assertIn(f"### 1. New mail (line {LINE['New mail']}) — ✅ Pass", self.section(text, "Details"))
+
+    def test_no_remote_gives_names_with_line_numbers(self):
+        text = self.run_both()
+        self.assertIn(f"Pull new mail (line {LINE['1. Pull new mail']})", text)
+        self.assertIn("is not on GitHub", text)
+
+    def test_links_follow_the_spec_at_the_commit_checked(self):
+        base = self.github()
+        _, started, _ = self.start(DOC)
         commit = json.loads(started)["commit"]
-        _, out, _ = self.report("## Overall result\n\nAll passed.\n", commit=commit[:8])
-        _, text = self.written(out)
-        section = text.split("## Commit checked\n", 1)[1].split("\n## ", 1)[0]
-        self.assertIn(commit, section)
+        self.put(DOC, "\n\n\n" + SPEC.format(status="Accepted 👍"))
+        self.commit()
+        self.both()
+        code, out, err = self.report("## Caveats\n\n- None.\n", commit=commit)
+        self.assertEqual(code, 0, err)
+        self.assertIn(f"[New mail]({base}?plain=1#L{LINE['New mail']})", self.written(out)[1])
 
-    def test_each_agents_report_copied_word_for_word(self):
-        self.start("docs/specs/mail-pull.spec.md")
-        verifier = "Document: docs/specs/mail-pull.spec.md\n\n1.1 pass\n  Evidence: `pull` printed \"2\"\n"
-        checker = "Document: docs/specs/mail-pull.spec.md\n\n- 1.1: confirmed\n"
-        self.keep("verify-checker", os.path.join(self.repo, "docs/specs/mail-pull.spec.md"), checker)
-        self.keep("verifier", os.path.join(self.repo, "docs/specs/mail-pull.spec.md"), verifier)
-        _, out, _ = self.report("## Overall result\n\nAll passed.\n")
-        _, text = self.written(out)
-        agents = text.split("## What each agent reported\n", 1)[1].split("\n## The repository", 1)[0]
-        self.assertIn(verifier, agents)
-        self.assertIn(checker, agents)
-        self.assertLess(agents.index("### Verifier: docs/specs/mail-pull.spec.md"),
-                        agents.index("### Verify-checker: docs/specs/mail-pull.spec.md"))
+    def test_verifier_error_lists_each_requested_requirement_not_checked(self):
+        self.github()
+        self.start(DOC)
+        full = os.path.join(self.repo, DOC)
+        self.keep("verifier", full, f"Document: {full}\nError: no Running the product practice",
+                  requested=[[1, "Pull new mail"], [2, "Report the count"]])
+        code, out, err = self.report("## What needs doing\n\n1. Record the practice.\n")
+        self.assertEqual(code, 0, err)
+        result = self.section(self.written(out)[1], "Result")
+        self.assertIn("**0 passed, 0 failed, 0 disputed, 2 not checked.**", result)
+        self.assertRegex(result, r"\| 1 \| \[Pull new mail\]\([^)]*\) \| — \| ⚠️ Not checked \|")
+        self.assertRegex(result, r"\| 2 \| \[Report the count\]\([^)]*\) \| — \| ⚠️ Not checked \|")
+        self.assertIn("The verifier checked nothing: no Running the product practice", result)
+
+    def test_no_checker_report_leaves_every_example_not_checked(self):
+        text = self.run_both(checker=None)
+        result = self.section(text, "Result")
+        self.assertIn("**0 passed, 0 failed, 0 disputed, 3 not checked.**", result)
+        self.assertIn("The checker did not report on docs/specs/mail-pull.spec.md", result)
+        self.assertIn("**Checker** did not report.", self.section(text, "Details"))
+
+    def test_checker_error_leaves_every_example_not_checked(self):
+        checker = "Document: {doc}\nError: the verifier checked nothing"
+        result = self.section(self.run_both(checker=checker), "Result")
+        self.assertIn("3 not checked.**", result)
+        self.assertIn("The checker checked nothing: the verifier checked nothing", result)
+
+    def refused(self, verifier=VERIFIER, checker=CHECKER):
+        self.start(DOC)
+        self.both(verifier=verifier, checker=checker)
+        code, out, err = self.report("## Caveats\n\n- None.\n")
+        self.assertEqual((code, out), (1, ""))
+        return err
+
+    def test_unknown_verdict_refused_naming_the_agent_and_line(self):
+        err = self.refused(verifier=VERIFIER.replace("- New mail: pass", "- New mail: passed"))
+        self.assertIn("verifier", err)
+        self.assertIn("line 5", err)
+        self.assertIn("passed", err)
+
+    def test_line_that_fits_no_entry_refused(self):
+        err = self.refused(checker=CHECKER.replace("2. Report the count\n", "2. Report the count\nAll good here.\n"))
+        self.assertIn("verify-checker", err)
+        self.assertIn("All good here.", err)
+
+    def test_example_missing_from_the_checker_refused(self):
+        checker = CHECKER.replace("- No new mail: confirmed\n  - Did: Looked for a way to empty the server.\n"
+                                  "  - Saw: none is named\n", "")
+        err = self.refused(checker=checker)
+        self.assertIn("No new mail", err)
+
+    def test_report_with_no_document_line_refused(self):
+        err = self.refused(verifier=VERIFIER.replace("Document: {doc}\n", ""))
+        self.assertIn("Document:", err)
 
     def test_clean_repository_said(self):
-        self.start("docs/specs/mail-pull.spec.md")
-        _, out, _ = self.report("## Overall result\n\nAll passed.\n")
-        _, text = self.written(out)
-        after = text.split("## The repository after the run\n", 1)[1]
+        after = self.section(self.run_both(), "The repository after the run")
         self.assertIn("No tracked file changed and no new file appeared during the run", after)
         self.assertIn("still checked out", after)
+        self.assertNotIn("###", after)
 
     def test_file_changed_during_the_run_listed(self):
-        self.start("docs/specs/mail-pull.spec.md")
+        self.start(DOC)
         self.put("src/app.py", "print('touched')\n")
         self.put("tool.sh", "echo\n")
-        _, out, _ = self.report("## Overall result\n\nAll passed.\n")
-        _, text = self.written(out)
-        after = text.split("## The repository after the run\n", 1)[1]
+        _, out, _ = self.report("## Caveats\n\n- None.\n")
+        after = self.section(self.written(out)[1], "The repository after the run")
         self.assertIn("src/app.py", after)
         self.assertIn("tool.sh", after)
 
     def test_new_commit_during_the_run_said(self):
-        _, started, _ = self.start("docs/specs/mail-pull.spec.md")
+        _, started, _ = self.start(DOC)
         self.put("src/app.py", "print('new')\n")
         self.commit()
-        _, out, _ = self.report("## Overall result\n\nAll passed.\n", commit=json.loads(started)["commit"])
-        _, text = self.written(out)
-        after = text.split("## The repository after the run\n", 1)[1]
+        _, out, _ = self.report("## Caveats\n\n- None.\n", commit=json.loads(started)["commit"])
+        after = self.section(self.written(out)[1], "The repository after the run")
         self.assertIn(self.git("rev-parse", "HEAD"), after)
         self.assertNotIn("still checked out", after)
-
-    def test_change_committed_during_the_run_listed(self):
-        _, started, _ = self.start("docs/specs/mail-pull.spec.md")
-        self.put("src/app.py", "print('committed')\n")
-        self.commit()
-        _, out, _ = self.report("## Overall result\n\nAll passed.\n", commit=json.loads(started)["commit"])
-        _, text = self.written(out)
-        after = text.split("## The repository after the run\n", 1)[1]
         self.assertIn("src/app.py", after)
 
     def test_claude_cannot_write_the_scripts_sections(self):
-        self.start("docs/specs/mail-pull.spec.md")
-        code, out, err = self.report("## Commit checked\n\nabc\n")
-        self.assertEqual((code, out), (1, ""))
-        self.assertIn("filled by the script", err)
+        self.start(DOC)
+        for heading in ("Result", "Details", "Commands"):
+            code, out, err = self.report(f"## {heading}\n\nabc\n")
+            self.assertEqual((code, out), (1, ""))
+            self.assertIn("filled by the script", err)
 
     def test_unknown_commit_refused(self):
-        code, out, err = self.report("## Overall result\n\nAll passed.\n", commit="deadbeef")
+        code, out, err = self.report("## Caveats\n\n- None.\n", commit="deadbeef")
         self.assertEqual((code, out), (1, ""))
         self.assertIn("deadbeef", err)
 
     def test_report_clears_kept_reports(self):
-        self.start("docs/specs/mail-pull.spec.md")
-        self.keep("verifier", "docs/specs/mail-pull.spec.md", "x")
-        self.report("## Overall result\n\nAll passed.\n")
+        self.run_both()
         self.assertEqual(agent_relay.reports(self.data, "s1", "verify"), [])
+
+
+class Links(unittest.TestCase):
+    def test_github_remotes_in_their_usual_forms(self):
+        for url in ("https://github.com/acme/mail", "https://github.com/acme/mail.git",
+                    "git@github.com:acme/mail.git", "ssh://git@github.com/acme/mail.git",
+                    "https://token@github.com/acme/mail.git"):
+            self.assertEqual(verify.github_repository(url), "https://github.com/acme/mail", url)
+
+    def test_other_remotes_are_not_github(self):
+        for url in ("git@gitlab.com:acme/mail.git", "https://example.com/github.com/acme/mail",
+                    "https://github.com/acme", "", None):
+            self.assertIsNone(verify.github_repository(url), url)
+
+    def test_heading_anchor_as_github_gives_it(self):
+        self.assertEqual(verify.anchor("### 2. Reply to all"), "2-reply-to-all")
+        self.assertEqual(verify.anchor("### 3. Don't send `drafts` (yet)"), "3-dont-send-drafts-yet")
+        self.assertEqual(verify.anchor("### 4. Café_menu -- two"), "4-café_menu----two")
 
 
 class Help(unittest.TestCase):

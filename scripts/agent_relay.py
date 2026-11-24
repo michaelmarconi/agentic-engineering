@@ -89,7 +89,7 @@ def save(path, record):
 
 def reports(data, session, run):
     """The session's kept reports of one skill's agents, in the order they were first kept:
-    [{agent, document, kind, text}]."""
+    [{agent, document, kind, requested, text}]."""
     path = record_path(data, session, run)
     return list(load(path)["reports"].values()) if path else []
 
@@ -107,7 +107,7 @@ def run_of(value):
 
 
 def identity(tool_input):
-    """(skill, {agent, document, kind}) for one of RUNS' agents' requests, or (None, None)."""
+    """(skill, {agent, document, kind, requested}) for one of RUNS' agents' requests, or (None, None)."""
     run, agent = run_of(tool_input.get("subagent_type"))
     if not agent:
         return None, None
@@ -115,7 +115,25 @@ def identity(tool_input):
     first = prompt.strip().splitlines()[0] if prompt.strip() else ""
     document = first[len("Document:"):].strip() if first.startswith("Document:") else ""
     kind = next((k for k in RUNS[run]["kinds"].get(agent, ()) if f"=== {k} ===" in prompt), "")
-    return run, {"agent": agent, "document": document, "kind": kind}
+    return run, {"agent": agent, "document": document, "kind": kind, "requested": requested(prompt)}
+
+
+def requested(prompt):
+    """[[number, name]] for the `<number>. <name>` lines under a request's `Requirements:` line, as
+    the verify skill names the requirements a verifier is to check, so `verify.py report` can list
+    them as not checked when the verifier checked nothing."""
+    found, listing = [], False
+    for line in prompt.splitlines():
+        if line.strip() == "Requirements:":
+            listing = True
+            continue
+        match = re.match(r"^\s*(\d+)\.\s+(\S.*?)\s*$", line) if listing else None
+        if not match:
+            if listing and line.strip():
+                break
+            continue
+        found.append([int(match.group(1)), match.group(2)])
+    return found
 
 
 def keep(record, who, text):

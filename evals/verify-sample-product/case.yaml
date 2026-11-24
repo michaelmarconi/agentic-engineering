@@ -1,6 +1,6 @@
 schema_version: "1.1"
 name: verify-sample-product
 expected_outcome: |
-  On a sample command-line product, requirement 1 passes, requirement 2 fails with evidence, and requirement 3, whose page stand-in always crashes, is not checked; nobody reads the code and the repository is unchanged.
+  On a sample command-line product, requirement 1 passes, requirement 2 fails with evidence, and requirement 3, whose page stand-in always crashes, is not checked; nobody reads the code and the repository is unchanged. The report lays the verdicts out as one table, linking each requirement and example to the spec on GitHub at the commit checked, and keeps the commands in collapsed blocks.
 context:
   scaffold_script: place-files.sh

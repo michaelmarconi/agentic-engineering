@@ -152,9 +152,14 @@ sequenceDiagram
 
 ## What you get
 
-The overall result comes first: every example passed, some failed or are disputed, or some could
-not be checked. Then, for each spec, the failures, the disputed verdicts, the examples not checked
-and why, and last the passes, each with its evidence. Each failure names its suggested next step:
+The report opens with a short header naming the spec, the commit checked and how the product was
+started, then one line of counts and one table with a row for each example: its requirement, its
+name and its result, ✅ Pass, ❌ Fail, ⚠️ Disputed or ⚠️ Not checked. When the repository is on
+GitHub, each requirement and example links to its place in the spec as it was at the commit
+checked; elsewhere each gives its line number in the spec.
+
+Next comes what needs doing, with the examples grouped by cause and the fixes as a short numbered
+list. Each failure's fix is one of:
 
 - **Correct the code**, when the spec is right: through [`/plan`](plan.md) and `/build`, or
   directly for a small correction;
@@ -162,12 +167,14 @@ and why, and last the passes, each with its evidence. Each failure names its sug
   right and the spec is not.
 
 Each example not checked says what would make it checkable, such as a way to set the product's
-clock, which may be worth a requirement of its own.
+clock, which may be worth a requirement of its own. Any caveats follow, then the details: under
+each example, what each of the two agents did and saw, in their own words. The commands they ran
+are kept last, folded away.
 
 As with `/build` and `/audit`, the full report goes in a Markdown file and Claude's reply is short,
 under 175 words: the outcome, at most five bullets of at most 15 words each, then the file's full
-path. The file holds the commit checked and every agent's report copied in word for word by the
-plugin's script. It is kept in the session's scratchpad, a temporary folder Claude Code gives each session, outside
+path. The plugin's script lays the file out from the agents' reports, copying their words
+unchanged. It is kept in the session's scratchpad, a temporary folder Claude Code gives each session, outside
 your repository, at `agentic/reports/<repository>/<date>-verify-<what was checked>.md`, until
 Claude Code clears it.
 

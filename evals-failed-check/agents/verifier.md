@@ -15,8 +15,8 @@ Started: `python3 greet.py`, started
 
 1. Greet by name
 - Greets Ada: pass
-  Did: `python3 greet.py Ada`
-  Got: "Hello, Ada!"
+  - Did: Ran the greeter with the name Ada.
+  - Saw: "Hello, Ada!"
 
 Commands:
 - python3 greet.py Ada

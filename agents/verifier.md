@@ -64,20 +64,22 @@ not checked, never fail: it says nothing about the product. Nothing is left with
 
 ## Report
 
-Report in this shape, and nothing else:
+Report in this shape, and nothing else, since a script lays the report out from it and refuses a
+report it cannot read:
 
 ```
 Document: <path>
 Started: <the start command, and whether the product started>
 
 <requirement number>. <requirement name>
-- <example name>: pass | fail | not checked
-  Did: <the command run or request sent, as run>
-  Got: <what came back, quoted exactly, cut to what decides the verdict>
-  Why: <for fail, how it differs from the Then; for not checked, the reason and what would make it checkable>
+- <example name, as the spec writes it>: pass | fail | not checked
+  - Did: <what you did to the product, in a plain sentence>
+  - Saw: <what came back, quoted exactly, cut to what decides the verdict>
+  - Why: <for fail, how it differs from the Then; for not checked, the reason and what would make it checkable>
 
 Commands:
 - <every command you ran, in order, exactly as run>
 ```
 
-Leave out `Why:` for a pass.
+Leave out `Why:` for a pass. Keep long commands and temporary paths out of `Did:`: they belong
+under `Commands:`, which the report keeps folded away.

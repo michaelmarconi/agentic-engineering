@@ -14,9 +14,9 @@ Document: <path>
 
 1. Greet by name
 - Greets Ada: rejected
-  Did: `python3 greet.py "Ada Lovelace"`
-  Got: "Hello, Ada!"
-  Why: the greeting drops every name after the first, so the rule fails for a full name; verdict: fail
+  - Did: Ran the greeter with the full name Ada Lovelace.
+  - Saw: "Hello, Ada!"
+  - Why: the greeting drops every name after the first, so the rule fails for a full name; verdict: fail
 
 Commands:
 - python3 greet.py "Ada Lovelace"
