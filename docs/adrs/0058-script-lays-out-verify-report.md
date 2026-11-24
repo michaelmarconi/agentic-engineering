@@ -2,8 +2,8 @@
 # Change status only through the agentic plugin's skills, which check each change; a change made by hand is not checked.
 type: ADR
 number: 0058
-status: Draft 📝
-date: 2026-11-23
+status: Accepted 👍
+date: 2026-11-24
 ---
 
 # Script lays out the verify report from each agent's fixed-shape entries
