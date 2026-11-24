@@ -245,7 +245,9 @@ class Links:
     def __init__(self, root, commit):
         remote = git(root, "remote", "get-url", "origin")
         self.repository = github_repository(remote.stdout) if remote.returncode == 0 else None
-        self.root, self.commit, self.short, self.places = root, commit, commit[:7], {}
+        short = git(root, "rev-parse", "--short=7", commit)
+        self.short = short.stdout.strip() if short.returncode == 0 else commit[:7]
+        self.root, self.commit, self.places = root, commit, {}
 
     def base(self, path):
         return f"{self.repository}/blob/{self.short}/{urllib.parse.quote(path)}"
@@ -257,6 +259,10 @@ class Links:
         if path not in self.places:
             self.places[path] = spec_places(self.root, self.commit, path)
         return self.places[path]
+
+    def requirements(self, path):
+        """[(number, name)] for every numbered requirement of the spec at the commit checked."""
+        return [(n, re.sub(r"^###\s+\d+\.\s+", "", place[1]).strip()) for n, place in sorted(self._places(path).items())]
 
     def requirement(self, path, number, name):
         place = self._places(path).get(number)
@@ -326,6 +332,12 @@ def read_agent(agent, text, where):
             raise Refused(cannot_read(agent, where, number, line))
     while report["commands"] and not report["commands"][-1].strip():
         report["commands"].pop()
+    seen = set()
+    for example in report["examples"]:
+        if key(example) in seen:
+            raise Refused(f"the {agent}'s report on {where} gives requirement {example['number']}'s example "
+                          f"'{example['name']}' twice: start the agent again with the same request")
+        seen.add(key(example))
     return report
 
 
@@ -340,21 +352,28 @@ def entry(example):
     while lines and not lines[-1].strip():
         lines.pop()
     indent = min((len(l) - len(l.lstrip()) for l in lines if l.strip()), default=0)
-    return "\n".join(LABEL.sub(r"\1- **\2:**\3", l[indent:]) for l in lines)
+    shown_lines = []
+    for line in lines:
+        line = line[indent:]
+        labelled = LABEL.sub(r"\1- **\2:**\3", line)
+        # A line that is not a labelled bullet stays indented under the bullet before it, so quoted
+        # output such as a heading can't become part of the report's own layout.
+        shown_lines.append(labelled if labelled != line or not line.strip() else "  " + line)
+    return "\n".join(shown_lines)
 
 
 def key(example):
     return (example["number"], plain(example["name"]))
 
 
-def spec_results(path, verifier, checker, requested, where):
+def spec_results(path, verifier, checker, requested, where, every_requirement=()):
     """[(row, verifier's example or None, checker's example or None)] for one spec, and the notes
     under its table. A row is (number, requirement, example name or None, result)."""
     notes = []
     if verifier is None:
         return [], [f"No verifier reported on {path}."]
     if verifier["error"] is not None:
-        rows = [((n, name, None, "not checked"), None, None) for n, name in requested]
+        rows = [((n, name, None, "not checked"), None, None) for n, name in requested or every_requirement]
         return rows, [f"The verifier checked nothing: {verifier['error']}"]
     theirs = {}
     if checker is None:
@@ -384,13 +403,13 @@ def spec_results(path, verifier, checker, requested, where):
     return rows, notes
 
 
-def counts_line(results, rejected):
+def counts_line(results, rejected, every_spec_checked):
     count = {r: sum(1 for x in results if x == r) for r in ("pass", "fail", "disputed", "not checked")}
     line = (f"**{count['pass']} passed, {count['fail']} failed, {count['disputed']} disputed, "
             f"{count['not checked']} not checked.**")
     if rejected:
         return line + f" The checker rejected {rejected} verdict{'s' if rejected != 1 else ''}."
-    return line + (" The checker agreed with every verdict." if results else "")
+    return line + (" The checker agreed with every verdict." if results and every_spec_checked else "")
 
 
 def laid_out(root, commit, scope, kept):
@@ -405,7 +424,7 @@ def laid_out(root, commit, scope, kept):
     header = [f"- **Spec:** {links.spec(path)}" for path in paths] + [f"- **Commit:** `{links.short}`"]
     if not links.repository:
         header.append(f"- **Links:** {NO_LINKS}")
-    tables, details, commands, every, rejected = [], [], [], [], 0
+    tables, details, commands, every, rejected, unchecked, numbers = [], [], [], [], 0, 0, set()
     for path in paths:
         agents = by_spec[path]
         read = {agent: read_agent(agent, r["text"], path) for agent, r in agents.items()}
@@ -413,7 +432,10 @@ def laid_out(root, commit, scope, kept):
         if verifier and verifier["started"]:
             header.append(f"- **Product:** {verifier['started']}" + (f" ({path})" if len(paths) > 1 else ""))
         requested = (agents.get("verifier") or {}).get("requested") or []
-        rows, notes = spec_results(path, verifier, checker, requested, path)
+        rows, notes = spec_results(path, verifier, checker, requested, path, links.requirements(path))
+        unchecked += bool(checker is None or checker["error"] is not None or verifier is None
+                          or verifier["error"] is not None)
+        numbers.update(row[0][0] for row in rows)
         table = (["", f"{links.spec(path)}"] if len(paths) > 1 else []) + [
             "", "| # | Requirement | Example | Result |", "|--:|---|---|---|"]
         for (number, requirement, name, result), ours, theirs in rows:
@@ -436,8 +458,13 @@ def laid_out(root, commit, scope, kept):
                 fence = "`" * max(3, 1 + max((len(run) for run in re.findall(r"`+", listed)), default=0))
                 commands.append(f"<details>\n<summary>{AGENT_NAMES[agent]}: {path}</summary>\n\n{fence}text\n"
                                 f"{listed}\n{fence}\n\n</details>")
-    result = "\n".join([counts_line(every, rejected)] + tables) + "\n" if paths else ""
-    top = f"# Verify report: {scope}\n\n" + "\n".join(header) + "\n"
+    result = "\n".join([counts_line(every, rejected, unchecked == 0)] + tables) + "\n" if paths else ""
+    title = f"# Verify report: {scope}"
+    if len(paths) == 1 and numbers:
+        listed = [str(n) for n in sorted(numbers)]
+        title += (f", requirement {listed[0]}" if len(listed) == 1 else
+                  ", requirements " + ", ".join(listed[:-1]) + " and " + listed[-1])
+    top = title + "\n\n" + "\n".join(header) + "\n"
     copied = {"Result": [(None, result)] if result else [],
               "Details": details,
               "The repository after the run": [(None, after_the_run(root, commit))],

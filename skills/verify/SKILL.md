@@ -138,7 +138,8 @@ EOF
 
 It prints the file's path first, then the file as written. If it refuses a heading, correct your
 sections and run it again. If it refuses an agent's report as not in its shape, start that agent
-again with the same request, and the checker after a new verifier report, then run `report` again. Never write or edit the file yourself. Its last section says whether a
+again with the same request, and the checker after a new verifier report, then run `report` again;
+if it refuses a second time, stop and give the person its reason. Never write or edit the file yourself. Its last section says whether a
 file in the repository changed during the run, such as a lock file the product rewrote; mention it
 in the reply if one did.
 

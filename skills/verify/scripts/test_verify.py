@@ -321,7 +321,7 @@ class Report(Repo):
         base = self.github()
         text = self.run_both()
         top = text.split("\n## Result", 1)[0]
-        self.assertTrue(top.startswith("# Verify report: mail-pull\n"))
+        self.assertTrue(top.startswith("# Verify report: mail-pull, requirements 1 and 2\n"))
         self.assertIn(f"- **Spec:** [{DOC}]({base})", top)
         self.assertIn(f"- **Commit:** `{self.git('rev-parse', '--short=7', 'HEAD')}`", top)
         self.assertIn("- **Product:** `bin/mail serve`, started", top)
@@ -421,10 +421,39 @@ class Report(Repo):
         self.assertRegex(result, r"\| 2 \| \[Report the count\]\([^)]*\) \| — \| ⚠️ Not checked \|")
         self.assertIn("The verifier checked nothing: no Running the product practice", result)
 
+    def test_verifier_error_with_no_requirements_read_lists_the_specs(self):
+        self.start(DOC)
+        full = os.path.join(self.repo, DOC)
+        self.keep("verifier", full, f"Document: {full}\nError: no practice")
+        code, out, err = self.report("## Caveats\n\n- None.\n")
+        self.assertEqual(code, 0, err)
+        result = self.section(self.written(out)[1], "Result")
+        self.assertIn("2 not checked.**", result)
+        self.assertNotIn("agreed", result)
+
+    def test_duplicate_example_refused(self):
+        verifier = VERIFIER.replace("- No new mail: not checked", "- New mail: not checked")
+        checker = CHECKER.replace("- No new mail: confirmed", "- New mail: confirmed")
+        err = self.refused(verifier=verifier, checker=checker)
+        self.assertIn("New mail", err)
+        self.assertIn("twice", err)
+
+    def test_quoted_lines_stay_inside_their_entry(self):
+        verifier = VERIFIER.replace('  - Saw: "2 stored"\n', '  - Saw: the help text:\n  ## Usage\n')
+        details = self.section(self.run_both(verifier=verifier), "Details")
+        self.assertIn("- **Saw:** the help text:\n  ## Usage\n", details)
+        self.assertNotIn("\n## Usage", details)
+
+    def test_short_commit_is_lengthened_when_ambiguous(self):
+        self.github()
+        links = verify.Links(os.path.realpath(self.repo), self.git("rev-parse", "HEAD"))
+        self.assertEqual(links.short, self.git("rev-parse", "--short=7", "HEAD"))
+
     def test_no_checker_report_leaves_every_example_not_checked(self):
         text = self.run_both(checker=None)
         result = self.section(text, "Result")
         self.assertIn("**0 passed, 0 failed, 0 disputed, 3 not checked.**", result)
+        self.assertNotIn("agreed", result)
         self.assertIn("The checker did not report on docs/specs/mail-pull.spec.md", result)
         self.assertIn("**Checker** did not report.", self.section(text, "Details"))
 
