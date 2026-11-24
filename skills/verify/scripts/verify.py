@@ -460,7 +460,7 @@ def laid_out(root, commit, scope, kept):
                                 f"{listed}\n{fence}\n\n</details>")
     result = "\n".join([counts_line(every, rejected, unchecked == 0)] + tables) + "\n" if paths else ""
     title = f"# Verify report: {scope}"
-    if len(paths) == 1 and numbers:
+    if len(paths) == 1 and numbers and "requirement" not in scope.lower():
         listed = [str(n) for n in sorted(numbers)]
         title += (f", requirement {listed[0]}" if len(listed) == 1 else
                   ", requirements " + ", ".join(listed[:-1]) + " and " + listed[-1])

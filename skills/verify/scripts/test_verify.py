@@ -326,6 +326,13 @@ class Report(Repo):
         self.assertIn(f"- **Commit:** `{self.git('rev-parse', '--short=7', 'HEAD')}`", top)
         self.assertIn("- **Product:** `bin/mail serve`, started", top)
 
+    def test_title_names_no_requirements_when_the_scope_does(self):
+        self.start(DOC)
+        self.both()
+        code, out, err = self.report("## Caveats\n\n- None.\n", scope="mail-pull requirements 1-2")
+        self.assertEqual(code, 0, err)
+        self.assertTrue(self.written(out)[1].startswith("# Verify report: mail-pull requirements 1-2\n"))
+
     def test_counts_line_and_table(self):
         base = self.github()
         result = self.section(self.run_both(), "Result")
