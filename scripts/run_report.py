@@ -46,7 +46,7 @@ HEADINGS = {
         "Contradicts the brief",
         "Problems with the documents",
         "Not built yet",
-        "ADR checks that need a run",
+        "Checks that need a run",
         "Documents to consider deleting",
         "Unfinished spike records",
         "Rejected findings",

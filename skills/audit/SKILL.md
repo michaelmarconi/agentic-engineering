@@ -160,7 +160,7 @@ finding exactly as its agent gave it; you write only your own sections, as Markd
 5. `## Problems with the documents`: the edit that corrects each problem; the problems `documents`
    found are added for you.
 6. `## Not built yet`: for each spec, how many requirements were not found, and their names.
-7. `## ADR checks that need a run`: each, with what to run.
+7. `## Checks that need a run`: each, named by its document, spec or ADR, with what to run.
 8. `## Documents to consider deleting`: the `Built ✅` plans and finished spike records. Nothing
    refers to either, so deleting one leaves no other document wrong.
 9. `## Unfinished spike records`: each `Draft 📝` or `Ready to run 🟢` one, with its date.

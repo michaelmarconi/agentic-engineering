@@ -31,8 +31,8 @@ check. "The run" is one `/audit` from the person's request to its findings.
 7. **Order.** Findings come in this order, grouped by document within each part: documents not
    checked (each auditor that reported an `Error:`, never counted as no drift), drift,
    contradictions with the brief, problems
-   with the documents, requirements not built yet (per spec, the count and names), ADR checks
-   that need a run (with what to run), documents to consider deleting (`Built ✅` plans and
+   with the documents, requirements not built yet (per spec, the count and names), checks
+   that need a run, spec or ADR (each named by its document, with what to run), documents to consider deleting (`Built ✅` plans and
    finished spike records), unfinished spike records with their dates, and rejected findings. A
    part with nothing in it is left out.
 8. **Each correction named.** Each drift finding, each contradiction with the brief and each
