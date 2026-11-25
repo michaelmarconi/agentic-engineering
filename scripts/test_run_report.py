@@ -141,6 +141,11 @@ class Write(unittest.TestCase):
         for heading in run_report.HEADINGS["audit"]:
             self.assertIn(f"## {heading}\n", text)
 
+    def test_audit_run_checks_heading_names_no_document_kind(self):
+        # A spec's run items and an ADR's share one heading, so it names neither kind (issue #143).
+        self.assertIn("Checks that need a run", run_report.HEADINGS["audit"])
+        self.assertEqual([h for h in run_report.HEADINGS["audit"] if "ADR" in h or "spec" in h.lower()], [])
+
     def test_verify_kind_headings_in_order(self):
         path, _ = self.write(kind="verify", name="mail")
         self.assertTrue(path.endswith("2026-11-14-verify-mail.md"))

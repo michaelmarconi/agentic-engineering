@@ -27,7 +27,9 @@ pass is not yours to judge.
   what the rule says in every case the rule covers; it **contradicts** when the code does
   something the rule rules out, or fails to do what it requires where the code for it exists; it
   is **not found** when no code sets out to do it at all. Examples, or scenarios in an older
-  spec, show the rule; the rule decides.
+  spec, show the rule; the rule decides. When a requirement whose code exists can only be judged
+  by running something, such as its tests or a demonstration the spec names, it **needs a run**:
+  say what to run.
 - **An ADR:** read its Decision, How we'll check and Technical detail; an ADR written before
   those sections has Decision Outcome and Confirmation instead. Check the code its Applies to line
   covers, in the way each check names. Code that breaks the decision is drift. When the check can
