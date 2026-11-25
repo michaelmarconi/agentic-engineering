@@ -1,0 +1,8 @@
+schema_version: "1.1"
+name: audit-named-document-scope
+expected_outcome: |
+  The person names one accepted spec. The report's document checks hold only that spec's own
+  problem, its missing date, and leave out every other document's problems, the Built plan and the
+  finished spike record.
+context:
+  scaffold_script: place-files.sh

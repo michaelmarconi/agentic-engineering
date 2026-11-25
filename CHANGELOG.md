@@ -6,6 +6,15 @@ What changed in each version of the plugin, newest first. Versions follow
 past a major version: it says what you need to change in your documents. Before 1.0.0, a
 minor version could need such a change, and its entry said so.
 
+## [1.9.0] - 2026-11-25
+
+### Fixed
+
+- `/agentic:audit` of one named document now reports only that document's own problems under
+  "Problems with the documents", instead of every problem in the repository, and leaves out the
+  documents to consider deleting and the unfinished spike records, which belong to a full audit
+  or a window. A named path that is no lifecycle document is refused when the report is written.
+
 ## [1.8.0] - 2026-11-25
 
 ### Fixed

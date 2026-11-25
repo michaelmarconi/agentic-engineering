@@ -5,7 +5,8 @@ check. "The run" is one `/audit` from the person's request to its findings.
 
 1. **Script first.** The run starts with the audit script's `documents` command, and, for a
    window, its `window` command. Every problem `documents` reports appears among the findings,
-   with the document it names. A refused script run, or one Claude Code doesn't allow, ends the
+   with the document it names; for a named document, only that document's problems appear, and no
+   documents to consider deleting or unfinished spike records are listed. A refused script run, or one Claude Code doesn't allow, ends the
    run with its reason.
 2. **Stops when it must.** A window the script refuses, or a named document that doesn't exist or
    isn't `Accepted 👍`, ends the run with its reason before anything is checked, documents

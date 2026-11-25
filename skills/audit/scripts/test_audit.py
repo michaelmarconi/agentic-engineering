@@ -720,6 +720,54 @@ class Report(Project):
         path, _ = self.written(self.report("", "--scope", "docs/adrs/0001-cents.md"))
         self.assertTrue(path.endswith("2026-11-05-audit-0001-cents.md"))
 
+    def test_named_document_keeps_only_its_own_problems(self):
+        # The spec's link and ADR 0001's name and missing `number:` are theirs, not the named ADR's.
+        self.put("docs/adrs/0002-amounts-in-cents.md", adr(number="0002"))
+        _, text = self.written(self.report("", "--scope", "docs/adrs/0002-amounts-in-cents.md"))
+        problems = text[text.index("## Problems with the documents"):text.index("## Not built yet")]
+        self.assertNotIn("statement-import", problems)
+        self.assertNotIn("0001-cents", problems)
+        self.assertIn("Nothing to report", problems)
+
+    def test_named_document_written_any_way_keeps_its_problems(self):
+        for scope in ("docs/specs/statement-import.spec.md", "./docs/specs/statement-import.spec.md",
+                      os.path.join(self.project, "docs/specs/statement-import.spec.md")):
+            _, text = self.written(self.report("", "--scope", scope))
+            problems = text[text.index("## Problems with the documents"):text.index("## Not built yet")]
+            self.assertIn("docs/specs/statement-import.spec.md: references:", problems, scope)
+            self.assertNotIn("docs/adrs/0001-cents.md: ", problems, scope)
+
+    def test_named_document_relative_to_the_current_folder_keeps_its_problems(self):
+        parent = os.path.dirname(os.path.realpath(self.project))
+        scope = os.path.join(os.path.basename(self.project), "docs/specs/statement-import.spec.md")
+        done = subprocess.run([sys.executable, SCRIPT, "report", "--project", self.project, "--scratchpad",
+                               os.path.dirname(self.data), "--session", "s1", "--now", NOW, "--scope", scope],
+                              input="", capture_output=True, text=True, cwd=parent, env={**os.environ, **GIT_ENV})
+        _, text = self.written(done)
+        problems = text[text.index("## Problems with the documents"):text.index("## Not built yet")]
+        self.assertIn("docs/specs/statement-import.spec.md: references:", problems)
+
+    def test_named_document_that_is_no_lifecycle_document_is_refused(self):
+        done = self.report("", "--scope", "docs/specs/missing.spec.md")
+        self.assertEqual(done.returncode, 1)
+        self.assertIn("docs/specs/missing.spec.md", done.stderr)
+        self.assertEqual(done.stdout, "")
+
+    def test_named_document_with_emoji_first_status_is_named_alone(self):
+        self.put("docs/adrs/0002-amounts-in-cents.md", adr(status="👍 Accepted", number="0002"))
+        self.put("docs/plans/2026-11-01-work.md", plan(status="✅ Built"))
+        _, text = self.written(self.report("", "--scope", "docs/adrs/0002-amounts-in-cents.md"))
+        problems = text[text.index("## Problems with the documents"):text.index("## Not built yet")]
+        self.assertIn("docs/adrs/0002-amounts-in-cents.md: status form:", problems)
+        self.assertNotIn("2026-11-01-work", problems)
+        self.assertNotIn("2 documents", problems)
+
+    def test_window_keeps_every_problem(self):
+        _, text = self.written(self.report("", "--scope", "last 7 days"))
+        problems = text[text.index("## Problems with the documents"):text.index("## Not built yet")]
+        self.assertIn("statement-import.spec.md: references:", problems)
+        self.assertIn("0001-cents.md: number field:", problems)
+
     def test_report_clears_the_record(self):
         self.keep("auditor", "x", "", "old")
         self.written(self.report("", "--scope", "all"))

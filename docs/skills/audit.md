@@ -28,8 +28,9 @@ A run has two parts. The first is quicker and costs less.
 
 **The documents, by script.** A script that ships with the plugin checks every lifecycle document
 as it stands, with no AI involved, so this part takes seconds whatever the size of the
-repository. It always checks every document, whatever window the run was given (see
-[How much a run checks](#how-much-a-run-checks)), and Draft documents too:
+repository. It checks every document, whatever window the run was given, and Draft documents too,
+except when you name one document: then only that document's problems are reported (see
+[How much a run checks](#how-much-a-run-checks)):
 
 - every status is one the lifecycle allows, with its emoji after its word; documents that still
   put the emoji in front, as earlier versions of the plugin did, are listed together as one problem;
@@ -126,7 +127,9 @@ read on the branch you have checked out.
 - `/agentic:audit` checks everything.
 - `/agentic:audit last 7 days` checks the commits whose commit date falls in the last 7 days.
 - `/agentic:audit since <commit>` checks the commits after that commit, not including it.
-- `/agentic:audit <document>` checks one accepted spec or ADR.
+- `/agentic:audit <document>` checks one accepted spec or ADR. Its report lists only that
+  document's problems, and leaves out the plans and spike records to consider deleting and the
+  unfinished spike records, which belong to a full run or a window.
 
 A changed file is any file a window's commits added, changed, renamed or deleted, tests and
 configuration included. For a window, one agent, the audit picker (`agents/audit-picker.md`), reads the changes beside the text of every
