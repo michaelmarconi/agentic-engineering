@@ -6,7 +6,7 @@ What changed in each version of the plugin, newest first. Versions follow
 past a major version: it says what you need to change in your documents. Before 1.0.0, a
 minor version could need such a change, and its entry said so.
 
-## [1.7.0] - 2026-11-25
+## [1.9.0] - 2026-11-25
 
 ### Fixed
 
@@ -14,6 +14,17 @@ minor version could need such a change, and its entry said so.
   "Problems with the documents", instead of every problem in the repository, and leaves out the
   documents to consider deleting and the unfinished spike records, which belong to a full audit
   or a window. A named path that is no lifecycle document is refused when the report is written.
+
+## [1.8.0] - 2026-11-25
+
+### Fixed
+
+- `/agentic:audit`'s report puts checks that need a run under `## Checks that need a run`, each
+  named by its spec or ADR and its requirement, in place of `## ADR checks that need a run`, so a
+  spec's run items no longer sit under a heading that names ADRs. A spec's auditor now lists a
+  requirement as needing a run only when reading the code can't settle it, such as a measured
+  time, taking what to run from the requirement's How we'll check, and judges every other
+  requirement by reading.
 
 ## [1.6.0] - 2026-11-24
 

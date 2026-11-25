@@ -1,0 +1,9 @@
+schema_version: "1.1"
+name: audit-spec-needs-run
+expected_outcome: |
+  The person names one accepted spec, and no ADR exists. Its size limit can be judged by reading
+  the code and agrees; its speed can only be checked by running the benchmark the spec names. The
+  report lists the benchmark under Checks that need a run, named by the spec, under no heading
+  that names ADRs, and runs nothing.
+context:
+  scaffold_script: place-files.sh

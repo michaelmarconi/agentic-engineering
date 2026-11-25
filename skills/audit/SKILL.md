@@ -161,7 +161,7 @@ finding exactly as its agent gave it; you write only your own sections, as Markd
    found are added for you. For a named document, write corrections for its own problems only,
    and only those are added.
 6. `## Not built yet`: for each spec, how many requirements were not found, and their names.
-7. `## ADR checks that need a run`: each, with what to run.
+7. `## Checks that need a run`: each, named by its document, spec or ADR, with what to run.
 8. `## Documents to consider deleting`: for a full audit or a window, the `Built ✅` plans and
    finished spike records. Nothing refers to either, so deleting one leaves no other document wrong.
 9. `## Unfinished spike records`: for a full audit or a window, each `Draft 📝` or `Ready to run 🟢`
