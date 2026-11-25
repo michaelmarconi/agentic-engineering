@@ -89,9 +89,9 @@ class Write(unittest.TestCase):
         self.addCleanup(self.tmp.cleanup)
         self.data = os.path.join(self.tmp.name, "scratchpad", "agentic")
 
-    def write(self, own=None, copied=None, kind="build", name="add-numbers"):
+    def write(self, own=None, copied=None, kind="build", name="add-numbers", top=""):
         return run_report.write(kind, name, "/work/repo", self.data, own or {}, copied or {},
-                                date="2026-11-14")
+                                date="2026-11-14", top=top)
 
     def test_path_and_headings_in_order(self):
         path, lines = self.write({"Choices": "Named it add."})
@@ -146,13 +146,31 @@ class Write(unittest.TestCase):
         self.assertTrue(path.endswith("2026-11-14-verify-mail.md"))
         with open(path, encoding="utf-8") as f:
             text = f.read()
-        self.assertEqual(run_report.HEADINGS["verify"][:6],
-                         ["Commit checked", "Overall result", "Failed", "Disputed", "Not checked", "Passed"])
+        self.assertEqual(run_report.HEADINGS["verify"],
+                         ["Result", "What needs doing", "Caveats", "Details", "The repository after the run",
+                          "Commands"])
         positions = [text.index(f"## {h}\n") for h in run_report.HEADINGS["verify"]]
         self.assertEqual(positions, sorted(positions))
 
+    def test_verify_own_headings_accepted(self):
+        own = run_report.parse("verify", "## What needs doing\n\n1. Add a reset.\n\n## Caveats\n\n- None.\n")
+        self.assertEqual(set(own), {"What needs doing", "Caveats"})
+
+    def test_text_above_the_first_heading(self):
+        path, _ = self.write(kind="verify", name="mail", top="# Verify report: mail\n\n- **Commit:** `abc1234`\n")
+        with open(path, encoding="utf-8") as f:
+            text = f.read()
+        self.assertTrue(text.startswith("# Verify report: mail\n\n- **Commit:** `abc1234`\n\n## Result\n"))
+
+    def test_copied_text_without_a_title_goes_in_as_it_is(self):
+        path, lines = self.write(kind="verify", name="mail", copied={"Result": [(None, "**1 passed.**\n")]})
+        with open(path, encoding="utf-8") as f:
+            text = f.read()
+        self.assertIn("## Result\n\n**1 passed.**\n", text)
+        self.assertIn("Copied: Result (14 characters)", lines)
+
     def test_verify_script_headings_refused_from_claude(self):
-        for heading in ("Commit checked", "What each agent reported", "The repository after the run"):
+        for heading in ("Result", "Details", "The repository after the run", "Commands"):
             with self.assertRaises(run_report.ReportError):
                 run_report.parse("verify", f"## {heading}\n\nmine\n")
 

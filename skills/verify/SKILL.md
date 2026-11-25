@@ -110,35 +110,36 @@ decide. Never settle a dispute yourself, and never read the code or tests to jud
 ## Report
 
 However the run ends once `start` has passed, end with a report file; a run stopped by the script
-writes none, and its reply gives the reason. The script copies every agent's report into it word
-for word and fills the commit checked; you write only your own sections, as Markdown under these
-`##` headings, in this order, each grouped by spec under a `### <spec path>` line, leaving out any
-you have nothing for:
+writes none, and its reply gives the reason. The script lays the report out from the agents'
+reports: a header, the counts and a table with a row for each example, each example's evidence
+from both agents, what changed in the repository and each agent's commands. You write only your
+own two sections, as Markdown under these `##` headings, leaving out either you have nothing for:
 
-1. `## Overall result`: every example passed, or how many failed, are disputed or were not checked.
-2. `## Failed`: each confirmed fail, by requirement and example, with the evidence and its
-   suggested next step: **correct the code**, through `/plan` and `/build` or directly when small;
-   or **return the spec to `Draft 📝`** and change it, through `/spec`, when the product is right
-   and the spec is not.
-3. `## Disputed`: each rejected verdict, with both agents' evidence.
-4. `## Not checked`: each example not checked, with its reason and what would make it checkable,
-   such as a way to set the product's clock; and every requirement of a spec whose agent reported an
-   `Error:`, or that the run stopped before, with why. If the run stopped, say why here.
-5. `## Passed`: each confirmed pass, by requirement and example.
+1. `## What needs doing`: the failed, disputed and not checked examples grouped by cause, one short
+   paragraph per cause naming its examples, then the fixes as a short numbered list. A failure's
+   fix is to **correct the code**, through `/plan` and `/build` or directly when small, or to
+   **return the spec to `Draft 📝`** and change it, through `/spec`, when the product is right and
+   the spec is not. A disputed verdict is the person's to settle. A not checked example's fix is
+   what would make it checkable, such as a way to set the product's clock. Name every requirement
+   of a spec the run stopped before, and why it stopped.
+2. `## Caveats`: a short list of anything that limits what the verdicts show, such as an agent
+   that compared fields rather than whole files.
 
 Give your sections to the script on standard input, with `--commit` set to the commit `start`
 printed and `--scope` set to a few words naming what was checked, such as the spec's name:
 
 ```
 python3 "${CLAUDE_SKILL_DIR}/scripts/verify.py" report --scope "<scope>" --commit <commit> --scratchpad "<your scratchpad folder>" --session "${CLAUDE_SESSION_ID}" <<'EOF'
-## Overall result
+## What needs doing
 
 ...
 EOF
 ```
 
 It prints the file's path first, then the file as written. If it refuses a heading, correct your
-sections and run it again. Never write or edit the file yourself. Its last section says whether a
+sections and run it again. If it refuses an agent's report as not in its shape, start that agent
+again with the same request, and the checker after a new verifier report, then run `report` again;
+if it refuses a second time, stop and give the person its reason. Never write or edit the file yourself. Its last section says whether a
 file in the repository changed during the run, such as a lock file the product rewrote; mention it
 in the reply if one did.
 

@@ -6,6 +6,18 @@ What changed in each version of the plugin, newest first. Versions follow
 past a major version: it says what you need to change in your documents. Before 1.0.0, a
 minor version could need such a change, and its entry said so.
 
+## [1.6.0] - 2026-11-24
+
+### Changed
+
+- `/agentic:verify`'s report is easier to scan. It opens with a short header and one table with a
+  row for each example, giving its requirement, its name and its result (✅ Pass, ❌ Fail,
+  ⚠️ Disputed or ⚠️ Not checked), under one line of counts. When the repository is on GitHub,
+  each requirement and example links to its place in the spec at the commit checked; elsewhere
+  each gives its line number in the spec. Then come what needs doing, grouped by cause, any
+  caveats, and each example's evidence from both agents together. The commands the agents ran
+  are kept last, folded away.
+
 ## [1.5.0] - 2026-11-22
 
 ### Changed

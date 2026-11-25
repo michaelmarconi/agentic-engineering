@@ -77,6 +77,26 @@ class Keeps(Relay):
             ("verifier", "/r/docs/specs/send.spec.md"): "2.1 fail",
         })
 
+    def test_requested_requirements_kept_with_the_verifiers_report(self):
+        kind = ("agentic:verifier", "Document: /r/docs/specs/mail.spec.md\nRepository: /r\nRequirements:\n"
+                                    "1. Pull new mail\n3. Report the count\n")
+        self.agent(kind, "Document: /r/docs/specs/mail.spec.md\nError: no practice")
+        self.assertEqual(self.reports()[0]["requested"], [[1, "Pull new mail"], [3, "Report the count"]])
+
+    def test_new_verifier_report_drops_the_checkers_report_on_the_same_spec(self):
+        self.agent(VERIFIER, "1.1 fail")
+        self.agent(CHECKER, "1.1 confirmed")
+        self.agent(OTHER_SPEC, "2.1 fail")
+        self.agent(("agentic:verify-checker", OTHER_SPEC[1].replace("Requirements:", "x")), "2.1 confirmed")
+        self.agent(VERIFIER, "1.1 pass")
+        got = {(r["agent"], r["document"]) for r in self.reports()}
+        self.assertEqual(got, {("verifier", "/r/docs/specs/mail.spec.md"), ("verifier", "/r/docs/specs/send.spec.md"),
+                               ("verify-checker", "/r/docs/specs/send.spec.md")})
+
+    def test_checker_keeps_no_requested_requirements(self):
+        self.agent(CHECKER, "1.1 confirmed")
+        self.assertEqual(self.reports()[0]["requested"], [])
+
     def test_report_kept_word_for_word(self):
         report = "Result\n\n| a | \"b\" |\n  indented\n"
         self.agent(VERIFIER, report)

@@ -3,7 +3,8 @@
 `hand_over.py`, `audit.py report` and `verify.py report` use this module; it has no command of its own. A report is
 one Markdown file with one `##` heading per item the skill lists, in that order. Claude's own
 sections arrive as Markdown under those headings, and the reports of scripts and agents arrive as
-text that goes into the file word for word, as `###` subsections under the heading they belong to.
+text that goes into the file word for word, as `###` subsections under the heading they belong to,
+or, given no title, as they are. Text given as `top`, such as a title, goes above the first heading.
 A heading only a script fills cannot come from Claude, so Claude cannot write its own version of a
 copied report.
 
@@ -51,21 +52,19 @@ HEADINGS = {
         "Rejected findings",
     ],
     "verify": [
-        "Commit checked",
-        "Overall result",
-        "Failed",
-        "Disputed",
-        "Not checked",
-        "Passed",
-        "What each agent reported",
+        "Result",
+        "What needs doing",
+        "Caveats",
+        "Details",
         "The repository after the run",
+        "Commands",
     ],
 }
 # Headings only a script fills: Claude's text under one is refused.
 COPIED_ONLY = {
     "build": {"The hand-over script's report"},
     "audit": set(),
-    "verify": {"Commit checked", "What each agent reported", "The repository after the run"},
+    "verify": {"Result", "Details", "The repository after the run", "Commands"},
 }
 NOTHING = "Nothing to report."
 HEADING = re.compile(r"^## (?P<title>.+?)[ \t]*$")
@@ -185,29 +184,31 @@ def parse(kind, text):
     return sections
 
 
-def render(kind, own, copied):
-    parts = []
+def render(kind, own, copied, top=""):
+    parts = [top.strip("\n") + "\n"] if top.strip() else []
     for heading in HEADINGS[kind]:
         body = []
         if own.get(heading, "").strip():
             body.append(own[heading].strip("\n") + "\n")
         for title, text in copied.get(heading, []):
-            body.append(f"### {title}\n\n{text}" + ("" if text.endswith("\n") else "\n"))
+            body.append((f"### {title}\n\n" if title is not None else "") + text
+                        + ("" if text.endswith("\n") else "\n"))
         parts.append(f"## {heading}\n\n" + ("\n".join(body) if body else NOTHING + "\n"))
     return "\n".join(parts)
 
 
-def write(kind, name, repository, root, own, copied, date):
+def write(kind, name, repository, root, own, copied, date, top=""):
     """Write the report and return (path, the lines to print for Claude).
 
     `own` is Claude's {heading: text}; `copied` is {heading: [(title, text), ...]}, each text
-    written word for word."""
+    written word for word, under a `###` title unless the title is None; `top` goes above the
+    first heading."""
     unknown = [h for h in copied if h not in HEADINGS[kind]]
     if unknown:
         raise ReportError(f"unknown heading {unknown[0]!r}")
     folder = report_folder(root, repository)
     base = f"{date}-{kind}-{safe(name)}"
-    text = render(kind, own, copied)
+    text = render(kind, own, copied, top)
     number = 1
     while True:
         path = os.path.join(folder, base + (f"-{number}" if number > 1 else "") + ".md")
@@ -225,6 +226,6 @@ def write(kind, name, repository, root, own, copied, date):
     lines.append("Headings: " + "; ".join(HEADINGS[kind]))
     for heading in HEADINGS[kind]:
         for title, body in copied.get(heading, []):
-            lines.append(f"Copied: {title} ({len(body)} characters)")
+            lines.append(f"Copied: {heading if title is None else title} ({len(body)} characters)")
     lines += ["", "=== THE REPORT AS WRITTEN ===", text.rstrip("\n"), "=== END OF THE REPORT ==="]
     return path, lines

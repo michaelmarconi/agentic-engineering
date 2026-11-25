@@ -27,13 +27,16 @@ check. "The run" is one `/verify` from the person's request to its reply.
    agent's own helper or setup is not checked, never fail.
 6. **Only confirmed verdicts stand.** A verdict the checker confirmed stands. One it rejected is
    reported as disputed, with both agents' evidence, for the person to decide. A spec whose
-   verifier or checker reported an `Error:` is reported as not checked, never as passed.
-7. **Each failure names its next step.** Each failed verdict names one: correct the code, through
-   `/plan` and `/build` or directly when small; or return the spec to `Draft 📝` and change it,
-   through `/spec`, when the product is right and the spec is not.
+   verifier or checker reported an `Error:` is reported as not checked, never as passed. The
+   script's report table gives these results; the run never restates them otherwise.
+7. **Each failure names its next step.** The report's "What needs doing" groups the failed,
+   disputed and not checked examples by cause, with the fixes as a short numbered list. Each
+   failure's fix is one of: correct the code, through `/plan` and `/build` or directly when small;
+   or return the spec to `Draft 📝` and change it, through `/spec`, when the product is right and
+   the spec is not.
 8. **The report holds it all.** The report file is written by the script's `report` command, with
-   the commit `start` printed and the overall result, then the failed, disputed, not checked and
-   passed verdicts, in that order, grouped by spec.
+   the commit `start` printed, from agents' reports in the shape their definitions give; the run
+   writes only its "What needs doing" and "Caveats" sections.
 9. **Short reply.** The reply is under 175 words: the outcome, at most five bullets of at most 15
    words each, and the report file's full path. It never pastes the report.
 10. **Changes nothing.** The run writes, edits and deletes nothing in the repository, sets no

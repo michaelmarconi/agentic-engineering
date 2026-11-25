@@ -6,7 +6,8 @@ Claude Code runs it on PostToolUse for the Agent tool and a subagent's SubagentH
 on SubagentStop. RUNS names each skill's agents. It keeps the report of each, keyed by the agent's
 type, the document on its request's `Document:` line (none for the audit picker) and, for the
 audit checker, which report it was given to check (`AUDIT REPORT` or `BRIEF REPORT`), since one
-document can have both. An agent run again under the same key replaces its earlier report. In a
+document can have both. An agent run again under the same key replaces its earlier report, and a
+verifier's new report also drops the checker's report on the same spec, which was of the old one. In a
 Claude project thread the report is the one the agent handed back. An agent that runs in the
 background is kept from the event that says it finished, joined to its launch by its id, as
 build_relay.py does (see subagent_report.py). A report that arrives before its launch is held
@@ -89,7 +90,7 @@ def save(path, record):
 
 def reports(data, session, run):
     """The session's kept reports of one skill's agents, in the order they were first kept:
-    [{agent, document, kind, text}]."""
+    [{agent, document, kind, requested, text}]."""
     path = record_path(data, session, run)
     return list(load(path)["reports"].values()) if path else []
 
@@ -107,7 +108,7 @@ def run_of(value):
 
 
 def identity(tool_input):
-    """(skill, {agent, document, kind}) for one of RUNS' agents' requests, or (None, None)."""
+    """(skill, {agent, document, kind, requested}) for one of RUNS' agents' requests, or (None, None)."""
     run, agent = run_of(tool_input.get("subagent_type"))
     if not agent:
         return None, None
@@ -115,13 +116,33 @@ def identity(tool_input):
     first = prompt.strip().splitlines()[0] if prompt.strip() else ""
     document = first[len("Document:"):].strip() if first.startswith("Document:") else ""
     kind = next((k for k in RUNS[run]["kinds"].get(agent, ()) if f"=== {k} ===" in prompt), "")
-    return run, {"agent": agent, "document": document, "kind": kind}
+    return run, {"agent": agent, "document": document, "kind": kind, "requested": requested(prompt)}
+
+
+def requested(prompt):
+    """[[number, name]] for the `<number>. <name>` lines under a request's `Requirements:` line, as
+    the verify skill names the requirements a verifier is to check, so `verify.py report` can list
+    them as not checked when the verifier checked nothing."""
+    found, listing = [], False
+    for line in prompt.splitlines():
+        if line.strip() == "Requirements:":
+            listing = True
+            continue
+        match = re.match(r"^\s*(\d+)\.\s+(\S.*?)\s*$", line) if listing else None
+        if not match:
+            if listing and line.strip():
+                break
+            continue
+        found.append([int(match.group(1)), match.group(2)])
+    return found
 
 
 def keep(record, who, text):
     if isinstance(text, str) and text.strip():
         key = "|".join((who["agent"], who["document"], who["kind"]))
         record["reports"].pop(key, None)
+        if who["agent"] == "verifier":  # a checker's report is of the verifier's report it was given
+            record["reports"].pop("|".join(("verify-checker", who["document"], "")), None)
         record["reports"][key] = dict(who, text=text)
 
 

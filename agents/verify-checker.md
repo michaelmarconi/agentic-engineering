@@ -53,19 +53,21 @@ confirms nothing and rejects nothing: say so, and the verdict stays as the verif
 
 ## Report
 
-Report in this shape, and nothing else:
+Report in this shape, and nothing else, with one entry for each example in the verifier's report
+and no other, since a script lays the report out from both and refuses a report it cannot read:
 
 ```
 Document: <path>
 
 <requirement number>. <requirement name>
-- <example name>: confirmed | rejected
-  Did: <what you ran, as run>
-  Got: <what came back, quoted exactly, cut to what decides it>
-  Why: <for rejected, why the verdict is wrong, and the verdict you reached>
+- <example name, as the verifier's report writes it>: confirmed | rejected
+  - Did: <what you did to the product, in a plain sentence>
+  - Saw: <what came back, quoted exactly, cut to what decides it>
+  - Why: <for rejected, why the verdict is wrong, and the verdict you reached>
 
 Commands:
 - <every command you ran, in order, exactly as run>
 ```
 
-Leave out `Why:` for a confirmed verdict.
+Leave out `Why:` for a confirmed verdict. Keep long commands and temporary paths out of `Did:`:
+they belong under `Commands:`, which the report keeps folded away.
