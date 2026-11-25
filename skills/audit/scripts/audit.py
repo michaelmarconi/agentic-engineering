@@ -89,7 +89,9 @@ report --scope <what was audited> [--scratchpad <folder>] --session <id>
     under "Documents checked", each auditor's and its checker's under "Drift", the brief checker's
     and its checkers' under "Contradicts the brief", and the problems `documents` finds under
     "Problems with the documents", beside the correction Claude names for each. `--scope` is `all`, the window's
-    words, or the named document's path; `--stopped`, for an audit that stopped before checking
+    words, or the named document's path, read from the project or the current folder, and for a named
+    document only that document's problems are added; a named path that is no lifecycle document is
+    refused. `--stopped`, for an audit that stopped before checking
     anything, adds no document checks. Prints the file's path first, then each heading and each
     copied report with its length.
 
@@ -385,13 +387,15 @@ def number_problems(documents):
     return problems
 
 
-def check_documents(project):
+def check_documents(project, only=None):
+    """Every document's problems, or with `only`, a path relative to the project, that one's alone."""
     project = os.path.realpath(project)
     documents = lifecycle_documents(project)
     problems = []
 
     def add(document, check, detail):
-        problems.append({"document": document, "check": check, "detail": detail})
+        if only is None or document == only:
+            problems.append({"document": document, "check": check, "detail": detail})
 
     accepted = {"specs": [], "adrs": []}
     built, finished, unfinished, emoji_first_documents = [], [], [], []
@@ -454,10 +458,14 @@ def check_documents(project):
             add(relative, "references", wrong)
     if emoji_first_documents:
         count = len(emoji_first_documents)
-        add(f"{count} document{'s' if count > 1 else ''}", "status form",
-            f"the status emoji comes before the word, as it did in earlier versions of the plugin; move "
-            f"it after the word, as in `{ACCEPTED}`, an edit to the status line alone that the plugin "
-            f"allows on any document, decided ones included: {', '.join(emoji_first_documents)}")
+        detail = (f"the status emoji comes before the word, as it did in earlier versions of the plugin; move "
+                  f"it after the word, as in `{ACCEPTED}`, an edit to the status line alone that the plugin "
+                  f"allows on any document, decided ones included")
+        if only is None:
+            problems.append({"document": f"{count} document{'s' if count > 1 else ''}", "check": "status form",
+                             "detail": f"{detail}: {', '.join(emoji_first_documents)}"})
+        elif only in emoji_first_documents:
+            add(only, "status form", detail)
     for document, detail in supersede_problems(documents):
         add(document, "supersede", detail)
     for document, detail in overlap_problems(project, documents):
@@ -486,6 +494,22 @@ def scope_name(scope):
     if scope.endswith(".md"):
         return os.path.splitext(os.path.basename(scope))[0]
     return scope
+
+
+def named(project, scope):
+    """The named document's path relative to the project, or None for a full audit or a window.
+
+    A relative path is read from the project first, then from the current folder, since the person
+    may name the document either way when the audit runs from another folder."""
+    if not scope.endswith(".md"):
+        return None
+    documents = lifecycle_documents(project)
+    tries = [scope] if os.path.isabs(scope) else [os.path.join(project, scope), os.path.abspath(scope)]
+    for path in tries:
+        relative = shown(project, os.path.realpath(path))
+        if relative in documents:
+            return relative
+    raise Refused(f"{scope} is not a lifecycle document in {project}")
 
 
 def shown(project, path):
@@ -525,8 +549,8 @@ def report(project, scope, data, session, own_text, now, stopped=False):
     project = os.path.realpath(project)
     try:
         own = run_report.parse("audit", own_text)
-        copied = copied_reports(project, agent_relay.reports(data, session, "audit"),
-                                [] if stopped else check_documents(project)["problems"])
+        problems = [] if stopped else check_documents(project, named(project, scope))["problems"]
+        copied = copied_reports(project, agent_relay.reports(data, session, "audit"), problems)
         _, lines = run_report.write("audit", scope_name(scope), project, data, own, copied,
                                     date=now.date().isoformat())
     except run_report.ReportError as error:

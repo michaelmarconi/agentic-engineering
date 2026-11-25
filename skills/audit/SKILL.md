@@ -158,12 +158,14 @@ finding exactly as its agent gave it; you write only your own sections, as Markd
 4. `## Contradicts the brief`: each confirmed contradiction, named the same way, with its suggested
    correction. Only the person decides which side moves.
 5. `## Problems with the documents`: the edit that corrects each problem; the problems `documents`
-   found are added for you.
+   found are added for you. For a named document, write corrections for its own problems only,
+   and only those are added.
 6. `## Not built yet`: for each spec, how many requirements were not found, and their names.
 7. `## ADR checks that need a run`: each, with what to run.
-8. `## Documents to consider deleting`: the `Built ✅` plans and finished spike records. Nothing
-   refers to either, so deleting one leaves no other document wrong.
-9. `## Unfinished spike records`: each `Draft 📝` or `Ready to run 🟢` one, with its date.
+8. `## Documents to consider deleting`: for a full audit or a window, the `Built ✅` plans and
+   finished spike records. Nothing refers to either, so deleting one leaves no other document wrong.
+9. `## Unfinished spike records`: for a full audit or a window, each `Draft 📝` or `Ready to run 🟢`
+   one, with its date.
 10. `## Rejected findings`: each, briefly, with the checker's reason.
 
 Give your sections to the script on standard input, with `--scope` set to `all`, the window's
