@@ -27,9 +27,10 @@ pass is not yours to judge.
   what the rule says in every case the rule covers; it **contradicts** when the code does
   something the rule rules out, or fails to do what it requires where the code for it exists; it
   is **not found** when no code sets out to do it at all. Examples, or scenarios in an older
-  spec, show the rule; the rule decides. When a requirement whose code exists can only be judged
-  by running something, such as its tests or a demonstration the spec names, it **needs a run**:
-  say what to run.
+  spec, show the rule; the rule decides. A requirement whose code exists **needs a run** only
+  when reading the code cannot settle it, such as a measured time or size: say what to run, from
+  its How we'll check. Judge every requirement that reading can settle, even one its tests check;
+  one that needs a run is not counted as agreeing.
 - **An ADR:** read its Decision, How we'll check and Technical detail; an ADR written before
   those sections has Decision Outcome and Confirmation instead. Check the code its Applies to line
   covers, in the way each check names. Code that breaks the decision is drift. When the check can
@@ -56,7 +57,7 @@ Not found:
 - <requirement name>
 
 Needs a run:
-- <what to run, and what it would show>
+- <requirement name, or the ADR's decision>: <what to run, and what it would show>
 ```
 
 Write "None." under a heading with nothing in it. Report only problems: never list what agrees.
