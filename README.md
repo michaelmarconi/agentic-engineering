@@ -97,8 +97,9 @@ The plugin works through three parts:
   agents, whose work is harder.
 - **Hooks:** small checks Claude Code runs automatically. They give Claude the lifecycle rules at
   the start of every session in a repository that has a brief or a spec, refuse any status
-  change the lifecycle does not allow, and refuse a pull request description with a link too long
-  for GitHub to show as a link.
+  change the lifecycle does not allow, refuse a pull request description with a link too long
+  for GitHub to show as a link, and remind Claude to update its progress list each time a helper
+  agent finishes.
 
 [The lifecycle rules](docs/lifecycle.md) describe all of it in full. Read them before you edit
 documents by hand.

@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: build-shows-progress
+expected_outcome: |
+  On the command line, the build of a three-requirement plan runs for many minutes without the person. Once its checks pass it puts the steps steps.py lists from the plan on Claude Code's task list, the three requirements in order then the reviews, corrections, correction check and hand-over, before writing the first test, names each requirement's step to before_code.py, and updates the list after each requirement and after the reviews.
+context:
+  scaffold_script: place-files.sh

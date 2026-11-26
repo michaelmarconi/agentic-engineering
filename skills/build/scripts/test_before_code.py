@@ -233,5 +233,74 @@ class RulesReprintedTest(unittest.TestCase):
         self.assertNotIn("Rules that hold", result.stdout)
 
 
+PLAN = """---
+type: Plan
+status: Ready to build 🟢
+date: 2026-11-26
+---
+
+# Read the files
+
+## Specs
+
+- [Reading](../specs/reading.spec.md)
+  - [Reading time](../specs/reading.spec.md#1-reading-time)
+  - [Empty file](../specs/reading.spec.md#2-empty-file)
+
+## ADRs
+
+None.
+"""
+
+
+class StepLineTest(unittest.TestCase):
+    """With --plan and --step, the output starts by naming the step out of the build's total
+    (docs/adrs/0063)."""
+
+    git, write, run_script = TestsFailTest.git, TestsFailTest.write, TestsFailTest.run_script
+
+    def setUp(self):
+        TestsFailTest.setUp(self)
+        folder = tempfile.mkdtemp()
+        self.plan = os.path.join(folder, "2026-11-26-reading.md")
+        with open(self.plan, "w", encoding="utf-8") as handle:
+            handle.write(PLAN)
+
+    def test_the_output_starts_with_the_step_out_of_the_total(self):
+        self.write("tests/test_new.py", FAILING)
+        result = self.run_script("--plan", self.plan, "--step", "2", "tests/test_new.py")
+        self.assertEqual(result.returncode, 0, result.stdout)
+        self.assertEqual(result.stdout.splitlines()[0], "Step 2 of 6: Empty file")
+
+    def test_refused_tests_still_name_the_step(self):
+        self.write("tests/test_new.py", PASSING)
+        result = self.run_script("--plan", self.plan, "--step", "1", "tests/test_new.py")
+        self.assertEqual(result.returncode, 1)
+        self.assertEqual(result.stdout.splitlines()[0], "Step 1 of 6: Reading time")
+
+    def test_without_them_no_step_is_named(self):
+        self.write("tests/test_new.py", FAILING)
+        self.assertNotIn("Step ", self.run_script("tests/test_new.py").stdout)
+
+    def test_one_without_the_other_is_a_usage_error(self):
+        self.write("tests/test_new.py", FAILING)
+        for args in (("--plan", self.plan), ("--step", "1")):
+            result = self.run_script(*args, "tests/test_new.py")
+            self.assertEqual(result.returncode, 2, args)
+            self.assertIn("--plan and --step go together", result.stdout)
+
+    def test_a_step_that_is_not_a_requirement_is_a_usage_error(self):
+        self.write("tests/test_new.py", FAILING)
+        result = self.run_script("--plan", self.plan, "--step", "3", "tests/test_new.py")
+        self.assertEqual(result.returncode, 2)
+        self.assertIn("give 1 to 2", result.stdout)
+
+    def test_a_step_the_plan_does_not_have_is_a_usage_error(self):
+        self.write("tests/test_new.py", FAILING)
+        result = self.run_script("--plan", self.plan, "--step", "9", "tests/test_new.py")
+        self.assertEqual(result.returncode, 2)
+        self.assertIn("give 1 to 2", result.stdout)
+
+
 if __name__ == "__main__":
     unittest.main()
