@@ -2,9 +2,10 @@
 # Change status only through the agentic plugin's skills, which check each change; a change made by hand is not checked.
 type: ADR
 number: 0052
-status: Accepted 👍
-date: 2026-11-19
+status: Superseded ↪️
+date: 2026-11-26
 supersedes: 0038
+superseded-by: 0060
 ---
 
 # Ask at the end of a failing build whether to accept its open findings
