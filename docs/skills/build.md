@@ -10,25 +10,21 @@ and writes the code and tests it describes on a
 branch of its own, has the result reviewed, and hands the branch back to you.
 
 ```mermaid
-flowchart LR
-    Check[Check before starting] -->|a check fails| Stop[Stop and say why]
-    Check --> Branch[Use or make a build branch]
+flowchart TD
+    Check[Checks before starting] -->|a check fails| Stop[Stop and say why]
     Check -->|not signed off| Ask[Ask: build anyway?]
     Ask -->|stop| Stop
-    Ask -->|build anyway| Branch
-    Branch --> Build[Build: tests first, commit as it goes]
+    Ask -->|build anyway| Build
+    Check --> Build[Build on its own branch, tests first]
     Build --> Review[Three reviews]
+    Review -->|all passed| Built[Mark the plan Built]
     Review --> Correct[Correct once, then check the corrections]
-    Review -->|all passed| Built
-    Correct -->|passed| Built[Mark the plan Built]
+    Correct -->|passed| Built
+    Correct -->|findings open| Walk[Go through them with you]
+    Walk -->|you say Built| Built
+    Walk -->|you stop| Hand
     Built --> Hand[Hand over the branch]
-    Correct -->|failed| Hand
     Hand -.->|you| Verify[Verify, then merge]
-    Hand -.->|you, if findings are open| Sort[Sort them out, then rerun /build]
-    Sort -.-> Check
-    Correct -->|failed, and you accept it as it stands| Built
-    Verify ~~~ Pad["#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;"]
-    style Pad fill:none,stroke:none
 ```
 
 ## Your practices, and where `/build` stops
@@ -225,38 +221,16 @@ tell them apart, a plugin hook gives it the lines the build changed, file by fil
 `src/parser.ts: 40-52, 88`, and it grades each outside finding high, medium or low. Outside
 findings never fail the check on their own.
 
-In outline, the build goes through its own findings first, then those outside it, then asks one
-last question:
-
 ```mermaid
-flowchart LR
-    Check[Correction check] --> Own[The build's own findings]
-    Own --> Outside[Findings outside this build]
-    Outside --> Last[Last question]
-```
-
-Going through findings works the same way for both groups, round by round:
-
-```mermaid
-flowchart LR
-    Ask[One question per finding] --> Fix[Fixes made on the branch]
+flowchart TD
+    Check[Correction check] --> Ask[One question per finding]
+    Ask --> Fix[Fixes made on the branch]
     Fix --> Recheck[Check only what changed]
     Recheck -->|raises more| Ask
-```
-
-Findings outside this build are first summed up in one question:
-
-```mermaid
-flowchart LR
-    Summary[How many, how severe] -->|go through them| Ask[One question per finding]
+    Recheck -->|the build's own are done| Summary[Outside this build: how many, how severe]
+    Summary -->|go through them| Ask
     Summary -->|carry on| Last[Last question]
-```
-
-And the last question has three answers:
-
-```mermaid
-flowchart LR
-    Last[Last question] -->|Built| Built[Plan marked Built]
+    Last -->|Built| Built[Plan marked Built]
     Last -->|one more review| Reviews[Three reviews afresh]
     Last -->|stop| Ready[Plan stays Ready to build]
 ```
