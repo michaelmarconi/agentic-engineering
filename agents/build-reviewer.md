@@ -18,7 +18,8 @@ started, for rubric check 3.
 
 Every relative path below, such as `AGENTS.md`, is in the repository that holds the plan, the
 folder its `docs/` folder is in: for `/r/docs/plans/p.md`, read `/r/AGENTS.md`. That is not always
-the folder you start in, which can be one level above the repository.
+the folder you start in, which can be one level above the repository, so run each git command
+below in it, as `git -C <that folder> ...`.
 
 Read:
 - The plan.

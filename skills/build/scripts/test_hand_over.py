@@ -668,6 +668,26 @@ class OpenFindings(Repo):
         self.assertIn('- "B" in src/b.py:2: low', out)
         self.assertNotIn('"C"', out)
 
+    def test_continuation_or_item_that_starts_like_a_label_is_not_one(self):
+        check = ("Result: FAIL\n\nCorrections:\n- \"A\": not made, because the reviewer said\n"
+                 "suggestions in the review were wrong:\n* Corrections to the parser: not made, for these reasons:\n"
+                 "- \"B\": not made\n")
+        self.failed_report(check=check)
+        code, out = self.run_open()
+        self.assertEqual(code, 0, out)
+        for line in check.splitlines()[3:]:
+            self.assertIn(line, out)
+
+    def test_bullets_indented_under_an_item_stay_with_it(self):
+        check = ("Result: FAIL\n\nCorrections:\n  - \"A\": not made, because:\n    - the spec is unclear\n"
+                 "    - see R3\n  - \"B\": made\n  - \"C\": left for the person\n")
+        self.failed_report(check=check)
+        code, out = self.run_open()
+        self.assertEqual(code, 0, out)
+        for kept in ("the spec is unclear", "see R3", '"C"'):
+            self.assertIn(kept, out)
+        self.assertNotIn('"B"', out)
+
     def test_failed_check_whose_findings_cannot_be_read_says_so(self):
         self.failed_report(check="Result: FAIL\n\nThe corrections were not all made; see above.\n")
         code, out = self.run_open()
