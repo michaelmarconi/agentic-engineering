@@ -24,6 +24,11 @@ For each skills/<folder>/SKILL.md under the given plugin root (default: this plu
   holds each of SHOW_PLACES word for word, and no skill holds either of OLD_SHOW_RULES, the
   sentences the pointers replaced.
 
+- the skills that work for minutes without the person (PROGRESS_SKILLS) hold PROGRESS_RULE word
+  for word, which points to the lifecycle page's "Showing progress" section, so each shows its
+  progress the same way in each place (docs/adrs/0062). That section holds each of PROGRESS_PLACES
+  word for word and names each of those skills, as /<skill>, with its steps.
+
 - the skills that write a lifecycle document (DOCUMENT_SKILLS) hold TYPE_RULE word for word, so
   none puts the document's type in its title, and PROPOSED_RULE, so no open question is ever left
   without a proposed answer or what would settle it, laid out as ADR 0030 says.
@@ -320,6 +325,25 @@ OLD_SHOW_RULES = (
     "always name each one's full path; never send them to a code-hosting site to read it.",
     "if the app you run in can show them a file in a viewer, show the report file there;",
 )
+# How a long run shows its progress in each place the plugin runs, written once, in its own section
+# of the lifecycle page, for PROGRESS_RULE to point to (docs/adrs/0062). The skills that work for
+# minutes without the person, named there with their steps, each hold the pointer.
+PROGRESS_RULE = (
+    "From here, show your progress as the \"Showing progress\" section of "
+    "`${CLAUDE_PLUGIN_ROOT}/docs/lifecycle.md` says."
+)
+PROGRESS_HEADING = "## Showing progress"
+PROGRESS_PLACES = (
+    "**Claude Code command line:** the agent fills the live task list Claude Code shows, with its "
+    "task tools.",
+    "**Claude Code desktop:** the agent fills the same task list, with the same tools.",
+    "**Claude project thread:** the agent fills the checklist the app shows, with the tool the "
+    "thread gives it for that.",
+    "**With no such list:** the agent prints the numbered steps, then one summary line as each step "
+    "ends.",
+)
+PROGRESS_SKILLS = ("build", "audit", "verify", "spike", "deploy") + tuple(
+    skill for skill in REVIEWING_SKILLS if skill not in ("spike", "feedback", "release"))
 REPOSITORY_LINE = "`Repository: <folder>`"
 # Every agent given a `Repository:` line: the document reviewers the review relay hook knows (all
 # but /feedback's and /release's, whose drafts are never files), its two checkers, and the audit's three.
@@ -404,18 +428,33 @@ def lifecycle_problems(text):
     return found + show_problems(text)
 
 
-def show_problems(text):
-    """What the lifecycle page's Showing a file to you section lacks of the three places."""
+def page_section(text, heading):
+    """The lifecycle page's `## ` section under that heading, without it, or None if it has none."""
     page = f"\n{text}"
-    if f"\n{SHOW_HEADING}\n" not in page:
-        return [f'no "{SHOW_HEADING}" heading']
-    section = page[page.index(f"\n{SHOW_HEADING}\n") + 1:]
-    section = section[len(SHOW_HEADING):]
-    if "\n## " in section:
-        section = section[:section.index("\n## ")]
-    return [f'show place {number} missing: "{SHOW_HEADING[3:]}" must hold '
-            f"skill_check.SHOW_PLACES[{number - 1}] word for word"
-            for number, place in enumerate(SHOW_PLACES, 1) if not holds(section, place)]
+    if f"\n{heading}\n" not in page:
+        return None
+    section = page[page.index(f"\n{heading}\n") + 1 + len(heading):]
+    return section[:section.index("\n## ")] if "\n## " in section else section
+
+
+def show_problems(text):
+    """What the lifecycle page's Showing a file to you section lacks of the three places, and its
+    Showing progress section of the places and the skills that show progress."""
+    section = page_section(text, SHOW_HEADING)
+    if section is None:
+        found = [f'no "{SHOW_HEADING}" heading']
+    else:
+        found = [f'show place {number} missing: "{SHOW_HEADING[3:]}" must hold '
+                 f"skill_check.SHOW_PLACES[{number - 1}] word for word"
+                 for number, place in enumerate(SHOW_PLACES, 1) if not holds(section, place)]
+    progress = page_section(text, PROGRESS_HEADING)
+    if progress is None:
+        return found + [f'no "{PROGRESS_HEADING}" heading']
+    found += [f'progress place {number} missing: "{PROGRESS_HEADING[3:]}" must hold '
+              f"skill_check.PROGRESS_PLACES[{number - 1}] word for word"
+              for number, place in enumerate(PROGRESS_PLACES, 1) if not holds(progress, place)]
+    return found + [f'"{PROGRESS_HEADING[3:]}" does not name /{skill}: its table must give its steps'
+                    for skill in PROGRESS_SKILLS if not re.search(rf"/{skill}\b", progress)]
 
 
 def frontmatter(text):
@@ -522,6 +561,9 @@ def problems(folder, text):
     if "agentic:correction-checker" in body and folder not in REVIEWING_SKILLS:
         found.append("starts agentic:correction-checker but is not in REVIEWING_SKILLS: add it there, "
                      "so it must point to the lifecycle page's Review process")
+    if folder in PROGRESS_SKILLS and not holds(body, PROGRESS_RULE):
+        found.append("progress rule missing: a skill that works for minutes without the person must "
+                     "hold skill_check.PROGRESS_RULE word for word where that stretch starts (ADR 0062)")
     reviews_a_file = folder in REVIEWING_SKILLS and "Document: <" in body
     if reviews_a_file and not holds(body, SHOW_RULE):
         found.append("show rule missing: a skill that writes a document must hold "

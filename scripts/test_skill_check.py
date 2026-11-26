@@ -126,7 +126,7 @@ class SkillCheck(unittest.TestCase):
         self.assertEqual(self.check().returncode, 0)
 
     def test_pointer_naming_the_other_ending_fails(self):
-        body = f"# Feedback\n\n{pointer('spec')}\n"
+        body = f"# Feedback\n\n{pointer('spec')}\n\n{PROGRESS_RULE}\n"
         self.put("feedback", skill_md(name="feedback", body=body))
         self.assertFails("feedback/SKILL.md: review pointer missing")
 
@@ -408,7 +408,7 @@ class SkillCheck(unittest.TestCase):
 
     def test_a_skill_pointing_to_a_missing_lifecycle_page_fails(self):
         self.no_lifecycle = True
-        self.put("practices", skill_md(name="practices", body=f"# Practices\n\n{pointer('practices')}\n"))
+        self.put("practices", skill_md(name="practices", body=f"# Practices\n\n{pointer('practices')}\n\n{PROGRESS_RULE}\n"))
         self.assertFails("docs/lifecycle.md missing")
 
     def test_a_skill_starting_the_correction_checker_must_be_a_reviewing_skill(self):
@@ -468,7 +468,7 @@ class SkillCheck(unittest.TestCase):
         self.assertFails("spec/SKILL.md: type rule missing")
 
     def test_document_skill_with_type_rule_passes(self):
-        body = f"# Spec\n\n{TYPE_RULE}\n\n{PROPOSED_RULE}\n\n{RENAME_RULE}\n\n{ASK_RULE}\n\n{SIGNOFF_RULE}\n\n{DATE_RULE}\n\n{pointer('spec')}\n"
+        body = f"# Spec\n\n{TYPE_RULE}\n\n{PROPOSED_RULE}\n\n{RENAME_RULE}\n\n{ASK_RULE}\n\n{SIGNOFF_RULE}\n\n{DATE_RULE}\n\n{pointer('spec')}\n\n{PROGRESS_RULE}\n"
         self.put("spec", skill_md(name="spec", body=body))
         done = self.check()
         self.assertEqual((done.returncode, done.stdout), (0, ""))
@@ -481,9 +481,9 @@ class SkillCheck(unittest.TestCase):
 
     def test_other_skills_need_no_type_rule(self):
         self.put("feedback", skill_md(name="feedback", body=f"# Feedback\n\n{pointer('feedback')}\n"))
-        self.put("audit", skill_md(name="audit", body=f"# Audit\n\n{REPORT_RULE}\n\n{SCRATCHPAD_RULE}\n"))
-        self.put("build", skill_md(name="build", body=f"# Build\n\n{BUILD_ASK_RULE}\n\n{BUILD_ACCEPT_RULE}\n\n{BUILD_PATH_RULE}\n\n{BUILD_REREAD_RULE}\n\n{REPORT_RULE}\n\n{SCRATCHPAD_RULE}\n"))
-        self.put("practices", skill_md(name="practices", body=f"# Practices\n\n{ASK_RULE}\n\n{pointer('practices')}\n"))
+        self.put("audit", skill_md(name="audit", body=f"# Audit\n\n{REPORT_RULE}\n\n{SCRATCHPAD_RULE}\n\n{PROGRESS_RULE}\n"))
+        self.put("build", skill_md(name="build", body=f"# Build\n\n{BUILD_ASK_RULE}\n\n{BUILD_ACCEPT_RULE}\n\n{BUILD_PATH_RULE}\n\n{BUILD_REREAD_RULE}\n\n{REPORT_RULE}\n\n{SCRATCHPAD_RULE}\n\n{PROGRESS_RULE}\n"))
+        self.put("practices", skill_md(name="practices", body=f"# Practices\n\n{ASK_RULE}\n\n{pointer('practices')}\n\n{PROGRESS_RULE}\n"))
         done = self.check()
         self.assertEqual((done.returncode, done.stdout), (0, ""))
 
@@ -545,7 +545,7 @@ class SkillCheck(unittest.TestCase):
         self.assertFails("build/SKILL.md: build-anyway rule missing")
 
     def test_build_with_the_build_ask_rule_passes(self):
-        self.put("build", skill_md(name="build", body=f"# Build\n\n{BUILD_ASK_RULE}\n\n{BUILD_ACCEPT_RULE}\n\n{BUILD_PATH_RULE}\n\n{BUILD_REREAD_RULE}\n\n{REPORT_RULE}\n\n{SCRATCHPAD_RULE}\n"))
+        self.put("build", skill_md(name="build", body=f"# Build\n\n{BUILD_ASK_RULE}\n\n{BUILD_ACCEPT_RULE}\n\n{BUILD_PATH_RULE}\n\n{BUILD_REREAD_RULE}\n\n{REPORT_RULE}\n\n{SCRATCHPAD_RULE}\n\n{PROGRESS_RULE}\n"))
         done = self.check()
         self.assertEqual(done.returncode, 0, done.stdout)
 
@@ -558,13 +558,13 @@ class SkillCheck(unittest.TestCase):
     # The build asks its last question before marking a plan Built with findings open (ADR 0060)
 
     def test_build_without_the_accept_rule_fails(self):
-        self.put("build", skill_md(name="build", body=f"# Build\n\n{BUILD_ASK_RULE}\n\n{BUILD_PATH_RULE}\n\n{REPORT_RULE}\n\n{SCRATCHPAD_RULE}\n"))
+        self.put("build", skill_md(name="build", body=f"# Build\n\n{BUILD_ASK_RULE}\n\n{BUILD_PATH_RULE}\n\n{REPORT_RULE}\n\n{SCRATCHPAD_RULE}\n\n{PROGRESS_RULE}\n"))
         self.assertFails("build/SKILL.md: build accept rule missing")
 
     def test_reworded_accept_rule_fails(self):
         rule = BUILD_ACCEPT_RULE.replace("or stop?", "or leave it?")
         self.assertNotEqual(rule, BUILD_ACCEPT_RULE)
-        self.put("build", skill_md(name="build", body=f"# Build\n\n{BUILD_ASK_RULE}\n\n{rule}\n\n{BUILD_PATH_RULE}\n\n{REPORT_RULE}\n\n{SCRATCHPAD_RULE}\n"))
+        self.put("build", skill_md(name="build", body=f"# Build\n\n{BUILD_ASK_RULE}\n\n{rule}\n\n{BUILD_PATH_RULE}\n\n{REPORT_RULE}\n\n{SCRATCHPAD_RULE}\n\n{PROGRESS_RULE}\n"))
         self.assertFails("build/SKILL.md: build accept rule missing")
 
     # The build's reviews find the plan's repository (ADR 0032)
@@ -576,20 +576,20 @@ class SkillCheck(unittest.TestCase):
     def test_build_path_rule_wrapped_across_lines_passes(self):
         rule = BUILD_PATH_RULE.replace(" the hook ", "\nthe hook ")
         self.assertNotEqual(rule, BUILD_PATH_RULE)
-        self.put("build", skill_md(name="build", body=f"# Build\n\n{BUILD_ASK_RULE}\n\n{BUILD_ACCEPT_RULE}\n\n{rule}\n\n{BUILD_REREAD_RULE}\n\n{REPORT_RULE}\n\n{SCRATCHPAD_RULE}\n"))
+        self.put("build", skill_md(name="build", body=f"# Build\n\n{BUILD_ASK_RULE}\n\n{BUILD_ACCEPT_RULE}\n\n{rule}\n\n{BUILD_REREAD_RULE}\n\n{REPORT_RULE}\n\n{SCRATCHPAD_RULE}\n\n{PROGRESS_RULE}\n"))
         done = self.check()
         self.assertEqual(done.returncode, 0, done.stdout)
 
     # The build re-reads its practices and rules at each requirement
 
     def test_build_without_the_reread_rule_fails(self):
-        self.put("build", skill_md(name="build", body=f"# Build\n\n{BUILD_ASK_RULE}\n\n{BUILD_ACCEPT_RULE}\n\n{BUILD_PATH_RULE}\n\n{REPORT_RULE}\n\n{SCRATCHPAD_RULE}\n"))
+        self.put("build", skill_md(name="build", body=f"# Build\n\n{BUILD_ASK_RULE}\n\n{BUILD_ACCEPT_RULE}\n\n{BUILD_PATH_RULE}\n\n{REPORT_RULE}\n\n{SCRATCHPAD_RULE}\n\n{PROGRESS_RULE}\n"))
         self.assertFails("build/SKILL.md: build re-read rule missing")
 
     def test_reworded_reread_rule_fails(self):
         rule = BUILD_REREAD_RULE.replace("read them before writing the code", "skim them")
         self.assertNotEqual(rule, BUILD_REREAD_RULE)
-        self.put("build", skill_md(name="build", body=f"# Build\n\n{BUILD_ASK_RULE}\n\n{BUILD_ACCEPT_RULE}\n\n{BUILD_PATH_RULE}\n\n{rule}\n\n{REPORT_RULE}\n\n{SCRATCHPAD_RULE}\n"))
+        self.put("build", skill_md(name="build", body=f"# Build\n\n{BUILD_ASK_RULE}\n\n{BUILD_ACCEPT_RULE}\n\n{BUILD_PATH_RULE}\n\n{rule}\n\n{REPORT_RULE}\n\n{SCRATCHPAD_RULE}\n\n{PROGRESS_RULE}\n"))
         self.assertFails("build/SKILL.md: build re-read rule missing")
 
     # Build and audit end with a report file (ADR 0051)
@@ -622,7 +622,7 @@ class SkillCheck(unittest.TestCase):
         self.assertFails("adr/SKILL.md: sign-off rule missing")
 
     def test_brief_has_no_status_so_needs_no_signoff_rule(self):
-        self.put("brief", skill_md(name="brief", body=f"# Brief\n\n{TYPE_RULE}\n\n{PROPOSED_RULE}\n\n{RENAME_RULE}\n\n{ASK_RULE}\n\n{pointer('brief')}\n"))
+        self.put("brief", skill_md(name="brief", body=f"# Brief\n\n{TYPE_RULE}\n\n{PROPOSED_RULE}\n\n{RENAME_RULE}\n\n{ASK_RULE}\n\n{pointer('brief')}\n\n{PROGRESS_RULE}\n"))
         done = self.check()
         self.assertEqual((done.returncode, done.stdout), (0, ""))
 
@@ -645,7 +645,7 @@ class SkillCheck(unittest.TestCase):
         self.assertFails("spike/SKILL.md: date rule missing")
 
     def test_brief_needs_no_date_rule(self):
-        self.put("brief", skill_md(name="brief", body=f"# Brief\n\n{TYPE_RULE}\n\n{PROPOSED_RULE}\n\n{RENAME_RULE}\n\n{ASK_RULE}\n\n{pointer('brief')}\n"))
+        self.put("brief", skill_md(name="brief", body=f"# Brief\n\n{TYPE_RULE}\n\n{PROPOSED_RULE}\n\n{RENAME_RULE}\n\n{ASK_RULE}\n\n{pointer('brief')}\n\n{PROGRESS_RULE}\n"))
         done = self.check()
         self.assertEqual((done.returncode, done.stdout), (0, ""))
 
@@ -655,7 +655,7 @@ class SkillCheck(unittest.TestCase):
     # Every skill that offers diagrams offers them the same way
 
     def adr_body(self, rules):
-        return "# ADR\n\n" + "\n\n".join([TYPE_RULE, PROPOSED_RULE, ASK_RULE, SIGNOFF_RULE, DATE_RULE, RENAME_RULE, pointer("adr"), *rules]) + "\n"
+        return "# ADR\n\n" + "\n\n".join([TYPE_RULE, PROPOSED_RULE, ASK_RULE, SIGNOFF_RULE, DATE_RULE, RENAME_RULE, pointer("adr"), PROGRESS_RULE, *rules]) + "\n"
 
     def test_diagram_skill_with_every_diagram_rule_passes(self):
         self.put("adr", skill_md(name="adr", body=self.adr_body(diagram_rules("ADR"))))
@@ -677,7 +677,7 @@ class SkillCheck(unittest.TestCase):
                       " ".join(diagram_rules("ADR")))
 
     def test_skills_that_offer_no_diagrams_need_no_diagram_rules(self):
-        self.put("brief", skill_md(name="brief", body=f"# Brief\n\n{TYPE_RULE}\n\n{PROPOSED_RULE}\n\n{RENAME_RULE}\n\n{ASK_RULE}\n\n{pointer('brief')}\n"))
+        self.put("brief", skill_md(name="brief", body=f"# Brief\n\n{TYPE_RULE}\n\n{PROPOSED_RULE}\n\n{RENAME_RULE}\n\n{ASK_RULE}\n\n{pointer('brief')}\n\n{PROGRESS_RULE}\n"))
         done = self.check()
         self.assertEqual((done.returncode, done.stdout), (0, ""))
 
