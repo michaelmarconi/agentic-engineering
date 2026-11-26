@@ -189,6 +189,7 @@ plan mode.
 ```
 .github/
   ISSUE_TEMPLATE/      # bug and improvement templates; /feedback reads them from the plugin
+  workflows/checks.yml # the `tests` check every pull request must pass, run by GitHub Actions
   pull_request_template.md # the sections every pull request description holds
 .claude-plugin/
   plugin.json          # plugin manifest; version gates updates for users
@@ -234,6 +235,10 @@ Nothing else belongs at the root without a reason recorded in the change that ad
 ## Workflow
 
 - Work on a branch and open a pull request; it merges once every check below passes.
+  GitHub runs the ones that need no model on every pull request and every push to main, as
+  the `tests` check in `.github/workflows/checks.yml`: the manifest validation, the version
+  check and every script test suite, whatever files the change touched. Run them yourself
+  before you push too, so the check only confirms them. Evals cost money and never run there.
 - Pull request descriptions follow `.github/pull_request_template.md`.
 - Keep links to agent sessions out of the repository's history: no session links or
   "requested by" lines in commit messages or pull request descriptions, whatever an agent's own
