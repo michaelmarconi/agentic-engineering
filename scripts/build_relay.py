@@ -40,7 +40,8 @@ After a check, it saves the person's answers in the build's record, read as revi
 them for documents: on UserPromptSubmit, a message answering a question that ended "... ignore or
 defer?", a tap on a decision card offering the four choices, or else any other message the
 person writes, as a chat message, at most the last 20 (docs/adrs/0064); on PostToolUse for the
-question tool, its answers to questions offering them, leaving out any it marks unanswered. Once the checker has run, its report is kept beside the three reviews, with the
+question tool, its answers to questions offering them, leaving out any it marks unanswered. When
+a check reports, it clears the answers that check was handed, keeping any given while it ran. Once the checker has run, its report is kept beside the three reviews, with the
 plan they were of, and `kept_reports` hands all four to hand_over.py for the build's report file
 (docs/adrs/0034). A review agent may run in the background, which Claude Code
 can choose even when the skill asks for the foreground: its PostToolUse event then only says it
@@ -248,6 +249,9 @@ def start_checker(session, tool_input, cwd, call="check"):
             fresh = load(session) or record
             runs(fresh, "started")[call] = "check"
             fresh["checking"] = current
+            # The answers this check is handed; any the person adds while it runs are kept for
+            # the next check (docs/adrs/0064).
+            fresh["handed"] = len(answers)
             save(session, fresh)
     except OSError:  # the checker still gets the reports; only its own report goes unkept
         pass
@@ -351,7 +355,8 @@ def keep(record, call, part, report):
             record["checked"] = True
             if record.get("checking"):
                 record["last_checked"] = record.pop("checking")
-            record["answers"] = []
+            handed = record.pop("handed", None)
+            record["answers"] = review_relay.answers_of(record)[handed:] if isinstance(handed, int) else []
 
 
 def agent_stopped(session, event):

@@ -79,11 +79,13 @@ feedback, practices, spike or release) and the shared language checker, which ch
   cards keeps its own answer, whatever Claude said after posting them. A message that arrives as a project thread's wake is taken from its
   `<message trigger="true">` tag.
   Once the review has been checked, every other message the person writes is saved too, word for
-  word and in order, against the last "**Question N of M: ...**" line Claude wrote, or "(asked in a
-  message)", so an answer typed in chat instead of on the question tool still reaches the next
-  check; at most the last 20 such messages are kept (docs/adrs/0064). In a project thread only a
-  `<message trigger="true">` tag from the person (`from="human"`, `trust="principal"`) counts, and
-  a background task notice never does. A question the question tool marks unanswered
+  word and in order, against the one "**Question N of M: ...**" line Claude's last message holds,
+  or "(asked in a message)" for none or several, so an answer typed in chat instead of on the
+  question tool still reaches the next check; at most the last 20 such messages are kept, each cut
+  at 4,000 characters (docs/adrs/0064). In a project thread only a `<message trigger="true">` tag
+  from the person (`from="human"`, with no trust but `principal`) counts, for every rule here; a
+  background notice, a command's echo or another agent's message never does, and reminders added
+  after the person's words are left out. A question the question tool marks unanswered
   (`annotations[<question>].unanswered`, as when the person replied in chat) saves nothing.
 - A saved review is kept after its check, and deleted once unchanged for 30 days (see
   saved_records.py), not when the session ends, since a resumed session carries on. A later
@@ -577,9 +579,14 @@ MARKER = "ignore or defer?"
 CHAT_LIMIT = 20  # the most chat messages kept between two checks (docs/adrs/0064)
 # In a project thread only a message the person wrote is theirs; a wake may carry another agent's
 # relay or a system notice instead. Background task notices are not the person's words either.
+# A wake's message from anyone else, or marked with any trust but the person's, is not theirs.
 PERSON_MESSAGE = re.compile(r'<message\b(?=[^>]*\btrigger="true")(?=[^>]*\bfrom="human")'
-                            r'(?=[^>]*\btrust="principal")[^>]*>(.*?)</message>', re.S)
-NOTICE = re.compile(r"\s*<(task-notification|system-reminder)\b")
+                            r'(?![^>]*\btrust="(?!principal")[^"]*")[^>]*>(.*?)</message>', re.S)
+NOTICE = re.compile(r"\s*(<(task-notification|system-reminder|command-name|command-message|command-args"
+                    r"|local-command-[\w-]+|bash-[\w-]+|agent-message|coordinator-relay)\b"
+                    r"|Another Claude session sent a message)")
+REMINDER = re.compile(r"\s*<system-reminder>.*?</system-reminder>\s*", re.S)
+CHAT_LENGTH = 4000  # the most characters of one chat message kept, so a pasted log stays small
 # A tap on a project thread's decision card arrives as this message, naming the option and the
 # card's question; only a card offering the four choices answers a document's question. An option
 # whose words start with a choice, such as "Accept: undo within 24 hours", counts as that choice.
@@ -587,7 +594,6 @@ TAP = re.compile(r'Chose "(.*?)" on the decision card asking "(.*)"\s*$', re.S)
 CHOICES = ("accept", "my own answer", "ignore", "defer")
 CHOICE = re.compile(r"(%s)(?![a-z])" % "|".join(CHOICES), re.I)
 QUESTION_LINE = re.compile(r"\*\*Question \d+ of \d+:[^*\n]*\*\*")
-WAKE_MESSAGE = re.compile(r'<message\b[^>]*\btrigger="true"[^>]*>(.*?)</message>', re.S)
 TAIL = 1 << 20  # the last turn is near the end of the transcript; read at most this much of it
 SAID = ("text", "message")  # where a tool's input holds what Claude says to the person
 
@@ -639,15 +645,28 @@ def last_said(transcript):
     return ""
 
 
+def person_text(prompt):
+    """What the person wrote in a prompt, or None when the prompt holds nothing they wrote: a
+    project thread's wake is taken from its `<message trigger="true">` tag from the person, and
+    a background notice, a command's echo or another agent's message is not theirs; reminders the
+    harness adds after their words are left out."""
+    if not isinstance(prompt, str) or not prompt.strip():
+        return None
+    if re.search(r"<wake\b", prompt):
+        found = PERSON_MESSAGE.search(prompt)
+        return (html.unescape(found.group(1)).strip() or None) if found else None
+    if NOTICE.match(prompt):
+        return None
+    return REMINDER.sub("\n", prompt).strip() or None
+
+
 def message_answer(event):
     """The person's message, when it is a tap on a decision card offering the four choices, paired
     with the card's question, or when the last thing Claude said ended by putting a question to
     them, paired with that question."""
-    prompt = event.get("prompt")
-    if not isinstance(prompt, str) or not prompt.strip():
+    answer = person_text(event.get("prompt"))
+    if answer is None:
         return []
-    wake = WAKE_MESSAGE.search(prompt)
-    answer = html.unescape(wake.group(1)).strip() if wake else prompt
     tap = TAP.match(answer)
     if tap:
         return [{"question": tap.group(2), "answer": answer}] if CHOICE.match(tap.group(1).strip()) else []
@@ -659,26 +678,19 @@ def message_answer(event):
 
 
 def chat_answer(event):
-    """The person's message as an answer typed in chat, paired with the last "**Question N of M:
-    ...**" line Claude wrote, or "(asked in a message)", and marked as a chat message: kept only
+    """The person's message as an answer typed in chat, paired with the "**Question N of M: ...**"
+    line Claude's last message holds, or "(asked in a message)" for none or several, and marked as a chat message: kept only
     after a check (docs/adrs/0064). A tap on a decision card answers only its own card, so it is
     left to message_answer."""
-    prompt = event.get("prompt")
-    if not isinstance(prompt, str) or not prompt.strip():
+    answer = person_text(event.get("prompt"))
+    if answer is None or TAP.match(answer):
         return []
-    if "<wake" in prompt:
-        found = PERSON_MESSAGE.search(prompt)
-        if not found:
-            return []
-        answer = html.unescape(found.group(1)).strip()
-    elif NOTICE.match(prompt):
-        return []
-    else:
-        answer = prompt
-    if not answer or TAP.match(answer):
-        return []
+    if len(answer) > CHAT_LENGTH:
+        answer = answer[:CHAT_LENGTH] + " … (cut)"
+    # A reply to a message asking several questions answers no one of them in particular.
     lines = QUESTION_LINE.findall(last_said(event.get("transcript_path")))
-    return [{"question": lines[-1] if lines else "(asked in a message)", "answer": answer, "chat": True}]
+    return [{"question": lines[0] if len(lines) == 1 else "(asked in a message)", "answer": answer,
+             "chat": True}]
 
 
 def person_answers(event):
