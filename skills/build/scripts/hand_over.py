@@ -47,8 +47,9 @@ uncommitted; and the check lists at least one correction `not made` or `left for
 something broken by a correction, or a finding outside this build. An --accept-open-findings that
 refuses, or whose commit fails, writes no report, so the newest check stays the newest.
 
-The reviews build_relay.py kept stay on record after a hand-over until the plan is marked
-`Built ✅`, so a check after the person's answers still gets them.
+The reviews build_relay.py kept stay on record after a hand-over whose correction check is kept,
+until the plan is marked `Built ✅`, so a check after the person's answers still gets them; a
+hand-over with no check kept, or of a build before sign-off, clears them as before.
 
 Exit codes: 0 when every step that applied succeeded, or --open-findings found findings; 1 when a
 commit, the push or the report file failed, or --reviews-passed was given for a plan that is not
@@ -431,11 +432,11 @@ def main(argv=None):
     mode.add_argument("--reviews-passed", action="store_true",
                       help="every review of the build passed, so mark the plan Built")
     mode.add_argument("--open-findings", action="store_true",
-                      help="print the open findings of the last build's failed correction check, or why "
-                           "none can be accepted; change nothing")
+                      help="print the open findings of the newest correction check, the build's own and then "
+                           "those outside this build, or why none can be accepted; change nothing")
     mode.add_argument("--accept-open-findings", action="store_true",
-                      help="the person accepted the build as it stands: mark the plan Built with the open "
-                           "findings in the commit message, and push")
+                      help="the person chose Built: mark the plan Built with the findings left open and "
+                           "their answers in the commit message, and push")
     parser.add_argument("--release-note", action="append", default=[], metavar="NOTE",
                         help="one sentence for the product's users about what this build gives them, added to "
                              "the last commit's message as a `Release-note:` line; give one per thing they would "
@@ -501,8 +502,10 @@ def main(argv=None):
     name = os.path.splitext(os.path.basename(args.plan))[0]
     try:
         _, report = run_report.write("build", name, repo, root, own, copied, date=today())
-        if any(line.startswith(f"Plan: {args.plan} is now") for line in lines):
-            # Kept until then: a check after the person's answers needs the reviews (docs/adrs/0060).
+        early = own.get("Built before sign-off", "").strip()
+        if any(line.startswith(f"Plan: {args.plan} is now") for line in lines) or "check" not in kept or early:
+            # Kept only while a check leaves findings to go through: a check after the person's
+            # answers needs the reviews again (docs/adrs/0060).
             build_relay.clear(root, args.session)
     except run_report.ReportError as error:
         report = [f"Report not written: {error}"]

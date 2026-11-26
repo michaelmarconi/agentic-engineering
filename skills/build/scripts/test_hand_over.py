@@ -327,14 +327,30 @@ class Report(Repo):
         self.assertNotIn("theirs", text)
         self.assertIn("No report kept.", text)
 
-    def test_kept_reviews_stay_while_the_plan_is_not_built(self):
+    def test_kept_reviews_stay_while_their_check_leaves_findings_open(self):
         # A check after the person's answers needs them again (docs/adrs/0060).
-        self.keep(os.path.realpath(os.path.join(self.dir, PLAN)), {"code": "earlier round"})
+        self.keep(os.path.realpath(os.path.join(self.dir, PLAN)), {"code": "earlier round", "check": "Result: FAIL"})
         self.run_it()
         self.put("src/more.py", "print('more')\n")
         _, out = self.run_it()
         _, text = self.report_file(out)
         self.assertIn("earlier round", text)
+
+    def test_kept_reviews_without_a_check_cleared_once_copied(self):
+        self.keep(os.path.realpath(os.path.join(self.dir, PLAN)), {"code": "earlier round"})
+        self.run_it()
+        self.put("src/more.py", "print('more')\n")
+        _, out = self.run_it()
+        _, text = self.report_file(out)
+        self.assertNotIn("earlier round", text)
+
+    def test_kept_reviews_of_a_build_before_sign_off_cleared_once_copied(self):
+        self.keep(os.path.realpath(os.path.join(self.dir, PLAN)), {"code": "earlier round", "check": "Result: FAIL"})
+        self.run_it(own="## What was built\n\nThe thing.\n\n## Built before sign-off\n\nThe plan is Draft.\n")
+        self.put("src/more.py", "print('more')\n")
+        _, out = self.run_it()
+        _, text = self.report_file(out)
+        self.assertNotIn("earlier round", text)
 
     def test_kept_reviews_cleared_once_the_plan_is_built(self):
         self.keep(os.path.realpath(os.path.join(self.dir, PLAN)), {"code": "earlier round"})

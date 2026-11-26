@@ -1065,6 +1065,19 @@ class Relay(unittest.TestCase):
         self.assertIn("=== ANSWERS ===\nQuestion: Which colour?\nAnswer: Green\n\n"
                       'Question: Why?\nAnswer: Teal — "bright!"\n=== END ANSWERS ===', prompt)
 
+    def test_answers_after_a_build_check_starts_are_not_kept(self):
+        # The build relay keeps answers about a build's findings (docs/adrs/0060).
+        self.checked_once()
+        sys.path.insert(0, HERE)
+        import build_session
+        import plugin_folder
+        plugin_folder.use_event({"scratchpad_dir": os.path.dirname(self.data)})
+        self.addCleanup(plugin_folder.reset)
+        build_session.answers_go_to(self.session, "build")
+        self.answer({"Which colour?": "Green"})
+        self.put(SPEC, "v3\n")
+        self.assertNotIn("Green", self.assertAllowed(self.check())["prompt"])
+
     def test_answers_are_cleared_once_checked(self):
         self.checked_once()
         self.answer({"Which colour?": "Green"})

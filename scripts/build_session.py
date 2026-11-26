@@ -65,6 +65,21 @@ def load(session):
         return None
 
 
+def answers_go_to(session, owner):
+    """Note which relay keeps the person's next answers: "build" once a build's correction check
+    starts, "document" once a document's review or check starts, so neither keeps the other's."""
+    record = load(session)
+    record = record if isinstance(record, dict) else {}
+    record["answers_to"] = owner
+    save(session, record)
+
+
+def answers_to(session):
+    """The relay that keeps the person's answers now: "build", "document" or None."""
+    record = load(session)
+    return record.get("answers_to") if isinstance(record, dict) else None
+
+
 def save(session, record):
     path = record_path(session)
     if not path:
