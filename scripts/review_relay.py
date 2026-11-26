@@ -66,7 +66,8 @@ feedback, practices, spike or release) and the shared language checker, which ch
   renamed since its review, and to move it back (docs/adrs/0036). No refusal asks for another
   review.
 - The person's answers are saved with the latest review of the document reviewed last in the
-  session, word for word: after the question tool returns, its `answers` map, each question's
+  session, word for word, unless a build's correction check started since that document's review
+  or check did, when build_relay.py keeps them instead: after the question tool returns, its `answers` map, each question's
   text paired with the option picked or the text typed, for the questions offered with "Ignore"
   and "Defer" among their options; and, where there is no question tool, as in a Claude project
   thread, the person's next message when the last thing Claude said in its turn, as text or as a
@@ -97,6 +98,7 @@ import re
 import sys
 import tempfile
 
+import build_session
 import repository as repositories
 import saved_records
 import subagent_report
@@ -542,6 +544,8 @@ def keep_answers(session, answers):
     """Add the person's answers to the latest review of the document last reviewed."""
     if not answers or not folder(session) or not os.path.isdir(folder(session)):
         return
+    if build_session.answers_to(session) == "build":
+        return  # answers about a build's findings, which build_relay.py keeps (docs/adrs/0060)
     with locked(session, create=False):
         name = latest_record(session)
         reviews = load(session, name) if name else []
@@ -677,6 +681,8 @@ def handle(event):
     prompt = tool_input.get("prompt") or ""
     named = document(prompt)
     cwd = event.get("cwd") if isinstance(event.get("cwd"), str) and event.get("cwd") else None
+    if when == "PreToolUse" and named and (agent in REVIEWERS or agent in (LANGUAGE, CHECKER)):
+        build_session.answers_go_to(session, "document")
     if agent == CHECKER:
         return start_checker(session, tool_input, cwd) if when == "PreToolUse" else None
     if (agent not in REVIEWERS and agent != LANGUAGE) or not named:

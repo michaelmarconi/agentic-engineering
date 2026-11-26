@@ -247,10 +247,10 @@ def start_checker(session, tool_input, cwd, call="check"):
             fresh = load(session) or record
             runs(fresh, "started")[call] = "check"
             fresh["checking"] = current
-            fresh["answers"] = []
             save(session, fresh)
     except OSError:  # the checker still gets the reports; only its own report goes unkept
         pass
+    build_session.answers_go_to(session, "build")
     blocks = [f"=== {title} ===\n{record['reports'][part]}\n=== END {title} ==="
               for part, title in PARTS]
     extra = (f"\n\n=== REVIEWED COMMIT ===\nReviewed commit: {record['commit']}\n"
@@ -262,7 +262,11 @@ def start_checker(session, tool_input, cwd, call="check"):
     if answers:
         extra += ("\n\n=== ANSWERS ===\n" + "\n".join(f"Question: {a['question']}\nAnswer: {a['answer']}\n"
                                                     for a in answers) + "=== END ANSWERS ===")
-    extra += ("\n\n=== CHANGED LINES ===\n" + "".join(f"{line}\n" for line in changed_lines(folder, current)) +
+    try:
+        changed = changed_lines(folder, current)
+    except Exception:  # a diff this cannot read must not leave the checker without its reports
+        changed = ["Not known: the build's changes could not be read."]
+    extra += ("\n\n=== CHANGED LINES ===\n" + "".join(f"{line}\n" for line in changed) +
               "=== END CHANGED LINES ===\n")
     extra += f"\n=== FILES TO READ ===\nRubric: {RUBRIC}\n=== END FILES TO READ ===\n"
     return {"hookSpecificOutput": {"hookEventName": "PreToolUse", "permissionDecision": "allow",
@@ -289,20 +293,27 @@ def changed_lines(folder, commit):
     base = (git_out(folder, "merge-base", default, commit) or "").strip() if default else ""
     if not base:
         return ["Not known: git does not name the default branch (origin/HEAD)."]
-    diff = git_out(folder, "diff", "-U0", "--no-color", "--no-ext-diff", base, commit) or ""
-    files, name, new = {}, None, False
+    diff = git_out(folder, "-c", "core.quotePath=false", "diff", "-U0", "--no-color", "--no-ext-diff",
+                   "--no-renames", "--src-prefix=a/", "--dst-prefix=b/", base, commit) or ""
+    files, name, new, header = {}, None, False, False
     for line in diff.splitlines():
         if line.startswith("diff --git "):
-            name, new = None, False
-        elif line.startswith("--- "):
+            name, new, header = None, False, True
+        elif header and line.startswith("--- "):
             new = line == "--- /dev/null"
-        elif line.startswith("+++ "):
-            name = None if line == "+++ /dev/null" else line[len("+++ b/"):]
+        elif header and line.startswith("+++ "):
+            path = line[len("+++ "):].rstrip("\t")  # git ends a name holding a space with a tab
+            if path.startswith('"') and path.endswith('"'):
+                # With core.quotePath off, git quotes only a name holding a quote, a backslash or a
+                # control character.
+                path = re.sub(r'\\(.)', r"\1", path[1:-1])
+            name = None if path == "/dev/null" else path[len("b/"):]
             if name is not None:
                 files.setdefault(name, "all (new file)" if new else [])
-        elif name is not None and not new:
+        elif line.startswith("@@"):
+            header = False
             hunk = HUNK.match(line)
-            if hunk:
+            if hunk and name is not None and not new:
                 start, count = int(hunk.group(1)), int(hunk.group(2) or 1)
                 if count:
                     files[name].append(str(start) if count == 1 else f"{start}-{start + count - 1}")
@@ -316,7 +327,7 @@ def keep_answers(session, answers):
         return None
     with locked(session):
         record = load(session)
-        if record and record.get("checked"):
+        if record and record.get("checked") and build_session.answers_to(session) == "build":
             record["answers"] = review_relay.answers_of(record) + answers
             save(session, record)
     return None
@@ -333,6 +344,13 @@ def runs(record, key):
 def keep(record, call, part, report):
     if record["started"].get(call) == part and report.strip():
         record["reports"][part] = report
+        if part == "check":
+            # Only a check that reported counts as done: the next judges what follows its commit,
+            # with the answers given after it (docs/adrs/0060).
+            record["checked"] = True
+            if record.get("checking"):
+                record["last_checked"] = record.pop("checking")
+            record["answers"] = []
 
 
 def agent_stopped(session, event):
@@ -411,9 +429,6 @@ def handle(event):
             with locked(session):
                 record = load(session)
                 if record:
-                    record["checked"] = True
-                    if record.get("checking"):
-                        record["last_checked"] = record.pop("checking")
                     returned(record, str(event.get("tool_use_id") or "check"), "check",
                              event.get("tool_response"))
                     save(session, record)

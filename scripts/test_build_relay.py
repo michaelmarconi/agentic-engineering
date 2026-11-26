@@ -488,6 +488,26 @@ class Corrections(Relay):
         self.assertIn(f"Last checked commit: {second}", self.check()["updatedInput"]["prompt"])
 
 
+    def test_a_check_that_reported_nothing_can_be_run_again(self):
+        self.all_reviews()
+        self.commit("Correct")
+        self.check()
+        self.finish_check()
+        self.commit("Fix one")
+        self.check()
+        self.finish_check(report="")
+        self.assertEqual(self.check()["permissionDecision"], "allow")
+
+    def test_a_review_after_a_check_starts_afresh(self):
+        self.all_reviews()
+        self.commit("Correct")
+        self.check()
+        self.finish_check()
+        self.code_review(report="second round")
+        kept = build_relay.kept_reports(os.path.join(self.tmp.name, "scratchpad", "agentic"), "s1", PLAN, cwd=self.repo)
+        self.assertEqual(sorted(kept), ["code"])
+        self.assertEqual(kept["code"], "second round")
+
 class Answers(Relay):
     """The person's answers after a check reach the next check (ADR 0060)."""
 
@@ -553,6 +573,20 @@ class Answers(Relay):
         self.finish_check()
         self.assertNotIn("=== ANSWERS ===", self.next_check())
 
+    def test_answers_stay_when_the_check_never_ran(self):
+        self.checked()
+        self.answer("Accept")
+        self.commit("Apply the answers")
+        self.check()  # refused at the permission prompt: no PostToolUse follows
+        self.assertIn("Answer: Accept", self.check()["updatedInput"]["prompt"])
+
+    def test_answers_after_a_document_review_starts_are_not_kept(self):
+        # The review relay keeps answers to a document's questions; neither takes the other's.
+        self.checked()
+        build_session.answers_go_to("s1", "document")
+        self.answer("Accept")
+        self.assertNotIn("=== ANSWERS ===", self.next_check())
+
     def test_answers_outside_a_build_are_not_kept(self):
         self.checked()
         build_session.save("s1", {"building": False})
@@ -611,6 +645,32 @@ class ChangedLines(Relay):
         self.all_reviews()
         self.commit("Correct")
         self.assertEqual(self.lines(), [])
+
+    def test_lines_that_look_like_diff_headers_are_read_as_lines(self):
+        text = [f"line {n}" for n in range(1, 21)]
+        text[4] = "++ b/elsewhere.ts"
+        text[6] = "+++ x"
+        self.write("src/parser.ts", text)
+        self.write("src/old.ts", ["-- /dev/null"])
+        self.commit("Build")
+        self.all_reviews()
+        self.commit("Correct")
+        self.assertEqual(self.lines(), ["src/old.ts: 1", "src/parser.ts: 5, 7"])
+
+    def test_a_git_setting_without_prefixes_changes_nothing(self):
+        self.git("config", "diff.noprefix", "true")
+        self.write("src/old.ts", ["old", "fixed"])
+        self.commit("Build")
+        self.all_reviews()
+        self.commit("Correct")
+        self.assertEqual(self.lines(), ["src/old.ts: 2"])
+
+    def test_a_name_git_would_quote_is_given_plainly(self):
+        self.write("src/naïve file.ts", ["new"])
+        self.commit("Build")
+        self.all_reviews()
+        self.commit("Correct")
+        self.assertEqual(self.lines(), ["src/naïve file.ts: all (new file)"])
 
     def test_no_default_branch_says_so(self):
         self.git("symbolic-ref", "--delete", "refs/remotes/origin/HEAD")
