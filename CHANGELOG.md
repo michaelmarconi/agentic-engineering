@@ -6,6 +6,20 @@ What changed in each version of the plugin, newest first. Versions follow
 past a major version: it says what you need to change in your documents. Before 1.0.0, a
 minor version could need such a change, and its entry said so.
 
+## [1.13.0] - 2026-11-26
+
+### Added
+
+- Skills that work for minutes without you, `/build`, `/audit`, `/verify`, `/spike`, `/deploy`
+  and the review of a document in `/brief`, `/spec`, `/adr`, `/plan` and `/practices`, now show
+  their steps on the list your place shows live: Claude Code's task list on the command line and
+  desktop, and the checklist in a Claude project thread. Each step is marked done with a one-line
+  summary of what it found, so you can tell which step a run is on.
+- `/build` lists its steps from the plan, one per requirement and then the reviews, corrections,
+  correction check and hand-over, numbered the same way every run, and names each requirement's
+  step, such as "Step 2 of 7", before writing its code.
+- A plugin hook reminds Claude to update its progress list each time a helper agent finishes.
+
 ## [1.12.1] - 2026-11-26
 
 ### Fixed

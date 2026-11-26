@@ -79,6 +79,9 @@ the error: the window was not checked, and a full audit is no substitute for it.
 
 ## Check the code
 
+From here, show your progress as the "Showing progress" section of
+`${CLAUDE_PLUGIN_ROOT}/docs/lifecycle.md` says.
+
 Start one `agentic:auditor` agent per document to check, all in the foreground and all in one
 message, so they run side by side. Give each this request, exactly as shown:
 

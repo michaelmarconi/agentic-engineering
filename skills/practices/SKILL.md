@@ -178,7 +178,8 @@ command per step lets you write, and the pull request template above. Leave the 
 
 When the files are written, review them together, since the core and a topic file must agree. At the
 review step, read the Review process section of `${CLAUDE_PLUGIN_ROOT}/docs/lifecycle.md` and follow
-its steps, then its "Ending on a failed check" part, with the reviewer and requests below.
+its steps, then its "Ending on a failed check" part, with the reviewer and requests below. From here, show your progress as the "Showing progress" section of
+`${CLAUDE_PLUGIN_ROOT}/docs/lifecycle.md` says.
 
 The reviewer is the `agentic:practices-reviewer` agent. Its request, which the
 `agentic:language-checker` agent gets too, names `AGENTS.md` and each topic file this run changed,
