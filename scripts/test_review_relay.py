@@ -1113,6 +1113,20 @@ class Relay(unittest.TestCase):
         self.assertIn("Question: Question 1 of 2: colour\n", prompt)
         self.assertIn("Question: Question 2 of 2: size\n", prompt)
 
+    def test_a_tap_on_an_option_that_starts_with_one_of_the_four_choices_is_saved(self):
+        # Issue #147: an agent named its option "Accept: undo within 24 hours".
+        self.checked_once()
+        self.message(self.tap("Accept: undo within 24 hours"))
+        self.put(SPEC, "v3\n")
+        self.assertIn('Question: Question 1 of 2: colour\nAnswer: Chose "Accept: undo within 24 hours"',
+                      self.assertAllowed(self.check())["prompt"])
+
+    def test_a_tap_on_an_option_that_only_begins_with_the_letters_of_a_choice_is_not_saved(self):
+        self.checked_once()
+        self.message(self.tap("Acceptance tests first", "Build anyway, on the proposed answers?"), asked="Shall I build?")
+        self.put(SPEC, "v3\n")
+        self.assertNotIn("=== ANSWERS ===", self.assertAllowed(self.check())["prompt"])
+
     def test_a_tap_on_a_card_without_the_four_choices_is_not_saved(self):
         self.checked_once()
         self.message(self.tap("Build anyway", "Build anyway, on the proposed answers?"), asked="Shall I build?")
