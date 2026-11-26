@@ -146,6 +146,15 @@
             "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/scripts/agent_relay.py\""
           }
         ]
+      },
+      {
+        "matcher": "Agent|Task|SubagentHandback",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/scripts/progress_nudge.py\""
+          }
+        ]
       }
     ],
     "SubagentStop": [
