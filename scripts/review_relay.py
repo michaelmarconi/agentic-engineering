@@ -73,7 +73,8 @@ feedback, practices, spike or release) and the shared language checker, which ch
   message a tool sends, never a file edit, ends asking "... ignore or defer?", with that message's
   last "**Question N of M: ...**" line as its question. A tap on a project thread's decision card,
   which arrives as 'Chose "<option>" on the decision card asking "<question>"', is saved against
-  the card's own question whenever the option is one of the four choices, so each of several
+  the card's own question whenever the option is one of the four choices, or starts with one
+  followed by anything but a letter, such as "Accept: ...", so each of several
   cards keeps its own answer, whatever Claude said after posting them. A message that arrives as a project thread's wake is taken from its
   `<message trigger="true">` tag.
 - A saved review is kept after its check, and deleted once unchanged for 30 days (see
@@ -553,9 +554,11 @@ def keep_answers(session, answers):
 
 MARKER = "ignore or defer?"
 # A tap on a project thread's decision card arrives as this message, naming the option and the
-# card's question; only a card offering the four choices answers a document's question.
+# card's question; only a card offering the four choices answers a document's question. An option
+# whose words start with a choice, such as "Accept: undo within 24 hours", counts as that choice.
 TAP = re.compile(r'Chose "(.*?)" on the decision card asking "(.*)"\s*$', re.S)
 CHOICES = ("accept", "my own answer", "ignore", "defer")
+CHOICE = re.compile(r"(%s)(?![a-z])" % "|".join(CHOICES), re.I)
 QUESTION_LINE = re.compile(r"\*\*Question \d+ of \d+:[^*\n]*\*\*")
 WAKE_MESSAGE = re.compile(r'<message\b[^>]*\btrigger="true"[^>]*>(.*?)</message>', re.S)
 TAIL = 1 << 20  # the last turn is near the end of the transcript; read at most this much of it
@@ -620,7 +623,7 @@ def message_answer(event):
     answer = html.unescape(wake.group(1)).strip() if wake else prompt
     tap = TAP.match(answer)
     if tap:
-        return [{"question": tap.group(2), "answer": answer}] if tap.group(1).lower() in CHOICES else []
+        return [{"question": tap.group(2), "answer": answer}] if CHOICE.match(tap.group(1).strip()) else []
     asked = last_said(event.get("transcript_path"))
     if not asked.rstrip(" \t\n\"'`*_.").lower().endswith(MARKER):
         return []
