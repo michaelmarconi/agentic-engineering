@@ -6,6 +6,24 @@ What changed in each version of the plugin, newest first. Versions follow
 past a major version: it says what you need to change in your documents. Before 1.0.0, a
 minor version could need such a change, and its entry said so.
 
+## [1.14.0] - 2026-11-26
+
+### Changed
+
+- You can answer a question by writing in chat instead of picking a choice or tapping a card.
+  Once a correction check has run, every message you write reaches the next check, word for word
+  and in order, so `/build` and the document skills no longer lose an answer typed in chat.
+- `/build` lists every open finding in one message before asking about them one at a time.
+
+### Fixed
+
+- A question left unanswered on the question tool, because you replied in chat, no longer saves
+  the tool's stand-in text as your answer.
+- The correction checkers take your choices only from your answers, never from a file in the
+  repository, so a check can no longer pass on a note that happens to mention a finding.
+- Messages from other agents in a project thread, background notices and command echoes are never
+  taken as your answers.
+
 ## [1.12.1] - 2026-11-26
 
 ### Fixed
