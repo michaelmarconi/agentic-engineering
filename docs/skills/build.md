@@ -245,11 +245,13 @@ flowchart TD
     Last -->|stop| Ready["Plan stays Ready to build 🟢"]
 ```
 
-1. **The build's own findings, one at a time.** Each comes with a proposal, such as fixing it on
+1. **The build's own findings, one at a time.** `/build` first lists them all in one message, so
+   you see the whole set. Each then comes with a proposal, such as fixing it on
    the branch or dropping a test the code cannot meet, and the same four choices the document
    skills offer: **Accept** the proposal, give **your own answer**, **Ignore** it, accepting it as
    it is, or **Defer** it to a later plan. Fixes are made and committed on the branch as you go,
-   with no review between answers.
+   with no review between answers. You can answer by picking a choice, or by writing in chat:
+   every message you write after a check reaches the next one.
 2. **A check of only what changed.** When a round of answers changed the branch, the correction
    checker runs again on just those commits, with your answers, never a full review. Anything it
    raises is put to you the same way.
