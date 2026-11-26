@@ -464,6 +464,7 @@ class Corrections(Relay):
         prompt = result["updatedInput"]["prompt"]
         self.assertIn(f"=== LAST CHECKED COMMIT ===\nLast checked commit: {checked}\n"
                       "=== END LAST CHECKED COMMIT ===", prompt)
+        self.assertIn("=== LAST CHECK REPORT ===\nResult: FAIL\n=== END LAST CHECK REPORT ===", prompt)
         self.assertIn("code finding", prompt)
 
     def test_a_later_check_refused_when_nothing_was_committed_since_the_last(self):

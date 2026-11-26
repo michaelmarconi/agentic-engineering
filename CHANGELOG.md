@@ -6,6 +6,21 @@ What changed in each version of the plugin, newest first. Versions follow
 past a major version: it says what you need to change in your documents. Before 1.0.0, a
 minor version could need such a change, and its entry said so.
 
+## [1.12.0] - 2026-11-26
+
+### Changed
+
+- When a build's correction check leaves findings open, `/build` now goes through them with you one
+  at a time, each with a proposal and the choices Accept, your own answer, Ignore and Defer, makes
+  the fixes you choose on the same branch, and has the correction checker look again at only what
+  changed, with your answers, rather than offering only "accept as it stands" or a full fresh
+  review. Its last question offers `Built ✅`, one more full review, or stopping. A plan can now be
+  marked `Built ✅` however many commits your answers added (ADR 0060, superseding ADR 0052).
+- Findings in older code the build did not change, which the code review reports because it reads
+  whole files, are listed apart under "Outside this build", graded high, medium or low, and never
+  fail the check on their own. `/build` gives their count by grade and asks once whether to go
+  through them or carry on (ADR 0061).
+
 ## [1.11.0] - 2026-11-26
 
 ### Fixed

@@ -29,7 +29,8 @@ Before the `build-correction-checker` starts, it appends the three reports, the 
 the lines the build changed from where the branch left the default branch up to the commit being
 checked, file by file (docs/adrs/0061), and the rubric to read, between fixed `=== ... ===` lines,
 and approves the start. A check after the first, once the person has answered the open findings
-(docs/adrs/0060), also gets the commit the last check ran at and the person's answers since then,
+(docs/adrs/0060), also gets the commit the last check ran at, that check's report and the person's answers since
+then,
 so it judges only what changed. It refuses the start, with a reason Claude sees, when the request
 has no `Document:` line, when any of the three reports of the reviewed commit is missing, when no
 git repository holds the plan, when nothing has been committed since the reviews, or, after a
@@ -257,6 +258,7 @@ def start_checker(session, tool_input, cwd, call="check"):
     if last:
         extra += (f"\n\n=== LAST CHECKED COMMIT ===\nLast checked commit: {last}\n"
                   "=== END LAST CHECKED COMMIT ===")
+        extra += f"\n\n=== LAST CHECK REPORT ===\n{record['reports'].get('check', '(none)')}\n=== END LAST CHECK REPORT ==="
     if answers:
         extra += ("\n\n=== ANSWERS ===\n" + "\n".join(f"Question: {a['question']}\nAnswer: {a['answer']}\n"
                                                     for a in answers) + "=== END ANSWERS ===")
