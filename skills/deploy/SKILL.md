@@ -68,6 +68,9 @@ front for this release and environment counts. The yes covers the roll back too.
 
 ## Deploy and check
 
+From here, show your progress as the "Showing progress" section of
+`${CLAUDE_PLUGIN_ROOT}/docs/lifecycle.md` says.
+
 Run the Deploy command once. Then run the check, whatever the deploy's exit code:
 
 ```

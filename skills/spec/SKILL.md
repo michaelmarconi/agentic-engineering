@@ -172,7 +172,8 @@ change, which adds it; a plugin hook refuses a status change without it.
 
 When the spec is written, review it. At the review step, read the Review process section of
 `${CLAUDE_PLUGIN_ROOT}/docs/lifecycle.md` and follow its steps, then its "Ending with your answers"
-part, with the reviewer and requests below.
+part, with the reviewer and requests below. From here, show your progress as the "Showing progress" section of
+`${CLAUDE_PLUGIN_ROOT}/docs/lifecycle.md` says.
 
 The reviewer is the `agentic:spec-reviewer` agent. Its request, which the `agentic:language-checker`
 agent gets too:

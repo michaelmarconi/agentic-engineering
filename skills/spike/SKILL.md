@@ -128,7 +128,8 @@ the review, and running first would let the results shape the hypothesis. Only a
 record runs, and only through the run script, which writes each run into
 Runs word for word, so the record shows exactly what the experiment produced. Never run the
 experiment's code any other way, never retype or summarise a result into the record, and never
-edit Runs: a plugin hook refuses it. For each run:
+edit Runs: a plugin hook refuses it. From here, show your progress as the "Showing progress" section of
+`${CLAUDE_PLUGIN_ROOT}/docs/lifecycle.md` says. For each run:
 
 ```
 python3 "${CLAUDE_SKILL_DIR}/scripts/spike.py" run <the record's path> --scratchpad "<your scratchpad folder>" --session "${CLAUDE_SESSION_ID}"

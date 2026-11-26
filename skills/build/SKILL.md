@@ -11,8 +11,6 @@ opens any pull request and merges; you never do those.
 
 ## Rules that hold for the whole build
 
-These hold from the first step to the last, however long the build runs.
-
 - **Never weaken a test to make code pass.** Change a test only to make it check its example
   more closely. A test whose expected value plainly contradicts its example in the spec, such as
   a typo, may be corrected to the spec's value: say so in the report. A test that cannot pass as
@@ -95,7 +93,8 @@ Check each of these before changing anything, and stop with the reason if one fa
 7. **The plan is signed off, or the person chooses to build anyway.** If it is not, ask as
    [If the plan is not signed off](#if-the-plan-is-not-signed-off) says.
 
-Then run the tests once. Note any that already fail for the report, and leave them alone.
+Then run the tests once. Note any that already fail for the report, and leave them alone. From here, show your progress as the "Showing progress" section of
+`${CLAUDE_PLUGIN_ROOT}/docs/lifecycle.md` says.
 
 ### If the plan is not signed off
 
@@ -143,7 +142,7 @@ suggests. For each requirement:
    and the test files you wrote or changed:
 
    ```
-   python3 "${CLAUDE_SKILL_DIR}/scripts/before_code.py" --command "<command with {file}>" <test files>
+   python3 "${CLAUDE_SKILL_DIR}/scripts/before_code.py" --plan <the plan's path> --step <its number in steps.py's list> --command "<command with {file}>" <test files>
    ```
 
    Read each failure in its output: it must come from the behaviour not being there yet, not from
@@ -244,8 +243,7 @@ own into it word for word; you write only your own sections, as Markdown under t
    the practices say it must pass before merging, say so; otherwise offer it as optional. Nothing
    the plugin does blocks a merge.
 
-The script's own report goes under a heading of its own, which only the script writes. Give your
-sections to the script on standard input:
+Give your sections to the script on standard input:
 
 ```
 python3 "${CLAUDE_SKILL_DIR}/scripts/hand_over.py" --plan <the plan's path> --message "<what the last commit holds>" --release-note "<one sentence>" [--reviews-passed] --scratchpad "<your scratchpad folder>" --session "${CLAUDE_SESSION_ID}" --report - <<'EOF'
