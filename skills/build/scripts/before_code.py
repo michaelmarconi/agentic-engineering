@@ -20,8 +20,8 @@ With --plan and --step, the output starts with the line steps.py gives that step
 <requirement>", so the build's progress list can be brought up to date (docs/adrs/0063).
 
 Exit codes: 0 when every file named fails; 1 when they are refused; 2 on a usage error, such as
---plan without --step or a step the plan does not have, when the command cannot run (exit 126
-or 127), or when the folder is not in a git work tree.
+--plan without --step or a step that is not one of the plan's requirements, when the command
+cannot run (exit 126 or 127), or when the folder is not in a git work tree.
 """
 
 import argparse
@@ -111,7 +111,7 @@ def main(argv=None):
         return 2
     if args.plan is not None:
         try:
-            step = steps.line(args.plan, args.step)
+            step = steps.line(args.plan, args.step, requirements_only=True)
         except steps.Refused as reason:
             print(reason)
             return 2

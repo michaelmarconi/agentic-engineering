@@ -11,8 +11,8 @@ reports".
 Output: with --plan alone, one line per step, as "1. <step>". With --step N as well, only
 "Step N of M: <step>", which before_code.py also prints at each requirement.
 
-Exit codes: 0 when the steps are printed; 2 when the plan cannot be read, names no requirements,
-or --step is out of range.
+Exit codes: 0 when the steps are printed; 2 when the plan cannot be read, has a line under Specs
+it cannot read, names no requirements, or --step is out of range.
 """
 
 import argparse
@@ -35,18 +35,26 @@ def steps(plan):
     text = status_check.read(plan)
     if text is None:
         raise Refused(f"It can't read the plan {plan}.")
-    entries, _ = status_check.named_specs(plan, text)
+    entries, problem = status_check.named_specs(plan, text)
+    # Reading stops at a line it cannot read, which would drop the requirements after it and put
+    # every later step out by one. The layout plans had before is read whole, so it is let through.
+    if problem and not problem.startswith("`- Requirement:"):
+        raise Refused(f"The plan {plan} can't be listed: {problem}.")
     names = [name for _, _, requirements in entries for name, _, _ in requirements]
     if not names:
         raise Refused(f"The plan {plan} names no requirements under Specs, so there are no steps to list.")
     return names + list(FIXED)
 
 
-def line(plan, step):
-    """The line naming one step by its number out of the total, as "Step N of M: <step>"."""
+def line(plan, step, requirements_only=False):
+    """The line naming one step by its number out of the total, as "Step N of M: <step>".
+
+    With requirements_only, as before_code.py asks, only a requirement's step is accepted."""
     listed = steps(plan)
-    if not 1 <= step <= len(listed):
-        raise Refused(f"Step {step} is not one of this build's steps: give 1 to {len(listed)}.")
+    last = len(listed) - len(FIXED) if requirements_only else len(listed)
+    if not 1 <= step <= last:
+        kind = "requirements" if requirements_only else "steps"
+        raise Refused(f"Step {step} is not one of this build's {kind}: give 1 to {last}.")
     return f"Step {step} of {len(listed)}: {listed[step - 1]}"
 
 

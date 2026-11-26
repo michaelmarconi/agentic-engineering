@@ -454,7 +454,7 @@ def show_problems(text):
               f"skill_check.PROGRESS_PLACES[{number - 1}] word for word"
               for number, place in enumerate(PROGRESS_PLACES, 1) if not holds(progress, place)]
     return found + [f'"{PROGRESS_HEADING[3:]}" does not name /{skill}: its table must give its steps'
-                    for skill in PROGRESS_SKILLS if not re.search(rf"/{skill}\b", progress)]
+                    for skill in PROGRESS_SKILLS if not re.search(rf"(?:^|[\s|,(])/{skill}\b", progress)]
 
 
 def frontmatter(text):

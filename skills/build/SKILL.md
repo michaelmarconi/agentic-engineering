@@ -55,8 +55,7 @@ Check each of these before changing anything, and stop with the reason if one fa
    that is over the limit. Over it, the earlier conversation could steer the build away from the
    written plan, so before anything else ask the person one question, with your question tool where
    you have one: build here anyway, or start clean. Say how much the session holds, and that
-   starting clean means two steps, with the plan's path filled in, since the plugin has no reliable
-   way to start a session for them: run `/clear`, then send `/agentic:build <the plan's path>`; in a
+   starting clean means two steps, with the plan's path filled in: run `/clear`, then send `/agentic:build <the plan's path>`; in a
    Claude project thread, which has no `/clear`, open a new thread and send that command as its
    first message. Then wait. On "build here anyway", carry on; on "start clean", stop, changing
    nothing, and never try to start a session yourself. Under the limit, or with no figure, carry on
@@ -93,7 +92,8 @@ Check each of these before changing anything, and stop with the reason if one fa
 7. **The plan is signed off, or the person chooses to build anyway.** If it is not, ask as
    [If the plan is not signed off](#if-the-plan-is-not-signed-off) says.
 
-Then run the tests once. Note any that already fail for the report, and leave them alone. From here, show your progress as the "Showing progress" section of
+Then run the tests once. Note any that already fail for the report, and leave them alone. Run
+`python3 "${CLAUDE_SKILL_DIR}/scripts/steps.py" --plan <the plan's path>` for your steps. From here, show your progress as the "Showing progress" section of
 `${CLAUDE_PLUGIN_ROOT}/docs/lifecycle.md` says.
 
 ### If the plan is not signed off
@@ -142,7 +142,7 @@ suggests. For each requirement:
    and the test files you wrote or changed:
 
    ```
-   python3 "${CLAUDE_SKILL_DIR}/scripts/before_code.py" --plan <the plan's path> --step <its number in steps.py's list> --command "<command with {file}>" <test files>
+   python3 "${CLAUDE_SKILL_DIR}/scripts/before_code.py" --plan <the plan's path> --step <its number from steps.py> --command "<command with {file}>" <test files>
    ```
 
    Read each failure in its output: it must come from the behaviour not being there yet, not from
