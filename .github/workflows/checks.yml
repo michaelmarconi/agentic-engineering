@@ -1,0 +1,48 @@
+# Runs on every pull request and every push to main. It runs every check that needs no model,
+# from the Workflow section of AGENTS.md: the manifest validation, the version check and every
+# script test suite. Evals are billed model runs, so they never run here.
+name: checks
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: checks-${{ github.ref }}
+  # A newer push to a pull request replaces its older run; every commit on main keeps its own.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      # Pinned, so a new release can't change what the validation checks unannounced.
+      - name: Install Claude Code, for the manifest validation
+        run: npm install -g @anthropic-ai/claude-code@2.1.332
+      - name: Validate the plugin's manifests
+        run: claude plugin validate . --strict
+      - name: Check the version and changelog agree
+        run: python3 scripts/version_check.py
+      - name: Run every script test suite
+        run: |
+          status=0
+          for dir in scripts skills/*/scripts; do
+            # A scripts folder may hold helpers and no tests; discover fails on those.
+            ls "$dir"/test_*.py >/dev/null 2>&1 || continue
+            echo "::group::$dir"
+            python3 -m unittest discover -s "$dir" || status=1
+            echo "::endgroup::"
+          done
+          exit $status
