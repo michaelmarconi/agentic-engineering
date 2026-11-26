@@ -6,6 +6,21 @@ What changed in each version of the plugin, newest first. Versions follow
 past a major version: it says what you need to change in your documents. Before 1.0.0, a
 minor version could need such a change, and its entry said so.
 
+## [1.12.1] - 2026-11-26
+
+### Fixed
+
+- A correction check that was interrupted or reported nothing can now be run again, and the
+  person's answers wait until a check actually reports, rather than being lost when its start is
+  refused.
+- The lines a build changed are read correctly when a changed line itself looks like a diff
+  header, when git is set to leave out its `a/` and `b/` prefixes, or when a file name holds a
+  space; a diff that can't be read no longer leaves the checker without its reports.
+- Answers to a build's open findings and answers to a document's questions no longer end up in
+  each other's record when both run in one session.
+- The reviews kept for a recheck are cleared once no check needs them, so an earlier round's
+  reports never appear in a later report.
+
 ## [1.12.0] - 2026-11-26
 
 ### Changed
