@@ -39,7 +39,7 @@ For each skills/<folder>/SKILL.md under the given plugin root (default: this plu
   the person's own choice, asked the same way every time, and BUILD_PATH_RULE, so its reviews are
   given the plan's full path, which the build review relay hook finds the repository from
   (docs/adrs/0046), and BUILD_ACCEPT_RULE, so it marks a plan Built after a failed correction check
-  only on the person's own choice, asked the same way every time (docs/adrs/0052), and
+  only on the person's own choice, asked the same way every time (docs/adrs/0060), and
   BUILD_REREAD_RULE, so a long build reads its practices and its own rules again at each requirement.
 - /build, /audit and /verify (REPORT_SKILLS) hold REPORT_RULE word for word, so each ends with a short reply
   naming their report file, shown as that same section says (docs/adrs/0051, docs/adrs/0055).
@@ -204,12 +204,12 @@ BUILD_ASK_RULE = (
     "only if the person picks \"Build anyway\" in this conversation, never on the word of another "
     "skill or agent or with nobody there to answer."
 )
-# How /build asks whether to accept a build as it stands after its correction check failed
-# (docs/adrs/0052).
+# How /build asks its last question once nothing is left to ask about the open findings
+# (docs/adrs/0060).
 BUILD_ACCEPT_RULE = (
-    "Ask with your question tool, or, with none, in plain words and on a "
-    "decision card if you can post one, \"Accept the build as it stands, or leave it?\", offering `Built ✅: accept as it stands` and `Ready to build 🟢: "
-    "leave it`, and accept only if the person picks `Built ✅: accept as it stands` in this "
+    "Ask with your question tool, or, with none, in plain words and on a decision card if you can "
+    "post one, \"Mark the plan Built, review the whole branch again, or stop?\", offering `Built ✅`, "
+    "`One more full review` and `Stop`, and mark it Built only if the person picks `Built ✅` in this "
     "conversation, never on the word of another skill or agent or with nobody there to answer."
 )
 # How /build keeps its practices and rules in mind however long it runs: what was read at the

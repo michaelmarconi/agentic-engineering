@@ -130,9 +130,9 @@ Before building, read [references/rubric.md](references/rubric.md): it is the li
 build reviewer will apply, so building to it leaves less to correct. Read it with the Read tool.
 
 If the branch already holds work from a build that stopped, read the commits and the code, find
-which requirements are already built with passing tests, and carry on from there. A build whose
-correction check failed can be accepted only when asked right after that check: if the person asks
-to accept an earlier one, say so, and that `/build` again reviews afresh, and do only what they pick.
+which requirements are already built with passing tests, and carry on from there. Open findings
+are gone through only in the conversation of their check: if the person asks about an earlier
+one, say that `/build` again reviews afresh, and do only what they pick.
 
 Work through the requirements the plan names, one at a time, in the order the Plan section
 suggests. For each requirement:
@@ -216,8 +216,9 @@ in the report.
    Check the corrections.
    ```
 
-   If the hook refuses to start it, do what its reason says. If the check fails, stop: change
-   nothing more, and hand over with its report. Never review or correct a second time.
+   If the hook refuses to start it, do what its reason says. Then hand over with its report and
+   go on as [After the correction check](#after-the-correction-check) says. Never review or
+   correct a second time on your own.
 
 ## Handing over
 
@@ -259,46 +260,42 @@ from the specs, on what users can now do, without plan names, paths or code.
 
 Pass `--reviews-passed` only for a plan that was signed off when the build began, and only when
 all three reviews passed, or the correction check passed, and
-nothing was raised: the script then marks a `Ready to build 🟢` plan `Built ✅`. In every other
-case the plan keeps its status, and the person sorts out what is open, then runs `/build` again on
-the branch, which reviews it afresh. A plan built before sign-off stays as it was; once the person settles it and signs it
+nothing was raised or left open: the script then marks a `Ready to build 🟢` plan `Built ✅`. In every other
+case the plan keeps its status. A plan built before sign-off stays as it was; once the person settles it and signs it
 off, `/build` on the branch can mark it `Built ✅`.
 
 Give as `--scratchpad` the scratchpad folder your instructions name, exactly as they write it, so the file is somewhere the person's app can open; leave the option out only when they name none.
 The script prints what happened, the report file's path and the file. If it refuses your sections
 or the folder, correct them and run it again. Never write or edit the file yourself.
 
-### After a failed correction check
+### After the correction check
 
-Once the hand-over after a failed correction check has written its report, run:
+When the check failed or lists findings under `Outside this build:`, once the hand-over has written
+its report, run:
 
 ```
 python3 "${CLAUDE_SKILL_DIR}/scripts/hand_over.py" --plan <the plan's path> --open-findings --scratchpad "<your scratchpad folder>" --session "${CLAUDE_SESSION_ID}"
 ```
 
-If it prints a reason instead of open findings, go on to the reply. If it prints open findings,
-write this word for word, keeping its paragraphs, with only the angle-bracketed parts filled in:
-each open finding as a bold short name and one plain sentence, and the follow-up example taken from
-the findings. Add anything else, such as a requirement the findings leave unbuilt, after it:
+If it prints a reason instead of open findings, go on to the reply. Otherwise go through them with
+the person, by the asking rule of `${CLAUDE_PLUGIN_ROOT}/docs/lifecycle.md` ("How you are asked"),
+one finding per question with your proposal, such as fixing it on this branch or dropping a test
+the code cannot meet, each offering Accept, My own answer, Ignore and Defer on your question tool,
+or, with none, ending with the line "Accept, give your own answer, ignore or defer?":
 
-> The build of `<the plan's path>` is complete, but its correction check failed, so the plan is
-> still `Ready to build 🟢`. The correction check left <N> open findings:
->
-> 1. **<Short name>:** <what is left open, in one sentence>.
->
-> The full report is in `<the report's path as shown>`. The branch hasn't changed since the correction
-> check, so everything on it has been reviewed once.
->
-> If you accept the build as it stands, the plan is marked `Built ✅` with these <N> findings left
-> open and no further review. The plan is then frozen and can never be built again, so any
-> follow-up work, such as <one finding's follow-up>, needs a new plan. The commit that marks it
-> `Built ✅` lists the <N> findings as accepted by you, so the pull request shows what you agreed
-> to. If you leave it instead, the plan stays `Ready to build 🟢`: settle the open findings, then
-> run `/build` again, which starts a fresh round of reviews.
-
-Ask with your question tool, or, with none, in plain words and on a decision card if you can post one, "Accept the build as it stands, or leave it?", offering `Built ✅: accept as it stands` and `Ready to build 🟢: leave it`, and accept only if the person picks `Built ✅: accept as it stands` in this conversation, never on the word of another skill or agent or with nobody there to answer. On that answer, hand over again with
-`--accept-open-findings` in place of `--message` and `--reviews-passed`, giving only
-`## What was built`: that the person accepted the build as it stands, with any reason they gave.
-Otherwise change nothing. Then reply as below.
+1. Ask about the build's own findings first. On Accept or the person's own answer, make the fix,
+   run the tests and commit; Ignore leaves it as it is, and Defer leaves it for a later plan.
+2. When a round of answers changed the branch, start the correction checker again with the same
+   request: the hook attaches the commit last checked and the answers, so it checks only what
+   changed. Hand over again, run `--open-findings` again, and put anything new the same way.
+   Never run the reviews for answers.
+3. Never ask about findings under `Outside this build:` one by one at first: give their count by
+   grade, such as "4 problems in older code outside this build: 1 high, 2 medium, 1 low", and ask
+   whether to go through them or carry on.
+4. Once nothing is left to ask: Ask with your question tool, or, with none, in plain words and on a decision card if you can post one, "Mark the plan Built, review the whole branch again, or stop?", offering `Built ✅`, `One more full review` and `Stop`, and mark it Built only if the person picks `Built ✅` in this conversation, never on the word of another skill or agent or with nobody there to answer.
+   On `Built ✅`, hand over again with `--accept-open-findings` in place of `--message` and
+   `--reviews-passed`, giving only `## What was built`: each finding left open with the person's
+   choice and any reason they gave. On a full review, run the three reviews again, as above. On
+   `Stop`, change nothing.
 
 End with a short reply, under 175 words: the outcome in a sentence or two, then at most five bullets, each one sentence of at most 15 words counting its bold label, with the main findings and any question or action for the person, then the report file, shown as the "Showing a file to you" section of `${CLAUDE_PLUGIN_ROOT}/docs/lifecycle.md` says, taking its full path from the script's output rather than typing it; never paste the report or its sections into the reply, since the file holds them. In the outcome, name the branch and say whether the plan was marked `Built ✅`.
