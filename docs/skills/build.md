@@ -209,23 +209,63 @@ plan still existing or on its status, and your repository needs no extra file
 ([ADR 0043](../adrs/0043-build-commit-carries-release-note.md)). If there is nothing left to
 commit, the script makes a commit that holds only the notes.
 
-The plan is set to `Built ✅` only when it was `Ready to build 🟢` and every review has passed. A
-plan built before sign-off keeps its status: settle it and sign it off, then rerun `/build` on the
-branch to mark it `Built ✅`. If the build stopped instead,
-because the corrections failed their check, a requirement's tests still failed after two attempts,
-or a choice needed raising, the plan keeps its status. Sort out what is open however suits
-you: with Claude directly, by changing a spec or ADR, or by deciding a finding is wrong. Then rerun
-`/build` on the branch. It resumes, reviews again, and marks the plan `Built ✅` once every review
-passes. If you think a finding is wrong, say so when you rerun it.
+The plan is set to `Built ✅` only when it was `Ready to build 🟢` and either every review passed
+or you settled what they left open, as below. A plan built before sign-off keeps its status:
+settle it and sign it off, then rerun `/build` on the branch to mark it `Built ✅`. If the build
+stopped before its reviews, because a requirement's tests still failed after two attempts or a
+choice needed raising, the plan keeps its status: sort out what is open, then rerun `/build` on
+the branch, which resumes and reviews afresh.
 
-When the correction check fails, the build asks you straight away, in the same conversation,
-whether to accept it as it stands. It lists the open findings, explains that accepting marks the
-plan `Built ✅` with them left open and freezes it, and asks "Accept the build as it stands, or
-leave it?". If you accept, the hand-over script marks the plan `Built ✅` in a commit whose message
-lists the findings you accepted, so the pull request shows them, and pushes the branch. It asks
-only when the plan was signed off before the build and the branch has not changed since the
-check. The question can't be answered later: once the conversation is over, running `/build`
-again on the branch reviews afresh, as above.
+### When the reviews leave findings open
+
+The reviews read whole files, so they can also report problems in older code that this build did
+not change, such as an untouched part of a file it added one line to. The correction checker sorts
+what is open into two groups: the build's own findings, and findings **outside this build**. To
+tell them apart, a plugin hook gives it the lines the build changed, file by file, such as
+`src/parser.ts: 40-52, 88`, and it grades each outside finding high, medium or low. Outside
+findings never fail the check on their own.
+
+```mermaid
+flowchart TD
+    Check[Correction check] -->|passed, nothing outside| Built
+    Check --> Own{The build's own findings open?}
+    Own -->|yes| Walk[Put each to you, one at a time]
+    Walk --> Fix[Make the fixes you chose, on the branch]
+    Fix -->|something changed| Recheck[Check only what changed, with your answers]
+    Recheck -->|raises more| Walk
+    Recheck --> Outside
+    Fix -->|nothing changed| Outside
+    Own -->|no| Outside{Findings outside this build?}
+    Outside -->|yes| Summary["Say how many and how severe, and ask: go through them, or carry on?"]
+    Summary -->|go through them| Walk2[Put each to you, one at a time]
+    Walk2 --> Fix
+    Summary -->|carry on| Last
+    Outside -->|no| Last[Last question]
+    Last -->|"Built ✅"| Built[Mark the plan Built]
+    Last -->|one more full review| Reviews[Three reviews afresh]
+    Last -->|stop| Ready[Plan stays Ready to build]
+```
+
+1. **The build's own findings, one at a time.** Each comes with a proposal, such as fixing it on
+   the branch or dropping a test the code cannot meet, and the same four choices the document
+   skills offer: **Accept** the proposal, give **your own answer**, **Ignore** it, accepting it as
+   it is, or **Defer** it to a later plan. Fixes are made and committed on the branch as you go,
+   with no review between answers.
+2. **A check of only what changed.** When a round of answers changed the branch, the correction
+   checker runs again on just those commits, with your answers, never a full review. Anything it
+   raises is put to you the same way.
+3. **Findings outside this build, in one question.** Rather than a question for each, `/build`
+   says how many there are and how severe, such as "4 problems in older code outside this build:
+   1 high, 2 medium, 1 low", and asks whether to go through them or carry on. Going through them
+   works as in step 1; carrying on leaves them all open.
+4. **The last question.** Mark the plan `Built ✅`, run one more full review of the whole branch,
+   or stop with the plan still `Ready to build 🟢`. A full review runs only when you ask for one.
+   `Built ✅` is offered however many commits your answers added: the hand-over script marks the
+   plan at the commit last checked, and its commit message lists every finding you ignored,
+   deferred or carried on past, so the pull request shows what you agreed to.
+
+All of this happens in the same conversation as the build. Once the conversation is over, running
+`/build` again on the branch reviews afresh.
 
 It ends with a short reply, under 175 words: the outcome, the branch and whether the plan was
 marked `Built ✅`, then at most five bullets of at most 15 words each, with the main findings and
