@@ -418,6 +418,38 @@ Suggestions:
 """
 
 
+# The correction check of a real trial build (2026-11-26), word for word: its `Corrections` label
+# carries a note with a colon in it, which once hid every finding under it.
+TRIAL_CHECK = """Result: FAIL
+
+Corrections (one commit since the reviewed commit: 9ade614):
+- Code review, src/wordcount.py:23, NotADirectoryError gets the generic message: made. The handler is now `except (FileNotFoundError, NotADirectoryError)`, and the new test test_path_through_a_file checks that stderr is "No such file: ...".
+- Code review, :21, strict UTF-8 decoding gives no count for cp1252/Latin-1 files: not made. The file is still opened with encoding="utf-8". A UnicodeDecodeError still refuses the file, now with "not UTF-8 text". Only the wording changed, so a writer with a cp1252 file still can't get a count. The reviewer suggested errors="replace" or splitting bytes.
+- Code review, :26, unreadable-file behaviour has no requirement in the spec or plan: not made. The behaviour and its tests are unchanged. The spec was not extended, and no decision was recorded. The build review passed this behaviour under the rubric as replacing a crash. This is a person's call, which the build left unrecorded.
+- Code review, :16, multiple arguments or --help are handled in undefined ways: not made. `len(args) != 1` still gives the usage message, and --help is still treated as a file name.
+- Code review, :5, usage text names a "wordcount" command that doesn't exist: not made. This one is acceptable, because spec lines 65 and 72 require the exact text `Usage: wordcount <file>`. Changing it would need a spec change.
+- Code review, :27, "Cannot read" message repeats the name and shows errno text: made. The message now uses `error.strerror`, and the new test asserts "Errno" is not in the output.
+- Code review, :22, whole file read into memory: made. The code now sums `count_words(line)` over lines. The /dev/zero and FIFO part is not handled, but that is an edge case.
+- Code review, tests:47, tests compare out + err: made. The missing-file and usage tests now assert stdout is "" and stderr is exact.
+- Code review, tests:61, duplicated temp-file helper: not made. It is tidiness, so it is not counted.
+- Code review, :10, str.split() treats U+00A0 and similar as whitespace: not made. It is a spec ambiguity left for the person, and nothing was settled in the code.
+- Security review: no findings.
+- Build review: no failures and no other findings.
+
+Broken by a correction:
+- None. Line-by-line counting is equivalent to counting the whole text: a line break is whitespace, so no word is split or merged. The test changes strengthen the earlier assertions.
+
+Outside this build:
+- None.
+
+Suggestions:
+- To clear the FAIL, either decode leniently, for example errors="replace" or by reading bytes, or record the strict-UTF-8 choice as a spec requirement or an answer from the person.
+- Add a requirement to the spec for the unreadable-file behaviour (folder, non-UTF-8).
+- Decide how --help and extra arguments should behave.
+- Pick a rule for Unicode whitespace.
+"""
+
+
 class OpenFindings(Repo):
     """Accepting a build as it stands after its correction check failed (docs/adrs/0038)."""
 
@@ -597,7 +629,7 @@ class OpenFindings(Repo):
 
     def test_nothing_listed(self):
         self.failed_report(check="Result: FAIL\n\nCorrections:\n- a: made\n\nBroken by a correction:\n- None.\n")
-        self.assert_refused("lists no open finding")
+        self.assert_refused("failed, yet no open finding could be read from it")
 
     def test_report_of_another_plan(self):
         self.failed_report(plan_path="docs/plans/other.md")
@@ -612,6 +644,35 @@ class OpenFindings(Repo):
         code, out = self.run_open()
         self.assertEqual(code, 0, out)
         self.assertIn(mine, out)
+
+    def test_trial_check_with_a_note_on_its_label(self):
+        self.failed_report(check=TRIAL_CHECK)
+        code, out = self.run_open()
+        self.assertEqual(code, 0, out)
+        for start in (":21, strict UTF-8", ":26, unreadable-file", ":16, multiple arguments",
+                      ":5, usage text", "tests:61, duplicated", ":10, str.split()"):
+            self.assertIn(f"- Code review, {start}", out)
+        self.assertNotIn("NotADirectoryError gets", out)
+        self.assertNotIn("Line-by-line", out)
+        self.assertNotIn("To clear the FAIL", out)
+
+    def test_labels_with_notes_bold_or_any_case(self):
+        check = ("Result: FAIL\n\n**Corrections** (since abc123: two commits):\n- \"A\": not made\n\n"
+                 "broken by a correction (none found):\n- None.\n\n"
+                 "Outside this build (graded):\n- \"B\" in src/b.py:2: low\n\n"
+                 "Suggestions (optional: tidy):\n- \"C\": not made\n")
+        self.failed_report(check=check)
+        code, out = self.run_open()
+        self.assertEqual(code, 0, out)
+        self.assertIn('- "A": not made', out)
+        self.assertIn('- "B" in src/b.py:2: low', out)
+        self.assertNotIn('"C"', out)
+
+    def test_failed_check_whose_findings_cannot_be_read_says_so(self):
+        self.failed_report(check="Result: FAIL\n\nThe corrections were not all made; see above.\n")
+        code, out = self.run_open()
+        self.assertEqual(code, 3, out)
+        self.assertIn("failed, yet no open finding could be read from it", out)
 
     def test_other_list_styles_and_wrapped_items(self):
         check = ("Result: FAIL\n\nCorrections:\n* \"A\": not made, it still\nraises a traceback\n"
