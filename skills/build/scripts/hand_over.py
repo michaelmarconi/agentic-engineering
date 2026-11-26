@@ -44,8 +44,11 @@ Both go ahead only when the plan is `Ready to build 🟢`; the report is of this
 correction check that failed, or passed with findings outside this build, and its "Built before
 sign-off" section is empty; the branch is still at the report's `Head:` commit, with nothing
 uncommitted; and the check lists at least one correction `not made` or `left for the person`,
-something broken by a correction, or a finding outside this build. An --accept-open-findings that
-refuses, or whose commit fails, writes no report, so the newest check stays the newest.
+something broken by a correction, or a finding outside this build. The check's labels are known
+by name in any case, bold or not, and with a note in brackets, so `Corrections (one commit since
+abc123):` still counts as `Corrections:`. A failed check with nothing readable under them is refused with a reason
+that says so, for /build to tell the person. An --accept-open-findings that refuses, or whose
+commit fails, writes no report, so the newest check stays the newest.
 
 The reviews build_relay.py kept stay on record after a hand-over whose correction check is kept,
 until the plan is marked `Built ✅`, so a check after the person's answers still gets them; a
@@ -291,6 +294,11 @@ OPEN = re.compile(r"\b(?:not made|left for the person)\b", re.I)
 BULLET = re.compile(r"^(?:[-*+]|\d+[.)])\s+")
 NONE_ITEM = re.compile(r"^(?:[-*+]|\d+[.)])\s+\**None\b", re.I)
 LABEL = re.compile(r"^\**[A-Z][^:]*:\**\s*$")
+# The checker's own labels, known by name whatever their case, bold or not, and with or without a
+# note in brackets, such as `Corrections (one commit since abc123: 9ade614):`, which once hid every
+# item under it.
+PARTS = ("Corrections", "Broken by a correction", "Outside this build", "Suggestions")
+PART = re.compile(r"^(?:#+\s*)?\**(" + "|".join(PARTS) + r")\**\s*(?:\(.*\))?\s*:\**\s*$", re.I)
 
 
 def findings_in(check):
@@ -303,11 +311,17 @@ def findings_in(check):
 def items_in(check):
     """(the build's own open findings, the findings outside this build), each word for word with
     the lines that continue it (docs/adrs/0061)."""
-    found, outside, part, keep = [], [], None, None
+    found, outside, part, keep, indent = [], [], None, None, 0
     for line in check.splitlines():
         label = line.strip()
-        if LABEL.match(label):
-            part, keep = label.strip("*").strip(), None
+        depth = len(line) - len(line.lstrip())
+        if keep is not None and label and depth > indent:
+            keep.append(line)  # a line indented under the kept item, a bullet or not, continues it
+            continue
+        known = None if BULLET.match(label) else PART.match(label)
+        if known or LABEL.match(label):
+            part = next(p for p in PARTS if p.lower() == known.group(1).lower()) + ":" if known else label
+            keep = None
             continue
         if not label:
             keep = None
@@ -322,6 +336,7 @@ def items_in(check):
                 keep = None
             if keep is not None:
                 keep.append(line)
+                indent = depth
         elif keep is not None:
             keep.append(line)
     return found, outside
@@ -372,7 +387,9 @@ def open_findings(repo, plan, root):
     if entries:
         raise NotAcceptable("there is uncommitted work, which no review has seen")
     if not findings and not outside:
-        raise NotAcceptable(f"the correction check lists no open finding to accept ({path})")
+        # Only a failed check gets here: one that passed with nothing outside was refused above.
+        raise NotAcceptable(f"the correction check failed, yet no open finding could be read from it, so "
+                            f"tell the person what its report says is left open ({path})")
     return path, findings, outside
 
 

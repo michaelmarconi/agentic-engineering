@@ -1,0 +1,9 @@
+schema_version: "1.1"
+name: build-practices-from-another-folder
+expected_outcome: |
+  The session starts in a folder that is not a git repository and holds the repository one level
+  down, as in a Claude project thread, and the practices are recorded only in the repository's
+  AGENTS.md. The build reviewer reads them there, in the repository that holds the plan, rather
+  than reporting that the project has no AGENTS.md or no practices.
+context:
+  scaffold_script: place-files.sh

@@ -16,6 +16,11 @@ Below it, under `Tests first:`, one line for each requirement with tests gives t
 the check the build ran before writing its code, or says it was already built when this run
 started, for rubric check 3.
 
+Every relative path below, such as `AGENTS.md`, is in the repository that holds the plan, the
+folder its `docs/` folder is in: for `/r/docs/plans/p.md`, read `/r/AGENTS.md`. That is not always
+the folder you start in, which can be one level above the repository, so run each git command
+below in it, as `git -C <that folder> ...`.
+
 Read:
 - The plan.
 - The rubric at `${CLAUDE_PLUGIN_ROOT}/skills/build/references/rubric.md`.

@@ -6,6 +6,20 @@ What changed in each version of the plugin, newest first. Versions follow
 past a major version: it says what you need to change in your documents. Before 1.0.0, a
 minor version could need such a change, and its entry said so.
 
+## [1.15.0] - 2026-11-26
+
+### Fixed
+
+- A build whose correction check failed now puts its open findings to the person even when the
+  checker adds a note to a label, such as `Corrections (one commit since abc123):`, writes it in
+  bold or in another case. Before, such a check read as having nothing open, and the build ended
+  without asking.
+- A failed correction check whose findings can't be read at all no longer ends the build silently:
+  `hand_over.py --open-findings` says so, and the build tells the person.
+- The build reviewer reads `AGENTS.md` and the other files it checks in the repository that holds
+  the plan, not in the folder it started in, so it no longer reports practices missing when that
+  folder is one level above the repository.
+
 ## [1.14.0] - 2026-11-26
 
 ### Changed
