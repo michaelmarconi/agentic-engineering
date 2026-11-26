@@ -6,6 +6,15 @@ What changed in each version of the plugin, newest first. Versions follow
 past a major version: it says what you need to change in your documents. Before 1.0.0, a
 minor version could need such a change, and its entry said so.
 
+## [1.11.0] - 2026-11-26
+
+### Fixed
+
+- In a Claude project thread, a tap on a decision card whose option starts with one of the four
+  choices, such as "Accept: undo within 24 hours", is now kept as the answer to the card's
+  question, so the correction checker no longer reports that question as unanswered. Before, only
+  an option named exactly Accept, My own answer, Ignore or Defer was kept.
+
 ## [1.10.0] - 2026-11-26
 
 ### Fixed
