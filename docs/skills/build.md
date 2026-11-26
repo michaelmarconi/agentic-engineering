@@ -225,24 +225,39 @@ tell them apart, a plugin hook gives it the lines the build changed, file by fil
 `src/parser.ts: 40-52, 88`, and it grades each outside finding high, medium or low. Outside
 findings never fail the check on their own.
 
+In outline, the build goes through its own findings first, then those outside it, then asks one
+last question:
+
 ```mermaid
-flowchart TD
-    Check[Correction check] -->|passed, nothing outside| Built
-    Check --> Own{The build's own findings open?}
-    Own -->|yes| Walk[Put each to you, one at a time]
-    Walk --> Fix[Make the fixes you chose, on the branch]
-    Fix -->|something changed| Recheck[Check only what changed, with your answers]
-    Recheck -->|raises more| Walk
-    Recheck --> Outside
-    Fix -->|nothing changed| Outside
-    Own -->|no| Outside{Findings outside this build?}
-    Outside -->|yes| Summary["Say how many and how severe, and ask: go through them, or carry on?"]
-    Summary -->|go through them| Walk2[Put each to you, one at a time]
-    Walk2 --> Fix
-    Summary -->|carry on| Last
-    Outside -->|no| Last[Last question]
-    Last -->|"Built ✅"| Built[Mark the plan Built]
-    Last -->|one more full review| Reviews[Three reviews afresh]
+flowchart LR
+    Check[Correction check] --> Own[The build's own findings]
+    Own --> Outside[Findings outside this build]
+    Outside --> Last[Last question]
+```
+
+Going through findings works the same way for both groups, round by round:
+
+```mermaid
+flowchart LR
+    Ask[One question per finding] --> Fix[Fixes made on the branch]
+    Fix --> Recheck[Check only what changed]
+    Recheck -->|raises more| Ask
+```
+
+Findings outside this build are first summed up in one question:
+
+```mermaid
+flowchart LR
+    Summary[How many, how severe] -->|go through them| Ask[One question per finding]
+    Summary -->|carry on| Last[Last question]
+```
+
+And the last question has three answers:
+
+```mermaid
+flowchart LR
+    Last[Last question] -->|Built| Built[Plan marked Built]
+    Last -->|one more review| Reviews[Three reviews afresh]
     Last -->|stop| Ready[Plan stays Ready to build]
 ```
 
