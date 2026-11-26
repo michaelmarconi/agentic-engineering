@@ -485,14 +485,14 @@ class SkillCheck(unittest.TestCase):
         self.put("build", skill_md(name="build", body=f"# Build\n\n{rule}\n\n{BUILD_PATH_RULE}\n"))
         self.assertFails("build/SKILL.md: build-anyway rule missing")
 
-    # The build asks before accepting a failed correction check (ADR 0038)
+    # The build asks its last question before marking a plan Built with findings open (ADR 0060)
 
     def test_build_without_the_accept_rule_fails(self):
         self.put("build", skill_md(name="build", body=f"# Build\n\n{BUILD_ASK_RULE}\n\n{BUILD_PATH_RULE}\n\n{REPORT_RULE}\n\n{SCRATCHPAD_RULE}\n"))
         self.assertFails("build/SKILL.md: build accept rule missing")
 
     def test_reworded_accept_rule_fails(self):
-        rule = BUILD_ACCEPT_RULE.replace("or leave it?", "or fix it?")
+        rule = BUILD_ACCEPT_RULE.replace("or stop?", "or leave it?")
         self.assertNotEqual(rule, BUILD_ACCEPT_RULE)
         self.put("build", skill_md(name="build", body=f"# Build\n\n{BUILD_ASK_RULE}\n\n{rule}\n\n{BUILD_PATH_RULE}\n\n{REPORT_RULE}\n\n{SCRATCHPAD_RULE}\n"))
         self.assertFails("build/SKILL.md: build accept rule missing")

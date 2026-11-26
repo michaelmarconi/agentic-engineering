@@ -7,8 +7,9 @@ the reviews saw, so it can read exactly what the corrections changed. A model co
 could reword them, so this hook keeps them and adds them to the checker's request itself, as
 review_relay.py does for documents.
 
-Claude Code runs it on PreToolUse for the Agent tool, on PostToolUse for the Agent tool and a
-subagent's SubagentHandback tool, and on SubagentStop. It acts only in a session where the build skill was started (recorded by
+Claude Code runs it on PreToolUse for the Agent tool, on PostToolUse for the Agent tool, a
+subagent's SubagentHandback tool and the question tool (AskUserQuestion), on SubagentStop and on
+UserPromptSubmit. It acts only in a session where the build skill was started (recorded by
 build_session.py), and keeps:
 
 - the report of the agent that runs Claude Code's `/code-review`: an agent whose request's first
@@ -24,12 +25,21 @@ in the repository holding the plan its `Document:` line names, found as every ho
 folder, as in a Claude project thread. A report of a later commit, or of a plan in another
 repository, starts a new set, so the checker only ever gets reports of one commit.
 
-Before the `build-correction-checker` starts, it appends the three reports, the reviewed commit
-and the rubric to read, between fixed `=== ... ===` lines, and approves the start. It refuses the
-start, with a reason Claude sees, when the request has no `Document:` line, when any of the three
-reports of the reviewed commit is missing, when no git repository holds the plan, or when nothing
-has been committed since the reviews, or when the corrections were already checked, so they are
-checked only once. Once the checker has run, its report is kept beside the three reviews, with the
+Before the `build-correction-checker` starts, it appends the three reports, the reviewed commit,
+the lines the build changed from where the branch left the default branch up to the commit being
+checked, file by file (docs/adrs/0061), and the rubric to read, between fixed `=== ... ===` lines,
+and approves the start. A check after the first, once the person has answered the open findings
+(docs/adrs/0060), also gets the commit the last check ran at, that check's report and the person's answers since
+then,
+so it judges only what changed. It refuses the start, with a reason Claude sees, when the request
+has no `Document:` line, when any of the three reports of the reviewed commit is missing, when no
+git repository holds the plan, when nothing has been committed since the reviews, or, after a
+check, when nothing has been committed since that check.
+
+After a check, it saves the person's answers in the build's record, read as review_relay.py reads
+them for documents: on UserPromptSubmit, a message answering a question that ended "... ignore or
+defer?", or a tap on a decision card offering the four choices; on PostToolUse for the question
+tool, its answers to questions offering them. Once the checker has run, its report is kept beside the three reviews, with the
 plan they were of, and `kept_reports` hands all four to hand_over.py for the build's report file
 (docs/adrs/0034). A review agent may run in the background, which Claude Code
 can choose even when the skill asks for the foreground: its PostToolUse event then only says it
@@ -57,6 +67,7 @@ except ImportError:  # Windows: run without the lock rather than fail every agen
 
 import build_session
 import repository
+import review_relay
 import saved_records
 import subagent_report
 import plugin_folder
@@ -208,9 +219,6 @@ def start_checker(session, tool_input, cwd, call="check"):
         return refuse("Start the build correction checker with `Document: <plan path>` as the "
                       "first line of its request, the same line the build reviewer was given.")
     record = load(session)
-    if record and record.get("checked"):
-        return refuse("The corrections have already been checked once, which is all a build gets. "
-                      "Do not review or check again: stop and show the person the check's report.")
     missing = [title.lower().replace(" report", "") for part, title in PARTS
                if not record or part not in record["reports"]]
     if missing:
@@ -228,20 +236,90 @@ def start_checker(session, tool_input, cwd, call="check"):
     if current == record["commit"]:
         return refuse("Nothing has been committed since the reviews. Commit the corrections "
                       "first, then start the build correction checker.")
+    last = record.get("last_checked") if record.get("checked") else None
+    if last and current == last:
+        return refuse("Nothing has been committed since the last check, so there is nothing new "
+                      "to check. Make the fixes the person chose and commit them first, or go on "
+                      "to the next question.")
+    answers = review_relay.answers_of(record) if last else []
     try:
         with locked(session):
             fresh = load(session) or record
             runs(fresh, "started")[call] = "check"
+            fresh["checking"] = current
+            fresh["answers"] = []
             save(session, fresh)
     except OSError:  # the checker still gets the reports; only its own report goes unkept
         pass
     blocks = [f"=== {title} ===\n{record['reports'][part]}\n=== END {title} ==="
               for part, title in PARTS]
     extra = (f"\n\n=== REVIEWED COMMIT ===\nReviewed commit: {record['commit']}\n"
-             "=== END REVIEWED COMMIT ===\n\n" + "\n\n".join(blocks) +
-             f"\n\n=== FILES TO READ ===\nRubric: {RUBRIC}\n=== END FILES TO READ ===\n")
+             "=== END REVIEWED COMMIT ===\n\n" + "\n\n".join(blocks))
+    if last:
+        extra += (f"\n\n=== LAST CHECKED COMMIT ===\nLast checked commit: {last}\n"
+                  "=== END LAST CHECKED COMMIT ===")
+        extra += f"\n\n=== LAST CHECK REPORT ===\n{record['reports'].get('check', '(none)')}\n=== END LAST CHECK REPORT ==="
+    if answers:
+        extra += ("\n\n=== ANSWERS ===\n" + "\n".join(f"Question: {a['question']}\nAnswer: {a['answer']}\n"
+                                                    for a in answers) + "=== END ANSWERS ===")
+    extra += ("\n\n=== CHANGED LINES ===\n" + "".join(f"{line}\n" for line in changed_lines(folder, current)) +
+              "=== END CHANGED LINES ===\n")
+    extra += f"\n=== FILES TO READ ===\nRubric: {RUBRIC}\n=== END FILES TO READ ===\n"
     return {"hookSpecificOutput": {"hookEventName": "PreToolUse", "permissionDecision": "allow",
                                    "updatedInput": dict(tool_input, prompt=prompt + extra)}}
+
+
+HUNK = re.compile(r"^@@ -\S+ \+(\d+)(?:,(\d+))? @@")
+
+
+def git_out(folder, *args):
+    try:
+        result = subprocess.run(["git", "-C", folder, *args], capture_output=True, text=True)
+    except OSError:
+        return None
+    return result.stdout if result.returncode == 0 else None
+
+
+def changed_lines(folder, commit):
+    """The lines the build changed up to `commit`, one line per file, such as
+    `src/parser.ts: 3-4, 11` or `src/lookup.ts: all (new file)`, from the branch's merge base with
+    the default branch (docs/adrs/0061). A deleted file, or one whose changes only remove lines,
+    is left out."""
+    default = (git_out(folder, "symbolic-ref", "-q", "refs/remotes/origin/HEAD") or "").strip()
+    base = (git_out(folder, "merge-base", default, commit) or "").strip() if default else ""
+    if not base:
+        return ["Not known: git does not name the default branch (origin/HEAD)."]
+    diff = git_out(folder, "diff", "-U0", "--no-color", "--no-ext-diff", base, commit) or ""
+    files, name, new = {}, None, False
+    for line in diff.splitlines():
+        if line.startswith("diff --git "):
+            name, new = None, False
+        elif line.startswith("--- "):
+            new = line == "--- /dev/null"
+        elif line.startswith("+++ "):
+            name = None if line == "+++ /dev/null" else line[len("+++ b/"):]
+            if name is not None:
+                files.setdefault(name, "all (new file)" if new else [])
+        elif name is not None and not new:
+            hunk = HUNK.match(line)
+            if hunk:
+                start, count = int(hunk.group(1)), int(hunk.group(2) or 1)
+                if count:
+                    files[name].append(str(start) if count == 1 else f"{start}-{start + count - 1}")
+    return [f"{name}: {spans if isinstance(spans, str) else ', '.join(spans)}"
+            for name, spans in sorted(files.items()) if spans]
+
+
+def keep_answers(session, answers):
+    """Add the person's answers, after a correction check, for the next check (docs/adrs/0060)."""
+    if not answers or not record_path(session):
+        return None
+    with locked(session):
+        record = load(session)
+        if record and record.get("checked"):
+            record["answers"] = review_relay.answers_of(record) + answers
+            save(session, record)
+    return None
 
 
 def runs(record, key):
@@ -315,6 +393,10 @@ def handle(event):
     when = event.get("hook_event_name")
     if subagent_report.finished(event):
         return agent_stopped(session, event)
+    if when == "UserPromptSubmit" and build_session.building(session):
+        return keep_answers(session, review_relay.message_answer(event))
+    if when == "PostToolUse" and event.get("tool_name") == "AskUserQuestion" and build_session.building(session):
+        return keep_answers(session, review_relay.tool_answers(event))
     tool_input = event.get("tool_input")
     if not isinstance(tool_input, dict):
         return None
@@ -324,12 +406,14 @@ def handle(event):
         if when == "PreToolUse":
             return start_checker(session, tool_input, event.get("cwd"), str(event.get("tool_use_id") or "check"))
         if when == "PostToolUse":
-            # One correction check per review: a second would follow a second round of corrections.
+            # Each check is of the commit it started at; the next checks only what follows it.
             # The record stays, with the check's report, for the hand-over's report file.
             with locked(session):
                 record = load(session)
                 if record:
                     record["checked"] = True
+                    if record.get("checking"):
+                        record["last_checked"] = record.pop("checking")
                     returned(record, str(event.get("tool_use_id") or "check"), "check",
                              event.get("tool_response"))
                     save(session, record)

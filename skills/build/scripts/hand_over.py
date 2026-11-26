@@ -27,22 +27,28 @@ same notes are already on the branch since the default branch. A note must be on
 
 It prints what happened, one line per step, then the report file's path and the file as written.
 
-When a build's correction check failed, the build asks the person straight away whether to accept
-it as it stands (docs/adrs/0052). Two options serve that, each reading the newest build report for
-the plan in this session's scratchpad (run_report.reports), so a report from another session is
-never found:
+When a build's correction check leaves findings open, the build goes through them with the person,
+checks only what changed, and hands over again (docs/adrs/0060). Two options serve that, each
+reading the newest build report for the plan in this session's scratchpad (run_report.reports), so
+a report from another session is never found:
 
-- --open-findings prints the open findings the correction check listed, word for word, and the
-  report's path, or the one reason none can be accepted. It changes nothing and writes no report.
-- --accept-open-findings, after the person accepts, marks the plan `Built ✅` as --reviews-passed
-  does, commits it with the open findings in the commit message, pushes, and writes a new report.
+- --open-findings prints the build's own open findings the newest correction check listed, then,
+  under `Outside this build:`, those it found in code the build did not change (docs/adrs/0061),
+  word for word, and the report's path, or the one reason none can be accepted. It changes nothing
+  and writes no report.
+- --accept-open-findings, once the person chooses `Built ✅`, marks the plan `Built ✅` as
+  --reviews-passed does, commits it with the findings left open and the `## What was built`
+  section, which holds the person's answers, in the commit message, pushes, and writes a new report.
 
-Both go ahead only when the plan is `Ready to build 🟢`; the report is of this plan, its correction
-check says `Result: FAIL`, and its "Built before sign-off" section is empty; the branch is still at
-the report's `Head:` commit, with nothing uncommitted; and the check lists at least one correction
-`not made` or `left for the person`, or something broken by a correction. An
---accept-open-findings that refuses, or whose commit fails, writes no report, so the failed check
-stays the newest.
+Both go ahead only when the plan is `Ready to build 🟢`; the report is of this plan, has a
+correction check that failed, or passed with findings outside this build, and its "Built before
+sign-off" section is empty; the branch is still at the report's `Head:` commit, with nothing
+uncommitted; and the check lists at least one correction `not made` or `left for the person`,
+something broken by a correction, or a finding outside this build. An --accept-open-findings that
+refuses, or whose commit fails, writes no report, so the newest check stays the newest.
+
+The reviews build_relay.py kept stay on record after a hand-over until the plan is marked
+`Built ✅`, so a check after the person's answers still gets them.
 
 Exit codes: 0 when every step that applied succeeded, or --open-findings found findings; 1 when a
 commit, the push or the report file failed, or --reviews-passed was given for a plan that is not
@@ -290,23 +296,34 @@ def findings_in(check):
     """The correction check's items for corrections not made or left for the person, and for
     anything a correction broke, word for word, each with the lines that continue it. An item is a
     line starting `-`, `*`, `+` or a number; a line such as `Suggestions:` starts another list."""
-    found, part, keep = [], None, False
+    return items_in(check)[0]
+
+
+def items_in(check):
+    """(the build's own open findings, the findings outside this build), each word for word with
+    the lines that continue it (docs/adrs/0061)."""
+    found, outside, part, keep = [], [], None, None
     for line in check.splitlines():
         label = line.strip()
         if LABEL.match(label):
-            part, keep = label.strip("*").strip(), False
+            part, keep = label.strip("*").strip(), None
             continue
         if not label:
-            keep = False
+            keep = None
             continue
         if BULLET.match(label):
-            keep = part == "Corrections:" and bool(OPEN.search(label)) or \
-                part == "Broken by a correction:" and not NONE_ITEM.match(label)
-            if keep:
-                found.append(line)
-        elif keep:
-            found.append(line)
-    return found
+            if part == "Outside this build:" and not NONE_ITEM.match(label):
+                keep = outside
+            elif (part == "Corrections:" and OPEN.search(label) or
+                  part == "Broken by a correction:" and not NONE_ITEM.match(label)):
+                keep = found
+            else:
+                keep = None
+            if keep is not None:
+                keep.append(line)
+        elif keep is not None:
+            keep.append(line)
+    return found, outside
 
 
 def newest_report(repo, plan, root):
@@ -323,7 +340,8 @@ def newest_report(repo, plan, root):
 
 
 def open_findings(repo, plan, root):
-    """(report path, open findings) for the plan's newest build report; raises NotAcceptable."""
+    """(report path, the build's own open findings, those outside this build) for the plan's newest
+    build report, whatever its correction check's result (docs/adrs/0060); raises NotAcceptable."""
     with open(os.path.join(repo, plan), encoding="utf-8") as f:
         match = frontmatter_status(f.read())
     status = match.group("value") if match else "no status"
@@ -333,33 +351,38 @@ def open_findings(repo, plan, root):
     check = run_report.subsection(run_report.section("build", text, "What each review found") or "",
                                   "Correction check", after="Build review") or ""
     result = re.search(r"^\**Result:?\**:?\s*\**(\w+)", check, re.M)
-    if not (result and result.group(1).upper() == "FAIL"):
-        raise NotAcceptable(f"the last build's correction check did not fail ({path})")
+    if not result:
+        raise NotAcceptable(f"the last build has no correction check ({path})")
+    findings, outside = items_in(check)
+    if result.group(1).upper() != "FAIL" and not outside:
+        raise NotAcceptable(f"the last correction check passed with nothing left open, so hand over "
+                            f"with --reviews-passed instead ({path})")
     early = run_report.section("build", text, "Built before sign-off")
     if early and early != run_report.NOTHING:
         raise NotAcceptable("the last build ran before sign-off, so its plan can't be marked Built this way")
     heads = re.findall(r"^Head: (\S+)$", output, re.M)
     if not heads or heads[-1] != head(repo):
-        raise NotAcceptable("the branch has changed since the correction check, so the change needs a review")
+        raise NotAcceptable("the branch has changed since the last hand-over, so start the correction "
+                            "checker on what changed, then hand over again")
     try:
         entries, _ = uncommitted.check(repo)
     except uncommitted.NotARepository as error:
         raise NotAcceptable(str(error))
     if entries:
         raise NotAcceptable("there is uncommitted work, which no review has seen")
-    findings = findings_in(check)
-    if not findings:
+    if not findings and not outside:
         raise NotAcceptable(f"the correction check lists no open finding to accept ({path})")
-    return path, findings
+    return path, findings, outside
 
 
-def accept(repo, plan, root, notes=()):
-    """Mark the plan Built with the open findings in the commit, and push: (code, lines)."""
+def accept(repo, plan, root, notes=(), answers=""):
+    """Mark the plan Built with the findings left open, and the person's answers, in the commit,
+    and push: (code, lines)."""
     refusal = preflight(repo, plan)
     if refusal:
         return 2, [refusal]
     try:
-        path, findings = open_findings(repo, plan, root)
+        path, findings, outside = open_findings(repo, plan, root)
     except NotAcceptable as error:
         return 2, [f"Refused: {error}. Nothing was changed."]
     lines = [f"Branch: {current_branch(repo)}", f"Accepting the build as it stands, from {path}"]
@@ -368,7 +391,14 @@ def accept(repo, plan, root, notes=()):
         text = f.read()
     with open(plan_path, "w", encoding="utf-8") as f:
         f.write(built(text, frontmatter_status(text)))
-    body = "Accepted as it stands by the person, without further review:\n\n" + "\n".join(findings)
+    parts = []
+    if findings:
+        parts.append("Left open by the person, without further review:\n\n" + "\n".join(findings))
+    if outside:
+        parts.append("Outside this build, left open:\n\n" + "\n".join(outside))
+    if answers.strip():
+        parts.append("The person's answers:\n\n" + answers.strip())
+    body = "\n\n".join(parts)
     if not commit(repo, with_notes(f"Mark the plan {os.path.basename(plan)} as built\n\n{body}", notes), lines):
         with open(plan_path, "w", encoding="utf-8") as f:
             f.write(text)
@@ -430,12 +460,15 @@ def main(argv=None):
             print(f"No open findings can be accepted: the plan {args.plan} does not exist.")
             return 3
         try:
-            path, findings = open_findings(repo, args.plan, root)
+            path, findings, outside = open_findings(repo, args.plan, root)
         except NotAcceptable as error:
             print(f"No open findings can be accepted: {error}.")
             return 3
         print(f"Open findings, from the correction check in {path}:")
-        print("\n".join(findings))
+        print("\n".join(findings) if findings else "None.")
+        if outside:
+            print("Outside this build:")
+            print("\n".join(outside))
         return 0
     missing = [flag for flag, value in (("--report", args.report),
                                         ("--message", args.message or args.accept_open_findings),
@@ -453,7 +486,7 @@ def main(argv=None):
               "them and hand over again.")
         return 2
     if args.accept_open_findings:
-        code, lines = accept(repo, args.plan, root, args.release_note)
+        code, lines = accept(repo, args.plan, root, args.release_note, own.get("What was built", ""))
         if not any(line.startswith(f"Plan: {args.plan} is now") for line in lines):
             # No report while the plan is not Built: the failed check must stay the newest report,
             # so the person can still accept it.
@@ -468,7 +501,9 @@ def main(argv=None):
     name = os.path.splitext(os.path.basename(args.plan))[0]
     try:
         _, report = run_report.write("build", name, repo, root, own, copied, date=today())
-        build_relay.clear(root, args.session)
+        if any(line.startswith(f"Plan: {args.plan} is now") for line in lines):
+            # Kept until then: a check after the person's answers needs the reviews (docs/adrs/0060).
+            build_relay.clear(root, args.session)
     except run_report.ReportError as error:
         report = [f"Report not written: {error}"]
         code = max(code, 1)

@@ -327,9 +327,18 @@ class Report(Repo):
         self.assertNotIn("theirs", text)
         self.assertIn("No report kept.", text)
 
-    def test_kept_reviews_cleared_once_copied(self):
+    def test_kept_reviews_stay_while_the_plan_is_not_built(self):
+        # A check after the person's answers needs them again (docs/adrs/0060).
         self.keep(os.path.realpath(os.path.join(self.dir, PLAN)), {"code": "earlier round"})
         self.run_it()
+        self.put("src/more.py", "print('more')\n")
+        _, out = self.run_it()
+        _, text = self.report_file(out)
+        self.assertIn("earlier round", text)
+
+    def test_kept_reviews_cleared_once_the_plan_is_built(self):
+        self.keep(os.path.realpath(os.path.join(self.dir, PLAN)), {"code": "earlier round"})
+        self.run_it("--reviews-passed")
         self.put("src/more.py", "print('more')\n")
         _, out = self.run_it()
         _, text = self.report_file(out)
@@ -376,6 +385,21 @@ Suggestions:
 """
 FINDINGS = ['- "Date format": left for the person, the code uses ISO dates',
             '- "Empty input file": not made, it still writes an empty report']
+OUTSIDE = '- "Page count off by one" in src/parser.ts:88: medium'
+PASSED_OUTSIDE = f"""Result: PASS
+
+Corrections:
+- "Test order": made
+
+Broken by a correction:
+- None.
+
+Outside this build:
+{OUTSIDE}
+
+Suggestions:
+- None.
+"""
 
 
 class OpenFindings(Repo):
@@ -470,8 +494,9 @@ class OpenFindings(Repo):
         self.assertIn(f"date: {TODAY}", self.read(PLAN))
         message = self.git("log", "-1", "--format=%B")
         self.assertTrue(message.startswith("Mark the plan 2026-11-03-thing.md as built\n\n"), message)
-        self.assertIn("Accepted as it stands by the person, without further review:\n\n" + "\n".join(FINDINGS),
+        self.assertIn("Left open by the person, without further review:\n\n" + "\n".join(FINDINGS),
                       message)
+        self.assertIn("The person's answers:\n\nAccepted as it stands.", message)
         self.assertTrue(message.rstrip().endswith(f"\n\nRelease-note: {NOTE}"), message)
         self.assertEqual(self.git("show", "--name-only", "--format=", "HEAD"), PLAN)
         self.assertEqual(self.git("rev-parse", "HEAD"),
@@ -485,18 +510,51 @@ class OpenFindings(Repo):
     def test_newest_report_counts(self):
         self.failed_report(date="2026-11-08")
         self.failed_report(check="Result: PASS\n")
-        self.assert_refused("did not fail")
+        self.assert_refused("passed with nothing left open")
 
     def test_no_report(self):
         self.assert_refused("No build report")
 
     def test_check_passed(self):
         self.failed_report(check="Result: PASS\n\nCorrections:\n- a: made\n")
-        self.assert_refused("did not fail")
+        self.assert_refused("passed with nothing left open")
 
     def test_no_check_kept(self):
         self.failed_report(check="No report kept.")
-        self.assert_refused("did not fail")
+        self.assert_refused("has no correction check")
+
+    def test_outside_findings_listed_apart(self):
+        # docs/adrs/0061: findings in code the build did not change are shown apart.
+        self.failed_report(check=CHECK.replace("Suggestions:", f"Outside this build:\n{OUTSIDE}\n\nSuggestions:"))
+        code, out = self.run_open()
+        self.assertEqual(code, 0, out)
+        own, outside = out.split("Outside this build:\n")
+        for finding in FINDINGS:
+            self.assertIn(finding, own)
+        self.assertEqual(outside.strip(), OUTSIDE)
+
+    def test_a_passed_check_with_outside_findings_can_be_accepted(self):
+        self.failed_report(check=PASSED_OUTSIDE)
+        code, out = self.run_open()
+        self.assertEqual(code, 0, out)
+        self.assertIn(OUTSIDE, out)
+        code, out = self.run_accept("## What was built\n\nCarried on past the older finding.\n")
+        self.assertEqual(code, 0, out)
+        self.assertIn("status: Built ✅", self.read(PLAN))
+        message = self.git("log", "-1", "--format=%B")
+        self.assertIn(f"Outside this build, left open:\n\n{OUTSIDE}", message)
+        self.assertNotIn("Left open by the person", message)
+
+    def test_a_later_failed_check_can_be_accepted(self):
+        # The person's fixes and a check of only what changed, then a hand-over at the new commit.
+        self.failed_report(date="2026-11-08")
+        self.put("src/more.py", "print('more')\n")
+        self.git("add", "-A")
+        self.git("commit", "-q", "-m", "Drop the test the person chose to drop")
+        self.failed_report(check=CHECK.replace("not made, it still", "not made again, it still"))
+        code, out = self.run_accept()
+        self.assertEqual(code, 0, out)
+        self.assertIn("not made again", self.git("log", "-1", "--format=%B"))
 
     def test_branch_changed_since(self):
         self.failed_report()
