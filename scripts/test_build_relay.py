@@ -87,6 +87,12 @@ class Relay(unittest.TestCase):
                           "tool_input": {"subagent_type": "agentic:build-correction-checker",
                                          "prompt": f"Document: {PLAN}\nCheck the corrections."}}, session)
 
+    def finish_check(self, report="Result: FAIL"):
+        self.hook({"hook_event_name": "PostToolUse", "tool_name": "Agent", "tool_use_id": "check",
+                   "tool_input": {"subagent_type": "agentic:build-correction-checker",
+                                  "prompt": f"Document: {PLAN}\nCheck the corrections."},
+                   "tool_response": {"content": [{"type": "text", "text": report}]}})
+
 
 class Checker(Relay):
     def test_reports_and_reviewed_commit_attached(self):
@@ -439,16 +445,178 @@ class Corrections(Relay):
         self.commit("Correct")
         self.assertEqual(self.check()["permissionDecision"], "allow")
 
-    def test_one_correction_check_only(self):
+    def test_a_first_check_has_no_last_checked_commit_or_answers(self):
         self.all_reviews()
         self.commit("Correct")
+        prompt = self.check()["updatedInput"]["prompt"]
+        self.assertNotIn("=== LAST CHECKED COMMIT ===", prompt)
+        self.assertNotIn("=== ANSWERS ===", prompt)
+
+    def test_a_later_check_gets_the_commit_last_checked(self):
+        # ADR 0060: after the person's answers, the checker looks only at what changed.
+        self.all_reviews()
+        checked = self.commit("Correct")
         self.assertEqual(self.check()["permissionDecision"], "allow")
-        self.hook({"hook_event_name": "PostToolUse", "tool_name": "Agent", "tool_use_id": "check",
-                   "tool_input": {"subagent_type": "agentic:build-correction-checker",
-                                  "prompt": f"Document: {PLAN}\nCheck the corrections."},
-                   "tool_response": {"content": [{"type": "text", "text": "Result: FAIL"}]}})
-        self.commit("Correct again")
-        self.assertEqual(self.check()["permissionDecision"], "deny")
+        self.finish_check()
+        self.commit("Drop the test the person chose to drop")
+        result = self.check()
+        self.assertEqual(result["permissionDecision"], "allow")
+        prompt = result["updatedInput"]["prompt"]
+        self.assertIn(f"=== LAST CHECKED COMMIT ===\nLast checked commit: {checked}\n"
+                      "=== END LAST CHECKED COMMIT ===", prompt)
+        self.assertIn("code finding", prompt)
+
+    def test_a_later_check_refused_when_nothing_was_committed_since_the_last(self):
+        self.all_reviews()
+        self.commit("Correct")
+        self.check()
+        self.finish_check()
+        result = self.check()
+        self.assertEqual(result["permissionDecision"], "deny")
+        self.assertIn("since the last check", result["permissionDecisionReason"])
+
+    def test_a_third_check_gets_the_second_checks_commit(self):
+        self.all_reviews()
+        self.commit("Correct")
+        self.check()
+        self.finish_check()
+        second = self.commit("Fix one")
+        self.check()
+        self.finish_check()
+        self.commit("Fix two")
+        self.assertIn(f"Last checked commit: {second}", self.check()["updatedInput"]["prompt"])
+
+
+class Answers(Relay):
+    """The person's answers after a check reach the next check (ADR 0060)."""
+
+    QUESTION = "**Question 1 of 2: Drop the test that cannot pass?**"
+
+    def checked(self):
+        self.all_reviews()
+        self.commit("Correct")
+        self.check()
+        self.finish_check()
+
+    def transcript(self, said):
+        path = os.path.join(self.tmp.name, "transcript.jsonl")
+        with open(path, "w", encoding="utf-8") as f:
+            f.write(json.dumps({"type": "assistant", "message": {"content": [{"type": "text", "text": said}]}}) + "\n")
+        return path
+
+    def answer(self, text, said=None):
+        self.hook({"hook_event_name": "UserPromptSubmit", "prompt": text,
+                   "transcript_path": self.transcript(said or f"{self.QUESTION}\n\nAccept, give your own answer, ignore or defer?")})
+
+    def next_check(self):
+        self.commit("Apply the answers")
+        return self.check()["updatedInput"]["prompt"]
+
+    def test_an_answer_in_a_message_reaches_the_next_check(self):
+        self.checked()
+        self.answer("Accept")
+        prompt = self.next_check()
+        self.assertIn(f"=== ANSWERS ===\nQuestion: {self.QUESTION}\nAnswer: Accept\n", prompt)
+        self.assertIn("=== END ANSWERS ===", prompt)
+
+    def test_a_tap_on_a_decision_card_reaches_the_next_check(self):
+        self.checked()
+        self.answer('Chose "Ignore" on the decision card asking "Question 2 of 2: Accept the late tests?"',
+                    said="Posted a card.")
+        self.assertIn('Answer: Chose "Ignore" on the decision card', self.next_check())
+
+    def test_an_answer_on_the_question_tool_reaches_the_next_check(self):
+        self.checked()
+        question = "Question 1 of 1: Fix the off-by-one?"
+        self.hook({"hook_event_name": "PostToolUse", "tool_name": "AskUserQuestion",
+                   "tool_input": {"questions": [{"question": question, "options": [
+                       {"label": "Accept"}, {"label": "My own answer"}, {"label": "Ignore"}, {"label": "Defer"}]}]},
+                   "tool_response": {"answers": {question: "Defer"}}})
+        self.assertIn(f"Question: {question}\nAnswer: Defer", self.next_check())
+
+    def test_a_message_that_answers_no_question_is_not_kept(self):
+        self.checked()
+        self.answer("thanks", said="The build is done.")
+        self.assertNotIn("=== ANSWERS ===", self.next_check())
+
+    def test_answers_before_any_check_are_not_kept(self):
+        self.all_reviews()
+        self.answer("Accept")
+        self.commit("Correct")
+        self.assertNotIn("=== ANSWERS ===", self.check()["updatedInput"]["prompt"])
+
+    def test_answers_go_to_one_check_only(self):
+        self.checked()
+        self.answer("Accept")
+        self.next_check()
+        self.finish_check()
+        self.assertNotIn("=== ANSWERS ===", self.next_check())
+
+    def test_answers_outside_a_build_are_not_kept(self):
+        self.checked()
+        build_session.save("s1", {"building": False})
+        self.answer("Accept")
+        build_session.save("s1", {"building": True})
+        self.assertNotIn("=== ANSWERS ===", self.next_check())
+
+
+class ChangedLines(Relay):
+    """The checker gets the lines the build changed, file by file (ADR 0061)."""
+
+    def write(self, name, lines):
+        path = os.path.join(self.repo, name)
+        os.makedirs(os.path.dirname(path) or self.repo, exist_ok=True)
+        with open(path, "w", encoding="utf-8") as f:
+            f.write("".join(f"{line}\n" for line in lines))
+        self.git("add", "-A")
+
+    def setUp(self):
+        super().setUp()
+        self.write("src/parser.ts", [f"line {n}" for n in range(1, 21)])
+        self.write("src/old.ts", ["old"])
+        self.write("src/gone.ts", ["gone"])
+        base = self.commit("Earlier build")
+        self.git("update-ref", "refs/remotes/origin/main", base)
+        self.git("symbolic-ref", "refs/remotes/origin/HEAD", "refs/remotes/origin/main")
+        self.git("checkout", "-q", "-b", "build/thing")
+
+    def lines(self):
+        prompt = self.check()["updatedInput"]["prompt"]
+        start = prompt.index("=== CHANGED LINES ===\n") + len("=== CHANGED LINES ===\n")
+        return prompt[start:prompt.index("=== END CHANGED LINES ===")].splitlines()
+
+    def test_changed_ranges_new_files_and_no_deleted_files(self):
+        text = [f"line {n}" for n in range(1, 21)]
+        text[2], text[3] = "changed 3", "changed 4"
+        text.insert(10, "added")
+        self.write("src/parser.ts", text)
+        self.write("src/lookup.ts", ["new", "file"])
+        self.git("rm", "-q", "src/gone.ts")
+        self.commit("Build")
+        self.all_reviews()
+        self.commit("Correct")
+        self.assertEqual(self.lines(), ["src/lookup.ts: all (new file)", "src/parser.ts: 3-4, 11"])
+
+    def test_lines_run_to_the_commit_being_checked(self):
+        self.commit("Build")
+        self.all_reviews()
+        self.write("src/old.ts", ["old", "fixed"])
+        self.commit("Correct")
+        self.assertEqual(self.lines(), ["src/old.ts: 2"])
+
+    def test_a_pure_deletion_leaves_no_lines(self):
+        self.write("src/parser.ts", [f"line {n}" for n in range(2, 21)])
+        self.commit("Build")
+        self.all_reviews()
+        self.commit("Correct")
+        self.assertEqual(self.lines(), [])
+
+    def test_no_default_branch_says_so(self):
+        self.git("symbolic-ref", "--delete", "refs/remotes/origin/HEAD")
+        self.commit("Build")
+        self.all_reviews()
+        self.commit("Correct")
+        self.assertEqual(self.lines(), ["Not known: git does not name the default branch (origin/HEAD)."])
 
 
 class KeptForTheReport(Relay):
@@ -491,8 +659,6 @@ class KeptForTheReport(Relay):
         self.hook({"hook_event_name": "SubagentStop", "agent_id": "c1",
                    "agent_type": "agentic:build-correction-checker", "last_assistant_message": "Result: FAIL\nCHK-1"})
         self.assertEqual(self.kept()["check"], "Result: FAIL\nCHK-1")
-        self.commit("Correct again")
-        self.assertEqual(self.check()["permissionDecision"], "deny")
 
     def test_reviews_kept_without_a_check(self):
         self.all_reviews()

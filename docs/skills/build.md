@@ -232,7 +232,7 @@ flowchart TD
     Summary -->|carry on| Last[Last question]
     Last -->|Built| Built[Plan marked Built]
     Last -->|one more review| Reviews[Three reviews afresh]
-    Last -->|stop| Ready[Plan stays Ready to build]
+    Last -->|stop| Ready["Plan stays Ready to build 🟢"]
 ```
 
 1. **The build's own findings, one at a time.** Each comes with a proposal, such as fixing it on
