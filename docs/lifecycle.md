@@ -521,6 +521,12 @@ Where you can post a decision card, as in a Claude project thread, then post the
 one, its options named exactly "Accept", "Ignore" and "Defer", your proposal recommended; a plugin
 hook reminds you. If the person has said not to ask now, or stops, defer the questions left.
 
+The person may answer in chat instead, in every place: in the command line or the desktop app, by
+writing a message instead of picking on your question tool; in a project thread, by writing instead
+of tapping the card. Take the answer from their message as you would from a pick, and ask again
+only when it settles nothing. Once a check has run, a plugin hook keeps every message they write,
+in order, for the next check.
+
 Accept and My own answer write the answer in as the person gave it, removing the question from Open
 questions if it is there; Ignore writes nothing and removes it; Defer leaves it there, or writes it
 there with its proposal. Nothing else is written into Open questions. An ignored fault you cannot

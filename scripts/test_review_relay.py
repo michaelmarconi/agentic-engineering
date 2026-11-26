@@ -986,14 +986,17 @@ class Relay(unittest.TestCase):
 
     # Checks after a check, with the person's answers (ADR 0049 and 0050)
 
-    def answer(self, answers, session=None, options=FOUR):
-        """The question tool returns the person's answers."""
+    def answer(self, answers, session=None, options=FOUR, annotations=None):
+        """The question tool returns the person's answers, with `annotations` if given."""
+        response = {"answers": answers}
+        if annotations is not None:
+            response["annotations"] = annotations
         return self.run_hook({"hook_event_name": "PostToolUse", "session_id": session or self.session,
                               "cwd": self.project, "tool_name": "AskUserQuestion",
                               "tool_input": {"questions": [{"question": q, "options": [
                                   {"label": o} for o in options]} for q in answers],
                                              "answers": answers},
-                              "tool_response": {"answers": answers}})
+                              "tool_response": response})
 
     def message(self, prompt, asked="**Question 1 of 2: colour**\n\nAccept, give your own answer, ignore or defer?",
                 session=None, before=None, card=None, after=None):
@@ -1022,6 +1025,10 @@ class Relay(unittest.TestCase):
                  "input": {"reason": "nothing_to_add"}}]}}) + "\n")
         return self.run_hook({"hook_event_name": "UserPromptSubmit", "session_id": session or self.session,
                               "cwd": self.project, "transcript_path": transcript, "prompt": prompt})
+
+    def reviewed_once(self):
+        self.put(SPEC, "v1\n")
+        self.review()
 
     def checked_once(self):
         self.put(SPEC, "v1\n")
@@ -1146,15 +1153,93 @@ class Relay(unittest.TestCase):
         self.put(SPEC, "v3\n")
         self.assertNotIn("=== ANSWERS ===", self.assertAllowed(self.check())["prompt"])
 
-    def test_a_question_asked_before_the_last_thing_said_is_no_question(self):
+    # Issue #154 (docs/adrs/0064): after a check, every message the person writes is kept, so an
+    # answer typed in chat instead of on the question tool still reaches the next check.
+
+    def test_a_message_after_a_check_with_no_question_line_is_kept_as_asked_in_a_message(self):
         self.checked_once()
         self.message("Now plan it please", after="Noted, I've written it into the spec.")
         self.put(SPEC, "v3\n")
+        self.assertIn("Question: (asked in a message)\nAnswer: Now plan it please\n",
+                      self.assertAllowed(self.check())["prompt"])
+
+    def test_a_chat_message_after_a_check_is_kept_against_the_last_question_line(self):
+        self.checked_once()
+        self.message("keep it, it copies the app", asked="**Question 1 of 2: colour**\n\nWhat would you like?")
+        self.put(SPEC, "v3\n")
+        self.assertIn("Question: **Question 1 of 2: colour**\nAnswer: keep it, it copies the app\n",
+                      self.assertAllowed(self.check())["prompt"])
+
+    def test_a_chat_message_before_any_check_is_not_kept(self):
+        self.put(SPEC, "v1\n")
+        self.review()
+        self.message("Thanks", asked="Here is the spec.")
+        self.put(SPEC, "v2\n")
         self.assertNotIn("=== ANSWERS ===", self.assertAllowed(self.check())["prompt"])
 
-    def test_a_message_after_no_question_is_not_saved(self):
+    def test_chat_messages_after_a_check_are_kept_in_order(self):
         self.checked_once()
-        self.message("Thanks", asked="Here is the spec.")
+        self.message("can you simplify that?", asked="Here are the findings.")
+        self.message("keep 1 to 5, merge the helpers in 6", asked="Simpler: six points.")
+        self.put(SPEC, "v3\n")
+        prompt = self.assertAllowed(self.check())["prompt"]
+        self.assertLess(prompt.index("can you simplify that?"), prompt.index("keep 1 to 5"))
+
+    def test_only_the_last_20_chat_messages_are_kept(self):
+        self.checked_once()
+        for n in range(1, 26):
+            self.message(f"note {n}.", asked="Go on.")
+        self.put(SPEC, "v3\n")
+        prompt = self.assertAllowed(self.check())["prompt"]
+        self.assertNotIn("note 5.", prompt)
+        self.assertIn("note 6.", prompt)
+        self.assertIn("note 25.", prompt)
+
+    def test_a_message_after_the_asking_line_is_saved_once(self):
+        self.checked_once()
+        self.message("Defer it")
+        self.put(SPEC, "v3\n")
+        self.assertEqual(self.assertAllowed(self.check())["prompt"].count("Answer: Defer it"), 1)
+
+    def test_a_question_the_tool_marks_unanswered_saves_nothing(self):
+        self.checked_once()
+        self.answer({"Which colour?": "The user sent a message instead"},
+                    annotations={"Which colour?": {"unanswered": "replied_in_chat"}})
+        self.put(SPEC, "v3\n")
+        self.assertNotIn("sent a message instead", self.assertAllowed(self.check())["prompt"])
+
+    def test_an_answered_question_beside_an_unanswered_one_is_kept(self):
+        self.checked_once()
+        self.answer({"Which colour?": "Green", "Which size?": "(skipped)"},
+                    annotations={"Which size?": {"unanswered": "skipped"}})
+        self.put(SPEC, "v3\n")
+        prompt = self.assertAllowed(self.check())["prompt"]
+        self.assertIn("Question: Which colour?\nAnswer: Green", prompt)
+        self.assertNotIn("(skipped)", prompt)
+
+    def test_a_project_thread_message_from_the_person_is_kept_after_a_check(self):
+        self.checked_once()
+        self.message('<wake reason="mention"><thread><message trigger="true" from="human" trust="principal">'
+                     'keep both &amp; move on</message></thread></wake>', asked="Here are the findings.")
+        self.put(SPEC, "v3\n")
+        self.assertIn("Answer: keep both & move on\n", self.assertAllowed(self.check())["prompt"])
+
+    def test_a_project_thread_wake_with_no_message_from_the_person_saves_nothing(self):
+        self.checked_once()
+        for wake in ['<wake reason="spawn"><thread><message trigger="true" from="system" trust="principal">'
+                     'You are a thread session.</message></thread></wake>',
+                     '<wake reason="project-activity"><thread><message trigger="true" from="agent" trust="relay">'
+                     'A title</message></thread></wake>',
+                     '<system-reminder><wake reason="relay"><relay from="coordinator">Do this</relay></wake>'
+                     '</system-reminder>']:
+            self.message(wake, asked="Here are the findings.")
+        self.put(SPEC, "v3\n")
+        self.assertNotIn("=== ANSWERS ===", self.assertAllowed(self.check())["prompt"])
+
+    def test_a_background_task_notice_is_not_kept(self):
+        self.checked_once()
+        self.message("<task-notification>\n<status>completed</status>\n</task-notification>",
+                     asked="Here are the findings.")
         self.put(SPEC, "v3\n")
         self.assertNotIn("=== ANSWERS ===", self.assertAllowed(self.check())["prompt"])
 
@@ -1194,17 +1279,19 @@ class Relay(unittest.TestCase):
         self.assertIn('Question: **Question 2 of 3: should "archived" items count?**\nAnswer: Yes\n', prompt)
 
     def test_a_turn_that_only_quotes_the_line_in_an_edit_is_no_question(self):
-        self.checked_once()
+        # Before any check, where only the asking-line rule keeps a message (docs/adrs/0064).
+        self.reviewed_once()
         edit = [{"type": "tool_use", "name": "Edit", "input": {
             "file_path": "SKILL.md", "new_string": "end it \"Accept, give your own answer, ignore or defer?\""}}]
         self.message("looks good, commit it", asked="Done: I updated the skill.", before=edit)
-        self.put(SPEC, "v3\n")
+        self.put(SPEC, "v2\n")
         self.assertNotIn("=== ANSWERS ===", self.assertAllowed(self.check())["prompt"])
 
     def test_a_message_that_only_mentions_the_line_mid_turn_is_no_question(self):
-        self.checked_once()
+        # Before any check, where only the asking-line rule keeps a message (docs/adrs/0064).
+        self.reviewed_once()
         self.message("ok", asked="The skill now ends questions with \"ignore or defer?\" and then says more.")
-        self.put(SPEC, "v3\n")
+        self.put(SPEC, "v2\n")
         self.assertNotIn("=== ANSWERS ===", self.assertAllowed(self.check())["prompt"])
 
     def test_question_tool_answers_without_the_four_choices_are_left_alone(self):

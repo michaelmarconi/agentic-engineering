@@ -555,10 +555,44 @@ class Answers(Relay):
                    "tool_response": {"answers": {question: "Defer"}}})
         self.assertIn(f"Question: {question}\nAnswer: Defer", self.next_check())
 
-    def test_a_message_that_answers_no_question_is_not_kept(self):
+    # Issue #154 (docs/adrs/0064): after a check every message the person writes is kept, so an
+    # answer typed in chat instead of on the question tool still reaches the next check.
+
+    def test_a_chat_message_after_a_check_reaches_the_next_check(self):
         self.checked()
-        self.answer("thanks", said="The build is done.")
-        self.assertNotIn("=== ANSWERS ===", self.next_check())
+        self.answer("can you show me the open points?", said="Posted the question.")
+        self.answer("keep 1 to 5, merge the helpers in 6", said="1. Copied rule\n2. Helpers twice")
+        prompt = self.next_check()
+        self.assertIn("Question: (asked in a message)\nAnswer: can you show me the open points?\n", prompt)
+        self.assertLess(prompt.index("show me the open points"), prompt.index("keep 1 to 5"))
+
+    def test_only_the_last_20_chat_messages_reach_the_next_check(self):
+        self.checked()
+        for n in range(1, 26):
+            self.answer(f"note {n}.", said="Go on.")
+        prompt = self.next_check()
+        self.assertNotIn("note 5.", prompt)
+        self.assertIn("note 6.", prompt)
+
+    def test_a_question_the_tool_marks_unanswered_saves_nothing(self):
+        self.checked()
+        question = "Question 1 of 1: Fix the off-by-one?"
+        self.hook({"hook_event_name": "PostToolUse", "tool_name": "AskUserQuestion",
+                   "tool_input": {"questions": [{"question": question, "options": [
+                       {"label": "Accept"}, {"label": "My own answer"}, {"label": "Ignore"}, {"label": "Defer"}]}]},
+                   "tool_response": {"answers": {question: "The user sent a message instead"},
+                                     "annotations": {question: {"unanswered": "replied_in_chat"}}}})
+        self.assertNotIn("sent a message instead", self.next_check())
+
+    def test_a_chat_message_while_a_check_runs_goes_with_the_answers_it_clears(self):
+        # The check that is running already has the answers; one typed while it runs is cleared
+        # when it reports, as the answers before it are (docs/adrs/0064: until the next check starts).
+        self.checked()
+        self.answer("Accept")
+        self.next_check()
+        self.answer("one more thing", said="Checking.")
+        self.finish_check()
+        self.assertNotIn("one more thing", self.next_check())
 
     def test_answers_before_any_check_are_not_kept(self):
         self.all_reviews()

@@ -78,6 +78,13 @@ feedback, practices, spike or release) and the shared language checker, which ch
   followed by anything but a letter, such as "Accept: ...", so each of several
   cards keeps its own answer, whatever Claude said after posting them. A message that arrives as a project thread's wake is taken from its
   `<message trigger="true">` tag.
+  Once the review has been checked, every other message the person writes is saved too, word for
+  word and in order, against the last "**Question N of M: ...**" line Claude wrote, or "(asked in a
+  message)", so an answer typed in chat instead of on the question tool still reaches the next
+  check; at most the last 20 such messages are kept (docs/adrs/0064). In a project thread only a
+  `<message trigger="true">` tag from the person (`from="human"`, `trust="principal"`) counts, and
+  a background task notice never does. A question the question tool marks unanswered
+  (`annotations[<question>].unanswered`, as when the person replied in chat) saves nothing.
 - A saved review is kept after its check, and deleted once unchanged for 30 days (see
   saved_records.py), not when the session ends, since a resumed session carries on. A later
   review of the same document, such as a spike record's verdict review after its design review,
@@ -540,8 +547,16 @@ def latest_record(session):
     return None
 
 
+def capped(answers):
+    """The answers with only the last CHAT_LIMIT chat messages among them (docs/adrs/0064)."""
+    chats = [i for i, a in enumerate(answers) if a.get("chat")]
+    dropped = set(chats[:-CHAT_LIMIT]) if len(chats) > CHAT_LIMIT else set()
+    return [a for i, a in enumerate(answers) if i not in dropped]
+
+
 def keep_answers(session, answers):
-    """Add the person's answers to the latest review of the document last reviewed."""
+    """Add the person's answers to the latest review of the document last reviewed; chat messages
+    only once that review has been checked (docs/adrs/0064)."""
     if not answers or not folder(session) or not os.path.isdir(folder(session)):
         return
     if build_session.answers_to(session) == "build":
@@ -551,12 +566,20 @@ def keep_answers(session, answers):
         reviews = load(session, name) if name else []
         for review in reversed(reviews):
             if reviewed(review):
-                review["answers"] = answers_of(review) + answers
-                save(session, name, reviews)
+                kept = [a for a in answers if review.get("checked") or not a.get("chat")]
+                if kept:
+                    review["answers"] = capped(answers_of(review) + kept)
+                    save(session, name, reviews)
                 break
 
 
 MARKER = "ignore or defer?"
+CHAT_LIMIT = 20  # the most chat messages kept between two checks (docs/adrs/0064)
+# In a project thread only a message the person wrote is theirs; a wake may carry another agent's
+# relay or a system notice instead. Background task notices are not the person's words either.
+PERSON_MESSAGE = re.compile(r'<message\b(?=[^>]*\btrigger="true")(?=[^>]*\bfrom="human")'
+                            r'(?=[^>]*\btrust="principal")[^>]*>(.*?)</message>', re.S)
+NOTICE = re.compile(r"\s*<(task-notification|system-reminder)\b")
 # A tap on a project thread's decision card arrives as this message, naming the option and the
 # card's question; only a card offering the four choices answers a document's question. An option
 # whose words start with a choice, such as "Accept: undo within 24 hours", counts as that choice.
@@ -635,6 +658,35 @@ def message_answer(event):
     return [{"question": lines[-1] if lines else "(asked in a message)", "answer": answer}]
 
 
+def chat_answer(event):
+    """The person's message as an answer typed in chat, paired with the last "**Question N of M:
+    ...**" line Claude wrote, or "(asked in a message)", and marked as a chat message: kept only
+    after a check (docs/adrs/0064). A tap on a decision card answers only its own card, so it is
+    left to message_answer."""
+    prompt = event.get("prompt")
+    if not isinstance(prompt, str) or not prompt.strip():
+        return []
+    if "<wake" in prompt:
+        found = PERSON_MESSAGE.search(prompt)
+        if not found:
+            return []
+        answer = html.unescape(found.group(1)).strip()
+    elif NOTICE.match(prompt):
+        return []
+    else:
+        answer = prompt
+    if not answer or TAP.match(answer):
+        return []
+    lines = QUESTION_LINE.findall(last_said(event.get("transcript_path")))
+    return [{"question": lines[-1] if lines else "(asked in a message)", "answer": answer, "chat": True}]
+
+
+def person_answers(event):
+    """The answers the person's message gives: by the card-tap and asking-line rules, or else as a
+    chat message, so no message is saved twice."""
+    return message_answer(event) or chat_answer(event)
+
+
 def four_choices(event):
     """The questions the question tool asked with the four choices, Accept to Defer."""
     tool_input = event.get("tool_input") if isinstance(event.get("tool_input"), dict) else {}
@@ -655,8 +707,12 @@ def tool_answers(event):
     for source in (event.get("tool_response"), event.get("tool_input")):
         answers = source.get("answers") if isinstance(source, dict) else None
         if isinstance(answers, dict) and answers:
+            notes = source.get("annotations") if isinstance(source.get("annotations"), dict) else {}
+            # A question the person left unanswered, such as by replying in chat, holds only
+            # stand-in text; their chat message is kept instead (docs/adrs/0064).
+            unanswered = {q for q, n in notes.items() if isinstance(n, dict) and n.get("unanswered")}
             return [{"question": str(q), "answer": a if isinstance(a, str) else json.dumps(a, ensure_ascii=False)}
-                    for q, a in answers.items() if q in asked]
+                    for q, a in answers.items() if q in asked and q not in unanswered]
     return []
 
 
@@ -671,7 +727,7 @@ def handle(event):
     if when == "UserPromptSubmit":
         if not folder(session) or not latest_record(session):
             return None
-        return keep_answers(session, message_answer(event))
+        return keep_answers(session, person_answers(event))
     if when == "PostToolUse" and event.get("tool_name") == "AskUserQuestion":
         return keep_answers(session, tool_answers(event))
     tool_input = event.get("tool_input")

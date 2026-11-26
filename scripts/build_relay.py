@@ -38,8 +38,9 @@ check, when nothing has been committed since that check.
 
 After a check, it saves the person's answers in the build's record, read as review_relay.py reads
 them for documents: on UserPromptSubmit, a message answering a question that ended "... ignore or
-defer?", or a tap on a decision card offering the four choices; on PostToolUse for the question
-tool, its answers to questions offering them. Once the checker has run, its report is kept beside the three reviews, with the
+defer?", a tap on a decision card offering the four choices, or else any other message the
+person writes, as a chat message, at most the last 20 (docs/adrs/0064); on PostToolUse for the
+question tool, its answers to questions offering them, leaving out any it marks unanswered. Once the checker has run, its report is kept beside the three reviews, with the
 plan they were of, and `kept_reports` hands all four to hand_over.py for the build's report file
 (docs/adrs/0034). A review agent may run in the background, which Claude Code
 can choose even when the skill asks for the foreground: its PostToolUse event then only says it
@@ -328,7 +329,7 @@ def keep_answers(session, answers):
     with locked(session):
         record = load(session)
         if record and record.get("checked") and build_session.answers_to(session) == "build":
-            record["answers"] = review_relay.answers_of(record) + answers
+            record["answers"] = review_relay.capped(review_relay.answers_of(record) + answers)
             save(session, record)
     return None
 
@@ -412,7 +413,7 @@ def handle(event):
     if subagent_report.finished(event):
         return agent_stopped(session, event)
     if when == "UserPromptSubmit" and build_session.building(session):
-        return keep_answers(session, review_relay.message_answer(event))
+        return keep_answers(session, review_relay.person_answers(event))
     if when == "PostToolUse" and event.get("tool_name") == "AskUserQuestion" and build_session.building(session):
         return keep_answers(session, review_relay.tool_answers(event))
     tool_input = event.get("tool_input")
