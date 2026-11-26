@@ -41,6 +41,15 @@ class Nudge(unittest.TestCase):
     def test_trailing_space_after_the_line_still_counts(self):
         self.assertIsNotNone(card_nudge.handle(post(QUESTION + "\n\n")))
 
+    def test_the_line_counts_as_the_answer_hook_reads_it(self):
+        # The answer hook keeps a reply ending in the line bolded, quoted or in other case, so the
+        # card must follow such a reply too.
+        for ending in ("**" + LINE + "**", '"' + LINE + '"', LINE.lower()):
+            self.assertIsNotNone(card_nudge.handle(post(QUESTION[:-len(LINE)] + ending)), ending)
+
+    def test_the_nudge_applies_only_where_a_card_can_be_posted(self):
+        self.assertIn("If you can post a decision card", context(card_nudge.handle(post(QUESTION))))
+
     def test_any_server_post_message_tool_counts(self):
         self.assertIsNotNone(card_nudge.handle(post(QUESTION, tool="mcp__thread__post_message")))
 
