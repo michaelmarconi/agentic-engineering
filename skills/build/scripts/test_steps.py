@@ -96,6 +96,14 @@ class StepsTest(unittest.TestCase):
                            "  - Requirement: Column order")
         self.assertEqual(steps.steps(self.write(old, "2026-11-26-old.md"))[0], "Column order")
 
+    def test_a_line_it_cannot_read_under_specs_is_refused(self):
+        # Reading stops at such a line, so the requirements after it would be dropped and every
+        # step number after them would be wrong.
+        odd = PLAN.replace("  - [Empty report]", "  Notes: see below.\n  - [Empty report]")
+        result = self.run_script("--plan", self.write(odd, "2026-11-26-odd.md"))
+        self.assertEqual(result.returncode, 2)
+        self.assertIn("Notes: see below.", result.stdout)
+
     def test_help_names_the_output_and_exit_codes(self):
         result = self.run_script("--help")
         self.assertEqual(result.returncode, 0)

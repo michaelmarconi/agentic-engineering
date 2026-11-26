@@ -346,6 +346,11 @@ class SkillCheck(unittest.TestCase):
         self.put_lifecycle(lifecycle_page(skills=[s for s in PROGRESS_SKILLS if s != "verify"]))
         self.assertFails('docs/lifecycle.md: "Showing progress" does not name /verify')
 
+    def test_a_skill_named_only_inside_a_path_does_not_count(self):
+        text = lifecycle_page(skills=[s for s in PROGRESS_SKILLS if s != "build"])
+        self.put_lifecycle(text + "| (none) | `skills/build/scripts/steps.py` |\n")
+        self.assertFails('docs/lifecycle.md: "Showing progress" does not name /build')
+
     def test_a_progress_place_outside_its_section_does_not_count(self):
         text = lifecycle_page(progress=PROGRESS_PLACES[1:]) + f"\n## Later\n\n{PROGRESS_PLACES[0]}\n"
         self.put_lifecycle(text)

@@ -289,11 +289,17 @@ class StepLineTest(unittest.TestCase):
             self.assertEqual(result.returncode, 2, args)
             self.assertIn("--plan and --step go together", result.stdout)
 
+    def test_a_step_that_is_not_a_requirement_is_a_usage_error(self):
+        self.write("tests/test_new.py", FAILING)
+        result = self.run_script("--plan", self.plan, "--step", "3", "tests/test_new.py")
+        self.assertEqual(result.returncode, 2)
+        self.assertIn("give 1 to 2", result.stdout)
+
     def test_a_step_the_plan_does_not_have_is_a_usage_error(self):
         self.write("tests/test_new.py", FAILING)
         result = self.run_script("--plan", self.plan, "--step", "9", "tests/test_new.py")
         self.assertEqual(result.returncode, 2)
-        self.assertIn("1 to 6", result.stdout)
+        self.assertIn("give 1 to 2", result.stdout)
 
 
 if __name__ == "__main__":
