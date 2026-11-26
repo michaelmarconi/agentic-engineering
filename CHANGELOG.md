@@ -6,6 +6,17 @@ What changed in each version of the plugin, newest first. Versions follow
 past a major version: it says what you need to change in your documents. Before 1.0.0, a
 minor version could need such a change, and its entry said so.
 
+## [1.10.0] - 2026-11-26
+
+### Fixed
+
+- In a Claude project thread, a question asked at a skill's hand-over is now also posted on a
+  decision card, with options named exactly Accept, Ignore and Defer and the proposal recommended.
+  The lifecycle page's "Ending with your answers" says so, and a new plugin hook
+  (`scripts/card_nudge.py`) reminds the agent the moment it posts a question ending "Accept, give
+  your own answer, ignore or defer?". The hook keys on that line, not on a skill, so every skill
+  that asks this way is covered; the CLI and the desktop app are unchanged.
+
 ## [1.9.0] - 2026-11-25
 
 ### Fixed
