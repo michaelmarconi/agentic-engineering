@@ -16,9 +16,12 @@ from the behaviour not being there yet, not from a file that cannot load: read e
 whatever the result, the `## Practices` sections of the repository's AGENTS.md and CLAUDE.md and
 the build skill's `## Rules that hold for the whole build`, so a long build has them fresh at
 every requirement: what was read at the start carries less weight as the conversation grows.
+With --plan and --step, the output starts with the line steps.py gives that step, "Step N of M:
+<requirement>", so the build's progress list can be brought up to date (docs/adrs/0063).
 
-Exit codes: 0 when every file named fails; 1 when they are refused; 2 on a usage error, when
-the command cannot run (exit 126 or 127), or when the folder is not in a git work tree.
+Exit codes: 0 when every file named fails; 1 when they are refused; 2 on a usage error, such as
+--plan without --step or a step that is not one of the plan's requirements, when the command
+cannot run (exit 126 or 127), or when the folder is not in a git work tree.
 """
 
 import argparse
@@ -30,6 +33,9 @@ import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "..", "scripts"))
 import uncommitted  # noqa: E402
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import steps  # noqa: E402
 
 TAIL = 15
 SKILL = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "SKILL.md")
@@ -96,7 +102,19 @@ def main(argv=None):
     parser.add_argument("files", nargs="*",
                         help="the new or changed test files, from the top of the repository, "
                              "from the current folder, or absolute")
+    parser.add_argument("--plan", help="the plan's path, to name the step with --step")
+    parser.add_argument("--step", type=int,
+                        help="the requirement's number in the list steps.py prints for the plan")
     args = parser.parse_args(argv)
+    if (args.plan is None) != (args.step is None):
+        print("--plan and --step go together: give both, or neither.")
+        return 2
+    if args.plan is not None:
+        try:
+            step = steps.line(args.plan, args.step, requirements_only=True)
+        except steps.Refused as reason:
+            print(reason)
+            return 2
     if not args.files:
         print("Name the new or changed test files.")
         return 2
@@ -109,6 +127,8 @@ def main(argv=None):
     except uncommitted.NotARepository as error:
         print(error)
         return 2
+    if args.plan is not None:
+        print(step)
     changed = {entry[3:] for entry in entries}
     files = []
     for path in args.files:

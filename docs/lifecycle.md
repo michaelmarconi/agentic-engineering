@@ -573,3 +573,43 @@ here, and every skill points to it ([ADR 0055](adrs/0055-show-file-lifecycle-pag
 The agent tells the places apart by what it is given. A project thread's instructions name the
 shared files folder and give it a way to attach files to its replies; Claude Code desktop gives it a
 way to open a file in the Files pane. Given neither, it is on the command line.
+
+## Showing progress
+
+When a skill will work for more than a minute or two without you, such as a build, an audit or a
+document's review, the agent puts its steps on the list the place you work in shows live as soon as
+that stretch starts, and updates it as each step ends, so you can tell which step it is on and what
+each finished step found. This is written once, here, and each such skill points to it
+([ADR 0062](adrs/0062-show-progress-checklist.md)).
+
+- **Claude Code command line:** the agent fills the live task list Claude Code shows, with its task tools.
+- **Claude Code desktop:** the agent fills the same task list, with the same tools.
+- **Claude project thread:** the agent fills the checklist the app shows, with the tool the thread
+  gives it for that.
+- **With no such list:** the agent prints the numbered steps, then one summary line as each step ends.
+
+The agent tells the places apart by its tools. A project thread gives it a tool that posts the
+thread's checklist, and it uses that, since that is what you see there. Otherwise it uses Claude
+Code's task tools, `TaskCreate` and `TaskUpdate`, or `TodoWrite` in older versions. With none of
+these, it prints the lines.
+
+Each step is numbered. When one ends, the agent marks it done with a one-line summary of what it
+found, such as "✓ 2. Column order: 2 tests pass", and marks the next as under way. A plugin hook
+reminds it each time a helper agent, such as a reviewer, finishes
+([ADR 0063](adrs/0063-scripts-list-steps-hook.md)). Agents that run side by side, as in /audit,
+report together, so their lines change together. While one long step runs, such as a slow test
+suite, the list stays still.
+
+The steps are the same every run:
+
+| Skill | Shown from | Steps |
+| --- | --- | --- |
+| /build | the checks before building pass | the lines `python3 "${CLAUDE_PLUGIN_ROOT}/skills/build/scripts/steps.py" --plan <the plan's path>` prints: each requirement, in the order the plan lists them, then reviews of the code; corrections; check that the corrections broke nothing; give you the work and reports |
+| /audit | its script has listed the documents to check | one per spec or ADR, and the brief when it is checked; recheck the findings; report |
+| /verify | you agree the list | one per spec; report |
+| The review of a document in /brief, /spec, /adr, /plan and /practices | the review starts | review; corrections; check that the corrections broke nothing; give you the document and reports |
+| /spike | the run starts | one per run of the experiment; review of the experiment's result |
+| /deploy | you say yes | deploy; check, which can wait minutes to pass; reply |
+
+A step the run turns out not to need, such as corrections after a review that found nothing, is
+marked done with that as its summary.

@@ -71,6 +71,9 @@ Never write or change the practice yourself: what is safe to touch is the person
 
 ## Check each spec
 
+From here, show your progress as the "Showing progress" section of
+`${CLAUDE_PLUGIN_ROOT}/docs/lifecycle.md` says.
+
 Check the specs one after another, never side by side, since each agent starts and stops the
 product. For each spec in the agreed list, start the `agentic:verifier` agent in the foreground,
 with this request:

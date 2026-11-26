@@ -133,6 +133,16 @@ and the build's own rules again, and only those: not the rest of `AGENTS.md`, no
 under `docs/practices/`. That costs about 1,500 tokens each time. It keeps the rules in view, but can't guarantee they are followed, so
 a rule that must hold, such as tests first, also has a script that checks it.
 
+Once its checks pass, `/build` shows its steps on the list the place you work in shows live, as
+the lifecycle's [Showing progress](../lifecycle.md#showing-progress) section says: one step per
+requirement, in the order the plan lists them, then the reviews, the corrections, the check of the
+corrections and the hand-over. A small script, `steps.py`, reads them from the plan, so the list and
+its numbering are the same every run, and the tests script names each requirement's step, such as
+"Step 2 of 7: Column order", before its code is written. As each step ends, Claude marks it done
+with a one-line summary of what it found; a plugin hook reminds it each time a review agent
+finishes ([ADR 0062](../adrs/0062-show-progress-checklist.md),
+[ADR 0063](../adrs/0063-scripts-list-steps-hook.md)).
+
 If a build stops halfway, for whatever reason, start a new session on the same branch and run
 `/build` with the same plan again. It reads what the branch already holds, compares it with the
 plan and carries on.
