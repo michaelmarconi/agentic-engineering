@@ -12,22 +12,28 @@ from skill_check import (AGENT_RULE, SHELL_AGENT_RULE, ASK_RULE, BUILD_ACCEPT_RU
                          QUESTIONS_RULE, REPORT_RULES, REVIEW_RULE, SHOW_RULE, ANSWER_RULES,
                          SIGNOFF_RULE, STATUS_SKILLS, TYPE_RULE, DATE_RULE, RENAME_RULE, DIAGRAM_SKILLS, DIAGRAM_RULES,
                          diagram_rules, holds, pointer, ending, ANSWERS_ENDING, FAILED_ENDING,
-                         REVIEWING_SKILLS, MOVED_RULES, SHOW_HEADING, SHOW_PLACES, OLD_SHOW_RULES)
+                         REVIEWING_SKILLS, MOVED_RULES, SHOW_HEADING, SHOW_PLACES, OLD_SHOW_RULES,
+                         PROGRESS_RULE, PROGRESS_HEADING, PROGRESS_PLACES, PROGRESS_SKILLS)
 
 DESCRIPTION = "Write a thing. Use whenever someone wants a thing."
 
 
-def lifecycle_page(steps=None, answers=None, failed=None, places=None):
+def lifecycle_page(steps=None, answers=None, failed=None, places=None, progress=None, skills=None):
     """A lifecycle page whose Review process section holds the given sentences, by default all,
-    followed by a Showing a file to you section holding the given places, by default all."""
+    followed by a Showing a file to you section holding the given places, by default all, and a
+    Showing progress section holding the given places and naming the given skills, by default all."""
     steps = CORRECT_RULES + (PATH_RULE,) if steps is None else steps
     answers = ANSWER_RULES if answers is None else answers
     failed = (REVIEW_RULE,) if failed is None else failed
     places = SHOW_PLACES if places is None else places
+    progress = PROGRESS_PLACES if progress is None else progress
+    skills = PROGRESS_SKILLS if skills is None else skills
     return ("# The lifecycle\n\n## Review process\n\n" + "\n\n".join(steps)
             + f"\n\n### {ANSWERS_ENDING}\n\n" + "\n\n".join(answers)
             + f"\n\n### {FAILED_ENDING}\n\n" + "\n\n".join(failed)
-            + f"\n\n{SHOW_HEADING}\n\n" + "\n".join(f"- {place}" for place in places) + "\n")
+            + f"\n\n{SHOW_HEADING}\n\n" + "\n".join(f"- {place}" for place in places) + "\n"
+            + f"\n{PROGRESS_HEADING}\n\n" + "\n".join(f"- {place}" for place in progress) + "\n\n"
+            + "| Skill | Steps |\n| --- | --- |\n" + "".join(f"| /{skill} | steps |\n" for skill in skills))
 
 
 def skill_md(name="demo", description=DESCRIPTION, body="# Demo\n\nDo the thing.\n"):
@@ -102,6 +108,7 @@ class SkillCheck(unittest.TestCase):
     def reviewing(self, folder="feedback", document="Document: feedback draft", extra=""):
         """A reviewing skill's body: its pointer, its request and whatever `extra` adds."""
         rules = f"{ASK_RULE}\n\n" if folder in ASK_SKILLS else ""
+        rules += f"{PROGRESS_RULE}\n\n" if folder in PROGRESS_SKILLS else ""
         return f"# Demo\n\n{rules}{pointer(folder)}\n\n```\n{document}\nReview this.\n```\n\n{extra}"
 
     def test_reviewing_skill_with_its_pointer_passes(self):
@@ -280,6 +287,69 @@ class SkillCheck(unittest.TestCase):
                 if holds(f.read(), SHOW_RULE):
                     holding.add(name)
         self.assertEqual(holding, {"brief", "spec", "adr", "plan", "spike", "practices"})
+
+    # Long runs show progress the same way in each place (ADRs 0062 and 0063)
+
+    def test_a_progress_skill_without_the_progress_rule_fails(self):
+        for folder in ("deploy", "spec"):
+            with self.subTest(folder=folder):
+                body = self.reviewing(folder, f"Document: <the {folder}'s full path>", SHOW_RULE)
+                self.put(folder, skill_md(name=folder, body=body.replace(PROGRESS_RULE, "")))
+                self.assertFails(f"{folder}/SKILL.md: progress rule missing")
+
+    def test_a_progress_skill_with_the_progress_rule_wrapped_passes(self):
+        rule = PROGRESS_RULE.replace(" section of ", "\nsection of ")
+        self.assertNotEqual(rule, PROGRESS_RULE)
+        self.put("deploy", skill_md(name="deploy", body=f"# Deploy\n\n{rule}\n"))
+        done = self.check()
+        self.assertEqual((done.returncode, done.stdout), (0, ""))
+
+    def test_other_skills_need_no_progress_rule(self):
+        self.put("feedback", skill_md(name="feedback", body=self.reviewing()))
+        self.assertNotIn("progress rule missing", self.check().stdout)
+
+    def test_the_progress_rule_points_to_the_lifecycle_section(self):
+        self.assertIn(PROGRESS_HEADING[3:], PROGRESS_RULE)
+        self.assertIn("docs/lifecycle.md", PROGRESS_RULE)
+
+    def test_the_progress_skills_are_those_adr_0062_names(self):
+        self.assertEqual(set(PROGRESS_SKILLS), {"build", "audit", "verify", "spike", "deploy", "brief",
+                                                "spec", "adr", "plan", "practices"})
+
+    def test_every_progress_skill_and_no_other_holds_the_progress_rule(self):
+        holding = set()
+        skills = os.path.join(ROOT, "skills")
+        for name in os.listdir(skills):
+            with open(os.path.join(skills, name, "SKILL.md"), encoding="utf-8") as f:
+                if holds(f.read(), PROGRESS_RULE):
+                    holding.add(name)
+        self.assertEqual(holding, set(PROGRESS_SKILLS))
+
+    def test_the_progress_places_name_each_place_and_the_fallback(self):
+        text = " ".join(PROGRESS_PLACES)
+        for words in ("Claude Code command line", "Claude Code desktop", "Claude project thread",
+                      "numbered steps"):
+            self.assertIn(words, text)
+
+    def test_lifecycle_missing_the_progress_section_fails(self):
+        self.put_lifecycle(self.lifecycle().replace(PROGRESS_HEADING, "## Progress"))
+        self.assertFails(f'docs/lifecycle.md: no "{PROGRESS_HEADING}" heading')
+
+    def test_lifecycle_missing_a_progress_place_fails(self):
+        for number in range(len(PROGRESS_PLACES)):
+            with self.subTest(number=number):
+                places = PROGRESS_PLACES[:number] + PROGRESS_PLACES[number + 1:]
+                self.put_lifecycle(lifecycle_page(progress=places))
+                self.assertFails(f"docs/lifecycle.md: progress place {number + 1} missing")
+
+    def test_lifecycle_not_naming_a_progress_skill_fails(self):
+        self.put_lifecycle(lifecycle_page(skills=[s for s in PROGRESS_SKILLS if s != "verify"]))
+        self.assertFails('docs/lifecycle.md: "Showing progress" does not name /verify')
+
+    def test_a_progress_place_outside_its_section_does_not_count(self):
+        text = lifecycle_page(progress=PROGRESS_PLACES[1:]) + f"\n## Later\n\n{PROGRESS_PLACES[0]}\n"
+        self.put_lifecycle(text)
+        self.assertFails("docs/lifecycle.md: progress place 1 missing")
 
     # The Review process section of the lifecycle page
 
