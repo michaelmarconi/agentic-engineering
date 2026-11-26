@@ -7,11 +7,11 @@ question tool, a skill asks each question in words ending with the line the answ
 "Accept, give your own answer, ignore or defer?" (the lifecycle page's "Ending with your answers").
 When the posted message's `text` ends with that line, read as `review_relay.py` reads it, this
 hook tells the agent, at that moment, to post the same question on a decision card whose options
-are named exactly "Accept", "Ignore" and "Defer", the proposal recommended. Exact names let the answer hook save a tap as the answer.
-It keys on the line, not on a skill, so every skill that ends a question with it is covered and no
-other is touched. Another server's `post_message` tool, such as a chat app's, can also trigger it,
-so the instruction applies only where a card can be posted.
-Every other tool call and message passes.
+are named exactly "Accept", "Ignore" and "Defer", the proposal recommended. Exact names let the
+answer hook save a tap as the answer. It keys on the line, not on a skill, so every skill that
+ends a question with it is covered and no other is touched. Another server's `post_message` tool,
+such as a chat app's, can also trigger it, so the instruction applies only where a card can be
+posted. Every other tool call and message passes.
 """
 
 import argparse
@@ -27,8 +27,8 @@ NUDGE = (
     "You just asked the person a question in words, ending \"" + LINE + "\". If you can post a "
     "decision card, post the same question on one now, unless you already have this turn: "
     "options named exactly \"Accept\", \"Ignore\" and \"Defer\", with any detail in each "
-    "option's description rather than its name, and \"Accept\" (your proposal) recommended. Then end your turn and wait for "
-    "the answer.")
+    "option's description rather than its name, and \"Accept\" (your proposal) recommended. "
+    "Then end your turn and wait for the answer.")
 
 
 def asks(text):
