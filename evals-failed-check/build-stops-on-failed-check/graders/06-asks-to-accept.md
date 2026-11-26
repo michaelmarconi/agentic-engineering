@@ -1,7 +1,7 @@
 ---
 type: regex
 target: trace
-pattern: 'Accept the build as it stands, or leave it\?'
+pattern: 'ignore or defer\?|"label":"Defer"'
 weight: 1
 ---
-After the failed check, the build asks straight away whether to accept the build as it stands (docs/adrs/0052).
+After the failed check, the build puts the first open finding to the person as a question offering Accept, their own answer, Ignore and Defer (docs/adrs/0060).
