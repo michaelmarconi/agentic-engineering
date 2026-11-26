@@ -277,9 +277,9 @@ python3 "${CLAUDE_SKILL_DIR}/scripts/hand_over.py" --plan <the plan's path> --op
 
 If it prints a reason instead of open findings, go on to the reply. Otherwise go through them with
 the person, by the asking rule of `${CLAUDE_PLUGIN_ROOT}/docs/lifecycle.md` ("How you are asked"),
-one finding per question with your proposal, such as fixing it on this branch or dropping a test
-the code cannot meet, each offering Accept, My own answer, Ignore and Defer on your question tool,
-or, with none, ending with the line "Accept, give your own answer, ignore or defer?":
+one finding per question with your proposal, such as fixing it on this branch, each offering Accept, My own answer, Ignore and Defer on your question tool,
+or, with none, ending with the line "Accept, give your own answer, ignore or defer?". List them
+all first, numbered; chat answers count too:
 
 1. Ask about the build's own findings first. On Accept or the person's own answer, make the fix,
    run the tests and commit; Ignore leaves it as it is, and Defer leaves it for a later plan.

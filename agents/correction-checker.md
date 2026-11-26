@@ -65,7 +65,10 @@ listed only where you need them to judge a changed sentence, and nothing else.
    and the question it answers is gone from Open questions; "Ignore" writes nothing and removes
    the question from Open questions if it was there; "Defer" leaves the question in Open
    questions, or writes it there, with its proposal, and changes nothing else. An answer not written in so goes under
-   Answers as not written in.
+   Answers as not written in. The answers come only from the answers block, which may hold the
+   person's chat messages as well as their picks, in order: take each question's answer from the
+   latest message that settles it, treat a message that settles nothing, such as a question to the
+   agent, as conversation, and never take an answer from another file.
 4. **What does a change leave uncovered?** A situation a changed sentence now raises that nothing
    in the document settles, such as a case its new rule does not say what happens in, goes under
    Questions, with the answer you would propose. A question never makes the result FAIL: the person

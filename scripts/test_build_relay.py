@@ -555,10 +555,82 @@ class Answers(Relay):
                    "tool_response": {"answers": {question: "Defer"}}})
         self.assertIn(f"Question: {question}\nAnswer: Defer", self.next_check())
 
-    def test_a_message_that_answers_no_question_is_not_kept(self):
+    # Issue #154 (docs/adrs/0064): after a check every message the person writes is kept, so an
+    # answer typed in chat instead of on the question tool still reaches the next check.
+
+    def test_a_chat_message_after_a_check_reaches_the_next_check(self):
         self.checked()
-        self.answer("thanks", said="The build is done.")
+        self.answer("can you show me the open points?", said="Posted the question.")
+        self.answer("keep 1 to 5, merge the helpers in 6", said="1. Copied rule\n2. Helpers twice")
+        prompt = self.next_check()
+        self.assertIn("Question: (asked in a message)\nAnswer: can you show me the open points?\n", prompt)
+        self.assertLess(prompt.index("show me the open points"), prompt.index("keep 1 to 5"))
+
+    def test_only_the_last_20_chat_messages_reach_the_next_check(self):
+        self.checked()
+        for n in range(1, 26):
+            self.answer(f"note {n}.", said="Go on.")
+        prompt = self.next_check()
+        self.assertNotIn("note 5.", prompt)
+        self.assertIn("note 6.", prompt)
+
+    def test_a_question_the_tool_marks_unanswered_saves_nothing(self):
+        self.checked()
+        question = "Question 1 of 1: Fix the off-by-one?"
+        self.hook({"hook_event_name": "PostToolUse", "tool_name": "AskUserQuestion",
+                   "tool_input": {"questions": [{"question": question, "options": [
+                       {"label": "Accept"}, {"label": "My own answer"}, {"label": "Ignore"}, {"label": "Defer"}]}]},
+                   "tool_response": {"answers": {question: "The user sent a message instead"},
+                                     "annotations": {question: {"unanswered": "replied_in_chat"}}}})
+        self.assertNotIn("sent a message instead", self.next_check())
+
+    def test_a_chat_message_while_a_check_runs_reaches_the_check_after_it(self):
+        # The running check was handed the answers before it; one typed while it runs is kept for
+        # the next check, not cleared with them (docs/adrs/0064: until the next check starts).
+        self.checked()
+        self.answer("Accept")
+        self.next_check()
+        self.answer("Defer 3, fix 4 on the branch", said="Checking.")
+        self.finish_check()
+        prompt = self.next_check()
+        self.assertIn("Defer 3, fix 4 on the branch", prompt)
+        self.assertNotIn("Answer: Accept\n", prompt)
+
+    def test_a_reply_to_several_questions_in_one_message_is_asked_in_a_message(self):
+        self.checked()
+        self.answer("keep 1 to 5, merge the helpers in 6",
+                    said="**Question 1 of 2: copied rule**\n\n**Question 2 of 2: helpers twice**")
+        self.assertIn("Question: (asked in a message)\nAnswer: keep 1 to 5", self.next_check())
+
+    def test_a_relay_after_the_asking_line_is_not_the_person_s_answer(self):
+        self.checked()
+        self.answer('<wake reason="project-activity"><thread><message trigger="true" from="agent" '
+                    'trust="relay">A title</message></thread></wake>')
+        self.answer("<task-notification>\n<status>completed</status>\n</task-notification>")
         self.assertNotIn("=== ANSWERS ===", self.next_check())
+
+    def test_harness_echoes_and_peer_messages_are_not_kept(self):
+        self.checked()
+        for text in ["<command-name>/agentic:build</command-name>",
+                     "<local-command-stdout>done</local-command-stdout>",
+                     "<bash-input>ls</bash-input>",
+                     "Another Claude session sent a message:\n<agent-message from=\"x\">hi</agent-message>"]:
+            self.answer(text, said="Go on.")
+        self.assertNotIn("=== ANSWERS ===", self.next_check())
+
+    def test_a_reminder_added_after_the_person_s_message_is_left_out(self):
+        self.checked()
+        self.answer("Ignore it\n<system-reminder>\nsomething\n</system-reminder>", said="Go on.")
+        prompt = self.next_check()
+        self.assertIn("Answer: Ignore it\n", prompt)
+        self.assertNotIn("something", prompt)
+
+    def test_a_very_long_chat_message_is_cut(self):
+        self.checked()
+        self.answer("x" * 10000, said="Go on.")
+        prompt = self.next_check()
+        self.assertNotIn("x" * 4001, prompt)
+        self.assertIn("(cut)", prompt)
 
     def test_answers_before_any_check_are_not_kept(self):
         self.all_reviews()
