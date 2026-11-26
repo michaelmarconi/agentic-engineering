@@ -95,6 +95,15 @@
     ],
     "PostToolUse": [
       {
+        "matcher": "mcp__.*__post_message",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/scripts/card_nudge.py\""
+          }
+        ]
+      },
+      {
         "matcher": "AskUserQuestion",
         "hooks": [
           {

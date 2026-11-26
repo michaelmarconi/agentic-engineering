@@ -91,7 +91,10 @@ ANSWER_RULES = (
     "decisions for the person and what a check finds. Offer four choices on your question "
     'tool: "Accept" your proposal, "My own answer", "Ignore" and "Defer"; where you have '
     "none, end it with this line, word for word, since a plugin hook looks for it to keep the "
-    'answer: "Accept, give your own answer, ignore or defer?". If the person has said not '
+    'answer: "Accept, give your own answer, ignore or defer?". Where you can post a decision '
+    "card, as in a Claude project thread, then post the same question on one, its options "
+    'named exactly "Accept", "Ignore" and "Defer", your proposal recommended; a plugin hook '
+    "reminds you. If the person has said not "
     "to ask now, or stops, defer the questions left.",
     "Accept and My own answer write the answer in as the person gave it, removing the "
     "question from Open questions if it is there; Ignore writes nothing and removes it; Defer"

@@ -81,6 +81,12 @@ class SkillCheck(unittest.TestCase):
         for choice in ('"Accept"', '"My own answer"', '"Ignore"', '"Defer"', "ignore or defer?"):
             self.assertIn(choice, rules)
 
+    def test_answer_rules_post_each_question_on_a_card_with_exact_option_names(self):
+        # Issue #146: the hand-over asked in words only, since this rule never named the card.
+        rules = " ".join(ANSWER_RULES)
+        self.assertIn("decision card", rules)
+        self.assertIn('named exactly "Accept", "Ignore" and "Defer"', rules)
+
     def test_answer_rules_keep_drafting_questions_out_of_the_document(self):
         rules = " ".join(ANSWER_RULES)
         self.assertIn("While drafting", rules)
